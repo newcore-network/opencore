@@ -2,7 +2,7 @@ import {
   getCommandRegistry,
   getNetEventRegistry,
   getTickRegistry,
-} from "./decorators";
+} from "./decorators/onTick";
 import { di } from "./container";
 
 
@@ -18,7 +18,6 @@ import { di } from "./container";
  * are instantiated consistently and with proper dependencies.
  */
 export function initServerCore() {
-  // Commands
   for (const meta of getCommandRegistry()) {
     RegisterCommand(
       meta.name,

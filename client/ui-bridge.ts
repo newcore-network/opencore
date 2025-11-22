@@ -1,5 +1,9 @@
+import { PlayerLoginRequestDTO } from "@shared/dto/player.dto";
+
 export interface NuiEvents {
   "core:setVisible": { visible: boolean };
+  "player:login:submit": PlayerLoginRequestDTO;
+  "player:spawn:done": {};
 }
 
 export type NuiEventName = keyof NuiEvents & string;
