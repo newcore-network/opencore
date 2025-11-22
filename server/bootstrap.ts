@@ -17,6 +17,8 @@ import { getTickRegistry } from "./decorators/onTick";
  * are instantiated consistently and with proper dependencies.
  */
 export function initServerCore() {
+  
+  // Commands
   for (const meta of getCommandRegistry()) {
     RegisterCommand(
       meta.name,
