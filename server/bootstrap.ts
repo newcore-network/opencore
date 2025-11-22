@@ -1,9 +1,8 @@
-import {
-  getCommandRegistry,
-  getNetEventRegistry,
-  getTickRegistry,
-} from "./decorators/onTick";
+
 import { di } from "./container";
+import { getCommandRegistry } from "./decorators/command";
+import { getNetEventRegistry } from "./decorators/netEvent";
+import { getTickRegistry } from "./decorators/onTick";
 
 
 /**

@@ -1,52 +1,30 @@
-import { PlayerLoginRequestDTO } from "@shared/dto/player.dto";
 
-export interface NuiEvents {
-  "core:setVisible": { visible: boolean };
-  "player:login:submit": PlayerLoginRequestDTO;
-  "player:spawn:done": {};
-}
+import type {
+  NuiClientToUiEvents,
+  NuiUiToClientEvents,
+} from "@shared/events/nui-events";
 
-export type NuiEventName = keyof NuiEvents & string;
-
-export interface NuiMessage<T = unknown> {
-  action: string;
-  data?: T;
-}
-
-type NuiHandler<K extends NuiEventName> = (data: NuiEvents[K]) => void | Promise<void>;
+export type NuiClientToUiEventName = keyof NuiClientToUiEvents & string;
+export type NuiUiToClientEventName = keyof NuiUiToClientEvents & string;
 
 export class NuiManager {
-  private handlers = new Map<string, NuiHandler<any>[]>();
-
-  send<K extends NuiEventName>(action: K, data: NuiEvents[K]) {
-    const message: NuiMessage<NuiEvents[K]> = { action, data };
-    SendNuiMessage(JSON.stringify(message));
+  send<K extends NuiClientToUiEventName>(action: K, data: NuiClientToUiEvents[K]) {
+    SendNuiMessage(JSON.stringify({ action, data }));
   }
 
-  setVisible(visible: boolean) {
-    SetNuiFocus(visible, visible);
-    this.send("core:setVisible", { visible });
-  }
-
-  on<K extends NuiEventName>(action: K, handler: NuiHandler<K>) {
-    const list = this.handlers.get(action) ?? [];
-    list.push(handler as NuiHandler<any>);
-    this.handlers.set(action, list);
-
+  on<K extends NuiUiToClientEventName>(
+    action: K,
+    handler: (data: NuiUiToClientEvents[K]) => void | Promise<void>
+  ) {
     RegisterNuiCallbackType(action);
 
-    on(`__cfx_nui:${action}`, async (data: NuiEvents[K], cb: (response: any) => void) => {
+    on(`__cfx_nui:${action}`, async (data: NuiUiToClientEvents[K], cb: (resp: any) => void) => {
       try {
-        const handlersForAction = this.handlers.get(action) ?? [];
-        for (const h of handlersForAction) {
-          await h(data);
-        }
-        cb({ status: "ok" });
+        await handler(data);
+        cb({ ok: true });
       } catch (err) {
-        cb({ status: "error", message: String(err) });
+        cb({ ok: false, error: String(err) });
       }
     });
   }
 }
-
-export const NUI = new NuiManager();
