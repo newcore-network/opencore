@@ -1,9 +1,6 @@
 
-import { di } from "./container";
-import { getCommandRegistry } from "./decorators/command";
-import { getNetEventRegistry } from "./decorators/netEvent";
-import { getTickRegistry } from "./decorators/onTick";
-
+import { loadDecorators } from "./loader/decorators.loader";
+import { playerLoader } from "./loader/player.loader";
 
 /**
  * Initializes the server-side core of the framework.
@@ -17,36 +14,6 @@ import { getTickRegistry } from "./decorators/onTick";
  * are instantiated consistently and with proper dependencies.
  */
 export function initServerCore() {
-  
-  // Commands
-  for (const meta of getCommandRegistry()) {
-    RegisterCommand(
-      meta.name,
-      (clientID: number, args: string[]) => {
-        const instance = di.resolve(meta.target);
-        const method = (instance as any)[meta.methodName].bind(instance);
-        method(clientID, args);
-      },
-      false
-    );
-  }
-
-  // NetEvents
-  for (const meta of getNetEventRegistry()) {
-    onNet(meta.eventName, (...args: any[]) => {
-      const clientID = Number(global.source);
-      const instance = di.resolve(meta.target);
-      const method = (instance as any)[meta.methodName].bind(instance);
-      method(clientID, ...args);
-    });
-  }
-
-  // Ticks
-  setTick(async () => {
-    for (const meta of getTickRegistry()) {
-      const instance = di.resolve(meta.target);
-      const method = (instance as any)[meta.methodName].bind(instance);
-      await method();
-    }
-  });
+  loadDecorators();
+  playerLoader();
 }
