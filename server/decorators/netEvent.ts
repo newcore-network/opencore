@@ -13,7 +13,7 @@ const netEventRegistry: NetEventMeta[] = [];
  *
  * @param eventName - The name of the network event
  */
-export function NetEvent(eventName: string) {
+export function OnNetEvent(eventName: string) {
   return (target: any, propertyKey: string, _descriptor: PropertyDescriptor) => {
     netEventRegistry.push({
       eventName,

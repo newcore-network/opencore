@@ -1,24 +1,31 @@
 import { container } from "tsyringe";
 import { PlayerManager } from "../player.manager";
-import { emitToClientTyped } from "@shared/net-bridge";
+import { emitPlayerSessionCreated } from "../lifecycle";
 
-export const playerLoader = () => {
+export const playerSessionLoader = () => {
     const playerManager = container.resolve(PlayerManager);
 
     on("playerJoining", (source: string) => {
         const src = Number(source);
 
         const license = GetPlayerIdentifier(src.toString(), 0) ?? null
-        const session = playerManager.bind(
+        const Player = playerManager.bind(
             src,
             license ?? `temp-${src}-${Date.now()}`
         );
-        emitToClientTyped("player:connected", src, {})
+        
+        console.log(`1. Binding player session for client ${src} with license ${license}`);
+
+        emitPlayerSessionCreated({
+            clientId: src,
+            license: license,
+        });
     });
 
     on("playerDropped", () => {
         const src = Number(global.source);
         playerManager.unbindByClient(src);
-        emit("core:playerDisconnected", src);
+        emit("core:playerSessionDestroyed", src);
+        console.log(`Player session destroyed for client ${src}`);
     });
 }

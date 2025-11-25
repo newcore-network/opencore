@@ -12,7 +12,7 @@ export interface PlayerSession {
   clientID: number;
 
   /** Logical playerId created by your domain (UUID/string) */
-  playerId: PlayerId;
+  accountID: PlayerId;
 
   /** Optional external identifiers (license, steam, discord, etc.) */
   identifiers?: {
@@ -38,19 +38,22 @@ export class ServerPlayer {
   get clientID(): number {
     return this.session.clientID;
   }
+  get clientIDStr(): string {
+    return this.session.clientID.toString();
+  }
 
-  get playerId(): string {
-    return this.session.playerId.toString();
+  get accountID(): string {
+    return this.session.accountID.toString();
   }
 
   get name(): string {
-    return GetPlayerName(this.clientID.toString());
+    return GetPlayerName(this.clientIDStr);
   }
 
   getIdentifiers() {
     const ids: string[] = [];
     for (let i = 0;; i++) {
-      const id = GetPlayerIdentifier(this.clientID.toString(), i);
+      const id = GetPlayerIdentifier(this.clientIDStr, i);
       if (!id) break;
       ids.push(id);
     }

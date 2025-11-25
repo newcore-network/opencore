@@ -15,26 +15,22 @@ import { ServerPlayer, PlayerSession, PlayerId } from "./player";
 export class PlayerManager {
   /** Maps FiveM clientID → ServerPlayer */
   private playersByClient = new Map<number, ServerPlayer>();
-
-  /** Maps logical playerId → ServerPlayer */
-  private playersByPlayerId = new Map<string, ServerPlayer>();
-
   /**
    * Creates (or rebinds) a ServerPlayer for a given clientID and playerId.
    * Usually called after a successful login flow in your auth module.
    *
    * @param clientID - FiveM player handle
-   * @param playerId - Domain player identifier (UUID/string)
+   * @param accountID - Domain player identifier (UUID/string)
    * @param identifiers - Optional external identifiers
    */
   bind(
     clientID: number,
-    playerId: string | UUIDTypes,
+    accountID: string | UUIDTypes,
     identifiers?: PlayerSession["identifiers"]
   ): ServerPlayer {
     const session: PlayerSession = {
       clientID,
-      playerId,
+      accountID,
       identifiers,
       meta: {},
     };
@@ -42,7 +38,6 @@ export class PlayerManager {
     const player = new ServerPlayer(session);
 
     this.playersByClient.set(clientID, player);
-    this.playersByPlayerId.set(player.playerId, player);
 
     return player;
   }
@@ -58,22 +53,8 @@ export class PlayerManager {
     if (!player) return;
 
     this.playersByClient.delete(clientID);
-    this.playersByPlayerId.delete(player.playerId);
   }
 
-  /**
-   * Removes all session data associated with a playerId.
-   *
-   * @param playerId - Domain player identifier
-   */
-  unbindByPlayerId(playerId: PlayerId) {
-    const key = playerId.toString();
-    const player = this.playersByPlayerId.get(key);
-    if (!player) return;
-
-    this.playersByPlayerId.delete(key);
-    this.playersByClient.delete(player.clientID);
-  }
 
   /**
    * Returns the ServerPlayer associated with a clientID.
@@ -84,14 +65,6 @@ export class PlayerManager {
     return this.playersByClient.get(clientID) ?? null;
   }
 
-  /**
-   * Returns the ServerPlayer associated with a playerId.
-   *
-   * @param playerId - Domain player identifier
-   */
-  getByPlayerId(playerId: PlayerId): ServerPlayer | null {
-    return this.playersByPlayerId.get(playerId.toString()) ?? null;
-  }
 
   /**
    * Returns the domain-level playerId for a FiveM clientID.
@@ -100,7 +73,7 @@ export class PlayerManager {
    */
   getPlayerId(clientID: number): string | null {
     const player = this.playersByClient.get(clientID);
-    return player?.playerId ?? null;
+    return player?.accountID ?? null;
   }
 
   /**
