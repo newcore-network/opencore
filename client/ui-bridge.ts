@@ -4,10 +4,10 @@ import type {
   NuiUiToClientEvents,
 } from "@shared/events/nui-events";
 
-export type NuiClientToUiEventName = keyof NuiClientToUiEvents & string;
-export type NuiUiToClientEventName = keyof NuiUiToClientEvents & string;
+type NuiClientToUiEventName = keyof NuiClientToUiEvents & string;
+type NuiUiToClientEventName = keyof NuiUiToClientEvents & string;
 
-export class NuiManager {
+class NuiManager {
   send<K extends NuiClientToUiEventName>(action: K, data: NuiClientToUiEvents[K]) {
     SendNuiMessage(JSON.stringify({ action, data }));
   }
@@ -28,3 +28,5 @@ export class NuiManager {
     });
   }
 }
+
+export const NUI = new NuiManager();
