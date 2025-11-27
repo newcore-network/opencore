@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe';
 import type { UUIDTypes } from 'uuid';
+import { Vector3 } from '@core/utils/vector3';
 
 export type playerID = string | UUIDTypes;
 
@@ -51,6 +52,19 @@ export class ServerPlayer {
 
   emit(eventName: string, ...args: any[]) {
     emitNet(eventName, this.clientID, ...args);
+  }
+
+  teleport(vector: Vector3) {
+    SetEntityCoords(
+      GetPlayerPed(this.clientIDStr),
+      vector.x,
+      vector.y,
+      vector.z,
+      false,
+      false,
+      false,
+      true,
+    );
   }
 
   kick(reason = 'Kicked from server') {

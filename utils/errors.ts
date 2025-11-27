@@ -1,3 +1,16 @@
+export type ErrorCode =
+  | 'PLAYER_NOT_FOUND'
+  | 'INSUFFICIENT_FUNDS'
+  | 'VALIDATION_ERROR'
+  | 'API_ERROR'
+  | 'NETWORK_ERROR'
+  | 'UNAUTHORIZED'
+  | 'PERMISSION_DENIED'
+  | 'NOT_IMPLEMENTED'
+  | 'UNKNOWN';
+
+export type ErrorOrigin = 'client' | 'server' | 'core' | 'external';
+
 export class AppError extends Error {
   readonly code: ErrorCode;
   readonly details?: unknown;
@@ -8,16 +21,11 @@ export class AppError extends Error {
     this.code = code;
     this.details = details;
     this.origin = origin;
+
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
-export type ErrorCode =
-  | 'PLAYER_NOT_FOUND'
-  | 'INSUFFICIENT_FUNDS'
-  | 'VALIDATION_ERROR'
-  | 'API_ERROR'
-  | 'NETWORK_ERROR'
-  | 'UNAUTHORIZED'
-  | 'UNKNOWN';
-
-export type ErrorOrigin = 'client' | 'server' | 'core' | 'external';
+export function isAppError(error: unknown): error is AppError {
+  return error instanceof AppError;
+}

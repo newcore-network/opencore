@@ -1,3 +1,4 @@
+import { AppError } from '@core/utils/errors';
 import { di } from '../container';
 import { getBindingRegistry } from '../decorators/bind';
 import { getCommandRegistry } from '../decorators/command';
@@ -5,6 +6,7 @@ import { getNetEventRegistry } from '../decorators/netEvent';
 import { getTickRegistry } from '../decorators/onTick';
 import { serverControllerRegistry } from '../decorators/serverController';
 import { PlayerManager } from '../services/player';
+import { handleCommandError } from '../error-handler';
 
 const instanceCache = new Map<Function, any>();
 
@@ -44,16 +46,20 @@ export const loadDecorators = () => {
         const player = playerManager.getByClient(clientID);
 
         if (!player) {
-          console.warn(
-            `[CORE] Command "${meta.name}" -> ${meta.methodName}: player ${clientID} no encontrado`,
+          const error = new AppError(
+            'PLAYER_NOT_FOUND',
+            `Jugador ${clientID} no encontrado`,
+            'core',
+            { command: meta.name, handler: meta.methodName },
           );
+          handleCommandError(error, meta, clientID);
           return;
         }
 
         try {
           method(player, args, raw);
         } catch (error) {
-          console.error(`[CORE] Error en Command "${meta.name}" -> ${meta.methodName}:`, error);
+          handleCommandError(error, meta, clientID);
         }
       },
       false,
