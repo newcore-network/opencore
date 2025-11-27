@@ -1,4 +1,4 @@
-export interface KeyMappingMeta {
+interface KeyMappingMeta {
   key: string;
   description: string;
   methodName: string;

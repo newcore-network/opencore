@@ -8,7 +8,7 @@ export interface NetEventMeta {
 
 const netEventRegistry: NetEventMeta[] = [];
 
-export function Net(eventName: string) {
+export function OnNet(eventName: string) {
   return (target: any, propertyKey: string, _descriptor: PropertyDescriptor) => {
     netEventRegistry.push({
       eventName,
