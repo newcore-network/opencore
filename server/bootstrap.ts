@@ -1,5 +1,12 @@
+import { ApiClient } from './api/out/api.client';
+import { di } from './container';
 import { loadDecorators } from './loader/decorators.loader';
 import { playerSessionLoader } from './loader/playerSession.loader';
+
+function setter() {
+  di.registerSingleton(ApiClient, ApiClient);
+  loadDecorators();
+}
 
 /**
  * Initializes the server-side core of the framework.
@@ -12,7 +19,7 @@ import { playerSessionLoader } from './loader/playerSession.loader';
  * injection container (DI), ensuring controllers and services
  * are instantiated consistently and with proper dependencies.
  */
-export function initServerCore() {
-  loadDecorators();
+export async function initServerCore() {
+  setter();
   playerSessionLoader();
 }

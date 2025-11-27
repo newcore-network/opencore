@@ -1,16 +1,75 @@
 import { injectable } from 'tsyringe';
 import type { UUIDTypes } from 'uuid';
-import { ServerPlayer, PlayerSession, PlayerId } from './player';
+
+export type playerID = string | UUIDTypes;
+
+interface PlayerSession {
+  clientID: number;
+  accountID: playerID;
+  identifiers?: {
+    license?: string;
+    steam?: string;
+    discord?: string;
+  };
+  meta: Record<string, unknown>;
+}
 
 /**
- * Core-level player/session manager.
+ * Core-level representation of a connected player on the server.
  *
- * - Tracks clientID ↔ playerId associations.
- * - Exposes a typed API to retrieve ServerPlayer instances.
- * - Provides a small metadata bag per player.
- *
- * It does NOT contain gameplay logic or access to persistence.
+ * This class wraps FiveM natives and session information, but it
+ * does NOT contain gameplay logic (no money, jobs, inventory, etc.).
+ * Domain logic should live in your modules' services/models.
  */
+export class ServerPlayer {
+  constructor(private readonly session: PlayerSession) {}
+
+  get clientID(): number {
+    return this.session.clientID;
+  }
+  get clientIDStr(): string {
+    return this.session.clientID.toString();
+  }
+
+  get accountID(): string {
+    return this.session.accountID.toString();
+  }
+
+  get name(): string {
+    return GetPlayerName(this.clientIDStr);
+  }
+
+  getIdentifiers() {
+    const ids: string[] = [];
+    for (let i = 0; ; i++) {
+      const id = GetPlayerIdentifier(this.clientIDStr, i);
+      if (!id) break;
+      ids.push(id);
+    }
+    return ids;
+  }
+
+  emit(eventName: string, ...args: any[]) {
+    emitNet(eventName, this.clientID, ...args);
+  }
+
+  kick(reason = 'Kicked from server') {
+    DropPlayer(this.clientID.toString(), reason);
+  }
+
+  setRoutingBucket(bucket: number) {
+    SetPlayerRoutingBucket(this.clientID.toString(), bucket);
+  }
+
+  setMeta(key: string, value: unknown) {
+    this.session.meta[key] = value;
+  }
+
+  getMeta<T = unknown>(key: string): T | undefined {
+    return this.session.meta[key] as T | undefined;
+  }
+}
+
 @injectable()
 export class PlayerManager {
   /** Maps FiveM clientID → ServerPlayer */

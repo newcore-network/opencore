@@ -1,6 +1,6 @@
 import { container } from 'tsyringe';
-import { PlayerManager } from '../player.manager';
 import { emitPlayerSessionCreated } from '../lifecycle';
+import { PlayerManager } from '../services/player';
 
 export const playerSessionLoader = () => {
   const playerManager = container.resolve(PlayerManager);
@@ -9,7 +9,7 @@ export const playerSessionLoader = () => {
     const src = Number(source);
 
     const license = GetPlayerIdentifier(src.toString(), 0) ?? null;
-    const Player = playerManager.bind(src, license ?? `temp-${src}-${Date.now()}`);
+    playerManager.bind(src, license ?? `temp-${src}-${Date.now()}`);
 
     console.log(`1. Binding player session for client ${src} with license ${license}`);
 

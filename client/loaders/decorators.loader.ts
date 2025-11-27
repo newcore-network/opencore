@@ -7,7 +7,7 @@ import { getClientTickRegistry } from '../decorators/tick';
 
 const instanceCache = new Map<Function, any>();
 
-export const loadDecoradors = () => {
+export const loadDecorators = () => {
   const nuisRegistered = getNuiRegistry();
   const keysRegistered = getKeyRegistry();
   const netsRegistered = getNetRegistry();

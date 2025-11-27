@@ -1,5 +1,5 @@
 import { di } from './client-container';
-import { loadDecoradors } from './loaders/decorators.loader';
+import { loadDecorators } from './loaders/decorators.loader';
 import { playerClientLoader } from './player/player.loader';
 import { Spawner } from './services/spawn.service';
 
@@ -8,9 +8,8 @@ const bootServices = [Spawner] as const;
 /**
  * Basic setup for client, for configs, decorators, containers... etc
  */
-function setter() {
+function setSingletons() {
   di.registerSingleton(Spawner, Spawner);
-  loadDecoradors();
 }
 
 async function bootstraper() {
@@ -20,12 +19,13 @@ async function bootstraper() {
       await (instance as any).init();
     }
   }
-
-  // Loaders
-  playerClientLoader();
 }
 
 export const InitClient = async () => {
-  setter();
+  setSingletons();
+  loadDecorators();
   await bootstraper();
+
+  // Loaders
+  playerClientLoader();
 };

@@ -1,38 +1,109 @@
 import { di } from '../container';
+import { getBindingRegistry } from '../decorators/bind';
 import { getCommandRegistry } from '../decorators/command';
 import { getNetEventRegistry } from '../decorators/netEvent';
 import { getTickRegistry } from '../decorators/onTick';
+import { serverControllerRegistry } from '../decorators/serverController';
+import { PlayerManager } from '../services/player';
+
+const instanceCache = new Map<Function, any>();
 
 export const loadDecorators = () => {
+  const commands = getCommandRegistry();
+  const nets = getNetEventRegistry();
+  const ticks = getTickRegistry();
+  const binds = getBindingRegistry();
+  const playerManager = di.resolve(PlayerManager);
+
+  const getInstance = (target: Function) => {
+    let instance = instanceCache.get(target);
+    if (!instance) {
+      instance = di.resolve(target as any);
+      instanceCache.set(target, instance);
+    }
+    return instance;
+  };
+
+  for (const Controller of serverControllerRegistry) {
+    di.resolve(Controller);
+  }
+
+  for (const meta of binds) {
+    di.register(meta.token, { useClass: meta.useClass });
+  }
+
   // Commands
-  for (const meta of getCommandRegistry()) {
+  for (const meta of commands) {
+    const instance = getInstance(meta.target);
+    const method = (instance as any)[meta.methodName].bind(instance);
+
     RegisterCommand(
       meta.name,
-      (clientID: number, args: string[]) => {
-        const instance = di.resolve(meta.target);
-        const method = (instance as any)[meta.methodName].bind(instance);
-        method(clientID, args);
+      (src: string, args: string[], raw: string) => {
+        const clientID = Number(src);
+        const player = playerManager.getByClient(clientID);
+
+        if (!player) {
+          console.warn(
+            `[CORE] Command "${meta.name}" -> ${meta.methodName}: player ${clientID} no encontrado`,
+          );
+          return;
+        }
+
+        try {
+          method(player, args, raw);
+        } catch (error) {
+          console.error(`[CORE] Error en Command "${meta.name}" -> ${meta.methodName}:`, error);
+        }
       },
       false,
     );
   }
 
   // NetEvents
-  for (const meta of getNetEventRegistry()) {
+  for (const meta of nets) {
+    const instance = getInstance(meta.target);
+    const method = (instance as any)[meta.methodName].bind(instance);
+
     onNet(meta.eventName, (...args: any[]) => {
       const clientID = Number(global.source);
-      const instance = di.resolve(meta.target);
-      const method = (instance as any)[meta.methodName].bind(instance);
-      method(clientID, ...args);
+      const player = playerManager.getByClient(clientID);
+      if (!player) {
+        console.warn(
+          `[Newcore][NetEvent] No player found for clientID ${clientID} in event "${meta.eventName}".`,
+        );
+        return;
+      }
+      try {
+        method(player, ...args);
+      } catch (error) {
+        console.error(`[DEBUG] Error in "${meta.eventName}" -> ${meta.methodName}:`, error);
+      }
     });
   }
 
-  // Ticks
-  setTick(async () => {
-    for (const meta of getTickRegistry()) {
-      const instance = di.resolve(meta.target);
-      const method = (instance as any)[meta.methodName].bind(instance);
-      await method();
-    }
+  const tickHandlers = ticks.map((meta) => {
+    const instance = getInstance(meta.target);
+    return (instance as any)[meta.methodName].bind(instance);
   });
+
+  if (tickHandlers.length > 0) {
+    setTick(async () => {
+      for (const handler of tickHandlers) {
+        try {
+          await handler();
+        } catch (error) {
+          console.error('[Newcore][Tick] Error in tick handler:', error);
+        }
+      }
+    });
+  }
+
+  console.log(
+    `[DEBUG][Server] Decorators loaded:
+    ${binds.length} Bindings,
+    ${commands.length} Commands,
+    ${nets.length} NetEvents,
+    ${ticks.length} Ticks.`,
+  );
 };
