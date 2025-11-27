@@ -1,9 +1,9 @@
-import { ClassConstructor } from "../../shared/types/_system-types_";
+import { ClassConstructor } from '../../utils/types/_system-types_';
 
 export interface NetEventMeta {
-    eventName: string;
-    methodName: string;
-    target: ClassConstructor;
+  eventName: string;
+  methodName: string;
+  target: ClassConstructor;
 }
 
 const netEventRegistry: NetEventMeta[] = [];

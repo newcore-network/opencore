@@ -1,4 +1,4 @@
-import type { UUIDTypes } from "uuid";
+import type { UUIDTypes } from 'uuid';
 
 export type PlayerId = string | UUIDTypes;
 
@@ -52,7 +52,7 @@ export class ServerPlayer {
 
   getIdentifiers() {
     const ids: string[] = [];
-    for (let i = 0;; i++) {
+    for (let i = 0; ; i++) {
       const id = GetPlayerIdentifier(this.clientIDStr, i);
       if (!id) break;
       ids.push(id);
@@ -64,7 +64,7 @@ export class ServerPlayer {
     emitNet(eventName, this.clientID, ...args);
   }
 
-  kick(reason = "Kicked from server") {
+  kick(reason = 'Kicked from server') {
     DropPlayer(this.clientID.toString(), reason);
   }
 
@@ -80,4 +80,3 @@ export class ServerPlayer {
     return this.session.meta[key] as T | undefined;
   }
 }
-

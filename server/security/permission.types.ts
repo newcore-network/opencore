@@ -1,4 +1,3 @@
-
 /**
  * Generic permission key used across the framework.
  * Modules are free to define their own namespaces, e.g.:

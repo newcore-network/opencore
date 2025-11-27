@@ -1,6 +1,5 @@
-
-import { loadDecorators } from "./loader/decorators.loader";
-import { playerSessionLoader } from "./loader/playerSession.loader";
+import { loadDecorators } from './loader/decorators.loader';
+import { playerSessionLoader } from './loader/playerSession.loader';
 
 /**
  * Initializes the server-side core of the framework.

@@ -1,6 +1,6 @@
-import { injectable } from "tsyringe";
-import type { UUIDTypes } from "uuid";
-import { ServerPlayer, PlayerSession, PlayerId } from "./player";
+import { injectable } from 'tsyringe';
+import type { UUIDTypes } from 'uuid';
+import { ServerPlayer, PlayerSession, PlayerId } from './player';
 
 /**
  * Core-level player/session manager.
@@ -26,7 +26,7 @@ export class PlayerManager {
   bind(
     clientID: number,
     accountID: string | UUIDTypes,
-    identifiers?: PlayerSession["identifiers"]
+    identifiers?: PlayerSession['identifiers'],
   ): ServerPlayer {
     const session: PlayerSession = {
       clientID,
@@ -55,7 +55,6 @@ export class PlayerManager {
     this.playersByClient.delete(clientID);
   }
 
-
   /**
    * Returns the ServerPlayer associated with a clientID.
    *
@@ -64,7 +63,6 @@ export class PlayerManager {
   getByClient(clientID: number): ServerPlayer | null {
     return this.playersByClient.get(clientID) ?? null;
   }
-
 
   /**
    * Returns the domain-level playerId for a FiveM clientID.

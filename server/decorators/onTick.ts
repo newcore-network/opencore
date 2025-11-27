@@ -1,4 +1,4 @@
-import { ClassConstructor } from "../../shared/types/_system-types_";
+import { ClassConstructor } from '../../shared/types/_system-types_';
 
 export interface TickMeta {
   methodName: string;
@@ -6,7 +6,6 @@ export interface TickMeta {
 }
 
 const tickRegistry: TickMeta[] = [];
-
 
 /**
  * Decorator used to register a method as a Tick handler.
@@ -20,7 +19,6 @@ export function OnTick() {
     });
   };
 }
-
 
 export function getTickRegistry(): TickMeta[] {
   return tickRegistry;

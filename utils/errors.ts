@@ -1,4 +1,3 @@
-
 export class AppError extends Error {
   readonly code: ErrorCode;
   readonly details?: unknown;
@@ -13,12 +12,12 @@ export class AppError extends Error {
 }
 
 export type ErrorCode =
-  | "PLAYER_NOT_FOUND"
-  | "INSUFFICIENT_FUNDS"
-  | "VALIDATION_ERROR"
-  | "API_ERROR"
-  | "NETWORK_ERROR"
-  | "UNAUTHORIZED"
-  | "UNKNOWN";
+  | 'PLAYER_NOT_FOUND'
+  | 'INSUFFICIENT_FUNDS'
+  | 'VALIDATION_ERROR'
+  | 'API_ERROR'
+  | 'NETWORK_ERROR'
+  | 'UNAUTHORIZED'
+  | 'UNKNOWN';
 
-export type ErrorOrigin = "client" | "server" | "core" | "external";
+export type ErrorOrigin = 'client' | 'server' | 'core' | 'external';

@@ -1,10 +1,10 @@
-import { di } from "../client-container";
-import { getKeyRegistry } from "../decorators/key";
-import { getNuiRegistry } from "../decorators/nui";
-import { getClientTickRegistry } from "../decorators/tick";
+import { di } from '../client-container';
+import { getKeyRegistry } from '../decorators/key';
+import { getNuiRegistry } from '../decorators/nui';
+import { getClientTickRegistry } from '../decorators/tick';
 
 export const loadDecoradors = () => {
-      for (const meta of getNuiRegistry()) {
+  for (const meta of getNuiRegistry()) {
     const instance = di.resolve(meta.target);
     const method = instance[meta.methodName].bind(instance);
 
@@ -24,18 +24,9 @@ export const loadDecoradors = () => {
     const instance = di.resolve(meta.target);
     const method = instance[meta.methodName].bind(instance);
 
-    RegisterKeyMapping(
-      `+${meta.methodName}`,
-      meta.description,
-      "keyboard",
-      meta.key
-    );
+    RegisterKeyMapping(`+${meta.methodName}`, meta.description, 'keyboard', meta.key);
 
-    RegisterCommand(
-      `+${meta.methodName}`,
-      () => method(),
-      false
-    );
+    RegisterCommand(`+${meta.methodName}`, () => method(), false);
   }
 
   setTick(async () => {
@@ -45,4 +36,4 @@ export const loadDecoradors = () => {
       await method();
     }
   });
-}
+};

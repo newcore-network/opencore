@@ -1,6 +1,6 @@
-import { injectable } from "tsyringe";
-import type { PrincipalProvider } from "./principal-provider";
-import { PermissionKey } from "./permission.types";
+import { injectable } from 'tsyringe';
+import type { PrincipalProvider } from './principal-provider';
+import { PermissionKey } from './permission.types';
 
 /**
  * Centralized access control helper.

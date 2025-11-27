@@ -1,8 +1,8 @@
 export type Vector3 = {
-    x: number;
-    y: number;
-    z: number;
-}
+  x: number;
+  y: number;
+  z: number;
+};
 
 export class Vec3 {
   static create(x: number, y: number, z: number): Vector3 {

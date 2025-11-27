@@ -1,8 +1,4 @@
-
-import type {
-  NuiClientToUiEvents,
-  NuiUiToClientEvents,
-} from "@shared/events/nui-events";
+import type { NuiClientToUiEvents, NuiUiToClientEvents } from '@shared/events/nui-events';
 
 type NuiClientToUiEventName = keyof NuiClientToUiEvents & string;
 type NuiUiToClientEventName = keyof NuiUiToClientEvents & string;
@@ -14,7 +10,7 @@ class NuiManager {
 
   on<K extends NuiUiToClientEventName>(
     action: K,
-    handler: (data: NuiUiToClientEvents[K]) => void | Promise<void>
+    handler: (data: NuiUiToClientEvents[K]) => void | Promise<void>,
   ) {
     RegisterNuiCallbackType(action);
 

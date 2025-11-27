@@ -1,4 +1,4 @@
-import { Vector3 } from "@core/shared/vector3";
+import { Vector3 } from '@core/utils/vector3';
 
 interface PlayerSessionMeta {
   playerId?: string;
@@ -29,19 +29,7 @@ class Player {
       await new Promise((r) => setTimeout(r, 0));
     }
 
-    TaskPlayAnim(
-      this.ped,
-      dict,
-      name,
-      8.0,
-      -8.0,
-      duration,
-      1,
-      0.0,
-      false,
-      false,
-      false
-    );
+    TaskPlayAnim(this.ped, dict, name, 8.0, -8.0, duration, 1, 0.0, false, false, false);
   }
 
   setMeta(key: string, value: unknown) {

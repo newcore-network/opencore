@@ -1,4 +1,4 @@
-import { ClassConstructor } from "../../shared/types/_system-types_";
+import { ClassConstructor } from '../../shared/types/_system-types_';
 
 export interface CommandMeta {
   name: string;
