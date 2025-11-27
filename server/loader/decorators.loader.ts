@@ -7,6 +7,8 @@ import { getTickRegistry } from '../decorators/onTick';
 import { serverControllerRegistry } from '../decorators/serverController';
 import { PlayerManager } from '../services/player';
 import { handleCommandError } from '../error-handler';
+import { getCoreEventRegistry } from '../decorators/coreEvent';
+import { onCoreEvent } from '../bus/core-event-bus';
 
 const instanceCache = new Map<Function, any>();
 
@@ -15,6 +17,8 @@ export const loadDecorators = () => {
   const nets = getNetEventRegistry();
   const ticks = getTickRegistry();
   const binds = getBindingRegistry();
+  const coreEventRegistry = getCoreEventRegistry();
+
   const playerManager = di.resolve(PlayerManager);
 
   const getInstance = (target: Function) => {
@@ -84,6 +88,22 @@ export const loadDecorators = () => {
         method(player, ...args);
       } catch (error) {
         console.error(`[DEBUG] Error in "${meta.eventName}" -> ${meta.methodName}:`, error);
+      }
+    });
+  }
+
+  for (const meta of coreEventRegistry) {
+    const instance = di.resolve(meta.target);
+    const method = (instance as any)[meta.methodName].bind(instance);
+
+    onCoreEvent(meta.event as any, (payload: any) => {
+      try {
+        method(payload);
+      } catch (error) {
+        console.error(
+          `[CORE] Error in @OnCoreEvent(${meta.event}) "${meta.methodName}" of ${meta.target.name}:`,
+          error,
+        );
       }
     });
   }

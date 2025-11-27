@@ -6,7 +6,7 @@ export type playerID = string | UUIDTypes;
 
 interface PlayerSession {
   clientID: number;
-  accountID: playerID;
+  accountID?: playerID;
   identifiers?: {
     license?: string;
     steam?: string;
@@ -32,8 +32,8 @@ export class ServerPlayer {
     return this.session.clientID.toString();
   }
 
-  get accountID(): string {
-    return this.session.accountID.toString();
+  get accountID(): string | undefined {
+    return this.session.accountID?.toString();
   }
 
   get name(): string {
@@ -82,6 +82,10 @@ export class ServerPlayer {
   getMeta<T = unknown>(key: string): T | undefined {
     return this.session.meta[key] as T | undefined;
   }
+
+  linkAccount(accountID: playerID) {
+    this.session.accountID = accountID;
+  }
 }
 
 @injectable()
@@ -93,26 +97,25 @@ export class PlayerManager {
    * Usually called after a successful login flow in your auth module.
    *
    * @param clientID - FiveM player handle
-   * @param accountID - Domain player identifier (UUID/string)
    * @param identifiers - Optional external identifiers
    */
-  bind(
-    clientID: number,
-    accountID: string | UUIDTypes,
-    identifiers?: PlayerSession['identifiers'],
-  ): ServerPlayer {
+  bind(clientID: number, identifiers?: PlayerSession['identifiers']): ServerPlayer {
     const session: PlayerSession = {
       clientID,
-      accountID,
       identifiers,
       meta: {},
     };
 
     const player = new ServerPlayer(session);
-
     this.playersByClient.set(clientID, player);
 
     return player;
+  }
+
+  linkAccount(clientID: number, accountID: playerID) {
+    const player = this.playersByClient.get(clientID);
+    if (!player) return;
+    player.linkAccount(accountID);
   }
 
   /**

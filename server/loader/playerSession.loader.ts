@@ -1,28 +1,33 @@
 import { container } from 'tsyringe';
-import { emitPlayerSessionCreated } from '../lifecycle';
 import { PlayerManager } from '../services/player';
+import { emitCoreEvent } from '../bus/core-event-bus';
 
 export const playerSessionLoader = () => {
   const playerManager = container.resolve(PlayerManager);
 
   on('playerJoining', (source: string) => {
-    const src = Number(source);
+    const clientId = Number(source);
 
-    const license = GetPlayerIdentifier(src.toString(), 0) ?? null;
-    playerManager.bind(src, license ?? `temp-${src}-${Date.now()}`);
+    const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined;
 
-    console.log(`1. Binding player session for client ${src} with license ${license}`);
+    playerManager.bind(clientId, { license });
 
-    emitPlayerSessionCreated({
-      clientId: src,
-      license: license,
+    console.log(
+      `[CORE] Binding player session for client ${clientId} with license ${license ?? 'none'}`,
+    );
+
+    emitCoreEvent('core:playerSessionCreated', {
+      clientId,
+      license,
     });
   });
 
   on('playerDropped', () => {
-    const src = Number(global.source);
-    playerManager.unbindByClient(src);
-    emit('core:playerSessionDestroyed', src);
-    console.log(`Player session destroyed for client ${src}`);
+    const clientId = Number(global.source);
+    playerManager.unbindByClient(clientId);
+
+    emitCoreEvent('core:playerSessionDestroyed', { clientId });
+
+    console.log(`[CORE] Player session destroyed for client ${clientId}`);
   });
 };
