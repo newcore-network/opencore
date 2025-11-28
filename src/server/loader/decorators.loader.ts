@@ -15,13 +15,19 @@ import { AppError } from '../../utils'
 const instanceCache = new Map<Function, any>()
 
 export const loadDecorators = () => {
+  const binds = getBindingRegistry()
   const commands = getCommandRegistry()
   const nets = getNetEventRegistry()
   const ticks = getTickRegistry()
-  const binds = getBindingRegistry()
   const coreEventRegistry = getCoreEventRegistry()
 
-  const playerManager = di.resolve(PlayerManager)
+  for (const meta of binds) {
+    if (meta.scope === 'singleton') {
+      di.registerSingleton(meta.token, meta.useClass)
+    } else {
+      di.register(meta.token, { useClass: meta.useClass })
+    }
+  }
 
   const getInstance = (target: Function) => {
     let instance = instanceCache.get(target)
@@ -36,15 +42,8 @@ export const loadDecorators = () => {
     di.resolve(Controller)
   }
 
-  for (const meta of binds) {
-    if (meta.scope === 'singleton') {
-      di.registerSingleton(meta.token, meta.useClass)
-    } else {
-      di.register(meta.token, { useClass: meta.useClass })
-    }
-  }
-
   // Commands
+  const playerManager = di.resolve(PlayerManager)
   for (const meta of commands) {
     const instance = getInstance(meta.target)
     const method = (instance as any)[meta.methodName].bind(instance)
