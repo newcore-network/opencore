@@ -1,44 +1,44 @@
-import { Vector3 } from '@core/utils/vector3';
+import { Vector3 } from '@opencore/utils/vector3'
 
 interface PlayerSessionMeta {
-  playerId?: string;
-  [key: string]: unknown;
+  playerId?: string
+  [key: string]: unknown
 }
 
 class Player {
-  private meta: PlayerSessionMeta = {};
+  private meta: PlayerSessionMeta = {}
 
   get ped(): number {
-    return PlayerPedId();
+    return PlayerPedId()
   }
   get coords(): Vector3 {
-    const [x, y, z] = GetEntityCoords(this.ped, false);
-    return { x, y, z };
+    const [x, y, z] = GetEntityCoords(this.ped, false)
+    return { x, y, z }
   }
 
   setCoords(vector3: Vector3, heading?: number) {
-    SetEntityCoordsNoOffset(this.ped, vector3.x, vector3.y, vector3.z, false, false, false);
+    SetEntityCoordsNoOffset(this.ped, vector3.x, vector3.y, vector3.z, false, false, false)
     if (heading !== undefined) {
-      SetEntityHeading(this.ped, heading);
+      SetEntityHeading(this.ped, heading)
     }
   }
 
   async playAnimation(dict: string, name: string, duration = -1) {
-    RequestAnimDict(dict);
+    RequestAnimDict(dict)
     while (!HasAnimDictLoaded(dict)) {
-      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0))
     }
 
-    TaskPlayAnim(this.ped, dict, name, 8.0, -8.0, duration, 1, 0.0, false, false, false);
+    TaskPlayAnim(this.ped, dict, name, 8.0, -8.0, duration, 1, 0.0, false, false, false)
   }
 
   setMeta(key: string, value: unknown) {
-    this.meta[key] = value;
+    this.meta[key] = value
   }
 
   getMeta<T = unknown>(key: string): T | undefined {
-    return this.meta[key] as T | undefined;
+    return this.meta[key] as T | undefined
   }
 }
 
-export const ClientPlayer = new Player();
+export const ClientPlayer = new Player()

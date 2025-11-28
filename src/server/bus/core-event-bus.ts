@@ -1,4 +1,4 @@
-import { CoreEventMap } from '../types/core-events';
+import type { CoreEventMap } from "../types/core-events";
 
 type CoreEventName = keyof CoreEventMap;
 type CoreEventHandler<E extends CoreEventName> = (payload: CoreEventMap[E]) => void;

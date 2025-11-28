@@ -1,14 +1,16 @@
-import { AppError } from '@core/utils/errors';
-import { di } from '../container';
-import { getBindingRegistry } from '../decorators/bind';
-import { getCommandRegistry } from '../decorators/command';
-import { getNetEventRegistry } from '../decorators/netEvent';
-import { getTickRegistry } from '../decorators/onTick';
-import { serverControllerRegistry } from '../decorators/serverController';
-import { PlayerManager } from '../services/player';
-import { handleCommandError } from '../error-handler';
-import { getCoreEventRegistry } from '../decorators/coreEvent';
-import { onCoreEvent } from '../bus/core-event-bus';
+import { di } from "../container";
+import {
+  getBindingRegistry,
+  getCommandRegistry,
+  getNetEventRegistry,
+  getTickRegistry,
+} from "../decorators";
+import { serverControllerRegistry } from "../decorators/serverController";
+import { PlayerManager } from "../services/player";
+import { handleCommandError } from "../error-handler";
+import { getCoreEventRegistry } from "../decorators/coreEvent";
+import { onCoreEvent } from "../bus/core-event-bus";
+import { AppError } from "@opencore/utils/errors";
 
 const instanceCache = new Map<Function, any>();
 
@@ -51,9 +53,9 @@ export const loadDecorators = () => {
 
         if (!player) {
           const error = new AppError(
-            'PLAYER_NOT_FOUND',
+            "PLAYER_NOT_FOUND",
             `Jugador ${clientID} no encontrado`,
-            'core',
+            "core",
             { command: meta.name, handler: meta.methodName },
           );
           handleCommandError(error, meta, clientID);
@@ -119,7 +121,7 @@ export const loadDecorators = () => {
         try {
           await handler();
         } catch (error) {
-          console.error('[Newcore][Tick] Error in tick handler:', error);
+          console.error("[Newcore][Tick] Error in tick handler:", error);
         }
       }
     });

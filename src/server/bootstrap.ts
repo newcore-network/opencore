@@ -1,8 +1,8 @@
-import { ApiClient } from './api/out/api.client';
-import { di } from './container';
-import { loadDecorators } from './loader/decorators.loader';
-import { playerSessionLoader } from './loader/playerSession.loader';
-import { PlayerManager } from './services/player';
+import { ApiClient } from "./api/out/api.client";
+import { di } from "./container";
+import { loadDecorators } from "./loader/decorators.loader";
+import { playerSessionLoader } from "./loader/playerSession.loader";
+import { PlayerManager } from "./services/player";
 
 function setter() {
   di.registerSingleton(ApiClient, ApiClient);

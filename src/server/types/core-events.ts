@@ -8,6 +8,6 @@ export interface PlayerSessionDestroyedPayload {
 }
 
 export type CoreEventMap = {
-  'core:playerSessionCreated': PlayerSessionCreatedPayload;
-  'core:playerSessionDestroyed': PlayerSessionDestroyedPayload;
+  "core:playerSessionCreated": PlayerSessionCreatedPayload;
+  "core:playerSessionDestroyed": PlayerSessionDestroyedPayload;
 };

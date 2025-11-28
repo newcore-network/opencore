@@ -1,5 +1,5 @@
-import { ClassConstructor } from '@core/utils/types/_system-types_';
-import { CoreEventMap } from '../types/core-events';
+import type { CoreEventMap } from "../types/core-events";
+import type { ClassConstructor } from "../../system/types";
 
 type CoreEventName = keyof CoreEventMap;
 

@@ -1,6 +1,6 @@
-import { injectable } from 'tsyringe';
-import type { UUIDTypes } from 'uuid';
-import { Vector3 } from '@core/utils/vector3';
+import { Vector3 } from "@opencore/utils/vector3";
+import { injectable } from "tsyringe";
+import type { UUIDTypes } from "uuid";
 
 export type playerID = string | UUIDTypes;
 
@@ -73,13 +73,13 @@ export class ServerPlayer {
 
   /**
    * Teleports the player using the core spawner system. Client-side.
-   * @param vector 
+   * @param vector
    */
   teleportClient(vector: Vector3) {
-    this.emit('core:spawner:teleport', vector);
+    this.emit("core:spawner:teleport", vector);
   }
 
-  kick(reason = 'Kicked from server') {
+  kick(reason = "Kicked from server") {
     DropPlayer(this.clientID.toString(), reason);
   }
 
@@ -111,7 +111,7 @@ export class PlayerManager {
    * @param clientID - FiveM player handle
    * @param identifiers - Optional external identifiers
    */
-  bind(clientID: number, identifiers?: PlayerSession['identifiers']): ServerPlayer {
+  bind(clientID: number, identifiers?: PlayerSession["identifiers"]): ServerPlayer {
     const session: PlayerSession = {
       clientID,
       identifiers,

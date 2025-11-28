@@ -1,5 +1,5 @@
-import { ClassConstructor } from '@core/utils/types/_system-types_';
-import { injectable } from 'tsyringe';
+import { injectable } from "tsyringe";
+import type { ClassConstructor } from "../../system/types";
 
 interface BindingMeta {
   token: ClassConstructor;

@@ -1,4 +1,4 @@
-import { ClassConstructor } from '../../utils/types/_system-types_';
+import type { ClassConstructor } from "../../system/types";
 
 export interface TickMeta {
   methodName: string;

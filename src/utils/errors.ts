@@ -1,15 +1,15 @@
 export type ErrorCode =
-  | 'PLAYER_NOT_FOUND'
-  | 'INSUFFICIENT_FUNDS'
-  | 'VALIDATION_ERROR'
-  | 'API_ERROR'
-  | 'NETWORK_ERROR'
-  | 'UNAUTHORIZED'
-  | 'PERMISSION_DENIED'
-  | 'NOT_IMPLEMENTED'
-  | 'UNKNOWN';
+  | "PLAYER_NOT_FOUND"
+  | "INSUFFICIENT_FUNDS"
+  | "VALIDATION_ERROR"
+  | "API_ERROR"
+  | "NETWORK_ERROR"
+  | "UNAUTHORIZED"
+  | "PERMISSION_DENIED"
+  | "NOT_IMPLEMENTED"
+  | "UNKNOWN";
 
-export type ErrorOrigin = 'client' | 'server' | 'core' | 'external';
+export type ErrorOrigin = "client" | "server" | "core" | "external";
 
 export class AppError extends Error {
   readonly code: ErrorCode;

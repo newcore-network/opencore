@@ -1,4 +1,4 @@
-import { RoleLike } from './permission.types';
+import type { RoleLike } from "./permission.types";
 
 /**
  * Abstraction used by the security layer to obtain the role/permissions

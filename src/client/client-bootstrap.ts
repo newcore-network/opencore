@@ -1,7 +1,7 @@
-import { di } from './client-container';
-import { loadDecorators } from './loaders/decorators.loader';
-import { playerClientLoader } from './player/player.loader';
-import { Spawner } from './services/spawn.service';
+import { di } from "./client-container";
+import { loadDecorators } from "./loaders/decorators.loader";
+import { playerClientLoader } from "./player/player.loader";
+import { Spawner } from "./services/spawn.service";
 
 const bootServices = [Spawner] as const;
 
@@ -15,7 +15,7 @@ function setSingletons() {
 async function bootstraper() {
   for (const Service of bootServices) {
     const instance = di.resolve(Service);
-    if (typeof (instance as any).init === 'function') {
+    if (typeof (instance as any).init === "function") {
       await (instance as any).init();
     }
   }

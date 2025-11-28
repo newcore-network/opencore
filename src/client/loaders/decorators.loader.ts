@@ -1,9 +1,9 @@
-import { di } from '../client-container';
-import { clientControllerRegistry } from '../decorators/clientController';
-import { getKeyRegistry } from '../decorators/key';
-import { getNuiRegistry } from '../decorators/nui';
-import { getNetRegistry } from '../decorators/onNet';
-import { getClientTickRegistry } from '../decorators/tick';
+import { di } from "../client-container";
+import { clientControllerRegistry } from "../decorators/clientController";
+import { getKeyRegistry } from "../decorators/key";
+import { getNuiRegistry } from "../decorators/nui";
+import { getNetRegistry } from "../decorators/onNet";
+import { getClientTickRegistry } from "../decorators/tick";
 
 const instanceCache = new Map<Function, any>();
 
@@ -37,7 +37,7 @@ export const loadDecorators = () => {
     const instance = getInstance(meta.target);
     const method = instance[meta.methodName].bind(instance);
 
-    RegisterKeyMapping(`+${meta.methodName}`, meta.description, 'keyboard', meta.key);
+    RegisterKeyMapping(`+${meta.methodName}`, meta.description, "keyboard", meta.key);
     RegisterCommand(`+${meta.methodName}`, () => method(), false);
   }
 

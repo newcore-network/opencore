@@ -1,7 +1,7 @@
-import { injectable } from 'tsyringe';
-import type { PrincipalProvider } from './principal-provider';
-import { PermissionKey } from './permission.types';
-import { AppError } from '@core/utils/errors';
+import { injectable } from "tsyringe";
+import type { PrincipalProvider } from "./principal-provider";
+import { PermissionKey } from "./permission.types";
+import { AppError } from "@opencore/utils/errors";
 
 /**
  * Centralized access control helper.
@@ -28,7 +28,7 @@ export class AccessControlService {
   async requirePermission(clientID: number, permission: PermissionKey): Promise<void> {
     const has = await this.hasPermission(clientID, permission);
     if (!has) {
-      throw new AppError('PERMISSION_DENIED', `Missing permission: ${permission}`, 'core', {
+      throw new AppError("PERMISSION_DENIED", `Missing permission: ${permission}`, "core", {
         clientID,
         permission,
       });
