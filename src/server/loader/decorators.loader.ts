@@ -37,7 +37,11 @@ export const loadDecorators = () => {
   }
 
   for (const meta of binds) {
-    di.register(meta.token, { useClass: meta.useClass })
+    if (meta.scope === 'singleton') {
+      di.registerSingleton(meta.token, meta.useClass)
+    } else {
+      di.register(meta.token, { useClass: meta.useClass })
+    }
   }
 
   // Commands

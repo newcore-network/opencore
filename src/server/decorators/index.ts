@@ -1,4 +1,5 @@
 export * from './bind'
+export * from './utils'
 export * from './command'
 export * from './coreEvent'
 export * from './netEvent'
