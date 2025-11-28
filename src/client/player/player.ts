@@ -1,4 +1,4 @@
-import type { Vector3 } from '@opencore/utils/vector3'
+import type { Vector3 } from 'utils'
 
 interface PlayerSessionMeta {
   playerId?: string

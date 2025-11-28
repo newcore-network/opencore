@@ -1,6 +1,6 @@
-import { ApiConfig } from '@opencore/server/config/api.config'
+import { ApiConfig } from 'server/config/api.config'
 import { AppError, ErrorCode } from '../../../utils/errors'
-import { Bind } from '@opencore/server/decorators'
+import { Bind } from 'server/decorators'
 @Bind()
 export class ApiClient {
   private readonly baseUrl: string

@@ -1,4 +1,4 @@
-import { Vec3 } from '@opencore/utils/vector3'
+import { Vec3 } from 'utils'
 import { ClientPlayer } from './player'
 
 export const playerClientLoader = () => {

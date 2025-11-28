@@ -10,7 +10,7 @@ import { PlayerManager } from '../services/player'
 import { handleCommandError } from '../error-handler'
 import { getCoreEventRegistry } from '../decorators/coreEvent'
 import { onCoreEvent } from '../bus/core-event-bus'
-import { AppError } from '@opencore/utils/errors'
+import { AppError } from 'utils'
 
 const instanceCache = new Map<Function, any>()
 

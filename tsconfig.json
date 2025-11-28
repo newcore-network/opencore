@@ -16,12 +16,6 @@
     "types": ["@citizenfx/server", "@citizenfx/client"],
 
     "baseUrl": "./src",
-    "paths": {
-      "@opencore/server/*": ["server/*"],
-      "@opencore/client/*": ["client/*"],
-      "@opencore/utils/*": ["utils/*"],
-      "@opencore/system/*": ["system/*"]
-    },
 
     "noEmit": true
   },

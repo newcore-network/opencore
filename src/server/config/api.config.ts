@@ -1,4 +1,4 @@
-import { Bind } from '@opencore/server/decorators'
+import { Bind } from 'server/decorators'
 
 export interface ApiModuleConfig {
   baseUrl: string
