@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { OnNet } from '../decorators/onNet'
-import type { Vector3 } from 'utils'
+import { Vector3 } from '../../utils'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 

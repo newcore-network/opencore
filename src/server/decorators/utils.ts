@@ -1,4 +1,4 @@
-import type { ClassConstructor } from 'system/types'
+import type { ClassConstructor } from '../../system/types'
 import { Bind } from './bind'
 
 type ServiceScope = 'singleton' | 'transient'

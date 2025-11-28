@@ -1,4 +1,4 @@
-import { Bind } from 'server/decorators'
+import { Bind } from '../decorators'
 
 export interface ApiModuleConfig {
   baseUrl: string

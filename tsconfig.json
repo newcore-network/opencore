@@ -14,9 +14,6 @@
     "emitDecoratorMetadata": true,
 
     "types": ["@citizenfx/server", "@citizenfx/client"],
-
-    "baseUrl": "./src",
-
     "noEmit": true
   },
   "include": ["src"],

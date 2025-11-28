@@ -1,4 +1,4 @@
-import { Vec3 } from 'utils'
+import { Vec3 } from '../../utils'
 import { ClientPlayer } from './player'
 
 export const playerClientLoader = () => {
