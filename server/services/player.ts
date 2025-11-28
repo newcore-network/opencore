@@ -54,6 +54,10 @@ export class ServerPlayer {
     emitNet(eventName, this.clientID, ...args);
   }
 
+  /**
+   * Teleports the player to a given position. Server-side.
+   * @param vector x, y, z
+   */
   teleport(vector: Vector3) {
     SetEntityCoords(
       GetPlayerPed(this.clientIDStr),
@@ -65,6 +69,14 @@ export class ServerPlayer {
       false,
       true,
     );
+  }
+
+  /**
+   * Teleports the player using the core spawner system. Client-side.
+   * @param vector 
+   */
+  teleportClient(vector: Vector3) {
+    this.emit('core:spawner:teleport', vector);
   }
 
   kick(reason = 'Kicked from server') {
