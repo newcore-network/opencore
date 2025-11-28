@@ -1,10 +1,9 @@
-import { Vector3 } from '@opencore/utils/vector3'
 import { injectable } from 'tsyringe'
 import type { UUIDTypes } from 'uuid'
-
+import { Player } from '../entities/player'
 export type playerID = string | UUIDTypes
 
-interface PlayerSession {
+export interface PlayerSession {
   clientID: number
   accountID?: playerID
   identifiers?: {
@@ -15,95 +14,10 @@ interface PlayerSession {
   meta: Record<string, unknown>
 }
 
-/**
- * Core-level representation of a connected player on the server.
- *
- * This class wraps FiveM natives and session information, but it
- * does NOT contain gameplay logic (no money, jobs, inventory, etc.).
- * Domain logic should live in your modules' services/models.
- */
-export class ServerPlayer {
-  constructor(private readonly session: PlayerSession) {}
-
-  get clientID(): number {
-    return this.session.clientID
-  }
-  get clientIDStr(): string {
-    return this.session.clientID.toString()
-  }
-
-  get accountID(): string | undefined {
-    return this.session.accountID?.toString()
-  }
-
-  get name(): string {
-    return GetPlayerName(this.clientIDStr)
-  }
-
-  getIdentifiers() {
-    const ids: string[] = []
-    for (let i = 0; ; i++) {
-      const id = GetPlayerIdentifier(this.clientIDStr, i)
-      if (!id) break
-      ids.push(id)
-    }
-    return ids
-  }
-
-  emit(eventName: string, ...args: any[]) {
-    emitNet(eventName, this.clientID, ...args)
-  }
-
-  /**
-   * Teleports the player to a given position. Server-side.
-   * @param vector x, y, z
-   */
-  teleport(vector: Vector3) {
-    SetEntityCoords(
-      GetPlayerPed(this.clientIDStr),
-      vector.x,
-      vector.y,
-      vector.z,
-      false,
-      false,
-      false,
-      true,
-    )
-  }
-
-  /**
-   * Teleports the player using the core spawner system. Client-side.
-   * @param vector
-   */
-  teleportClient(vector: Vector3) {
-    this.emit('core:spawner:teleport', vector)
-  }
-
-  kick(reason = 'Kicked from server') {
-    DropPlayer(this.clientID.toString(), reason)
-  }
-
-  setRoutingBucket(bucket: number) {
-    SetPlayerRoutingBucket(this.clientID.toString(), bucket)
-  }
-
-  setMeta(key: string, value: unknown) {
-    this.session.meta[key] = value
-  }
-
-  getMeta<T = unknown>(key: string): T | undefined {
-    return this.session.meta[key] as T | undefined
-  }
-
-  linkAccount(accountID: playerID) {
-    this.session.accountID = accountID
-  }
-}
-
 @injectable()
 export class PlayerManager {
   /** Maps FiveM clientID → ServerPlayer */
-  private playersByClient = new Map<number, ServerPlayer>()
+  private playersByClient = new Map<number, Player>()
   /**
    * Creates (or rebinds) a ServerPlayer for a given clientID and playerId.
    * Usually called after a successful login flow in your auth module.
@@ -111,14 +25,14 @@ export class PlayerManager {
    * @param clientID - FiveM player handle
    * @param identifiers - Optional external identifiers
    */
-  bind(clientID: number, identifiers?: PlayerSession['identifiers']): ServerPlayer {
+  bind(clientID: number, identifiers?: PlayerSession['identifiers']): Player {
     const session: PlayerSession = {
       clientID,
       identifiers,
       meta: {},
     }
 
-    const player = new ServerPlayer(session)
+    const player = new Player(session)
     this.playersByClient.set(clientID, player)
 
     return player
@@ -148,7 +62,7 @@ export class PlayerManager {
    *
    * @param clientID - FiveM player handle
    */
-  getByClient(clientID: number): ServerPlayer | null {
+  getByClient(clientID: number): Player | null {
     return this.playersByClient.get(clientID) ?? null
   }
 
@@ -191,7 +105,7 @@ export class PlayerManager {
   /**
    * Returns all currently tracked players.
    */
-  getAll(): ServerPlayer[] {
+  getAll(): Player[] {
     return Array.from(this.playersByClient.values())
   }
 }

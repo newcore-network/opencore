@@ -3,7 +3,7 @@ import { injectable } from 'tsyringe'
 
 export const clientControllerRegistry: ClassConstructor[] = []
 
-export function ClientController() {
+export function Controller() {
   return function (target: any) {
     injectable()(target)
 

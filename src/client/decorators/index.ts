@@ -1,4 +1,4 @@
-export * from './clientController'
+export * from './controller'
 export * from './key'
 export * from './nui'
 export * from './onNet'

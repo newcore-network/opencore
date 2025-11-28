@@ -5,7 +5,7 @@ import {
   getNetEventRegistry,
   getTickRegistry,
 } from '../decorators'
-import { serverControllerRegistry } from '../decorators/serverController'
+import { serverControllerRegistry } from '../decorators/controller'
 import { PlayerManager } from '../services/player'
 import { handleCommandError } from '../error-handler'
 import { getCoreEventRegistry } from '../decorators/coreEvent'

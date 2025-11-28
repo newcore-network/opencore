@@ -1,5 +1,5 @@
 import { di } from '../client-container'
-import { clientControllerRegistry } from '../decorators/clientController'
+import { clientControllerRegistry } from '../decorators/controller'
 import { getKeyRegistry } from '../decorators/key'
 import { getNuiRegistry } from '../decorators/nui'
 import { getNetRegistry } from '../decorators/onNet'
