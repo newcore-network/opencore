@@ -1,6 +1,6 @@
-import "reflect-metadata";
+import 'reflect-metadata'
 
-export * from "./utils";
+export * from './utils'
 
-export * as Server from "./server";
-export * as Client from "./client";
+export * as Server from './server'
+export * as Client from './client'

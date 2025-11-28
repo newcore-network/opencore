@@ -1,13 +1,13 @@
 export interface PlayerSessionCreatedPayload {
-  clientId: number;
-  license: string;
+  clientId: number
+  license: string
 }
 
 export interface PlayerSessionDestroyedPayload {
-  clientId: number;
+  clientId: number
 }
 
 export type CoreEventMap = {
-  "core:playerSessionCreated": PlayerSessionCreatedPayload;
-  "core:playerSessionDestroyed": PlayerSessionDestroyedPayload;
-};
+  'core:playerSessionCreated': PlayerSessionCreatedPayload
+  'core:playerSessionDestroyed': PlayerSessionDestroyedPayload
+}

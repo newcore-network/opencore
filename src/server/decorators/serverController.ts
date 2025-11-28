@@ -1,12 +1,12 @@
-import type { ClassConstructor } from "../../system/types";
-import { injectable } from "tsyringe";
+import type { ClassConstructor } from '../../system/types'
+import { injectable } from 'tsyringe'
 
-export const serverControllerRegistry: ClassConstructor[] = [];
+export const serverControllerRegistry: ClassConstructor[] = []
 
 export function ServerController() {
   return function (target: any) {
-    injectable()(target);
+    injectable()(target)
 
-    serverControllerRegistry.push(target as ClassConstructor);
-  };
+    serverControllerRegistry.push(target as ClassConstructor)
+  }
 }

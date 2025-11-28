@@ -1,11 +1,11 @@
-import type { ClassConstructor } from "../../system/types";
+import type { ClassConstructor } from '../../system/types'
 
 export interface NetEventMeta {
-  eventName: string;
-  methodName: string;
-  target: ClassConstructor;
+  eventName: string
+  methodName: string
+  target: ClassConstructor
 }
-const netEventRegistry: NetEventMeta[] = [];
+const netEventRegistry: NetEventMeta[] = []
 
 /**
  * Decorator used to register a server-side NetEvent handler.
@@ -43,9 +43,9 @@ export function OnNet(eventName: string) {
       eventName,
       methodName: propertyKey,
       target: target.constructor as ClassConstructor,
-    });
-  };
+    })
+  }
 }
 export function getNetEventRegistry(): NetEventMeta[] {
-  return netEventRegistry;
+  return netEventRegistry
 }

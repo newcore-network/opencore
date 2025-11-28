@@ -1,18 +1,18 @@
-import { Vector3 } from "@opencore/utils/vector3";
-import { injectable } from "tsyringe";
-import type { UUIDTypes } from "uuid";
+import { Vector3 } from '@opencore/utils/vector3'
+import { injectable } from 'tsyringe'
+import type { UUIDTypes } from 'uuid'
 
-export type playerID = string | UUIDTypes;
+export type playerID = string | UUIDTypes
 
 interface PlayerSession {
-  clientID: number;
-  accountID?: playerID;
+  clientID: number
+  accountID?: playerID
   identifiers?: {
-    license?: string;
-    steam?: string;
-    discord?: string;
-  };
-  meta: Record<string, unknown>;
+    license?: string
+    steam?: string
+    discord?: string
+  }
+  meta: Record<string, unknown>
 }
 
 /**
@@ -26,32 +26,32 @@ export class ServerPlayer {
   constructor(private readonly session: PlayerSession) {}
 
   get clientID(): number {
-    return this.session.clientID;
+    return this.session.clientID
   }
   get clientIDStr(): string {
-    return this.session.clientID.toString();
+    return this.session.clientID.toString()
   }
 
   get accountID(): string | undefined {
-    return this.session.accountID?.toString();
+    return this.session.accountID?.toString()
   }
 
   get name(): string {
-    return GetPlayerName(this.clientIDStr);
+    return GetPlayerName(this.clientIDStr)
   }
 
   getIdentifiers() {
-    const ids: string[] = [];
+    const ids: string[] = []
     for (let i = 0; ; i++) {
-      const id = GetPlayerIdentifier(this.clientIDStr, i);
-      if (!id) break;
-      ids.push(id);
+      const id = GetPlayerIdentifier(this.clientIDStr, i)
+      if (!id) break
+      ids.push(id)
     }
-    return ids;
+    return ids
   }
 
   emit(eventName: string, ...args: any[]) {
-    emitNet(eventName, this.clientID, ...args);
+    emitNet(eventName, this.clientID, ...args)
   }
 
   /**
@@ -68,7 +68,7 @@ export class ServerPlayer {
       false,
       false,
       true,
-    );
+    )
   }
 
   /**
@@ -76,34 +76,34 @@ export class ServerPlayer {
    * @param vector
    */
   teleportClient(vector: Vector3) {
-    this.emit("core:spawner:teleport", vector);
+    this.emit('core:spawner:teleport', vector)
   }
 
-  kick(reason = "Kicked from server") {
-    DropPlayer(this.clientID.toString(), reason);
+  kick(reason = 'Kicked from server') {
+    DropPlayer(this.clientID.toString(), reason)
   }
 
   setRoutingBucket(bucket: number) {
-    SetPlayerRoutingBucket(this.clientID.toString(), bucket);
+    SetPlayerRoutingBucket(this.clientID.toString(), bucket)
   }
 
   setMeta(key: string, value: unknown) {
-    this.session.meta[key] = value;
+    this.session.meta[key] = value
   }
 
   getMeta<T = unknown>(key: string): T | undefined {
-    return this.session.meta[key] as T | undefined;
+    return this.session.meta[key] as T | undefined
   }
 
   linkAccount(accountID: playerID) {
-    this.session.accountID = accountID;
+    this.session.accountID = accountID
   }
 }
 
 @injectable()
 export class PlayerManager {
   /** Maps FiveM clientID → ServerPlayer */
-  private playersByClient = new Map<number, ServerPlayer>();
+  private playersByClient = new Map<number, ServerPlayer>()
   /**
    * Creates (or rebinds) a ServerPlayer for a given clientID and playerId.
    * Usually called after a successful login flow in your auth module.
@@ -111,23 +111,23 @@ export class PlayerManager {
    * @param clientID - FiveM player handle
    * @param identifiers - Optional external identifiers
    */
-  bind(clientID: number, identifiers?: PlayerSession["identifiers"]): ServerPlayer {
+  bind(clientID: number, identifiers?: PlayerSession['identifiers']): ServerPlayer {
     const session: PlayerSession = {
       clientID,
       identifiers,
       meta: {},
-    };
+    }
 
-    const player = new ServerPlayer(session);
-    this.playersByClient.set(clientID, player);
+    const player = new ServerPlayer(session)
+    this.playersByClient.set(clientID, player)
 
-    return player;
+    return player
   }
 
   linkAccount(clientID: number, accountID: playerID) {
-    const player = this.playersByClient.get(clientID);
-    if (!player) return;
-    player.linkAccount(accountID);
+    const player = this.playersByClient.get(clientID)
+    if (!player) return
+    player.linkAccount(accountID)
   }
 
   /**
@@ -137,10 +137,10 @@ export class PlayerManager {
    * @param clientID - FiveM player handle
    */
   unbindByClient(clientID: number) {
-    const player = this.playersByClient.get(clientID);
-    if (!player) return;
+    const player = this.playersByClient.get(clientID)
+    if (!player) return
 
-    this.playersByClient.delete(clientID);
+    this.playersByClient.delete(clientID)
   }
 
   /**
@@ -149,7 +149,7 @@ export class PlayerManager {
    * @param clientID - FiveM player handle
    */
   getByClient(clientID: number): ServerPlayer | null {
-    return this.playersByClient.get(clientID) ?? null;
+    return this.playersByClient.get(clientID) ?? null
   }
 
   /**
@@ -158,8 +158,8 @@ export class PlayerManager {
    * @param clientID - FiveM player handle
    */
   getPlayerId(clientID: number): string | null {
-    const player = this.playersByClient.get(clientID);
-    return player?.accountID ?? null;
+    const player = this.playersByClient.get(clientID)
+    return player?.accountID ?? null
   }
 
   /**
@@ -171,10 +171,10 @@ export class PlayerManager {
    * @param value - Metadata value
    */
   setMeta(clientID: number, key: string, value: unknown) {
-    const player = this.playersByClient.get(clientID);
-    if (!player) return;
+    const player = this.playersByClient.get(clientID)
+    if (!player) return
 
-    player.setMeta(key, value);
+    player.setMeta(key, value)
   }
 
   /**
@@ -184,14 +184,14 @@ export class PlayerManager {
    * @param key - Metadata key
    */
   getMeta<T = unknown>(clientID: number, key: string): T | undefined {
-    const player = this.playersByClient.get(clientID);
-    return player?.getMeta<T>(key);
+    const player = this.playersByClient.get(clientID)
+    return player?.getMeta<T>(key)
   }
 
   /**
    * Returns all currently tracked players.
    */
   getAll(): ServerPlayer[] {
-    return Array.from(this.playersByClient.values());
+    return Array.from(this.playersByClient.values())
   }
 }

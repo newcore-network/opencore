@@ -6,11 +6,18 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "watch": "tsc -p tsconfig.build.json --watch",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write ."
   },
-  "keywords": ["framework", "opencore", "fivem", "typescript", "roleplay"],
+  "keywords": [
+    "framework",
+    "opencore",
+    "fivem",
+    "typescript",
+    "roleplay"
+  ],
   "author": "OpenCore Team",
   "license": "MIT",
   "packageManager": "pnpm@10.13.1",

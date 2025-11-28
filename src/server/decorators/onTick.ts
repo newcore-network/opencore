@@ -1,11 +1,11 @@
-import type { ClassConstructor } from "../../system/types";
+import type { ClassConstructor } from '../../system/types'
 
 export interface TickMeta {
-  methodName: string;
-  target: ClassConstructor;
+  methodName: string
+  target: ClassConstructor
 }
 
-const tickRegistry: TickMeta[] = [];
+const tickRegistry: TickMeta[] = []
 
 /**
  * Decorator used to register a method as a Tick handler.
@@ -16,10 +16,10 @@ export function OnTick() {
     tickRegistry.push({
       methodName: propertyKey,
       target: target.constructor as ClassConstructor,
-    });
-  };
+    })
+  }
 }
 
 export function getTickRegistry(): TickMeta[] {
-  return tickRegistry;
+  return tickRegistry
 }

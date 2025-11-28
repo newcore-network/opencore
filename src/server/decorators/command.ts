@@ -1,12 +1,12 @@
-import type { ClassConstructor } from "../../system/types";
+import type { ClassConstructor } from '../../system/types'
 
 export interface CommandMeta {
-  name: string;
-  methodName: string;
-  target: ClassConstructor;
+  name: string
+  methodName: string
+  target: ClassConstructor
 }
 
-const commandRegistry: CommandMeta[] = [];
+const commandRegistry: CommandMeta[] = []
 
 /**
  * Decorator used to mark a controller method as a command.
@@ -20,10 +20,10 @@ export function Command(name: string) {
       name,
       methodName: propertyKey,
       target: target.constructor as ClassConstructor,
-    });
-  };
+    })
+  }
 }
 
 export function getCommandRegistry(): CommandMeta[] {
-  return commandRegistry;
+  return commandRegistry
 }

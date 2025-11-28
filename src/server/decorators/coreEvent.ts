@@ -1,18 +1,18 @@
-import type { CoreEventMap } from "../types/core-events";
-import type { ClassConstructor } from "../../system/types";
+import type { CoreEventMap } from '../types/core-events'
+import type { ClassConstructor } from '../../system/types'
 
-type CoreEventName = keyof CoreEventMap;
+type CoreEventName = keyof CoreEventMap
 
 export interface CoreEventMeta {
-  event: CoreEventName;
-  methodName: string;
-  target: ClassConstructor;
+  event: CoreEventName
+  methodName: string
+  target: ClassConstructor
 }
 
-const coreEventRegistry: CoreEventMeta[] = [];
+const coreEventRegistry: CoreEventMeta[] = []
 
 export function getCoreEventRegistry() {
-  return coreEventRegistry;
+  return coreEventRegistry
 }
 
 export function OnCoreEvent<E extends CoreEventName>(event: E) {
@@ -21,6 +21,6 @@ export function OnCoreEvent<E extends CoreEventName>(event: E) {
       event,
       methodName: propertyKey,
       target: target.constructor as ClassConstructor,
-    });
-  };
+    })
+  }
 }

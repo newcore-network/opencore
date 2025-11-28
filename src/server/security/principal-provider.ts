@@ -1,4 +1,4 @@
-import type { RoleLike } from "./permission.types";
+import type { RoleLike } from './permission.types'
 
 /**
  * Abstraction used by the security layer to obtain the role/permissions
@@ -7,5 +7,5 @@ import type { RoleLike } from "./permission.types";
  * Implemented by modules (e.g. account module) and wired via DI.
  */
 export interface PrincipalProvider {
-  getRoleForClient(clientID: number): Promise<RoleLike | null>;
+  getRoleForClient(clientID: number): Promise<RoleLike | null>
 }

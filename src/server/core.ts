@@ -1,10 +1,17 @@
-import { initServerCore } from "./bootstrap";
+import { ApiClient } from './api/out/api.client'
+import { initServerCore } from './bootstrap'
+import { di } from './container'
+import { PlayerManager } from './services/player'
 
 export async function init() {
-  await initServerCore();
+  await initServerCore()
 }
 
 export const services = {
-  // player: playerService,
-  // api: apiClient,
-};
+  get playerManager() {
+    return di.resolve(PlayerManager)
+  },
+  get apiClient() {
+    return di.resolve(ApiClient)
+  },
+}

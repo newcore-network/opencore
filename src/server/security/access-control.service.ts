@@ -1,7 +1,7 @@
-import { injectable } from "tsyringe";
-import type { PrincipalProvider } from "./principal-provider";
-import { PermissionKey } from "./permission.types";
-import { AppError } from "@opencore/utils/errors";
+import { injectable } from 'tsyringe'
+import type { PrincipalProvider } from './principal-provider'
+import { PermissionKey } from './permission.types'
+import { AppError } from '@opencore/utils/errors'
 
 /**
  * Centralized access control helper.
@@ -16,9 +16,9 @@ export class AccessControlService {
    * Checks if the given client has a specific permission.
    */
   async hasPermission(clientID: number, permission: PermissionKey): Promise<boolean> {
-    const role = await this.principalProvider.getRoleForClient(clientID);
-    if (!role) return false;
-    return role.permissions.includes(permission);
+    const role = await this.principalProvider.getRoleForClient(clientID)
+    if (!role) return false
+    return role.permissions.includes(permission)
   }
 
   /**
@@ -26,12 +26,12 @@ export class AccessControlService {
    * Controllers/services can use this to enforce security.
    */
   async requirePermission(clientID: number, permission: PermissionKey): Promise<void> {
-    const has = await this.hasPermission(clientID, permission);
+    const has = await this.hasPermission(clientID, permission)
     if (!has) {
-      throw new AppError("PERMISSION_DENIED", `Missing permission: ${permission}`, "core", {
+      throw new AppError('PERMISSION_DENIED', `Missing permission: ${permission}`, 'core', {
         clientID,
         permission,
-      });
+      })
     }
   }
 
@@ -39,8 +39,8 @@ export class AccessControlService {
    * Checks if the client has at least one permission in the list.
    */
   async hasAny(clientID: number, permissions: PermissionKey[]): Promise<boolean> {
-    const role = await this.principalProvider.getRoleForClient(clientID);
-    if (!role) return false;
-    return permissions.some((perm) => role.permissions.includes(perm));
+    const role = await this.principalProvider.getRoleForClient(clientID)
+    if (!role) return false
+    return permissions.some((perm) => role.permissions.includes(perm))
   }
 }

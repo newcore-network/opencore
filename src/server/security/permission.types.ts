@@ -5,16 +5,16 @@
  * - "admin:kick"
  * - "inventory:give"
  */
-export type PermissionKey = string;
+export type PermissionKey = string
 
 /**
  * Minimal role representation used by the security layer.
  * Specific modules can extend this with more fields if needed.
  */
 export interface RoleLike {
-  id: string;
-  name: string;
+  id: string
+  name: string
   /** Optional numeric weight for hierarchy comparisons (higher = more power). */
-  weight?: number;
-  permissions: PermissionKey[];
+  weight?: number
+  permissions: PermissionKey[]
 }

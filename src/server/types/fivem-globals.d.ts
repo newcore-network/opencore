@@ -1,3 +1,3 @@
 declare const global: {
-  source: string;
-};
+  source: string
+}
