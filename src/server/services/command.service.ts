@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { PlayerManager } from './player'
+import { PlayerService } from './player.service'
 import { AccessControlService } from '../security/access-control.service'
 import type { CommandMeta } from '../decorators/command'
 import { AppError } from '../../utils'
@@ -9,7 +9,7 @@ export class CommandService {
   private commands = new Map<string, { meta: CommandMeta; handler: Function }>()
 
   constructor(
-    private readonly playerManager: PlayerManager,
+    private readonly playerManager: PlayerService,
     private readonly accessControl: AccessControlService,
   ) {}
 

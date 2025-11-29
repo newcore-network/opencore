@@ -1,7 +1,7 @@
 import { ApiClient } from './api/out/api.client'
 import { initServerCore } from './bootstrap'
 import { di } from './container'
-import { PlayerManager } from './services/player'
+import { PlayerService } from './services/player.service'
 
 export async function init() {
   await initServerCore()
@@ -24,7 +24,7 @@ export async function init() {
 // - Código “pegao” donde DI no entra bien.
 export const services = {
   get playerManager() {
-    return di.resolve(PlayerManager)
+    return di.resolve(PlayerService)
   },
   get apiClient() {
     return di.resolve(ApiClient)

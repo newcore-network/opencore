@@ -1,9 +1,11 @@
 export * from './core'
 export * from './decorators'
-export * from './api/out/api.client'
-export * as Security from './security'
-export * as Services from './services/player'
+export * from './security'
+export * from './services'
 
 export * from './entities'
 
 export type * from './types/core-events'
+
+// Controllers
+import './controller/chat.controller'

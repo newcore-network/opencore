@@ -6,7 +6,7 @@ import {
   getTickRegistry,
 } from '../decorators'
 import { serverControllerRegistry } from '../decorators/controller'
-import { PlayerManager } from '../services/player'
+import { PlayerService } from '../services/player.service'
 import { getCoreEventRegistry } from '../decorators/coreEvent'
 import { onCoreEvent } from '../bus/core-event-bus'
 import { getExportRegistry } from '../decorators/export'
@@ -51,7 +51,7 @@ export const loadDecorators = () => {
     console.log(`[OpenCore] REGISTERED: ${meta.exportName}`)
   }
 
-  const playerManager = di.resolve(PlayerManager)
+  const playerManager = di.resolve(PlayerService)
   const commandService = di.resolve(CommandService)
   // Commands
   for (const meta of commands) {

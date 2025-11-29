@@ -1,9 +1,9 @@
 import { container } from 'tsyringe'
-import { PlayerManager } from '../services/player'
+import { PlayerService } from '../services/player.service'
 import { emitCoreEvent } from '../bus/core-event-bus'
 
 export const playerSessionLoader = () => {
-  const playerManager = container.resolve(PlayerManager)
+  const playerManager = container.resolve(PlayerService)
 
   on('playerJoining', (source: string) => {
     const clientId = Number(source)

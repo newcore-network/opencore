@@ -1,15 +1,15 @@
-import { ApiClient } from './api/out/api.client'
 import { di } from './container'
 import { loadDecorators } from './loader/decorators.loader'
 import { exportsLoader } from './loader/exports.loader'
 import { playerSessionLoader } from './loader/playerSession.loader'
 import { CommandService } from './services/command.service'
-import { PlayerManager } from './services/player'
+import { HttpService } from './services/http/http.service'
+import { PlayerService } from './services/player.service'
 
 function setter() {
-  di.registerSingleton(ApiClient, ApiClient)
-  di.registerSingleton(PlayerManager, PlayerManager)
+  di.registerSingleton(PlayerService, PlayerService)
   di.registerSingleton(CommandService, CommandService)
+  di.registerSingleton(HttpService, HttpService)
   loadDecorators()
   exportsLoader()
 }
