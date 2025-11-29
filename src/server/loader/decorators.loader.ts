@@ -7,10 +7,10 @@ import {
 } from '../decorators'
 import { serverControllerRegistry } from '../decorators/controller'
 import { PlayerManager } from '../services/player'
-import { handleCommandError } from '../error-handler'
 import { getCoreEventRegistry } from '../decorators/coreEvent'
 import { onCoreEvent } from '../bus/core-event-bus'
-import { AppError } from '../../utils'
+import { getExportRegistry } from '../decorators/export'
+import { CommandService } from '../services/command.service'
 
 const instanceCache = new Map<Function, any>()
 
@@ -20,6 +20,7 @@ export const loadDecorators = () => {
   const nets = getNetEventRegistry()
   const ticks = getTickRegistry()
   const coreEventRegistry = getCoreEventRegistry()
+  const exportsReg = getExportRegistry()
 
   for (const meta of binds) {
     if (meta.scope === 'singleton') {
@@ -42,37 +43,21 @@ export const loadDecorators = () => {
     di.resolve(Controller)
   }
 
-  // Commands
+  for (const meta of exportsReg) {
+    const instance = di.resolve(meta.target)
+    const method = (instance as any)[meta.methodName].bind(instance)
+
+    ;(global as any).exports(meta.exportName, method)
+    console.log(`[OpenCore] REGISTERED: ${meta.exportName}`)
+  }
+
   const playerManager = di.resolve(PlayerManager)
+  const commandService = di.resolve(CommandService)
+  // Commands
   for (const meta of commands) {
     const instance = getInstance(meta.target)
     const method = (instance as any)[meta.methodName].bind(instance)
-
-    RegisterCommand(
-      meta.name,
-      (src: string, args: string[], raw: string) => {
-        const clientID = Number(src)
-        const player = playerManager.getByClient(clientID)
-
-        if (!player) {
-          const error = new AppError(
-            'PLAYER_NOT_FOUND',
-            `Jugador ${clientID} no encontrado`,
-            'core',
-            { command: meta.name, handler: meta.methodName },
-          )
-          handleCommandError(error, meta, clientID)
-          return
-        }
-
-        try {
-          method(player, args, raw)
-        } catch (error) {
-          handleCommandError(error, meta, clientID)
-        }
-      },
-      false,
-    )
+    commandService.register(meta, method)
   }
 
   // NetEvents

@@ -7,9 +7,7 @@ export const playerSessionLoader = () => {
 
   on('playerJoining', (source: string) => {
     const clientId = Number(source)
-
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
-
     playerManager.bind(clientId, { license })
 
     console.log(
@@ -25,9 +23,7 @@ export const playerSessionLoader = () => {
   on('playerDropped', () => {
     const clientId = Number(global.source)
     playerManager.unbindByClient(clientId)
-
     emitCoreEvent('core:playerSessionDestroyed', { clientId })
-
     console.log(`[CORE] Player session destroyed for client ${clientId}`)
   })
 }
