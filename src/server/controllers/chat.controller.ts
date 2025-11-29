@@ -1,10 +1,10 @@
-import { injectable } from 'tsyringe'
 import { OnNet } from '../decorators/netEvent'
 import { CommandService } from '../services/command.service'
 import { PlayerService } from '../services/player.service'
 import { Player } from '../entities'
+import { Controller } from '../decorators'
 
-@injectable()
+@Controller()
 export class CommandNetworkController {
   constructor(
     private commandService: CommandService,

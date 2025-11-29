@@ -1,7 +1,7 @@
 import { di } from './container'
-import { loadDecorators } from './loader/decorators.loader'
-import { exportsLoader } from './loader/exports.loader'
-import { playerSessionLoader } from './loader/playerSession.loader'
+import { loadDecorators } from './loaders/decorators.loader'
+import { exportsLoader } from './loaders/exports.loader'
+import { playerSessionLoader } from './loaders/playerSession.loader'
 import { CommandService } from './services/command.service'
 import { HttpService } from './services/http/http.service'
 import { PlayerService } from './services/player.service'
@@ -12,6 +12,7 @@ function setter() {
   di.registerSingleton(HttpService, HttpService)
   loadDecorators()
   exportsLoader()
+  playerSessionLoader()
 }
 
 /**
@@ -27,5 +28,4 @@ function setter() {
  */
 export async function initServerCore() {
   setter()
-  playerSessionLoader()
 }
