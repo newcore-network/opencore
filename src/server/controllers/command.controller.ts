@@ -5,7 +5,7 @@ import { Controller } from '../decorators'
 
 @Controller()
 export class CommandNetworkController {
-  constructor(private commandService: CommandService) {}
+  constructor(private readonly commandService: CommandService) {}
 
   @OnNet('core:internal:executeCommand')
   async onCommandReceived(player: Player, commandName: string, args: string[], raw: string) {
