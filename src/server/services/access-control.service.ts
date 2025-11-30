@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
-import type { PrincipalProvider } from './principal-provider'
-import { PermissionKey } from './permission.types'
+
 import { AppError } from '../../utils'
+import { PermissionKey, PrincipalProvider } from '../security'
 
 /**
  * Centralized access control helper.

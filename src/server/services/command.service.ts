@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
 import { PlayerService } from './player.service'
-import { AccessControlService } from '../security/access-control.service'
 import type { CommandMeta } from '../decorators/command'
 import { AppError } from '../../utils'
+import { AccessControlService } from './access-control.service'
 
 @injectable()
 export class CommandService {

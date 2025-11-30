@@ -1,3 +1,4 @@
 export * from './player.service'
 export * from './command.service'
 export * from './http/http.service'
+export * from './access-control.service'
