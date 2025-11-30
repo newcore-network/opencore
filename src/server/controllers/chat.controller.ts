@@ -1,23 +1,30 @@
-import { OnNet } from '../decorators/netEvent'
-import { CommandService } from '../services/command.service'
-import { PlayerService } from '../services/player.service'
-import { Player } from '../entities'
-import { Controller } from '../decorators'
+import { Controller } from '../decorators/controller'
+import { Export } from '../decorators/export'
+import { PlayerService } from '../services'
+import { ChatService } from '../services/chat.service'
 
 @Controller()
-export class CommandNetworkController {
+export class ChatController {
   constructor(
-    private commandService: CommandService,
-    private playerManager: PlayerService,
+    private readonly chatService: ChatService,
+    private readonly playerService: PlayerService,
   ) {}
 
-  @OnNet('core:internal:executeCommand')
-  async onCommandReceived(player: Player, commandName: string, args: string[], raw: string) {
-    try {
-      console.log(`[DEBUG] commando received /${commandName} from ${player.name}`)
-      await this.commandService.execute(player.clientID, commandName, args, raw)
-    } catch (error) {
-      console.error(error)
+  @Export('core:broadcast')
+  apiBroadcast(
+    message: string,
+    author: string = 'SYSTEM',
+    color: RGB = { r: 255, g: 255, b: 255 },
+  ) {
+    this.chatService.broadcast(message, author, color)
+  }
+
+  @Export('core:sendprivate')
+  apiSendPrivate(targetId: number, message: string, author: string = 'Private') {
+    const player = this.playerService.getByClient(targetId)
+    if (!player) {
+      throw new Error(`Player with client ID ${targetId} not found`)
     }
+    this.chatService.sendPrivate(player, message, author)
   }
 }

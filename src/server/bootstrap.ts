@@ -1,10 +1,20 @@
 import { di } from './container'
 import { loadDecorators } from './loaders/decorators.loader'
-import { exportsLoader } from './loaders/exports.loader'
 import { playerSessionLoader } from './loaders/playerSession.loader'
+import { ChatService } from './services'
 import { CommandService } from './services/command.service'
 import { HttpService } from './services/http/http.service'
 import { PlayerService } from './services/player.service'
+import { PrincipalProviderContract } from './templates'
+
+const check = () => {
+  if (!di.isRegistered(PrincipalProviderContract as any)) {
+    throw new Error(
+      `[OpenCore] CRITICAL: No Authentication Provider configured. ` +
+        `Please call 'Server.Setup.setAuthProvider(YourProvider)' before init().`,
+    )
+  }
+}
 
 /**
  * Bootstraps the OpenCore Server Application Context.
@@ -22,12 +32,14 @@ import { PlayerService } from './services/player.service'
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
 export async function initServer() {
+  check()
   // Register core services
   di.registerSingleton(PlayerService, PlayerService)
   di.registerSingleton(CommandService, CommandService)
   di.registerSingleton(HttpService, HttpService)
+  di.registerSingleton(ChatService, ChatService)
 
   loadDecorators()
-  exportsLoader()
+  // exportsLoader()
   playerSessionLoader()
 }

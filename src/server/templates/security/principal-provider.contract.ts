@@ -1,3 +1,4 @@
+import type { Server } from '../../..'
 import type { RoleLike } from './permission.types'
 
 /**
@@ -6,6 +7,6 @@ import type { RoleLike } from './permission.types'
  *
  * Implemented by modules (e.g. account module) and wired via DI.
  */
-export interface PrincipalProvider {
-  getRoleForClient(clientID: number): Promise<RoleLike | null>
+export abstract class PrincipalProviderContract {
+  abstract getRoleByPlayer(player: Server.Player): Promise<RoleLike | null>
 }
