@@ -19,7 +19,7 @@
     "roleplay"
   ],
   "author": "OpenCore Team",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "reflect-metadata": "^0.2.2",
