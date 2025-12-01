@@ -1,4 +1,5 @@
-import type { ClassConstructor } from '../../system/types'
+import { METADATA_KEYS } from '../system/metadata-server.keys'
+import type { ClassConstructor } from '../../system/class-constructor'
 
 export interface CommandOptions {
   name: string
@@ -12,8 +13,6 @@ export interface CommandMeta extends CommandOptions {
   target: ClassConstructor
 }
 
-const commandRegistry: CommandMeta[] = []
-
 /**
  * Decorator used to mark a controller method as a command.
  * The metadata is collected and later bound to FiveM via RegisterCommand().
@@ -24,14 +23,6 @@ export function Command(nameOrOptions: string | CommandOptions) {
   return (target: any, propertyKey: string, _descriptor: PropertyDescriptor) => {
     const options = typeof nameOrOptions === 'string' ? { name: nameOrOptions } : nameOrOptions
 
-    commandRegistry.push({
-      ...options,
-      methodName: propertyKey,
-      target: target.constructor as ClassConstructor,
-    })
+    Reflect.defineMetadata(METADATA_KEYS.COMMAND, options, target, propertyKey)
   }
-}
-
-export function getCommandRegistry(): CommandMeta[] {
-  return commandRegistry
 }

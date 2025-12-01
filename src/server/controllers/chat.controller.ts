@@ -1,3 +1,4 @@
+import { RGB } from '../../utils'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { PlayerService } from '../services'
@@ -27,4 +28,6 @@ export class ChatController {
     }
     this.chatService.sendPrivate(player, message, author)
   }
+
+  // TODO: add send by group of players
 }

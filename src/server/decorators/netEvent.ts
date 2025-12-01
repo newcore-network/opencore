@@ -1,11 +1,4 @@
-import type { ClassConstructor } from '../../system/types'
-
-export interface NetEventMeta {
-  eventName: string
-  methodName: string
-  target: ClassConstructor
-}
-const netEventRegistry: NetEventMeta[] = []
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
  * Decorator used to register a server-side NetEvent handler.
@@ -38,14 +31,7 @@ const netEventRegistry: NetEventMeta[] = []
  * @param eventName - The name of the network event to listen for.
  */
 export function OnNet(eventName: string) {
-  return (target: any, propertyKey: string, _descriptor: PropertyDescriptor) => {
-    netEventRegistry.push({
-      eventName,
-      methodName: propertyKey,
-      target: target.constructor as ClassConstructor,
-    })
+  return (target: any, propertyKey: string) => {
+    Reflect.defineMetadata(METADATA_KEYS.NET_EVENT, { eventName }, target, propertyKey)
   }
-}
-export function getNetEventRegistry(): NetEventMeta[] {
-  return netEventRegistry
 }

@@ -1,23 +1,8 @@
-interface KeyMappingMeta {
-  key: string
-  description: string
-  methodName: string
-  target: new (...args: any[]) => any
-}
-
-const keyRegistry: KeyMappingMeta[] = []
+import 'reflect-metadata'
+import { METADATA_KEYS } from '../system/metadata-client.keys'
 
 export function KeyMapping(key: string, description: string) {
   return (target: any, propertyKey: string) => {
-    keyRegistry.push({
-      key,
-      description,
-      methodName: propertyKey,
-      target: target.constructor,
-    })
+    Reflect.defineMetadata(METADATA_KEYS.KEY, { key, description }, target, propertyKey)
   }
-}
-
-export function getKeyRegistry(): KeyMappingMeta[] {
-  return keyRegistry
 }

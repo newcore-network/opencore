@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe'
 import { Server } from '../..'
+import { RGB } from '../../utils'
 
 @injectable()
 export class ChatService {
@@ -25,4 +26,6 @@ export class ChatService {
   clearChat(player: Server.Player) {
     emitNet('core:chat:clear', player.clientID)
   }
+
+  // TODO: add send by group of players
 }

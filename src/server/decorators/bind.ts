@@ -1,28 +1,15 @@
-import { injectable } from 'tsyringe'
-import type { ClassConstructor } from '../../system/types'
+import { injectable, Lifecycle, scoped, singleton } from 'tsyringe'
 
-type BindingScope = 'singleton' | 'transient'
-
-interface BindingMeta {
-  token: ClassConstructor
-  useClass: ClassConstructor
-  scope: BindingScope
-}
-
-const bindingRegistry: BindingMeta[] = []
-
-export function getBindingRegistry() {
-  return bindingRegistry
-}
+export type BindingScope = 'singleton' | 'transient'
 
 export function Bind(scope: BindingScope = 'singleton') {
   return function (target: any) {
     injectable()(target)
 
-    bindingRegistry.push({
-      token: target as ClassConstructor,
-      useClass: target as ClassConstructor,
-      scope,
-    })
+    if (scope === 'singleton') {
+      singleton()(target)
+    } else {
+      scoped(Lifecycle.ResolutionScoped)(target)
+    }
   }
 }

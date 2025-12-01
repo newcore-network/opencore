@@ -1,4 +1,4 @@
-import type { ClassConstructor } from '../system/types'
+import type { ClassConstructor } from '../system/class-constructor'
 import { di } from './container'
 import { PrincipalProviderContract } from './templates'
 

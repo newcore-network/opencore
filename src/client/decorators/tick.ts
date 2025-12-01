@@ -1,19 +1,7 @@
-export interface ClientTickMeta {
-  methodName: string
-  target: new (...args: any[]) => any
-}
+import { METADATA_KEYS } from '../system/metadata-client.keys'
 
-const tickRegistry: ClientTickMeta[] = []
-
-export function ClientTick() {
+export function Tick() {
   return (target: any, propertyKey: string) => {
-    tickRegistry.push({
-      methodName: propertyKey,
-      target: target.constructor,
-    })
+    Reflect.defineMetadata(METADATA_KEYS.TICK, {}, target, propertyKey)
   }
-}
-
-export function getClientTickRegistry() {
-  return tickRegistry
 }

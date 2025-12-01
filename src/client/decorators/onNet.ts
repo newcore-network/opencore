@@ -1,23 +1,7 @@
-import type { ClassConstructor } from '../../system/types'
-
-export interface NetEventMeta {
-  eventName: string
-  methodName: string
-  target: ClassConstructor
-}
-
-const netEventRegistry: NetEventMeta[] = []
+import { METADATA_KEYS } from '../system/metadata-client.keys'
 
 export function OnNet(eventName: string) {
-  return (target: any, propertyKey: string, _descriptor: PropertyDescriptor) => {
-    netEventRegistry.push({
-      eventName,
-      methodName: propertyKey,
-      target: target.constructor as ClassConstructor,
-    })
+  return (target: any, propertyKey: string) => {
+    Reflect.defineMetadata(METADATA_KEYS.NET_EVENT, { eventName }, target, propertyKey)
   }
-}
-
-export function getNetRegistry(): NetEventMeta[] {
-  return netEventRegistry
 }

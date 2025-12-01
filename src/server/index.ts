@@ -9,6 +9,7 @@ export * from './entities'
 
 // Configs
 export * from './configs'
+export * from './setup'
 
 // Types
 export type * from './types/core-events'

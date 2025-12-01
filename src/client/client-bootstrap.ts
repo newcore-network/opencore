@@ -1,5 +1,6 @@
+import { MetadataScanner } from '../system/metadata.scanner'
 import { di } from './client-container'
-import { loadDecorators } from './loaders/decorators.loader'
+import { clientControllerRegistry } from './decorators'
 import { playerClientLoader } from './player/player.loader'
 import { Spawner } from './services/spawn.service'
 
@@ -23,9 +24,11 @@ async function bootstraper() {
 
 export async function initClientCore() {
   setSingletons()
-  loadDecorators()
   await bootstraper()
 
   // Loaders
   playerClientLoader()
+
+  const scanner = di.resolve(MetadataScanner)
+  scanner.scan(clientControllerRegistry)
 }

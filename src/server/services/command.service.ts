@@ -37,12 +37,18 @@ export class CommandService {
     await handler(player, args, raw)
   }
 
-  getDefinitions() {
+  getAllCommands() {
     return Array.from(this.commands.values()).map((c) => ({
       name: c.meta.name,
       description: c.meta.description ?? '',
       usage: c.meta.usage ?? '',
       permission: c.meta.permission,
     }))
+  }
+
+  public debugPrintCommands() {
+    const keys = Array.from(this.commands.keys())
+    console.log(`[DEBUG] Estado actual del Mapa: ${this.commands.size} comandos cargados.`)
+    console.log(`[DEBUG] Lista: ${keys.join(', ')}`)
   }
 }

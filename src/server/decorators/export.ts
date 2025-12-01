@@ -1,23 +1,12 @@
-import type { ClassConstructor } from '../../system/types'
-
-export interface ExportMeta {
-  exportName: string
-  methodName: string
-  target: ClassConstructor
-}
-
-const exportRegistry: ExportMeta[] = []
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 export function Export(name?: string) {
-  return (target: any, propertyKey: string, _descriptor: PropertyDescriptor) => {
-    exportRegistry.push({
-      exportName: name || propertyKey,
-      methodName: propertyKey,
-      target: target.constructor as ClassConstructor,
-    })
+  return (target: any, propertyKey: string) => {
+    Reflect.defineMetadata(
+      METADATA_KEYS.EXPORT,
+      { exportName: name || propertyKey },
+      target,
+      propertyKey,
+    )
   }
-}
-
-export function getExportRegistry() {
-  return exportRegistry
 }

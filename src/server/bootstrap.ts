@@ -1,11 +1,15 @@
 import { di } from './container'
-import { loadDecorators } from './loaders/decorators.loader'
+import { CommandProcessor } from './system/processors/command.processor'
 import { playerSessionLoader } from './loaders/playerSession.loader'
 import { ChatService } from './services'
 import { CommandService } from './services/command.service'
 import { HttpService } from './services/http/http.service'
 import { PlayerService } from './services/player.service'
 import { PrincipalProviderContract } from './templates'
+import { MetadataScanner } from '../system/metadata.scanner'
+import { registerSystemServer } from './system/registers'
+import { registerServicesServer } from './services/registers'
+import { serverControllerRegistry } from './decorators'
 
 const check = () => {
   if (!di.isRegistered(PrincipalProviderContract as any)) {
@@ -34,12 +38,13 @@ const check = () => {
 export async function initServer() {
   check()
   // Register core services
-  di.registerSingleton(PlayerService, PlayerService)
-  di.registerSingleton(CommandService, CommandService)
-  di.registerSingleton(HttpService, HttpService)
-  di.registerSingleton(ChatService, ChatService)
+  registerServicesServer()
+  // Register system processors
+  registerSystemServer()
 
-  loadDecorators()
-  // exportsLoader()
+  // Extras
   playerSessionLoader()
+
+  const scanner = di.resolve(MetadataScanner)
+  scanner.scan(serverControllerRegistry)
 }
