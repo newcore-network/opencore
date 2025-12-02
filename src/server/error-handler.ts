@@ -1,6 +1,6 @@
 import { AppError, isAppError } from '../utils'
 import type { ErrorOrigin } from '../utils/'
-import type { CommandMeta } from './decorators/command'
+import type { CommandMetadata } from './decorators/command'
 
 function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   if (isAppError(error)) {
@@ -14,7 +14,7 @@ function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   return new AppError('UNKNOWN', String(error), origin, { raw: error })
 }
 
-export function handleCommandError(error: unknown, meta: CommandMeta, playerId: number | null) {
+export function handleCommandError(error: unknown, meta: CommandMetadata, playerId: number | null) {
   const appError = normalizeError(error, 'server')
 
   console.error('[CORE] Command error', {

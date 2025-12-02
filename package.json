@@ -1,6 +1,6 @@
 {
   "name": "@opencore/framework",
-  "version": "0.1.0",
+  "version": "0.1.0 ALPHA",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",

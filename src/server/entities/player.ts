@@ -12,6 +12,8 @@ import type { LinkedID, PlayerSession } from '../services/player.service'
  * Domain logic should live in your modules' services/models (e.g., `EconomyService`, `JobModel`).
  */
 export class Player {
+  private states = new Set<string>()
+
   /**
    * Creates a new Player entity instance.
    * This is typically instantiated by the `PlayerService` upon connection.
@@ -159,5 +161,80 @@ export class Player {
    */
   linkAccount(accountID: LinkedID) {
     this.session.accountID = accountID
+  }
+
+  /**
+   * Checks if the player currently possesses a specific state flag.
+   *
+   * @param state - The unique string identifier of the state (e.g., 'dead', 'cuffed').
+   * @returns `true` if the state is active, `false` otherwise.
+   */
+  hasState(state: string): boolean {
+    return this.states.has(state)
+  }
+
+  /**
+   * Applies a state flag to the player.
+   *
+   * @remarks
+   * Since states are stored in a `Set`, adding an existing state has no effect (idempotent).
+   * Ideally, this should trigger a sync event to the client if needed.
+   *
+   * @param state - The state key to add.
+   */
+  addState(state: string): void {
+    this.states.add(state)
+    // this.emit('core:state:add', state) // ? optional !!
+  }
+
+  /**
+   * Removes a specific state flag from the player.
+   *
+   * @param state - The state key to remove.
+   */
+  removeState(state: string): void {
+    this.states.delete(state)
+    // this.emit('core:state:remove', state) // ? optional !!
+  }
+
+  /**
+   * Toggles the presence of a state flag.
+   *
+   * @param state - The state key to toggle.
+   * @param force - If provided, forces the state to be added (`true`) or removed (`false`) regardless of its current status.
+   *
+   * @returns The final status of the state (`true` if active, `false` if inactive).
+   *
+   * @example
+   * ```ts
+   * // Standard toggle
+   * player.toggleState('duty'); // turns on if off, off if on
+   *
+   * // Force enable (equivalent to addState but returns boolean)
+   * player.toggleState('duty', true); // always results in true
+   * ```
+   */
+  toggleState(state: string, force?: boolean): boolean {
+    if (force !== undefined) {
+      force ? this.addState(state) : this.removeState(state)
+      return force
+    }
+
+    if (this.hasState(state)) {
+      this.removeState(state)
+      return false
+    } else {
+      this.addState(state)
+      return true
+    }
+  }
+
+  /**
+   * Retrieves a snapshot of all currently active state flags for this player.
+   *
+   * @returns An array containing all active state keys.
+   */
+  getStates(): string[] {
+    return Array.from(this.states)
   }
 }

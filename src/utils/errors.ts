@@ -1,4 +1,4 @@
-import { SecurityAction } from '../server/types/security.types'
+import type { SecurityAction } from '../server/types/security.types'
 
 export type FrameworkErroCode =
   | 'PLAYER_NOT_FOUND'
@@ -11,6 +11,7 @@ export type FrameworkErroCode =
   | 'NOT_IMPLEMENTED'
   | 'NO_RANK_IN_PRINCIPAL'
   | 'UNKNOWN'
+  | 'GAME_STATE_ERROR'
 
 export type ErrorOrigin = 'client' | 'server' | 'core' | 'external'
 
