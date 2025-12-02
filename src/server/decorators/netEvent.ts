@@ -1,4 +1,10 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
+import { z } from 'zod'
+
+export interface NetEventOptions {
+  eventName: string
+  schema?: z.ZodType
+}
 
 /**
  * Decorator used to register a server-side NetEvent handler.
@@ -30,8 +36,9 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
  *
  * @param eventName - The name of the network event to listen for.
  */
-export function OnNet(eventName: string) {
+export function OnNet(eventName: string, schema?: z.ZodType) {
   return (target: any, propertyKey: string) => {
-    Reflect.defineMetadata(METADATA_KEYS.NET_EVENT, { eventName }, target, propertyKey)
+    const metadata: NetEventOptions = { eventName, schema }
+    Reflect.defineMetadata(METADATA_KEYS.NET_EVENT, metadata, target, propertyKey)
   }
 }
