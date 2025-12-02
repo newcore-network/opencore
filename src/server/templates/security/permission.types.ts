@@ -1,20 +1,32 @@
 /**
- * Generic permission key used across the framework.
- * Modules are free to define their own namespaces, e.g.:
- * - "bank:withdraw"
- * - "admin:kick"
- * - "inventory:give"
+ * Represents the security identity of a user/player within the framework.
+ * This interface bridges the gap between the Core framework and your specific database implementation.
  */
-export type PermissionKey = string
-
-/**
- * Minimal role representation used by the security layer.
- * Specific modules can extend this with more fields if needed.
- */
-export interface RoleLike {
+export interface Principal {
+  /**
+   * Unique identifier for the user (e.g., database role ID).
+   */
   id: string
-  name: string
-  /** Optional numeric weight for hierarchy comparisons (higher = more power). */
-  weight?: number
-  permissions: PermissionKey[]
+  /**
+   * Display name for the role or user, useful for Chat or UI (e.g., "Moderator", "VIP").
+   */
+  name?: string
+  /**
+   * Numeric weight for hierarchy comparisons.
+   * - Used by the `@Guard({ rank: N })` decorator.
+   * - **Logic:** `UserRank >= RequiredRank`.
+   * - Higher numbers imply higher privileges.
+   */
+  rank?: number
+  /**
+   * List of specific permission strings assigned to this principal.
+   * - Used by the `@Guard({ permission: 'string' })` decorator.
+   * - Supports the `'*'` wildcard for super-admin access.
+   */
+  permissions: string[]
+  /**
+   * Arbitrary metadata for game-specific logic (e.g., chat colors, badge IDs, staff status).
+   * This prevents the need to modify the Core types for visual extras.
+   */
+  meta?: Record<string, unknown>
 }

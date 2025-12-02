@@ -7,6 +7,7 @@ export type FrameworkErroCode =
   | 'UNAUTHORIZED'
   | 'PERMISSION_DENIED'
   | 'NOT_IMPLEMENTED'
+  | 'NO_RANK_IN_PRINCIPAL'
   | 'UNKNOWN'
 
 export type ErrorOrigin = 'client' | 'server' | 'core' | 'external'

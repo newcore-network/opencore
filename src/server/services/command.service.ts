@@ -1,15 +1,12 @@
 import { injectable } from 'tsyringe'
 import type { CommandMetadata } from '../decorators/command'
 import { AppError } from '../../utils'
-import { AccessControlService } from './access-control.service'
 import { Server } from '../..'
 import z from 'zod'
 
 @injectable()
 export class CommandService {
   private commands = new Map<string, { meta: CommandMetadata; handler: Function }>()
-
-  constructor(private readonly accessControlService: AccessControlService) {}
 
   register(meta: CommandMetadata, handler: Function) {
     this.commands.set(meta.name.toLowerCase(), { meta, handler })
@@ -24,19 +21,7 @@ export class CommandService {
     }
     const { meta, handler } = entry
 
-    if (meta.permission) {
-      const hasPerm = await this.accessControlService.hasPermission(player, meta.permission)
-      if (!hasPerm) {
-        throw new AppError(
-          'PERMISSION_DENIED',
-          `You don't have permission: ${meta.permission}`,
-          'core',
-        )
-      }
-    }
-
     let validatedArgs: any[] = args
-
     if (meta.schema) {
       try {
         const result = await meta.schema.parseAsync(args)
@@ -59,7 +44,6 @@ export class CommandService {
       name: c.meta.name,
       description: c.meta.description ?? '',
       usage: c.meta.usage ?? '',
-      permission: c.meta.permission,
     }))
   }
 }

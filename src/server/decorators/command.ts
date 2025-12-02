@@ -6,7 +6,6 @@ export interface CommandConfig {
   name: string
   description?: string
   usage?: string
-  permission?: string
   schema?: z.ZodType
 }
 
