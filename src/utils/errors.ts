@@ -1,4 +1,4 @@
-export type ErrorCode =
+export type FrameworkErroCode =
   | 'PLAYER_NOT_FOUND'
   | 'INSUFFICIENT_FUNDS'
   | 'VALIDATION_ERROR'
@@ -12,11 +12,11 @@ export type ErrorCode =
 export type ErrorOrigin = 'client' | 'server' | 'core' | 'external'
 
 export class AppError extends Error {
-  readonly code: ErrorCode
+  readonly code: FrameworkErroCode
   readonly details?: unknown
   readonly origin: ErrorOrigin
 
-  constructor(code: ErrorCode, message: string, origin: ErrorOrigin, details?: unknown) {
+  constructor(code: FrameworkErroCode, message: string, origin: ErrorOrigin, details?: unknown) {
     super(message)
     this.code = code
     this.details = details

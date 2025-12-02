@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { AppError, type ErrorCode } from '../../../utils'
+import { AppError, type FrameworkErroCode } from '../../../utils'
 
 export interface HttpOptions {
   headers?: Record<string, string>
@@ -111,7 +111,7 @@ export class HttpService {
 
   private async handleResponse<T>(response: Response, method: string, url: string): Promise<T> {
     if (!response.ok) {
-      let code: ErrorCode = 'API_ERROR'
+      let code: FrameworkErroCode = 'API_ERROR'
       let errorBody: unknown = null
 
       if (response.status === 401 || response.status === 403) {

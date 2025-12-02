@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { CommandService } from '../../services'
-import { CommandOptions } from '../../decorators'
+import { CommandConfig, CommandMetadata } from '../../decorators'
 
 @injectable()
 export class CommandProcessor implements DecoratorProcessor {
@@ -10,15 +10,13 @@ export class CommandProcessor implements DecoratorProcessor {
 
   constructor(private commandService: CommandService) {}
 
-  process(target: any, methodName: string, metadata: CommandOptions) {
+  process(target: any, methodName: string, metadata: CommandConfig) {
     const handler = target[methodName].bind(target)
-    this.commandService.register(
-      {
-        ...metadata,
-        methodName,
-        target: target.constructor,
-      },
-      handler,
-    )
+    const fullMeta: CommandMetadata = {
+      ...metadata,
+      methodName,
+      target: target.constructor,
+    }
+    this.commandService.register(fullMeta, handler)
   }
 }

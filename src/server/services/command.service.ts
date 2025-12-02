@@ -1,25 +1,26 @@
 import { injectable } from 'tsyringe'
-import type { CommandMeta } from '../decorators/command'
+import type { CommandMetadata } from '../decorators/command'
 import { AppError } from '../../utils'
 import { AccessControlService } from './access-control.service'
 import { Server } from '../..'
+import z from 'zod'
 
 @injectable()
 export class CommandService {
-  private commands = new Map<string, { meta: CommandMeta; handler: Function }>()
+  private commands = new Map<string, { meta: CommandMetadata; handler: Function }>()
 
   constructor(private readonly accessControlService: AccessControlService) {}
 
-  register(meta: CommandMeta, handler: Function) {
+  register(meta: CommandMetadata, handler: Function) {
     this.commands.set(meta.name.toLowerCase(), { meta, handler })
-    console.log(`[CORE] Command registered: ${meta.name}`)
+    console.log(`[CORE] Command registered: ${meta.name} ${meta.schema ? '[Validated]' : ''}`)
   }
 
   async execute(player: Server.Player, commandName: string, args: string[], raw: string) {
     const entry = this.commands.get(commandName.toLowerCase())
 
     if (!entry) {
-      throw new AppError('VALIDATION_ERROR', `Command /${commandName} do not exist`, 'core')
+      return
     }
     const { meta, handler } = entry
 
@@ -34,7 +35,23 @@ export class CommandService {
       }
     }
 
-    await handler(player, args, raw)
+    let validatedArgs: any[] = args
+
+    if (meta.schema) {
+      try {
+        const result = await meta.schema.parseAsync(args)
+
+        validatedArgs = Array.isArray(result) ? result : [result]
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new AppError('VALIDATION_ERROR', `Incorrect usage: ${error.message}`, 'client', {
+            usage: meta.usage,
+          })
+        }
+        throw error
+      }
+    }
+    await handler(player, validatedArgs, raw)
   }
 
   getAllCommands() {
@@ -44,11 +61,5 @@ export class CommandService {
       usage: c.meta.usage ?? '',
       permission: c.meta.permission,
     }))
-  }
-
-  public debugPrintCommands() {
-    const keys = Array.from(this.commands.keys())
-    console.log(`[DEBUG] Estado actual del Mapa: ${this.commands.size} comandos cargados.`)
-    console.log(`[DEBUG] Lista: ${keys.join(', ')}`)
   }
 }

@@ -1,5 +1,5 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
-import { z } from 'zod'
+import type { z } from 'zod'
 
 export interface NetEventOptions {
   eventName: string
