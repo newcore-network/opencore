@@ -1,11 +1,14 @@
 import { injectable } from 'tsyringe'
 import type { CommandMetadata } from '../decorators/command'
-import { AppError } from '../../utils'
+import { AppError, SecurityError } from '../../utils'
 import { Server } from '../..'
 import z from 'zod'
+import { SecurityHandlerContract } from '../templates/security/security-handler.contract'
 
 @injectable()
 export class CommandService {
+  constructor(private securityHandler: SecurityHandlerContract) {}
+
   private commands = new Map<string, { meta: CommandMetadata; handler: Function }>()
 
   register(meta: CommandMetadata, handler: Function) {
@@ -25,13 +28,18 @@ export class CommandService {
     if (meta.schema) {
       try {
         const result = await meta.schema.parseAsync(args)
-
         validatedArgs = Array.isArray(result) ? result : [result]
       } catch (error) {
         if (error instanceof z.ZodError) {
           throw new AppError('VALIDATION_ERROR', `Incorrect usage: ${error.message}`, 'client', {
             usage: meta.usage,
           })
+        }
+        if (error instanceof AppError) {
+          throw error
+        }
+        if (error instanceof SecurityError) {
+          this.securityHandler.handleViolation(player, error)
         }
         throw error
       }

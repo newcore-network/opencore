@@ -1,3 +1,5 @@
+import { SecurityAction } from '../server/types/security.types'
+
 export type FrameworkErroCode =
   | 'PLAYER_NOT_FOUND'
   | 'INSUFFICIENT_FUNDS'
@@ -29,4 +31,14 @@ export class AppError extends Error {
 
 export function isAppError(error: unknown): error is AppError {
   return error instanceof AppError
+}
+
+export class SecurityError extends AppError {
+  readonly action: SecurityAction
+
+  constructor(action: SecurityAction, message: string, details?: unknown) {
+    super('NETWORK_ERROR', message, 'core', details)
+    this.action = action
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
 }
