@@ -42,10 +42,10 @@ export const loggers = {
   eventBus: coreLogger.framework('EventBus'),
   /** Export registration */
   exports: coreLogger.framework('Exports'),
-  /** Tick handlers */
+  /** Tick handlers (server) */
   tick: coreLogger.framework('Tick'),
   /** NUI callbacks (client) */
-  nui: coreLogger.framework('NUI'),
+  nui: coreLogger.client('NUI'),
   /** Spawn service (client) */
-  spawn: coreLogger.framework('Spawn'),
+  spawn: coreLogger.client('Spawn'),
 }
