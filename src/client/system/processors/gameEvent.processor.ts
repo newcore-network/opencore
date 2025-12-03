@@ -2,27 +2,49 @@ import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { METADATA_KEYS } from '../metadata-client.keys'
 import { coreLogger, LogDomain } from '../../../shared/logger'
+import { GameEventParsers } from '../../types/game-events'
 
 const clientGameEvent = coreLogger.child('GameEvent', LogDomain.CLIENT)
+
+// Map of event names to their parser functions
+const parserMap: Record<string, (args: number[]) => unknown> = {
+  CEventNetworkEntityDamage: GameEventParsers.parseEntityDamage,
+  CEventNetworkPlayerEnteredVehicle: GameEventParsers.parsePlayerEnteredVehicle,
+  CEventNetworkPlayerLeftVehicle: GameEventParsers.parsePlayerLeftVehicle,
+  CEventShockingSeenPedKilled: GameEventParsers.parseSeenPedKilled,
+  CEventNetworkVehicleUndrivable: GameEventParsers.parseVehicleUndrivable,
+}
+
+interface GameEventMetadata {
+  eventName: string
+  autoParse: boolean
+}
 
 @injectable()
 export class GameEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.GAME_EVENT
 
-  process(target: any, methodName: string, metadata: { eventName: string }) {
+  process(target: any, methodName: string, metadata: GameEventMetadata) {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
+    const { eventName, autoParse } = metadata
 
-    on('gameEventTriggered', async (name: string, args: any[]) => {
-      if (name !== metadata.eventName) return
+    on('gameEventTriggered', async (name: string, args: number[]) => {
+      if (name !== eventName) return
 
       try {
-        await handler(args)
+        // Auto-parse if enabled and parser exists
+        if (autoParse && parserMap[eventName]) {
+          const parsed = parserMap[eventName](args)
+          await handler(parsed)
+        } else {
+          await handler(args)
+        }
       } catch (error) {
         clientGameEvent.error(
           `Game event handler error`,
           {
-            event: metadata.eventName,
+            event: eventName,
             handler: handlerName,
           },
           error as Error,
@@ -30,7 +52,6 @@ export class GameEventProcessor implements DecoratorProcessor {
       }
     })
 
-    clientGameEvent.debug(`Registered game event: ${metadata.eventName} -> ${handlerName}`)
+    clientGameEvent.debug(`Registered game event: ${eventName} -> ${handlerName}`)
   }
 }
-
