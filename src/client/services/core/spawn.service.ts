@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
-import { OnNet } from '../decorators/onNet'
-import { Vector3 } from '../../utils'
-import { loggers } from '../../shared/logger'
+import { OnNet } from '../../decorators/onNet'
+import { Vector3 } from '../../../utils'
+import { loggers } from '../../../shared/logger'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
