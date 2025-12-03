@@ -13,6 +13,7 @@ const parserMap: Record<string, (args: number[]) => unknown> = {
   CEventNetworkPlayerLeftVehicle: GameEventParsers.parsePlayerLeftVehicle,
   CEventShockingSeenPedKilled: GameEventParsers.parseSeenPedKilled,
   CEventNetworkVehicleUndrivable: GameEventParsers.parseVehicleUndrivable,
+  CEventGunShot: GameEventParsers.parseGunShot,
 }
 
 interface GameEventMetadata {

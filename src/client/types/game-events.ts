@@ -189,6 +189,20 @@ export const GameEventParsers = {
       weaponHash: args[2],
     }
   },
+
+  /**
+   * Parse CEventGunShot arguments
+   */
+  parseGunShot(args: number[]): GunShotEvent {
+    return {
+      shooter: args[0],
+      coords: {
+        x: args[1],
+        y: args[2],
+        z: args[3],
+      },
+    }
+  },
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -201,6 +215,7 @@ export interface GameEventMap {
   CEventNetworkPlayerLeftVehicle: PlayerLeftVehicleEvent
   CEventShockingSeenPedKilled: SeenPedKilledEvent
   CEventNetworkVehicleUndrivable: VehicleUndrivableEvent
+  CEventGunShot: GunShotEvent
   // Fallback for unknown events
   [key: string]: unknown
 }
