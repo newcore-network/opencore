@@ -1,6 +1,7 @@
 import { container } from 'tsyringe'
 import { PlayerService } from '../services/player.service'
 import { emitCoreEvent } from '../bus/core-event-bus'
+import { loggers } from '../../shared/logger'
 
 export const playerSessionLoader = () => {
   const playerManager = container.resolve(PlayerService)
@@ -10,9 +11,10 @@ export const playerSessionLoader = () => {
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
     playerManager.bind(clientId, { license })
 
-    console.log(
-      `[CORE] Binding player session for client ${clientId} with license ${license ?? 'none'}`,
-    )
+    loggers.session.info(`Player session created`, {
+      clientId,
+      license: license ?? 'none',
+    })
 
     emitCoreEvent('core:playerSessionCreated', {
       clientId,
@@ -24,6 +26,7 @@ export const playerSessionLoader = () => {
     const clientId = Number(global.source)
     playerManager.unbindByClient(clientId)
     emitCoreEvent('core:playerSessionDestroyed', { clientId })
-    console.log(`[CORE] Player session destroyed for client ${clientId}`)
+
+    loggers.session.info(`Player session destroyed`, { clientId })
   })
 }

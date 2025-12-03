@@ -1,4 +1,5 @@
 import type { CoreEventMap } from '../types/core-events'
+import { loggers } from '../../shared/logger'
 
 type CoreEventName = keyof CoreEventMap
 type CoreEventHandler<E extends CoreEventName> = (payload: CoreEventMap[E]) => void
@@ -28,7 +29,13 @@ export function emitCoreEvent<E extends CoreEventName>(event: E, payload: CoreEv
     try {
       handler(payload)
     } catch (error) {
-      console.error(`[CORE] Error in handler for ${event}:`, error)
+      loggers.eventBus.error(
+        `Handler error for event`,
+        {
+          event,
+        },
+        error as Error,
+      )
     }
   }
 }

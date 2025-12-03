@@ -1,6 +1,9 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { METADATA_KEYS } from '../metadata-client.keys'
+import { coreLogger, LogDomain } from '../../../shared/logger'
+
+const clientTick = coreLogger.child('Tick', LogDomain.CLIENT)
 
 @injectable()
 export class TickProcessor implements DecoratorProcessor {
@@ -8,15 +11,22 @@ export class TickProcessor implements DecoratorProcessor {
 
   process(target: any, methodName: string) {
     const handler = target[methodName].bind(target)
+    const handlerName = `${target.constructor.name}.${methodName}`
 
     setTick(async () => {
       try {
         await handler()
       } catch (error) {
-        console.error(`[Client] Error in Tick ${target.constructor.name}.${methodName}:`, error)
+        clientTick.error(
+          `Tick handler error`,
+          {
+            handler: handlerName,
+          },
+          error as Error,
+        )
       }
     })
 
-    console.log(`[Client] Tick registered: ${target.constructor.name}.${methodName}`)
+    clientTick.debug(`Registered: ${handlerName}`)
   }
 }

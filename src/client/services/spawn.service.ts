@@ -1,6 +1,7 @@
 import { injectable } from 'tsyringe'
 import { OnNet } from '../decorators/onNet'
 import { Vector3 } from '../../utils'
+import { loggers } from '../../shared/logger'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -9,7 +10,7 @@ export class Spawner {
   private spawned = false
 
   async init(): Promise<void> {
-    console.log('[Core] SpawnService Check')
+    loggers.spawn.debug('SpawnService initialized')
   }
 
   @OnNet('core:spawner:spawn')
@@ -26,7 +27,10 @@ export class Spawner {
   }
 
   async spawn(position: Vector3, model: string, heading = 0.0): Promise<void> {
-    console.log('[Core] First spawn:', JSON.stringify(position), 'model:', model)
+    loggers.spawn.info('First spawn requested', {
+      position: { x: position.x, y: position.y, z: position.z },
+      model,
+    })
 
     await this.ensureNetworkReady()
     this.closeLoadingScreens()
@@ -34,7 +38,7 @@ export class Spawner {
     const ped = await this.ensurePed()
     await this.placePed(ped, position, heading)
     this.spawned = true
-    console.log('[Core] Player spawned (first).')
+    loggers.spawn.info('Player spawned successfully (first spawn)')
   }
 
   async teleportTo(position: Vector3, heading?: number): Promise<void> {
@@ -47,7 +51,9 @@ export class Spawner {
     }
     FreezeEntityPosition(ped, false)
 
-    console.log('[Core] Teleport to', JSON.stringify(position))
+    loggers.spawn.debug('Teleported', {
+      position: { x: position.x, y: position.y, z: position.z },
+    })
   }
 
   async respawn(position: Vector3, heading = 0.0): Promise<void> {
@@ -56,7 +62,9 @@ export class Spawner {
     ClearPedTasksImmediately(ped)
     SetEntityHealth(ped, GetEntityMaxHealth(ped))
     await this.teleportTo(position, heading)
-    console.log('[Core] Player respawned in', JSON.stringify(position))
+    loggers.spawn.info('Player respawned', {
+      position: { x: position.x, y: position.y, z: position.z },
+    })
   }
 
   isSpawned(): boolean {
@@ -82,7 +90,7 @@ export class Spawner {
     const modelHash = GetHashKey(model)
 
     if (!IsModelInCdimage(modelHash) || !IsModelValid(modelHash)) {
-      console.error(`[Core] Invalid model: ${model}`)
+      loggers.spawn.error(`Invalid model requested`, { model })
       throw new Error('MODEL_INVALID')
     }
 

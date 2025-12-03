@@ -5,13 +5,15 @@ import { MetadataScanner } from '../system/metadata.scanner'
 import { registerSystemServer } from './system/processors.register'
 import { registerServicesServer } from './services/registers'
 import { serverControllerRegistry } from './decorators'
+import { loggers } from '../shared/logger'
 
 const check = () => {
   if (!di.isRegistered(PrincipalProviderContract as any)) {
-    throw new Error(
-      `[OpenCore] CRITICAL: No Authentication Provider configured. ` +
-        `Please call 'Server.Setup.setAuthProvider(YourProvider)' before init().`,
-    )
+    const errorMsg =
+      'No Authentication Provider configured. ' +
+      "Please call 'Server.setAuthProvider(YourProvider)' before init()."
+    loggers.bootstrap.fatal(errorMsg)
+    throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
   }
 }
 
@@ -31,15 +33,24 @@ const check = () => {
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
 export async function initServer() {
+  loggers.bootstrap.info('Initializing OpenCore Server...')
+
   check()
+
   // Register core services
   registerServicesServer()
+  loggers.bootstrap.debug('Core services registered')
+
   // Register system processors
   registerSystemServer()
+  loggers.bootstrap.debug('System processors registered')
 
   // Extras
   playerSessionLoader()
+  loggers.bootstrap.debug('Player session loader active')
 
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(serverControllerRegistry)
+
+  loggers.bootstrap.info('OpenCore Server initialized successfully')
 }

@@ -1,6 +1,7 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { METADATA_KEYS } from '../metadata-server.keys'
+import { loggers } from '../../../shared/logger'
 
 @injectable()
 export class ExportProcessor implements DecoratorProcessor {
@@ -11,6 +12,6 @@ export class ExportProcessor implements DecoratorProcessor {
 
     exports(metadata.exportName, handler)
 
-    console.log(`[Core] Export registered: ${metadata.exportName}`)
+    loggers.exports.debug(`Registered: ${metadata.exportName}`)
   }
 }

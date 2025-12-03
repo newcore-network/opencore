@@ -4,6 +4,7 @@ import { AppError, SecurityError } from '../../utils'
 import { Server } from '../..'
 import z from 'zod'
 import { SecurityHandlerContract } from '../templates/security/security-handler.contract'
+import { loggers } from '../../shared/logger'
 
 @injectable()
 export class CommandService {
@@ -13,7 +14,7 @@ export class CommandService {
 
   register(meta: CommandMetadata, handler: Function) {
     this.commands.set(meta.name.toLowerCase(), { meta, handler })
-    console.log(`[CORE] Command registered: ${meta.name} ${meta.schema ? '[Validated]' : ''}`)
+    loggers.command.debug(`Registered: /${meta.name}${meta.schema ? ' [Validated]' : ''}`)
   }
 
   async execute(player: Server.Player, commandName: string, args: string[], raw: string) {

@@ -1,6 +1,7 @@
 import { AppError, isAppError } from '../utils'
 import type { ErrorOrigin } from '../utils/'
 import type { CommandMetadata } from './decorators/command'
+import { loggers } from '../shared/logger'
 
 function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   if (isAppError(error)) {
@@ -17,13 +18,13 @@ function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
 export function handleCommandError(error: unknown, meta: CommandMetadata, playerId: number | null) {
   const appError = normalizeError(error, 'server')
 
-  console.error('[CORE] Command error', {
+  loggers.command.error(`Command execution failed: /${meta.name}`, {
     command: meta.name,
     handler: meta.methodName,
     playerId,
     code: appError.code,
     origin: appError.origin,
-    message: appError.message,
+    errorMessage: appError.message,
     details: appError.details,
   })
 

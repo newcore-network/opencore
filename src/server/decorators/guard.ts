@@ -1,6 +1,7 @@
 import type { Server } from '../..'
 import { di } from '../container'
 import { AccessControlService } from '../services'
+import { loggers } from '../../shared/logger'
 
 export interface GuardOptions {
   rank?: number
@@ -13,9 +14,10 @@ export function Guard(options: GuardOptions) {
     descriptor.value = async function (...args: any[]) {
       const player = args[0] as Server.Player
       if (!player || !player.clientID) {
-        console.warn(
-          `[Core] @Guard applied in ${propertyKey} but the first arg doesn't seem to be a Player.`,
-        )
+        loggers.security.warn(`@Guard misuse: First argument is not a Player`, {
+          method: propertyKey,
+          targetClass: target.constructor?.name,
+        })
         throw new Error('Guard Security Error: Context is not a player')
       }
 

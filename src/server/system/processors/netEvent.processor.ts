@@ -5,6 +5,7 @@ import { METADATA_KEYS } from '../metadata-server.keys'
 import { NetEventOptions } from '../../decorators'
 import { SecurityHandlerContract } from '../../templates/security/security-handler.contract'
 import { SecurityError } from '../../../utils'
+import { loggers } from '../../../shared/logger'
 import z from 'zod'
 
 @injectable()
@@ -18,15 +19,18 @@ export class NetEventProcessor implements DecoratorProcessor {
 
   process(target: any, methodName: string, metadata: NetEventOptions) {
     const handler = target[methodName].bind(target)
+    const handlerName = `${target.constructor.name}.${methodName}`
 
     onNet(metadata.eventName, async (...args: any[]) => {
       const sourceId = Number(global.source)
       const player = this.playerService.getByClient(sourceId)
 
       if (!player) {
-        return console.warn(
-          `[Core] Event ${metadata.eventName} ignored: Player ${sourceId} not found.`,
-        )
+        loggers.netEvent.warn(`Event ignored: Player session not found`, {
+          event: metadata.eventName,
+          clientId: sourceId,
+        })
+        return
       }
 
       let validatedArgs = args
@@ -51,7 +55,14 @@ export class NetEventProcessor implements DecoratorProcessor {
             this.securityHandler.handleViolation(player, error)
             return
           }
-          console.error(`[Core] Error in ${metadata.eventName}:`, error)
+          loggers.netEvent.error(
+            `Validation error in event`,
+            {
+              event: metadata.eventName,
+              playerId: player.clientID,
+            },
+            error as Error,
+          )
         }
       }
 
@@ -61,12 +72,18 @@ export class NetEventProcessor implements DecoratorProcessor {
         if (error instanceof SecurityError) {
           this.securityHandler.handleViolation(player, error)
         }
-        console.error(`[Core] Error in NetEvent ${metadata.eventName}:`, error)
+        loggers.netEvent.error(
+          `Handler error in event`,
+          {
+            event: metadata.eventName,
+            handler: handlerName,
+            playerId: player.clientID,
+          },
+          error as Error,
+        )
       }
     })
 
-    console.log(
-      `[Core] NetEvent registered: ${metadata.eventName} -> ${target.constructor.name}.${methodName}`,
-    )
+    loggers.netEvent.debug(`Registered: ${metadata.eventName} -> ${handlerName}`)
   }
 }
