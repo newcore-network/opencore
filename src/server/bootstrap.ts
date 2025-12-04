@@ -6,12 +6,21 @@ import { registerSystemServer } from './system/processors.register'
 import { registerServicesServer } from './services/registers'
 import { serverControllerRegistry } from './decorators'
 import { loggers } from '../shared/logger'
+import { AuthProviderContract } from './templates/auth/auth-provider.contract'
 
 const check = () => {
   if (!di.isRegistered(PrincipalProviderContract as any)) {
     const errorMsg =
+      'No Principal Provider configured. ' +
+      "Please call 'Server.setPrincipalProvider(YourProvider)' before init(). This is required for authentication and authorization."
+    loggers.bootstrap.fatal(errorMsg)
+    throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
+  }
+
+  if (!di.isRegistered(AuthProviderContract as any)) {
+    const errorMsg =
       'No Authentication Provider configured. ' +
-      "Please call 'Server.setAuthProvider(YourProvider)' before init()."
+      "Please call 'Server.setAuthProvider(YourProvider)' before init(). This is required for authentication and authorization."
     loggers.bootstrap.fatal(errorMsg)
     throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
   }

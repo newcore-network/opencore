@@ -21,7 +21,8 @@ export class NetEventProcessor implements DecoratorProcessor {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
 
-    const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, target, methodName) === true
+    const proto = Object.getPrototypeOf(target)
+    const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) === true
 
     onNet(metadata.eventName, async (...args: any[]) => {
       const sourceId = Number(global.source)
