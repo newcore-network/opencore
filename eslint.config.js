@@ -29,4 +29,27 @@ module.exports = [
       '@typescript-eslint/consistent-type-imports': 'warn',
     },
   },
+  {
+    files: ['tests/**/*.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: ['./tsconfig.test.json'],
+        tsconfigRootDir: __dirname,
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      prettier: prettierPlugin,
+    },
+    rules: {
+      'prettier/prettier': ['error', { singleQuote: true, semi: false }],
+      semi: ['error', 'never'],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/consistent-type-imports': 'warn',
+      '@typescript-eslint/no-unsafe-decorator': 'off',
+    },
+  },
 ]

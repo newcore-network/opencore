@@ -6,6 +6,8 @@
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Version](https://img.shields.io/badge/beta-0.5.0-orange.svg)](https://github.com/newcore-network/opencore)
+![coverage](https://img.shields.io/badge/coverage-43%25-yellow)
+![core decorators](https://img.shields.io/badge/core%20decorators-100%25-brightgreen)
 
 ## 🚀 Why OpenCore?
 
