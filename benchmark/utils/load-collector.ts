@@ -1,0 +1,104 @@
+import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'fs'
+import { join } from 'path'
+import type { LoadTestMetrics } from './metrics'
+
+const METRICS_FILE = join(process.cwd(), 'benchmark', 'reports', '.load-metrics.json')
+
+interface CollectedMetric {
+  name: string
+  playerCount: number
+  throughput: number
+  p95: number
+  mean: number
+  min: number
+  max: number
+  p50: number
+  p99: number
+  successCount: number
+  errorCount: number
+  errorRate: number
+  timestamp: number
+}
+
+/**
+ * Recopila una métrica de load test para el reporte final
+ */
+export function collectLoadMetric(metrics: LoadTestMetrics): void {
+  const collected: CollectedMetric = {
+    name: metrics.name,
+    playerCount: metrics.playerCount,
+    throughput: metrics.throughput,
+    p95: metrics.p95,
+    mean: metrics.mean,
+    min: metrics.min,
+    max: metrics.max,
+    p50: metrics.p50,
+    p99: metrics.p99,
+    successCount: metrics.successCount,
+    errorCount: metrics.errorCount,
+    errorRate: metrics.errorRate,
+    timestamp: Date.now(),
+  }
+
+  let existingMetrics: CollectedMetric[] = []
+
+  if (existsSync(METRICS_FILE)) {
+    try {
+      existingMetrics = JSON.parse(readFileSync(METRICS_FILE, 'utf-8'))
+    } catch {
+      existingMetrics = []
+    }
+  }
+
+  existingMetrics.push(collected)
+  writeFileSync(METRICS_FILE, JSON.stringify(existingMetrics, null, 2))
+}
+
+/**
+ * Lee todas las métricas recopiladas
+ */
+export function readCollectedMetrics(): LoadTestMetrics[] {
+  if (!existsSync(METRICS_FILE)) {
+    return []
+  }
+
+  try {
+    const collected: CollectedMetric[] = JSON.parse(readFileSync(METRICS_FILE, 'utf-8'))
+
+    return collected.map((c) => ({
+      name: c.name,
+      playerCount: c.playerCount,
+      totalOperations: c.successCount + c.errorCount,
+      successCount: c.successCount,
+      errorCount: c.errorCount,
+      timings: [],
+      mean: c.mean,
+      min: c.min,
+      max: c.max,
+      p50: c.p50,
+      p95: c.p95,
+      p99: c.p99,
+      throughput: c.throughput,
+      errorRate: c.errorRate,
+    }))
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Limpia las métricas recopiladas
+ */
+export function clearCollectedMetrics(): void {
+  if (existsSync(METRICS_FILE)) {
+    unlinkSync(METRICS_FILE)
+  }
+}
+
+/**
+ * Obtiene la ruta del archivo de métricas
+ */
+export function getMetricsFilePath(): string {
+  return METRICS_FILE
+}
+

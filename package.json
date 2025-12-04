@@ -15,7 +15,11 @@
     "test:watch": "vitest",
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "bench": "tsx benchmark/index.ts",
+    "bench:core": "tsx benchmark/index.ts --core",
+    "bench:load": "vitest run --project benchmark",
+    "bench:all": "tsx benchmark/index.ts --all"
   },
   "keywords": [
     "framework",
@@ -45,6 +49,8 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "3.7.1",
+    "tinybench": "^2.7.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   }

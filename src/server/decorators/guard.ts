@@ -9,7 +9,16 @@ export interface GuardOptions {
 }
 
 export function Guard(options: GuardOptions) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+    if (!descriptor) {
+      // In benchmarks or edge cases, only register metadata without method wrapping
+      // This should NOT happen in production code with proper TypeScript compilation
+      loggers.security.warn(
+        `@Guard decorator: PropertyDescriptor not available. Only metadata will be registered. This should not happen in production code. Target: ${target.constructor?.name}, Method: ${propertyKey}`,
+      )
+      Reflect.defineMetadata('core:guard', options, target, propertyKey)
+      return
+    }
     const originalMethod = descriptor.value
     descriptor.value = async function (...args: any[]) {
       const player = args[0] as Server.Player
