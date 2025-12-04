@@ -21,6 +21,8 @@ export class NetEventProcessor implements DecoratorProcessor {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
 
+    const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, target, methodName) === true
+
     onNet(metadata.eventName, async (...args: any[]) => {
       const sourceId = Number(global.source)
       const player = this.playerService.getByClient(sourceId)
@@ -30,6 +32,18 @@ export class NetEventProcessor implements DecoratorProcessor {
           event: metadata.eventName,
           clientId: sourceId,
         })
+        return
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // SECURE BY DEFAULT: Require authentication unless @Public()
+      // ═══════════════════════════════════════════════════════════════
+      if (!isPublic && !player.accountID) {
+        loggers.security.warn(`Unauthenticated request blocked`, {
+          event: metadata.eventName,
+          clientId: sourceId,
+        })
+        player.emit('core:auth:required', { event: metadata.eventName })
         return
       }
 

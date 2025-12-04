@@ -3,7 +3,7 @@ import type { LinkedID } from '../../services'
 import type { Principal } from './permission.types'
 
 /**
- * **Contract / Interface**
+ * **Authorization**
  *
  * This abstract class defines how the Security Layer retrieves user permissions.
  * The Framework does not know about your database (SQL, Mongo, JSON or API); it relies on

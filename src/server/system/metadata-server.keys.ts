@@ -5,4 +5,5 @@ export const METADATA_KEYS = {
   TICK: 'core:meta:tick',
   CORE_EVENT: 'core:meta:core_event',
   EXPORT: 'core:meta:export',
+  PUBLIC: 'core:meta:public',
 }

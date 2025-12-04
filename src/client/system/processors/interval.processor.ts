@@ -37,4 +37,3 @@ export class IntervalProcessor implements DecoratorProcessor {
     clientInterval.debug(`Registered: ${handlerName} (every ${metadata.interval}ms)`)
   }
 }
-

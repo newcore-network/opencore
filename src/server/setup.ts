@@ -3,9 +3,15 @@ import { di } from './container'
 import { PrincipalProviderContract } from './templates'
 import { SecurityHandlerContract } from './templates/security/security-handler.contract'
 import { loggers } from '../shared/logger'
+import { AuthProviderContract } from './templates/auth/auth-provider.contract'
 
-export function setAuthProvider(provider: ClassConstructor<PrincipalProviderContract>) {
+export function setPrincipalProvider(provider: ClassConstructor<PrincipalProviderContract>) {
   di.registerSingleton(PrincipalProviderContract as any, provider)
+  loggers.bootstrap.info(`Principal Provider configured: ${provider.name}`)
+}
+
+export function setAuthProvider(provider: ClassConstructor<AuthProviderContract>) {
+  di.registerSingleton(AuthProviderContract as any, provider)
   loggers.bootstrap.info(`Auth Provider configured: ${provider.name}`)
 }
 
