@@ -88,7 +88,7 @@ Reports are automatically generated in `benchmark/reports/` in three formats:
 
 ## 📈 Latest Benchmark Results
 
-**Version:** 0.5.0-beta.1  
+**Version:** 0.6.0-beta.1  
 **Date:** December 4, 2025
 
 ### Core Benchmarks Summary
