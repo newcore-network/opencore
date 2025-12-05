@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Secure, Event-Driven, OOP Engine for FiveM. Stop scripting, start engineering.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +13,11 @@
   "bugs": {
     "url": "https://github.com/newcore-network/opencore/issues"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "watch": "tsc -p tsconfig.build.json --watch",

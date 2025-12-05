@@ -8,12 +8,18 @@ tests/
 
 # Build artifacts
 *.tsbuildinfo
+dist/**/*.map
 
 # Git
 .git/
 .github/
 
-# Config files (keep in repo, not in npm)
+# Source
+src/
+tsconfig.json
+tsconfig.build.json
+tsconfig.test.json
+
+# Config files not meant for npm
 vitest.config.ts
 eslint.config.js
-tsconfig.test.json
