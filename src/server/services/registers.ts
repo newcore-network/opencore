@@ -4,6 +4,7 @@ import { ChatService } from './chat.service'
 import { CommandService } from './command.service'
 import { HttpService } from './http/http.service'
 import { PlayerService } from './player.service'
+import { PlayerPersistenceService } from './persistence.service'
 
 export function registerServicesServer() {
   di.registerSingleton(PlayerService, PlayerService)
@@ -11,4 +12,5 @@ export function registerServicesServer() {
   di.registerSingleton(HttpService, HttpService)
   di.registerSingleton(ChatService, ChatService)
   di.registerSingleton(DatabaseService, DatabaseService)
+  di.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
 }

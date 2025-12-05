@@ -1,20 +1,28 @@
 import { container } from 'tsyringe'
 import { PlayerService } from '../services/player.service'
+import { PlayerPersistenceService } from '../services/persistence.service'
 import { emitCoreEvent } from '../bus/core-event-bus'
 import { loggers } from '../../shared/logger'
 
 export const playerSessionLoader = () => {
   const playerManager = container.resolve(PlayerService)
+  const persistenceService = container.resolve(PlayerPersistenceService)
 
-  on('playerJoining', (source: string) => {
+  // Initialize persistence service (resolves provider if configured)
+  persistenceService.initialize()
+
+  on('playerJoining', async (source: string) => {
     const clientId = Number(source)
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
-    playerManager.bind(clientId, { license })
+    const player = playerManager.bind(clientId, { license })
 
     loggers.session.info(`Player session created`, {
       clientId,
       license: license ?? 'none',
     })
+
+    // Load persisted data for the player
+    await persistenceService.handleSessionLoad(player)
 
     emitCoreEvent('core:playerSessionCreated', {
       clientId,
@@ -22,8 +30,15 @@ export const playerSessionLoader = () => {
     })
   })
 
-  on('playerDropped', () => {
+  on('playerDropped', async () => {
     const clientId = Number(global.source)
+    const player = playerManager.getByClient(clientId)
+
+    // Save player data before destroying session
+    if (player) {
+      await persistenceService.handleSessionSave(player)
+    }
+
     playerManager.unbindByClient(clientId)
     emitCoreEvent('core:playerSessionDestroyed', { clientId })
 
