@@ -8,6 +8,7 @@ import { runRateLimiterBenchmark } from './core/rate-limiter.bench'
 import { runAccessControlBenchmark } from './core/access-control.bench'
 import { runEventBusBenchmark } from './core/event-bus.bench'
 import { runDecoratorsBenchmark } from './core/decorators.bench'
+import { runParallelComputeBenchmark } from './core/parallel-compute.bench'
 import { printReport, saveReport } from './utils/reporter'
 import type { BenchmarkMetrics, LoadTestMetrics } from './utils/metrics'
 import { readCollectedMetrics, clearCollectedMetrics } from './utils/load-collector'
@@ -138,6 +139,17 @@ async function runCoreBenchmarks(): Promise<BenchmarkMetrics[]> {
   await decoratorsBench.warmup()
   await decoratorsBench.run()
   for (const task of decoratorsBench.tasks) {
+    if (task.result) {
+      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
+    }
+  }
+
+  // ParallelCompute
+  console.log('Running ParallelCompute benchmark...')
+  const parallelBench = await runParallelComputeBenchmark()
+  await parallelBench.warmup()
+  await parallelBench.run()
+  for (const task of parallelBench.tasks) {
     if (task.result) {
       results.push(convertTinybenchResult({ ...task.result, name: task.name }))
     }
