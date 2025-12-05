@@ -1,0 +1,315 @@
+/**
+ * Database Service
+ *
+ * Main entry point for database operations. Acts as a factory/wrapper
+ * that delegates to the registered database adapter.
+ *
+ * @example
+ * ```typescript
+ * import { DatabaseService } from '@opencore/framework/server'
+ * import { inject, injectable } from 'tsyringe'
+ *
+ * @injectable()
+ * class UserService {
+ *   constructor(@inject(DatabaseService) private db: DatabaseService) {}
+ *
+ *   async getUser(id: number) {
+ *     return this.db.single<User>('SELECT * FROM users WHERE id = ?', [id])
+ *   }
+ * }
+ * ```
+ */
+
+import { injectable } from 'tsyringe'
+import { DatabaseContract } from './database.contract'
+import { OxMySQLAdapter } from './adapters/oxmysql.adapter'
+import type {
+  DatabaseConfig,
+  ExecuteResult,
+  InsertResult,
+  TransactionInput,
+  TransactionSharedParams,
+} from './types'
+
+/**
+ * Database Service
+ *
+ * Singleton service that provides database operations through
+ * a pluggable adapter system. Uses oxmysql by default.
+ */
+@injectable()
+export class DatabaseService extends DatabaseContract {
+  private adapter: DatabaseContract | null = null
+  private config: DatabaseConfig = {}
+  private isInitialized = false
+
+  /**
+   * Initialize the database service with optional configuration
+   *
+   * @param config - Database configuration options
+   */
+  initialize(config: DatabaseConfig = {}): void {
+    if (this.isInitialized) return
+
+    this.config = config
+
+    // Use oxmysql by default
+    if (!this.adapter) {
+      this.adapter = new OxMySQLAdapter()
+    }
+
+    this.isInitialized = true
+  }
+
+  /**
+   * Check if the service is initialized
+   */
+  get initialized(): boolean {
+    return this.isInitialized
+  }
+
+  /**
+   * Register a custom database adapter
+   *
+   * @param adapter - Custom adapter implementing DatabaseContract
+   *
+   * @example
+   * ```typescript
+   * class CustomAdapter extends DatabaseContract {
+   *   // Implementation
+   * }
+   *
+   * db.setAdapter(new CustomAdapter())
+   * ```
+   */
+  setAdapter(adapter: DatabaseContract): void {
+    this.adapter = adapter
+  }
+
+  /**
+   * Get the current adapter
+   */
+  getAdapter(): DatabaseContract {
+    this.ensureInitialized()
+    return this.adapter!
+  }
+
+  /**
+   * Ensure the service is initialized before operations
+   */
+  private ensureInitialized(): void {
+    if (!this.adapter) {
+      // Auto-initialize with defaults if not initialized
+      this.initialize()
+    }
+  }
+
+  /**
+   * Execute a query and return all matching rows
+   */
+  async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
+    this.ensureInitialized()
+    return this.adapter!.query<T>(sql, params)
+  }
+
+  /**
+   * Execute a query and return a single row
+   */
+  async single<T = any>(sql: string, params?: any[]): Promise<T | null> {
+    this.ensureInitialized()
+    return this.adapter!.single<T>(sql, params)
+  }
+
+  /**
+   * Execute a query and return a single scalar value
+   */
+  async scalar<T = any>(sql: string, params?: any[]): Promise<T | null> {
+    this.ensureInitialized()
+    return this.adapter!.scalar<T>(sql, params)
+  }
+
+  /**
+   * Execute an UPDATE or DELETE statement
+   */
+  async execute(sql: string, params?: any[]): Promise<ExecuteResult> {
+    this.ensureInitialized()
+    return this.adapter!.execute(sql, params)
+  }
+
+  /**
+   * Execute an INSERT statement
+   */
+  async insert(sql: string, params?: any[]): Promise<InsertResult> {
+    this.ensureInitialized()
+    return this.adapter!.insert(sql, params)
+  }
+
+  /**
+   * Execute multiple queries within a transaction
+   */
+  async transaction(
+    queries: TransactionInput,
+    sharedParams?: TransactionSharedParams,
+  ): Promise<boolean> {
+    this.ensureInitialized()
+    return this.adapter!.transaction(queries, sharedParams)
+  }
+}
+
+// Singleton instance for standalone usage
+let databaseServiceInstance: DatabaseService | null = null
+
+/**
+ * Get the global DatabaseService instance
+ *
+ * @returns The singleton DatabaseService instance
+ *
+ * @example
+ * ```typescript
+ * import { getDatabaseService } from '@opencore/framework/server'
+ *
+ * const db = getDatabaseService()
+ * const users = await db.query('SELECT * FROM users')
+ * ```
+ */
+export function getDatabaseService(): DatabaseService {
+  if (!databaseServiceInstance) {
+    databaseServiceInstance = new DatabaseService()
+  }
+  return databaseServiceInstance
+}
+
+/**
+ * Initialize the database service
+ *
+ * @param config - Database configuration options
+ *
+ * @example
+ * ```typescript
+ * import { initDatabase } from '@opencore/framework/server'
+ *
+ * // Initialize with default oxmysql adapter
+ * initDatabase()
+ *
+ * // Or with custom config
+ * initDatabase({ debug: true })
+ * ```
+ */
+export function initDatabase(config: DatabaseConfig = {}): void {
+  getDatabaseService().initialize(config)
+}
+
+/**
+ * Standalone query function
+ *
+ * @example
+ * ```typescript
+ * import { query } from '@opencore/framework/server'
+ *
+ * const users = await query<User>('SELECT * FROM users WHERE active = ?', [true])
+ * ```
+ */
+export async function query<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  return getDatabaseService().query<T>(sql, params)
+}
+
+/**
+ * Standalone single function
+ *
+ * @example
+ * ```typescript
+ * import { single } from '@opencore/framework/server'
+ *
+ * const user = await single<User>('SELECT * FROM users WHERE id = ?', [userId])
+ * ```
+ */
+export async function single<T = any>(sql: string, params?: any[]): Promise<T | null> {
+  return getDatabaseService().single<T>(sql, params)
+}
+
+/**
+ * Standalone scalar function
+ *
+ * @example
+ * ```typescript
+ * import { scalar } from '@opencore/framework/server'
+ *
+ * const count = await scalar<number>('SELECT COUNT(*) FROM users')
+ * ```
+ */
+export async function scalar<T = any>(sql: string, params?: any[]): Promise<T | null> {
+  return getDatabaseService().scalar<T>(sql, params)
+}
+
+/**
+ * Standalone execute function
+ *
+ * @example
+ * ```typescript
+ * import { execute } from '@opencore/framework/server'
+ *
+ * const result = await execute('UPDATE users SET active = ? WHERE id = ?', [false, userId])
+ * console.log(`Updated ${result.affectedRows} rows`)
+ * ```
+ */
+export async function execute(sql: string, params?: any[]): Promise<ExecuteResult> {
+  return getDatabaseService().execute(sql, params)
+}
+
+/**
+ * Standalone insert function
+ *
+ * @example
+ * ```typescript
+ * import { insert } from '@opencore/framework/server'
+ *
+ * const result = await insert('INSERT INTO users (name) VALUES (?)', ['John'])
+ * console.log(`Inserted with ID: ${result.insertId}`)
+ * ```
+ */
+export async function insert(sql: string, params?: any[]): Promise<InsertResult> {
+  return getDatabaseService().insert(sql, params)
+}
+
+/**
+ * Standalone transaction function
+ *
+ * Execute multiple queries atomically. All succeed or all fail.
+ *
+ * @example Specific format (each query has its own params)
+ * ```typescript
+ * import { transaction } from '@opencore/framework/server'
+ *
+ * const success = await transaction([
+ *   { query: 'INSERT INTO users (name) VALUES (?)', values: ['John'] },
+ *   { query: 'INSERT INTO logs (action) VALUES (?)', values: ['user_created'] },
+ * ])
+ * ```
+ *
+ * @example Tuple format
+ * ```typescript
+ * const success = await transaction([
+ *   ['INSERT INTO users (name) VALUES (?)', ['John']],
+ *   ['INSERT INTO logs (action) VALUES (?)', ['user_created']],
+ * ])
+ * ```
+ *
+ * @example Shared format (named parameters)
+ * ```typescript
+ * const success = await transaction(
+ *   [
+ *     'INSERT INTO users (id, name) VALUES (@userid, @username)',
+ *     'INSERT INTO profiles (user_id) VALUES (@userid)',
+ *   ],
+ *   { userid: 1, username: 'John' }
+ * )
+ * ```
+ *
+ * @see https://coxdocs.dev/oxmysql/Functions/transaction
+ */
+export async function transaction(
+  queries: TransactionInput,
+  sharedParams?: TransactionSharedParams,
+): Promise<boolean> {
+  return getDatabaseService().transaction(queries, sharedParams)
+}
