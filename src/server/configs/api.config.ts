@@ -1,25 +1,24 @@
 import { Bind } from '../decorators'
+import { createFluentConfigurator, FluentConfigurator } from './config.base'
+
 interface ApiConfigState {
   baseUrl: string
   timeoutMs: number
-  headers: Record<string, string>
 }
 
 /**
- * Interface defining the Fluent API methods for configuring the API module.
- * This allows method chaining for a cleaner configuration syntax.
+ * Extended configurator interface for API configuration.
+ *
+ * Extends the base fluent configurator with additional methods
+ * specific to API configuration (like addHeader).
  */
-export interface ApiConfigurator {
+export interface ApiConfigurator extends FluentConfigurator<ApiConfigState> {
   /**
-   * Sets the base URL for API requests.
-   * @param url - The fully qualified base URL (e.g., "https://api.myserver.com").
-   */
-  baseUrl(url: string): this
-  /**
-   * Sets the default timeout for API requests.
+   * Alias for timeoutMs - sets the timeout in milliseconds.
    * @param ms - Timeout duration in milliseconds.
    */
   timeout(ms: number): this
+
   /**
    * Adds a default header to be included in every API request.
    * @param key - The HTTP header name (e.g., "Authorization").
@@ -42,8 +41,9 @@ export class ApiConfig {
   private state: ApiConfigState = {
     baseUrl: GetConvar('opencore_api_url', 'http://localhost:3000'),
     timeoutMs: Number(GetConvar('opencore_api_timeout', '5000')),
-    headers: {},
   }
+
+  private _headers: Record<string, string> = {}
 
   /**
    * Applies programmatic configuration using a functional builder pattern.
@@ -55,16 +55,30 @@ export class ApiConfig {
    * ```ts
    * const apiConfig = di.resolve(ApiConfig);
    * apiConfig.configure(c =>
-   * c.baseUrl('[https://api.production.com](https://api.production.com)')
-   * .timeout(10000)
-   * .addHeader('X-API-Key', 'secret')
+   *   c.baseUrl('https://api.production.com')
+   *     .timeout(10000)
+   *     .addHeader('X-API-Key', 'secret')
    * );
    * ```
    *
    * @param configFn - A callback function that receives the configurator instance.
    */
   public configure(configFn: (config: ApiConfigurator) => void): void {
-    const configurator = this.createConfigurator()
+    const baseConfigurator = createFluentConfigurator(this.state)
+
+    // Extend with custom methods
+    const configurator: ApiConfigurator = {
+      ...baseConfigurator,
+      timeout: (ms: number) => {
+        this.state.timeoutMs = ms
+        return configurator
+      },
+      addHeader: (key: string, value: string) => {
+        this._headers[key] = value
+        return configurator
+      },
+    }
+
     configFn(configurator)
   }
 
@@ -86,23 +100,6 @@ export class ApiConfig {
    * Gets a copy of the globally configured headers.
    */
   get headers() {
-    return { ...this.state.headers }
-  }
-
-  private createConfigurator(): ApiConfigurator {
-    return {
-      baseUrl: (url: string) => {
-        this.state.baseUrl = url
-        return this.createConfigurator()
-      },
-      timeout: (ms: number) => {
-        this.state.timeoutMs = ms
-        return this.createConfigurator()
-      },
-      addHeader: (key: string, value: string) => {
-        this.state.headers[key] = value
-        return this.createConfigurator()
-      },
-    }
+    return { ...this._headers }
   }
 }
