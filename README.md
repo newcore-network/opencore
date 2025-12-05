@@ -325,6 +325,16 @@ opencore/
 
 ---
 
+## Available Modules
+
+A module is a library belonging to the OpenCore family, where you can take advantage of its functionality if you wish, and where we provide the foundation for building a specific system.
+
+- [Open-core Identity](https://github.com/newcore-network/opencore-identity): Flexible identity and permission system for OpenCore. Provides multiple authentication strategies, role management, and permission-based authorization through the framework's Principal system. [NPM](https://www.npmjs.com/package/@open-core/identity).
+
+```bash
+pnpm add @open-core/identity
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please ensure:
