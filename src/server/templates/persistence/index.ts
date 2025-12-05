@@ -9,7 +9,7 @@
  *   PlayerPersistenceContract,
  *   PersistenceConfig,
  *   DEFAULT_PERSISTENCE_CONFIG
- * } from '@opencore/framework/server'
+ * } from '@open-core/framework/server'
  *
  * class MyPersistenceProvider extends PlayerPersistenceContract {
  *   readonly config: PersistenceConfig = {
@@ -33,4 +33,3 @@ export {
 } from './player-persistence.contract'
 
 export type { PersistenceConfig } from './player-persistence.contract'
-

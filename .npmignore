@@ -1,0 +1,19 @@
+# Development
+benchmark/
+coverage/
+tests/
+*.bench.ts
+.cursor/
+.vscode/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Git
+.git/
+.github/
+
+# Config files (keep in repo, not in npm)
+vitest.config.ts
+eslint.config.js
+tsconfig.test.json

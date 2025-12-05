@@ -25,10 +25,11 @@ export class PlayerPersistenceService {
 
     try {
       if (di.isRegistered(PlayerPersistenceContract as any)) {
-        this.provider = di.resolve(PlayerPersistenceContract as any)
+        const provider = di.resolve<PlayerPersistenceContract>(PlayerPersistenceContract as any)
+        this.provider = provider
         loggers.bootstrap.info('Player Persistence Provider initialized', {
-          autoSaveEnabled: this.provider.config.autoSaveEnabled,
-          autoSaveIntervalMs: this.provider.config.autoSaveIntervalMs,
+          autoSaveEnabled: provider.config.autoSaveEnabled,
+          autoSaveIntervalMs: provider.config.autoSaveIntervalMs,
         })
       }
     } catch {
@@ -149,11 +150,7 @@ export class PlayerPersistenceService {
         await this.provider!.onAutoSave(player)
         loggers.session.debug('Player auto-save completed', { clientId: player.clientID })
       } catch (error) {
-        loggers.session.error(
-          'Auto-save failed',
-          { clientId: player.clientID },
-          error as Error,
-        )
+        loggers.session.error('Auto-save failed', { clientId: player.clientID }, error as Error)
       }
     }, intervalMs)
 
@@ -182,4 +179,3 @@ export class PlayerPersistenceService {
     this.autoSaveIntervals.clear()
   }
 }
-

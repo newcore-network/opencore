@@ -79,7 +79,7 @@ function normalizeQueries(queries: TransactionInput): TransactionQuery[] | strin
  *
  * @example
  * ```typescript
- * import { OxMySQLAdapter } from '@opencore/framework/server'
+ * import { OxMySQLAdapter } from '@open-core/framework/server'
  *
  * // Usually you don't need to instantiate directly,
  * // use DatabaseService instead

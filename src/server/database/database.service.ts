@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { DatabaseService } from '@opencore/framework/server'
+ * import { DatabaseService } from '@open-core/framework/server'
  * import { inject, injectable } from 'tsyringe'
  *
  * @injectable()
@@ -166,7 +166,7 @@ let databaseServiceInstance: DatabaseService | null = null
  *
  * @example
  * ```typescript
- * import { getDatabaseService } from '@opencore/framework/server'
+ * import { getDatabaseService } from '@open-core/framework/server'
  *
  * const db = getDatabaseService()
  * const users = await db.query('SELECT * FROM users')
@@ -186,7 +186,7 @@ export function getDatabaseService(): DatabaseService {
  *
  * @example
  * ```typescript
- * import { initDatabase } from '@opencore/framework/server'
+ * import { initDatabase } from '@open-core/framework/server'
  *
  * // Initialize with default oxmysql adapter
  * initDatabase()
@@ -204,7 +204,7 @@ export function initDatabase(config: DatabaseConfig = {}): void {
  *
  * @example
  * ```typescript
- * import { query } from '@opencore/framework/server'
+ * import { query } from '@open-core/framework/server'
  *
  * const users = await query<User>('SELECT * FROM users WHERE active = ?', [true])
  * ```
@@ -218,7 +218,7 @@ export async function query<T = any>(sql: string, params?: any[]): Promise<T[]> 
  *
  * @example
  * ```typescript
- * import { single } from '@opencore/framework/server'
+ * import { single } from '@open-core/framework/server'
  *
  * const user = await single<User>('SELECT * FROM users WHERE id = ?', [userId])
  * ```
@@ -232,7 +232,7 @@ export async function single<T = any>(sql: string, params?: any[]): Promise<T | 
  *
  * @example
  * ```typescript
- * import { scalar } from '@opencore/framework/server'
+ * import { scalar } from '@open-core/framework/server'
  *
  * const count = await scalar<number>('SELECT COUNT(*) FROM users')
  * ```
@@ -246,7 +246,7 @@ export async function scalar<T = any>(sql: string, params?: any[]): Promise<T | 
  *
  * @example
  * ```typescript
- * import { execute } from '@opencore/framework/server'
+ * import { execute } from '@open-core/framework/server'
  *
  * const result = await execute('UPDATE users SET active = ? WHERE id = ?', [false, userId])
  * console.log(`Updated ${result.affectedRows} rows`)
@@ -261,7 +261,7 @@ export async function execute(sql: string, params?: any[]): Promise<ExecuteResul
  *
  * @example
  * ```typescript
- * import { insert } from '@opencore/framework/server'
+ * import { insert } from '@open-core/framework/server'
  *
  * const result = await insert('INSERT INTO users (name) VALUES (?)', ['John'])
  * console.log(`Inserted with ID: ${result.insertId}`)
@@ -278,7 +278,7 @@ export async function insert(sql: string, params?: any[]): Promise<InsertResult>
  *
  * @example Specific format (each query has its own params)
  * ```typescript
- * import { transaction } from '@opencore/framework/server'
+ * import { transaction } from '@open-core/framework/server'
  *
  * const success = await transaction([
  *   { query: 'INSERT INTO users (name) VALUES (?)', values: ['John'] },

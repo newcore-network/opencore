@@ -9,7 +9,7 @@
  *   initParallelCompute,
  *   defineTask,
  *   filterByDistance,
- * } from '@opencore/framework/server'
+ * } from '@open-core/framework/server'
  *
  * // Initialize the worker pool (call once at startup)
  * initParallelCompute({ maxWorkers: 4 })

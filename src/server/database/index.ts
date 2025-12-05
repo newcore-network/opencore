@@ -12,7 +12,7 @@
  *   query,
  *   single,
  *   transaction,
- * } from '@opencore/framework/server'
+ * } from '@open-core/framework/server'
  *
  * // Option 1: Use standalone functions
  * initDatabase()

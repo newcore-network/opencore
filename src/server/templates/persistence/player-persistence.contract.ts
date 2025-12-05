@@ -34,7 +34,7 @@ export const DEFAULT_PERSISTENCE_CONFIG: PersistenceConfig = {
  *
  * @example
  * ```typescript
- * import { PlayerPersistenceContract, PersistenceConfig } from '@opencore/framework/server'
+ * import { PlayerPersistenceContract, PersistenceConfig } from '@open-core/framework/server'
  *
  * class MyPersistenceProvider extends PlayerPersistenceContract {
  *   readonly config: PersistenceConfig = {
@@ -94,4 +94,3 @@ export abstract class PlayerPersistenceContract {
    */
   abstract onAutoSave(player: Player): Promise<void>
 }
-

@@ -2,6 +2,7 @@
 export * from './security/principal-provider.contract'
 export * from './repository'
 export * from './persistence'
+export * from './auth/auth-provider.contract'
 
 // Types related to security
 export type * from './security/permission.types'

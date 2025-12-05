@@ -5,7 +5,7 @@
 > _Stop writing scripts; start engineering gameplay._
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Version](https://img.shields.io/badge/beta-0.6.0-orange.svg)](https://github.com/newcore-network/opencore)
+[![Version](https://img.shields.io/badge/beta-1.0.0-orange.svg)](https://github.com/newcore-network/opencore)
 ![Tests](https://img.shields.io/badge/tests-265%20passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-43%25-yellow)
 ![Core Decorators](https://img.shields.io/badge/core%20decorators-100%25-brightgreen)
@@ -44,7 +44,7 @@ OpenCore transforms FiveM development from chaotic scripting into professional s
 ## 📦 Installation
 
 ```bash
-pnpm add @opencore/framework reflect-metadata tsyringe zod uuid
+pnpm add @open-core/framework reflect-metadata tsyringe zod uuid
 ```
 
 > **Note:** Ensure you have `experimentalDecorators` and `emitDecoratorMetadata` enabled in your `tsconfig.json`.
@@ -58,7 +58,7 @@ Define a Controller, validate inputs with Zod, and protect it with a Guard. Zero
 **Server-side:**
 
 ```ts
-import { Server } from '@opencore/framework/server'
+import { Server } from '@open-core/framework/server'
 import { z } from 'zod'
 
 // 1. Define your Input Schema

@@ -5,6 +5,6 @@ export function Service(options?: { scope?: BindingScope }) {
   return Bind(options?.scope ?? 'singleton')
 }
 
-export function Repository(options?: { scope?: BindingScope }) {
+export function Repo(options?: { scope?: BindingScope }) {
   return Bind(options?.scope ?? 'singleton')
 }
