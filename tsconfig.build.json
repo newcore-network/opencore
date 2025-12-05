@@ -3,10 +3,13 @@
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+
+    "sourceMap": false,
+    "inlineSourceMap": false,
+    "declarationMap": false,
+
     "rootDir": "src",
     "outDir": "dist"
   },

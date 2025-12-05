@@ -19,6 +19,8 @@ src/
 tsconfig.json
 tsconfig.build.json
 tsconfig.test.json
+*.map
+dist/**/*.map
 
 # Config files not meant for npm
 vitest.config.ts
