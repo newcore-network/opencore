@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { resetCitizenFxMocks, registeredCommands, registeredNetEvents } from '../../tests/mocks/citizenfx'
+import {
+  resetCitizenFxMocks,
+  registeredCommands,
+  registeredNetEvents,
+} from '../../tests/mocks/citizenfx'
 import { CommandService } from '../../src/server/services/command.service'
 import { CommandNetworkController } from '../../src/server/controllers/command.controller'
 import { DefaultSecurityHandler } from '../../src/server/services/default/default-security.handler'
@@ -87,7 +91,6 @@ describe('Command Full Load Benchmarks', () => {
     it(`Command Full - ${playerCount} players, simple command (chat → RegisterCommand → onNet → CommandService → Handler)`, async () => {
       const players = PlayerFactory.createPlayers(playerCount, { rank: 1 })
 
-      // Registrar jugadores en el servicio
       for (const player of players) {
         playerService.bind(player.clientID)
         playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
@@ -100,15 +103,11 @@ describe('Command Full Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          // Simular flujo completo desde el chat
-          // 1. Chat input → RegisterCommand (ya registrado)
-          // 2. onNet handler (simulado)
           const handler = registeredCommands.get('simple')
           if (handler) {
             handler(player.clientID, ['arg1'])
           }
 
-          // 3. CommandService.execute
           await commandService.execute(player, 'simple', ['arg1'], '/simple arg1')
 
           const end = performance.now()
@@ -217,18 +216,15 @@ describe('Command Full Load Benchmarks', () => {
       let successCount = 0
       let errorCount = 0
 
-      // Obtener el handler de net event registrado
       const netEventHandler = registeredNetEvents.get('core:internal:executeCommand')
 
       for (const player of players) {
         const start = performance.now()
         try {
-          // Simular el flujo completo desde el net event
           if (netEventHandler) {
             ;(global as any).source = player.clientID
             await netEventHandler('simple', ['arg1'], '/simple arg1')
           } else {
-            // Fallback: llamar directamente al servicio
             await commandService.execute(player, 'simple', ['arg1'], '/simple arg1')
           }
 
@@ -253,4 +249,3 @@ describe('Command Full Load Benchmarks', () => {
     })
   }
 })
-

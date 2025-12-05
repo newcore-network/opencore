@@ -47,7 +47,7 @@ describe('Throttle Load Benchmarks', () => {
         blockedCount,
       )
 
-      expect(metrics.successCount).toBe(playerCount) // Todos deberían pasar (primera vez)
+      expect(metrics.successCount).toBe(playerCount)
 
       reportLoadMetric(metrics)
     })
@@ -62,7 +62,6 @@ describe('Throttle Load Benchmarks', () => {
       for (const player of players) {
         const key = `player:${player.clientID}:command`
 
-        // Intentar exceder el límite
         for (let i = 0; i < limit + 3; i++) {
           const start = performance.now()
           const allowed = rateLimiter.checkLimit(key, limit, 1000)
@@ -85,7 +84,7 @@ describe('Throttle Load Benchmarks', () => {
         blockedCount,
       )
 
-      expect(blockedCount).toBeGreaterThan(0) // Algunos deberían ser bloqueados
+      expect(blockedCount).toBeGreaterThan(0)
 
       reportLoadMetric(metrics)
       console.log(`  → blocked: ${blockedCount}`)
@@ -127,4 +126,3 @@ describe('Throttle Load Benchmarks', () => {
     })
   }
 })
-

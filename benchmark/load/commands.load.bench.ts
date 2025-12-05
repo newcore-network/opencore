@@ -39,7 +39,6 @@ describe('Commands Load Benchmarks', () => {
     commandService = new CommandService(securityHandler)
     controller = new TestController()
 
-    // Registrar comandos
     commandService.register(
       {
         name: 'test',
@@ -105,7 +104,12 @@ describe('Commands Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          await commandService.execute(player, 'testvalidated', ['123', 'test'], '/testvalidated 123 test')
+          await commandService.execute(
+            player,
+            'testvalidated',
+            ['123', 'test'],
+            '/testvalidated 123 test',
+          )
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -163,4 +167,3 @@ describe('Commands Load Benchmarks', () => {
     })
   }
 })
-

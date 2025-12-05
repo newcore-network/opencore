@@ -79,7 +79,7 @@ describe('Guards Load Benchmarks', () => {
         errorCount,
       )
 
-      expect(metrics.errorRate).toBeLessThan(0.2) // Algunos pueden fallar por rank bajo
+      expect(metrics.errorRate).toBeLessThan(0.2)
 
       reportLoadMetric(metrics)
     })
@@ -166,4 +166,3 @@ describe('Guards Load Benchmarks', () => {
     })
   }
 })
-

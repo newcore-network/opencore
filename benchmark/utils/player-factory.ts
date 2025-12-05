@@ -109,9 +109,6 @@ export class PlayerFactory {
     this.clientIDCounter = 1
   }
 
-  /**
-   * Crea jugadores con diferentes configuraciones de rank y permissions
-   */
   static createPlayersWithConfig(
     count: number,
     configs: Array<{ rank?: number; permissions?: string[] }>,
@@ -133,9 +130,6 @@ export class PlayerFactory {
     return players
   }
 
-  /**
-   * Simula el ciclo de vida completo de un jugador
-   */
   static async simulatePlayerLifecycle(
     player: Player,
     lifecycleSteps: {
@@ -146,17 +140,14 @@ export class PlayerFactory {
   ): Promise<number> {
     const start = performance.now()
 
-    // Simular playerJoining
     if (lifecycleSteps.onJoin) {
       await lifecycleSteps.onJoin(player)
     }
 
-    // Simular autenticación
     if (lifecycleSteps.onAuthenticate) {
       await lifecycleSteps.onAuthenticate(player)
     }
 
-    // Simular playerDropped
     if (lifecycleSteps.onDisconnect) {
       await lifecycleSteps.onDisconnect(player)
     }

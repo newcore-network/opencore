@@ -93,7 +93,7 @@ describe('Net Events Load Benchmarks', () => {
         errorCount,
       )
 
-      expect(metrics.errorRate).toBeLessThan(0.1) // Menos del 10% de errores
+      expect(metrics.errorRate).toBeLessThan(0.1)
 
       reportLoadMetric(metrics)
     })
@@ -149,4 +149,3 @@ describe('Net Events Load Benchmarks', () => {
     })
   }
 })
-

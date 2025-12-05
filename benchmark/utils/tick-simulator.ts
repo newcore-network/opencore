@@ -1,7 +1,3 @@
-/**
- * Simulador de ticks para benchmarks
- */
-
 export interface TickHandler {
   name: string
   handler: () => void | Promise<void>
@@ -17,9 +13,6 @@ export class TickSimulator {
   private tickInterval: NodeJS.Timeout | null = null
   private tickCount = 0
 
-  /**
-   * Registra un handler de tick
-   */
   register(name: string, handler: () => void | Promise<void>): () => void {
     const tickHandler: TickHandler = {
       name,
@@ -32,15 +25,11 @@ export class TickSimulator {
 
     this.handlers.set(name, tickHandler)
 
-    // Retorna función para desregistrar
     return () => {
       this.handlers.delete(name)
     }
   }
 
-  /**
-   * Ejecuta un solo tick de todos los handlers registrados
-   */
   async executeTick(): Promise<void> {
     const promises: Promise<void>[] = []
 
@@ -73,18 +62,12 @@ export class TickSimulator {
     this.tickCount++
   }
 
-  /**
-   * Ejecuta N ticks secuencialmente
-   */
   async executeTicks(count: number): Promise<void> {
     for (let i = 0; i < count; i++) {
       await this.executeTick()
     }
   }
 
-  /**
-   * Ejecuta N ticks en paralelo (simulando múltiples ticks simultáneos)
-   */
   async executeTicksParallel(count: number): Promise<void> {
     const promises: Promise<void>[] = []
     for (let i = 0; i < count; i++) {
@@ -93,9 +76,6 @@ export class TickSimulator {
     await Promise.all(promises)
   }
 
-  /**
-   * Inicia un loop de ticks con un intervalo específico
-   */
   start(intervalMs: number = 0): void {
     if (this.isRunning) return
 
@@ -107,9 +87,6 @@ export class TickSimulator {
     }, intervalMs)
   }
 
-  /**
-   * Detiene el loop de ticks
-   */
   stop(): void {
     if (!this.isRunning) return
 
@@ -120,23 +97,14 @@ export class TickSimulator {
     }
   }
 
-  /**
-   * Obtiene métricas de un handler específico
-   */
   getHandlerMetrics(name: string): TickHandler | null {
     return this.handlers.get(name) ?? null
   }
 
-  /**
-   * Obtiene métricas de todos los handlers
-   */
   getAllMetrics(): TickHandler[] {
     return Array.from(this.handlers.values())
   }
 
-  /**
-   * Resetea todas las métricas
-   */
   resetMetrics(): void {
     for (const handler of this.handlers.values()) {
       handler.executionCount = 0
@@ -147,18 +115,12 @@ export class TickSimulator {
     this.tickCount = 0
   }
 
-  /**
-   * Limpia todos los handlers
-   */
   clear(): void {
     this.stop()
     this.handlers.clear()
     this.tickCount = 0
   }
 
-  /**
-   * Obtiene el número total de ticks ejecutados
-   */
   getTickCount(): number {
     return this.tickCount
   }
@@ -171,10 +133,10 @@ export class TickSimulator {
   }
 }
 
-/**
- * Crea un simulador de ticks con múltiples handlers de prueba
- */
-export function createTestTickSimulator(handlerCount: number, workLoad: 'light' | 'medium' | 'heavy' = 'light'): TickSimulator {
+export function createTestTickSimulator(
+  handlerCount: number,
+  workLoad: 'light' | 'medium' | 'heavy' = 'light',
+): TickSimulator {
   const simulator = new TickSimulator()
 
   for (let i = 0; i < handlerCount; i++) {
@@ -185,27 +147,21 @@ export function createTestTickSimulator(handlerCount: number, workLoad: 'light' 
   return simulator
 }
 
-/**
- * Crea un handler con diferentes cargas de trabajo
- */
 function createWorkloadHandler(workLoad: 'light' | 'medium' | 'heavy'): () => void {
   switch (workLoad) {
     case 'light':
       return () => {
-        // Operación muy ligera
         const sum = 1 + 1
       }
 
     case 'medium':
       return () => {
-        // Operación media: iterar sobre un array pequeño
         const arr = Array.from({ length: 100 }, (_, i) => i)
         arr.reduce((acc, val) => acc + val, 0)
       }
 
     case 'heavy':
       return () => {
-        // Operación pesada: iterar sobre un array grande y hacer cálculos
         const arr = Array.from({ length: 1000 }, (_, i) => i)
         arr.map((val) => val * 2).reduce((acc, val) => acc + val, 0)
       }
@@ -214,4 +170,3 @@ function createWorkloadHandler(workLoad: 'light' | 'medium' | 'heavy'): () => vo
       return () => {}
   }
 }
-

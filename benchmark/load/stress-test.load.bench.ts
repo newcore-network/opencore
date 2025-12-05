@@ -109,7 +109,6 @@ describe('Stress Test Load Benchmarks', () => {
 
     const startTotal = performance.now()
 
-    // Ejecutar comandos
     const commandPromises = players.flatMap((player) =>
       Array.from({ length: commandsPerPlayer }, async () => {
         const start = performance.now()
@@ -117,13 +116,10 @@ describe('Stress Test Load Benchmarks', () => {
           await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
           const end = performance.now()
           commandTimings.push(end - start)
-        } catch (error) {
-          // Ignorar errores en stress test
-        }
+        } catch (error) {}
       }),
     )
 
-    // Ejecutar eventos
     const eventPromises = players.flatMap((player) => {
       const handler = registeredNetEvents.get('stress:event')
       if (!handler) return []
@@ -138,13 +134,10 @@ describe('Stress Test Load Benchmarks', () => {
           })
           const end = performance.now()
           eventTimings.push(end - start)
-        } catch (error) {
-          // Ignorar errores en stress test
-        }
+        } catch (error) {}
       })
     })
 
-    // Ejecutar ticks
     const tickPromises = Array.from({ length: ticksToExecute }, async () => {
       const start = performance.now()
       await tickSimulator.executeTick()
@@ -152,7 +145,6 @@ describe('Stress Test Load Benchmarks', () => {
       tickTimings.push(end - start)
     })
 
-    // Ejecutar todo concurrentemente
     await Promise.all([...commandPromises, ...eventPromises, ...tickPromises])
 
     const endTotal = performance.now()
@@ -186,7 +178,6 @@ describe('Stress Test Load Benchmarks', () => {
     const totalOperations = commandTimings.length + eventTimings.length + tickTimings.length
     const totalThroughput = (totalOperations / totalTime) * 1000
 
-    // Recopilar métricas para el reporte
     reportLoadMetric(commandMetrics)
     reportLoadMetric(eventMetrics)
     reportLoadMetric(tickMetrics)
@@ -195,7 +186,6 @@ describe('Stress Test Load Benchmarks', () => {
     console.log(`[STRESS] Total operations: ${totalOperations}`)
     console.log(`[STRESS] Total throughput: ${totalThroughput.toFixed(2)} ops/sec`)
 
-    // Limpiar
     for (const player of players) {
       playerService.unbindByClient(player.clientID)
     }
@@ -212,7 +202,6 @@ describe('Stress Test Load Benchmarks', () => {
       playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
     }
 
-    // Secuencial
     const sequentialTimings: number[] = []
     const sequentialStart = performance.now()
 
@@ -226,7 +215,6 @@ describe('Stress Test Load Benchmarks', () => {
     const sequentialEnd = performance.now()
     const sequentialTotal = sequentialEnd - sequentialStart
 
-    // Concurrente
     const concurrentTimings: number[] = []
     const concurrentStart = performance.now()
 
@@ -260,13 +248,11 @@ describe('Stress Test Load Benchmarks', () => {
 
     const speedup = sequentialTotal / concurrentTotal
 
-    // Recopilar métricas para el reporte
     reportLoadMetric(sequentialMetrics)
     reportLoadMetric(concurrentMetrics)
 
     console.log(`[STRESS] Speedup: ${speedup.toFixed(2)}x`)
 
-    // Limpiar
     for (const player of players) {
       playerService.unbindByClient(player.clientID)
     }
@@ -312,7 +298,6 @@ describe('Stress Test Load Benchmarks', () => {
         0,
       )
 
-      // Recopilar métricas para el reporte
       reportLoadMetric(metrics)
 
       results.push({
@@ -322,18 +307,15 @@ describe('Stress Test Load Benchmarks', () => {
       })
     }
 
-    // Calcular degradación
     const baseline = results[0]
     for (let i = 1; i < results.length; i++) {
       const result = results[i]
       const degradation = ((baseline.throughput - result.throughput) / baseline.throughput) * 100
       console.log(`[STRESS] Degradation at ${result.batchSize} players: ${degradation.toFixed(2)}%`)
 
-      // La degradación puede variar en entornos de test
       expect(degradation).toBeLessThan(90)
     }
 
-    // Limpiar
     for (const player of players) {
       playerService.unbindByClient(player.clientID)
     }
@@ -353,14 +335,11 @@ describe('Stress Test Load Benchmarks', () => {
     const timings: number[] = []
     const start = performance.now()
 
-    // Ejecutar todo simultáneamente: comandos, eventos, ticks, operaciones de player service
     const allPromises = [
-      // Comandos
       ...players.slice(0, 100).map(async (player) => {
         await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
       }),
 
-      // Eventos
       ...players.slice(100, 200).map(async (player) => {
         const handler = registeredNetEvents.get('stress:event')
         if (handler) {
@@ -369,18 +348,15 @@ describe('Stress Test Load Benchmarks', () => {
         }
       }),
 
-      // Ticks
       ...Array.from({ length: 50 }, async () => {
         await tickSimulator.executeTick()
       }),
 
-      // Player service operations
       ...players.slice(200, 300).map(async (player) => {
         playerService.setMeta(player.clientID, 'stress-test', { value: Date.now() })
         playerService.getMeta(player.clientID, 'stress-test')
       }),
 
-      // getAll operations
       ...Array.from({ length: 10 }, async () => {
         playerService.getAll()
       }),
@@ -397,7 +373,6 @@ describe('Stress Test Load Benchmarks', () => {
     console.log(`  └─ Total operations: ${allPromises.length}`)
     console.log(`  └─ Throughput: ${(allPromises.length / totalTime) * 1000} ops/sec`)
 
-    // Limpiar
     for (const player of players) {
       playerService.unbindByClient(player.clientID)
     }

@@ -124,7 +124,12 @@ describe('Services Load Benchmarks', () => {
 
         for (const player of players) {
           const start = performance.now()
-          await commandService.execute(player, 'testvalidated', ['123', 'test'], '/testvalidated 123 test')
+          await commandService.execute(
+            player,
+            'testvalidated',
+            ['123', 'test'],
+            '/testvalidated 123 test',
+          )
           const end = performance.now()
           timings.push(end - start)
         }
@@ -197,7 +202,6 @@ describe('Services Load Benchmarks', () => {
       })
 
       it(`PlayerService - ${playerCount} players, getAll() operation`, async () => {
-        // Crear jugadores primero
         for (let i = 0; i < playerCount; i++) {
           playerService.bind(i + 1, {
             license: `license:test-${i + 1}`,
@@ -226,7 +230,6 @@ describe('Services Load Benchmarks', () => {
 
         reportLoadMetric(metrics)
 
-        // Limpiar
         for (let i = 0; i < playerCount; i++) {
           playerService.unbindByClient(i + 1)
         }
@@ -306,4 +309,3 @@ describe('Services Load Benchmarks', () => {
     }
   })
 })
-

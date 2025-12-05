@@ -20,9 +20,6 @@ interface CollectedMetric {
   timestamp: number
 }
 
-/**
- * Recopila una métrica de load test para el reporte final
- */
 export function collectLoadMetric(metrics: LoadTestMetrics): void {
   const collected: CollectedMetric = {
     name: metrics.name,
@@ -54,9 +51,6 @@ export function collectLoadMetric(metrics: LoadTestMetrics): void {
   writeFileSync(METRICS_FILE, JSON.stringify(existingMetrics, null, 2))
 }
 
-/**
- * Lee todas las métricas recopiladas
- */
 export function readCollectedMetrics(): LoadTestMetrics[] {
   if (!existsSync(METRICS_FILE)) {
     return []
@@ -86,19 +80,12 @@ export function readCollectedMetrics(): LoadTestMetrics[] {
   }
 }
 
-/**
- * Limpia las métricas recopiladas
- */
 export function clearCollectedMetrics(): void {
   if (existsSync(METRICS_FILE)) {
     unlinkSync(METRICS_FILE)
   }
 }
 
-/**
- * Obtiene la ruta del archivo de métricas
- */
 export function getMetricsFilePath(): string {
   return METRICS_FILE
 }
-

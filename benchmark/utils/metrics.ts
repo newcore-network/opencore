@@ -164,19 +164,12 @@ export function compareMetrics(
   }
 }
 
-// Re-exportar el collector para uso en tests
 import { collectLoadMetric } from './load-collector'
 export { collectLoadMetric }
 
-/**
- * Reporta una métrica de load test (imprime a consola Y recopila para el reporte)
- */
 export function reportLoadMetric(metrics: LoadTestMetrics): void {
-  // Imprimir a consola
   console.log(
     `[LOAD] ${metrics.name}: ${metrics.throughput.toFixed(2)} ops/sec, p95: ${metrics.p95.toFixed(2)}ms`,
   )
-
-  // Recopilar para el reporte
   collectLoadMetric(metrics)
 }

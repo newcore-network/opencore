@@ -132,9 +132,6 @@ export function generateTestData(type: 'simple' | 'complex' | 'nested'): any {
   }
 }
 
-/**
- * Genera datos de prueba grandes para tests de serialización
- */
 export function generateLargeTestData(size: 'small' | 'medium' | 'large' | 'xlarge'): any {
   const baseData = {
     timestamp: Date.now(),

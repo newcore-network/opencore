@@ -64,7 +64,7 @@ describe('Bootstrap Load Benchmarks', () => {
     const end = performance.now()
 
     const timing = end - start
-    expect(timing).toBeLessThan(100) // Debería ser rápido
+    expect(timing).toBeLessThan(100)
 
     console.log(`[LOAD] Bootstrap - 1 controller: ${timing.toFixed(2)}ms`)
   })
@@ -127,17 +127,10 @@ describe('Bootstrap Load Benchmarks', () => {
       timings.push(end - start)
     }
 
-    const metrics = calculateLoadMetrics(
-      timings,
-      'Bootstrap - 100 controllers',
-      100,
-      iterations,
-      0,
-    )
+    const metrics = calculateLoadMetrics(timings, 'Bootstrap - 100 controllers', 100, iterations, 0)
 
-    expect(metrics.mean).toBeLessThan(5000) // Menos de 5 segundos
+    expect(metrics.mean).toBeLessThan(5000)
 
     reportLoadMetric(metrics)
   })
 })
-

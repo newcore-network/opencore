@@ -149,7 +149,6 @@ async function runCoreBenchmarks(): Promise<BenchmarkMetrics[]> {
 async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
   console.log('\n⚡ Running Load Benchmarks (Vitest)...\n')
 
-  // Limpiar métricas anteriores
   clearCollectedMetrics()
 
   return new Promise((resolve, reject) => {
@@ -174,7 +173,6 @@ async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
     vitest.stderr?.on('data', (data) => {
       const text = data.toString()
       errorOutput += text
-      // Solo mostrar stderr si no es un warning de log
       if (!text.includes('[CORE]')) {
         process.stderr.write(text)
       }
@@ -183,10 +181,8 @@ async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
     vitest.on('close', (code) => {
       if (code !== 0) {
         console.warn(`\n⚠️  Vitest exited with code ${code}`)
-        // No rechazar, intentar leer métricas parciales
       }
 
-      // Leer métricas recopiladas
       const metrics = readCollectedMetrics()
       console.log(`\n📊 Collected ${metrics.length} load test metrics\n`)
       resolve(metrics)
@@ -194,7 +190,7 @@ async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
 
     vitest.on('error', (err) => {
       console.error('Error spawning vitest:', err)
-      resolve([]) // Continuar sin métricas
+      resolve([])
     })
   })
 }
@@ -218,7 +214,6 @@ async function main() {
     report.load = await runLoadBenchmarks()
   }
 
-  // Generar reporte
   printReport(report)
   saveReport(report, 'text')
   saveReport(report, 'json')

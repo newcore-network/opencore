@@ -14,10 +14,8 @@ describe('Player Lifecycle Load Benchmarks', () => {
     resetContainer()
     resetCitizenFxMocks()
 
-    // Registrar servicios
     container.registerSingleton(PlayerService, PlayerService)
 
-    // Resolver servicios
     playerService = container.resolve(PlayerService)
   })
 
@@ -35,7 +33,6 @@ describe('Player Lifecycle Load Benchmarks', () => {
       for (let i = 0; i < playerCount; i++) {
         const clientID = i + 1
 
-        // Etapa 1: bind (playerJoining)
         const bindStart = performance.now()
         const player = playerService.bind(clientID, {
           license: `license:test-${clientID}`,
@@ -43,13 +40,11 @@ describe('Player Lifecycle Load Benchmarks', () => {
         const bindEnd = performance.now()
         stageTimings.bind.push(bindEnd - bindStart)
 
-        // Etapa 2: linkAccount (autenticación)
         const linkStart = performance.now()
         playerService.linkAccount(clientID, `account-${clientID}`)
         const linkEnd = performance.now()
         stageTimings.linkAccount.push(linkEnd - linkStart)
 
-        // Etapa 3: unbind (playerDropped)
         const unbindStart = performance.now()
         playerService.unbindByClient(clientID)
         const unbindEnd = performance.now()
@@ -93,9 +88,15 @@ describe('Player Lifecycle Load Benchmarks', () => {
 
       expect(totalMetrics.successCount).toBe(playerCount)
       reportLoadMetric(totalMetrics)
-      console.log(`  └─ Bind: ${bindMetrics.mean.toFixed(2)}ms (${(bindMetrics.mean / totalMetrics.mean * 100).toFixed(1)}%)`)
-      console.log(`  └─ Link Account: ${linkMetrics.mean.toFixed(2)}ms (${(linkMetrics.mean / totalMetrics.mean * 100).toFixed(1)}%)`)
-      console.log(`  └─ Unbind: ${unbindMetrics.mean.toFixed(2)}ms (${(unbindMetrics.mean / totalMetrics.mean * 100).toFixed(1)}%)`)
+      console.log(
+        `  └─ Bind: ${bindMetrics.mean.toFixed(2)}ms (${((bindMetrics.mean / totalMetrics.mean) * 100).toFixed(1)}%)`,
+      )
+      console.log(
+        `  └─ Link Account: ${linkMetrics.mean.toFixed(2)}ms (${((linkMetrics.mean / totalMetrics.mean) * 100).toFixed(1)}%)`,
+      )
+      console.log(
+        `  └─ Unbind: ${unbindMetrics.mean.toFixed(2)}ms (${((unbindMetrics.mean / totalMetrics.mean) * 100).toFixed(1)}%)`,
+      )
     })
 
     it(`Player Lifecycle - ${playerCount} players, concurrent connections`, async () => {
@@ -105,7 +106,6 @@ describe('Player Lifecycle Load Benchmarks', () => {
         const clientID = i + 1
         const start = performance.now()
 
-        // Simular conexión completa
         const player = playerService.bind(clientID, {
           license: `license:test-${clientID}`,
         })
@@ -130,15 +130,13 @@ describe('Player Lifecycle Load Benchmarks', () => {
       expect(metrics.successCount).toBe(playerCount)
       reportLoadMetric(metrics)
 
-      // Limpiar
       for (let i = 0; i < playerCount; i++) {
         playerService.unbindByClient(i + 1)
       }
     })
 
     it(`Player Lifecycle - ${playerCount} players, concurrent disconnections`, async () => {
-      // Primero crear todos los jugadores
-      const players = []
+      const players: { clientID: number; player: ReturnType<typeof playerService.bind> }[] = []
       for (let i = 0; i < playerCount; i++) {
         const clientID = i + 1
         const player = playerService.bind(clientID, {
@@ -148,7 +146,6 @@ describe('Player Lifecycle Load Benchmarks', () => {
         players.push({ clientID, player })
       }
 
-      // Luego desconectarlos concurrentemente
       const timings: number[] = []
 
       const promises = players.map(async ({ clientID }) => {
@@ -177,9 +174,8 @@ describe('Player Lifecycle Load Benchmarks', () => {
       const cycles = 3
 
       for (let cycle = 0; cycle < cycles; cycle++) {
-        // Conectar
         const connectStart = performance.now()
-        const players = []
+        const players: { clientID: number; player: ReturnType<typeof playerService.bind> }[] = []
         for (let i = 0; i < playerCount; i++) {
           const clientID = cycle * playerCount + i + 1
           const player = playerService.bind(clientID, {
@@ -190,7 +186,6 @@ describe('Player Lifecycle Load Benchmarks', () => {
         }
         const connectEnd = performance.now()
 
-        // Desconectar
         const disconnectStart = performance.now()
         for (const { clientID } of players) {
           playerService.unbindByClient(clientID)
@@ -247,4 +242,3 @@ describe('Player Lifecycle Load Benchmarks', () => {
     })
   }
 })
-

@@ -6,11 +6,9 @@ import { TickProcessor } from '../../src/server/system/processors/tick.processor
 import { TickSimulator, createTestTickSimulator } from '../utils/tick-simulator'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 
-// Mock de setTick
 const registeredTicks: Array<() => void | Promise<void>> = []
 let tickExecutionCount = 0
 
-// Mock global setTick
 ;(global as any).setTick = (handler: () => void | Promise<void>) => {
   registeredTicks.push(handler)
 }
@@ -25,10 +23,8 @@ describe('Tick Load Benchmarks', () => {
     registeredTicks.length = 0
     tickExecutionCount = 0
 
-    // Registrar processors
     container.register('DecoratorProcessor', { useClass: TickProcessor })
 
-    // Resolver servicios
     tickProcessor = container.resolve(TickProcessor)
     tickSimulator = new TickSimulator()
   })
@@ -64,10 +60,8 @@ describe('Tick Load Benchmarks', () => {
       tickSimulator.clear()
       const timings: number[] = []
 
-      // Registrar N handlers
       for (let i = 0; i < count; i++) {
         tickSimulator.register(`handler-${i}`, () => {
-          // Light workload
           const sum = 1 + 1
         })
       }
@@ -127,10 +121,8 @@ describe('Tick Load Benchmarks', () => {
     tickSimulator.clear()
     const timings: number[] = []
 
-    // Registrar 10 handlers
     for (let i = 0; i < 10; i++) {
       tickSimulator.register(`handler-${i}`, () => {
-        // Medium workload
         const arr = Array.from({ length: 100 }, (_, i) => i)
         arr.reduce((acc, val) => acc + val, 0)
       })
@@ -161,7 +153,6 @@ describe('Tick Load Benchmarks', () => {
   it('Tick - Sequential vs parallel execution', async () => {
     tickSimulator.clear()
 
-    // Registrar 20 handlers
     for (let i = 0; i < 20; i++) {
       tickSimulator.register(`handler-${i}`, () => {
         const arr = Array.from({ length: 50 }, (_, i) => i)
@@ -171,7 +162,6 @@ describe('Tick Load Benchmarks', () => {
 
     const iterations = 100
 
-    // Secuencial
     const sequentialTimings: number[] = []
     const sequentialStart = performance.now()
     for (let i = 0; i < iterations; i++) {
@@ -185,7 +175,6 @@ describe('Tick Load Benchmarks', () => {
 
     tickSimulator.resetMetrics()
 
-    // Paralelo
     const parallelTimings: number[] = []
     const parallelStart = performance.now()
     const promises = Array.from({ length: iterations }, async () => {
@@ -206,7 +195,13 @@ describe('Tick Load Benchmarks', () => {
       0,
     )
 
-    const parallelMetrics = calculateLoadMetrics(parallelTimings, 'Tick - Parallel Execution', 20, iterations, 0)
+    const parallelMetrics = calculateLoadMetrics(
+      parallelTimings,
+      'Tick - Parallel Execution',
+      20,
+      iterations,
+      0,
+    )
 
     reportLoadMetric(sequentialMetrics)
     console.log(`  → Sequential total: ${sequentialTotal.toFixed(2)}ms`)
@@ -221,15 +216,12 @@ describe('Tick Load Benchmarks', () => {
     for (const count of handlerCounts) {
       registeredTicks.length = 0
 
-      // Registrar handlers usando el processor (simulado)
       for (let i = 0; i < count; i++) {
         const controller = {
           [`tickHandler${i}`]: async () => {
-            // Light workload
             const sum = 1 + 1
           },
         }
-        // Simular registro
         ;(global as any).setTick(controller[`tickHandler${i}`])
       }
 
@@ -238,7 +230,6 @@ describe('Tick Load Benchmarks', () => {
 
       for (let i = 0; i < iterations; i++) {
         const start = performance.now()
-        // Ejecutar todos los ticks registrados
         for (const tickHandler of registeredTicks) {
           await tickHandler()
         }
@@ -258,4 +249,3 @@ describe('Tick Load Benchmarks', () => {
     }
   })
 })
-

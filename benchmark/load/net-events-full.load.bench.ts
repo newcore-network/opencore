@@ -163,11 +163,9 @@ describe('Net Events Full Load Benchmarks', () => {
       const eventTimings: number[] = []
 
       for (const player of players) {
-        // Medir serialización
         const serializationMetrics = measureSerialization(payload)
         serializationTimings.push(serializationMetrics.totalTime)
 
-        // Medir evento completo
         const handler = registeredNetEvents.get('test:event')
         if (handler) {
           const start = performance.now()
@@ -198,99 +196,112 @@ describe('Net Events Full Load Benchmarks', () => {
       reportLoadMetric(eventMetrics)
     })
 
-    it(`Net Events - ${playerCount} players, different payload sizes`, { timeout: 30000 }, async () => {
-      const payloadSizes: PayloadSize[] = ['small', 'medium', 'large']
-      const players = PlayerFactory.createPlayers(playerCount)
-
-      for (const player of players) {
-        playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
-      }
-
-      for (const size of payloadSizes) {
-        const payload = generatePayload(size)
-        const timings: number[] = []
-        const serializationTimings: number[] = []
+    it(
+      `Net Events - ${playerCount} players, different payload sizes`,
+      { timeout: 30000 },
+      async () => {
+        const payloadSizes: PayloadSize[] = ['small', 'medium', 'large']
+        const players = PlayerFactory.createPlayers(playerCount)
 
         for (const player of players) {
-          // Medir serialización
-          const serializationMetrics = measureSerialization(payload)
-          serializationTimings.push(serializationMetrics.totalTime)
-
-          // Medir evento
-          const handler = registeredNetEvents.get('test:event')
-          if (handler) {
-            const start = performance.now()
-            ;(global as any).source = player.clientID
-            await handler(payload)
-            const end = performance.now()
-            timings.push(end - start)
-          }
+          playerService.bind(player.clientID)
+          playerService.linkAccount(
+            player.clientID,
+            player.accountID || `account-${player.clientID}`,
+          )
         }
 
-        const serializationMetrics = calculateLoadMetrics(
-          serializationTimings,
-          `Net Events - Serialization (${size})`,
-          playerCount,
-          playerCount,
-          0,
-        )
+        for (const size of payloadSizes) {
+          const payload = generatePayload(size)
+          const timings: number[] = []
+          const serializationTimings: number[] = []
 
-        const eventMetrics = calculateLoadMetrics(
-          timings,
-          `Net Events - Full Event (${size}, ${playerCount} players)`,
-          playerCount,
-          playerCount,
-          0,
-        )
+          for (const player of players) {
+            const serializationMetrics = measureSerialization(payload)
+            serializationTimings.push(serializationMetrics.totalTime)
 
-        reportLoadMetric(serializationMetrics)
-        console.log(`  → Serialization: ${(serializationMetrics.mean / eventMetrics.mean * 100).toFixed(1)}% of total`)
-        reportLoadMetric(eventMetrics)
-      }
-    })
-
-    it(`Net Events - ${playerCount} players, with network latency simulation`, { timeout: 60000 }, async () => {
-      const players = PlayerFactory.createPlayers(playerCount)
-      const payload = generatePayload('medium')
-      const latencies = [0, 5, 10] // ms - reducido para evitar timeouts
-
-      for (const player of players) {
-        playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
-      }
-
-      for (const latency of latencies) {
-        const timings: number[] = []
-
-        for (const player of players) {
-          const handler = registeredNetEvents.get('test:event')
-          if (handler) {
-            const start = performance.now()
-            ;(global as any).source = player.clientID
-
-            // Simular latencia de red
-            if (latency > 0) {
-              await new Promise((resolve) => setTimeout(resolve, latency))
+            const handler = registeredNetEvents.get('test:event')
+            if (handler) {
+              const start = performance.now()
+              ;(global as any).source = player.clientID
+              await handler(payload)
+              const end = performance.now()
+              timings.push(end - start)
             }
-
-            await handler(payload)
-            const end = performance.now()
-            timings.push(end - start)
           }
+
+          const serializationMetrics = calculateLoadMetrics(
+            serializationTimings,
+            `Net Events - Serialization (${size})`,
+            playerCount,
+            playerCount,
+            0,
+          )
+
+          const eventMetrics = calculateLoadMetrics(
+            timings,
+            `Net Events - Full Event (${size}, ${playerCount} players)`,
+            playerCount,
+            playerCount,
+            0,
+          )
+
+          reportLoadMetric(serializationMetrics)
+          console.log(
+            `  → Serialization: ${((serializationMetrics.mean / eventMetrics.mean) * 100).toFixed(1)}% of total`,
+          )
+          reportLoadMetric(eventMetrics)
+        }
+      },
+    )
+
+    it(
+      `Net Events - ${playerCount} players, with network latency simulation`,
+      { timeout: 60000 },
+      async () => {
+        const players = PlayerFactory.createPlayers(playerCount)
+        const payload = generatePayload('medium')
+        const latencies = [0, 5, 10]
+
+        for (const player of players) {
+          playerService.bind(player.clientID)
+          playerService.linkAccount(
+            player.clientID,
+            player.accountID || `account-${player.clientID}`,
+          )
         }
 
-        const metrics = calculateLoadMetrics(
-          timings,
-          `Net Events - With Latency ${latency}ms (${playerCount} players)`,
-          playerCount,
-          playerCount,
-          0,
-        )
+        for (const latency of latencies) {
+          const timings: number[] = []
 
-        reportLoadMetric(metrics)
-      }
-    })
+          for (const player of players) {
+            const handler = registeredNetEvents.get('test:event')
+            if (handler) {
+              const start = performance.now()
+              ;(global as any).source = player.clientID
+
+              if (latency > 0) {
+                await new Promise((resolve) => setTimeout(resolve, latency))
+              }
+
+              await handler(payload)
+              const end = performance.now()
+              timings.push(end - start)
+            }
+          }
+
+          const metrics = calculateLoadMetrics(
+            timings,
+            `Net Events - With Latency ${latency}ms (${playerCount} players)`,
+            playerCount,
+            playerCount,
+            0,
+          )
+
+          reportLoadMetric(metrics)
+        }
+      },
+    )
 
     it(`Net Events - ${playerCount} players, concurrent events`, async () => {
       const players = PlayerFactory.createPlayers(playerCount)
@@ -362,4 +373,3 @@ describe('Net Events Full Load Benchmarks', () => {
     })
   }
 })
-

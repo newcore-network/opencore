@@ -1,7 +1,3 @@
-/**
- * Utilidades para medir serialización/deserialización y simular latencia de red
- */
-
 export interface SerializationMetrics {
   serializeTime: number
   deserializeTime: number
@@ -11,9 +7,6 @@ export interface SerializationMetrics {
 
 export type PayloadSize = 'small' | 'medium' | 'large' | 'xlarge'
 
-/**
- * Genera datos de prueba de diferentes tamaños para benchmarks de serialización
- */
 export function generatePayload(size: PayloadSize): any {
   switch (size) {
     case 'small':
@@ -113,20 +106,14 @@ export function generatePayload(size: PayloadSize): any {
   }
 }
 
-/**
- * Mide el tiempo de serialización y deserialización de un objeto
- */
 export function measureSerialization(data: any): SerializationMetrics {
-  // Serialización
   const serializeStart = performance.now()
   const serialized = JSON.stringify(data)
   const serializeEnd = performance.now()
   const serializeTime = serializeEnd - serializeStart
 
-  // Medir tamaño
   const serializedSize = new Blob([serialized]).size
 
-  // Deserialización
   const deserializeStart = performance.now()
   JSON.parse(serialized)
   const deserializeEnd = performance.now()
@@ -140,16 +127,10 @@ export function measureSerialization(data: any): SerializationMetrics {
   }
 }
 
-/**
- * Simula latencia de red añadiendo un delay
- */
 export async function simulateNetworkLatency(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-/**
- * Mide serialización con latencia de red simulada
- */
 export async function measureSerializationWithLatency(
   data: any,
   latencyMs: number = 10,
@@ -167,19 +148,12 @@ export async function measureSerializationWithLatency(
   }
 }
 
-/**
- * Genera múltiples payloads para tests de carga
- */
 export function generatePayloads(count: number, size: PayloadSize): any[] {
   return Array.from({ length: count }, () => generatePayload(size))
 }
 
-/**
- * Formatea el tamaño en bytes a formato legible
- */
 export function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)}KB`
   return `${(bytes / (1024 * 1024)).toFixed(2)}MB`
 }
-
