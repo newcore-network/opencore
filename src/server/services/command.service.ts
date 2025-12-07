@@ -13,8 +13,8 @@ export class CommandService {
   private commands = new Map<string, { meta: CommandMetadata; handler: Function }>()
 
   register(meta: CommandMetadata, handler: Function) {
-    this.commands.set(meta.name.toLowerCase(), { meta, handler })
-    loggers.command.debug(`Registered: /${meta.name}${meta.schema ? ' [Validated]' : ''}`)
+    this.commands.set(meta.command.toLowerCase(), { meta, handler })
+    loggers.command.debug(`Registered: /${meta.command}${meta.schema ? ' [Validated]' : ''}`)
   }
 
   async execute(player: Server.Player, commandName: string, args: string[], raw: string) {
@@ -25,11 +25,10 @@ export class CommandService {
     }
     const { meta, handler } = entry
 
-    let validatedArgs: any[] = args
+    let validatedArgs: any = args
     if (meta.schema) {
       try {
-        const result = await meta.schema.parseAsync(args)
-        validatedArgs = Array.isArray(result) ? result : [result]
+        validatedArgs = await meta.schema.parseAsync(args)
       } catch (error) {
         if (error instanceof z.ZodError) {
           throw new AppError('VALIDATION_ERROR', `Incorrect usage: ${error.message}`, 'client', {
@@ -50,7 +49,7 @@ export class CommandService {
 
   getAllCommands() {
     return Array.from(this.commands.values()).map((c) => ({
-      name: c.meta.name,
+      command: c.meta.command,
       description: c.meta.description ?? '',
       usage: c.meta.usage ?? '',
     }))

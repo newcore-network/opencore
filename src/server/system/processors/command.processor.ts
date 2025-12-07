@@ -2,7 +2,8 @@ import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { CommandService } from '../../services'
-import { CommandConfig, CommandMetadata } from '../../decorators'
+import { CommandConfig } from '../../decorators'
+import { CommandMetadata } from '../../decorators/command'
 
 @injectable()
 export class CommandProcessor implements DecoratorProcessor {

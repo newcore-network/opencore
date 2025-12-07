@@ -4,9 +4,9 @@ import { PrincipalProviderContract } from './templates'
 import { MetadataScanner } from '../system/metadata.scanner'
 import { registerSystemServer } from './system/processors.register'
 import { registerServicesServer } from './services/registers'
-import { serverControllerRegistry } from './decorators'
 import { loggers } from '../shared/logger'
 import { AuthProviderContract } from './templates/auth/auth-provider.contract'
+import { serverControllerRegistry } from './decorators/controller'
 
 const check = () => {
   if (!di.isRegistered(PrincipalProviderContract as any)) {

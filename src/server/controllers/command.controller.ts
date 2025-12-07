@@ -1,4 +1,4 @@
-import { OnNet } from '../decorators/netEvent'
+import { OnNet } from '../decorators/onNet'
 import { CommandService } from '../services/command.service'
 import { Player } from '../entities'
 import { Controller } from '../decorators'

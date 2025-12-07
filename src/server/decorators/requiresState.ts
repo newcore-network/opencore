@@ -28,35 +28,36 @@ export interface StateRequirement {
 }
 
 /**
- * **Game State Guard Decorator**
+ * Enforces gameplay state requirements before executing a method.
  *
- * A method decorator that enforces game logic constraints based on the player's dynamic states.
- * It intercepts the method call and validates the player's flags (e.g., 'dead', 'cuffed', 'driving')
- * before allowing the controller logic to execute.
+ * The decorator intercepts the method call and verifies whether
+ * the player satisfies required state flags (e.g. "dead", "cuffed",
+ * "on_duty_police").
  *
- * @remarks
- * - This decorator assumes the **first argument** of the decorated method is a `Server.Player` instance.
- * - It throws a `GAME_STATE_ERROR` (AppError) if requirements are not met, which should be caught by the global error handler.
+ * ## Whitelist (`has`)
+ * The player MUST have *all* required states. Missing any state blocks execution.
  *
- * @param req - The state requirements configuration (whitelist and/or blacklist).
+ * ## Blacklist (`missing`)
+ * The player MUST NOT have any of the forbidden states.
  *
- * @throws {Error} If the decorated method is called without a valid Player context (Server-side logic error).
- * @throws {AppError} If the player fails the state validation (Client-facing logic error).
+ * ## Error Handling
+ * - Throws a normal Error if the method is called without a valid Player.
+ * - Throws an `AppError(GAME_STATE_ERROR)` if validation fails.
  *
- * @example
+ * ## Example
  * ```ts
- * // Example 1: Action requires being alive (not dead) and not handcuffed
- * @RequiresState({ missing: ['dead', 'cuffed'] })
+ * @RequiresState({ missing: ["dead", "cuffed"] })
  * openInventory(player: Server.Player) { ... }
  *
- * // Example 2: Action requires being a police officer on duty
  * @RequiresState({
- * has: ['police_duty'],
- * missing: ['dead'],
- * errorMessage: 'You must be on duty to access the armory.'
+ *   has: ["police_duty"],
+ *   missing: ["dead"],
+ *   errorMessage: "You must be on duty to access the armory."
  * })
  * openArmory(player: Server.Player) { ... }
  * ```
+ *
+ * @param req - State validation configuration.
  */
 export function RequiresState(req: StateRequirement) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

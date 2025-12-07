@@ -18,8 +18,8 @@ function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
 export function handleCommandError(error: unknown, meta: CommandMetadata, playerId: number | null) {
   const appError = normalizeError(error, 'server')
 
-  loggers.command.error(`Command execution failed: /${meta.name}`, {
-    command: meta.name,
+  loggers.command.error(`Command execution failed: /${meta.command}`, {
+    command: meta.command,
     handler: meta.methodName,
     playerId,
     code: appError.code,

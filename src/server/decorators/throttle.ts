@@ -5,12 +5,51 @@ import type { SecurityAction } from '../types/security.types'
 import { SecurityError } from '../../utils'
 
 interface ThrottleOptions {
+  /**
+   * limit of calls per windowMs
+   */
   limit: number
+  /**
+   * time window for numeric overload
+   */
   windowMs: number
+  /**
+   * action to perform on exceed limit
+   */
   onExceed?: SecurityAction
+  /**
+   * custom message to display on exceed limit (ERROR MESSAGE)
+   */
   message?: string
 }
 
+/**
+ * Rate-limits how frequently a method can be called by a specific player.
+ *
+ * Uses `RateLimiterService` and a unique key composed of:
+ * `playerID:ClassName:MethodName`.
+ *
+ * ## Overload
+ * - `@Throttle(5, 1000)` → limit = 5 calls per 1000 ms
+ * - `@Throttle({ limit, windowMs, onExceed, message })`
+ *
+ * ## Behavior
+ * If the rate limit is exceeded:
+ * - A `SecurityError` is thrown.
+ * - Optional custom behavior (`onExceed`) may be executed.
+ *
+ * ## Example
+ * ```ts
+ * @Throttle(5, 2000)
+ * async search(player: Server.Player, query: string) { ... }
+ *
+ * @Throttle({ limit: 1, windowMs: 5000, message: "Too fast!" })
+ * async placeOrder(player: Server.Player) { ... }
+ * ```
+ *
+ * @param optionsOrLimit - Number (simple mode) or full config object.
+ * @param windowMs - Time window for numeric overload.
+ */
 export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: number) {
   return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
     if (!descriptor) {
