@@ -1,5 +1,6 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 import type { z } from 'zod'
+import type { Player } from '../entities/player'
 
 export interface NetEventOptions {
   eventName: string
@@ -35,8 +36,17 @@ export interface NetEventOptions {
  * @param schema - Optional Zod schema to validate incoming data.
  */
 
-export function OnNet(eventName: string, schema?: z.ZodType) {
-  return (target: any, propertyKey: string) => {
+type AnyNetEventHandler = (player: Player, ...args: any[]) => any;
+
+export function OnNet<T extends z.ZodType | undefined = undefined>(
+  eventName: string,
+  schema?: T
+) {
+  return <H extends AnyNetEventHandler>(
+    target: any,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<H>
+  ) => {
     const metadata: NetEventOptions = { eventName, schema }
     Reflect.defineMetadata(METADATA_KEYS.NET_EVENT, metadata, target, propertyKey)
   }
