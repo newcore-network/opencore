@@ -63,7 +63,7 @@ describe('Stress Test Load Benchmarks', () => {
 
     commandService.register(
       {
-        name: 'stress',
+        command: 'stress',
         methodName: 'handleCommand',
         target: StressTestController,
         schema: commandSchema,

@@ -41,7 +41,7 @@ describe('Commands Load Benchmarks', () => {
 
     commandService.register(
       {
-        name: 'test',
+        command: 'test',
         methodName: 'handleCommand',
         target: TestController,
       },
@@ -50,7 +50,7 @@ describe('Commands Load Benchmarks', () => {
 
     commandService.register(
       {
-        name: 'testvalidated',
+        command: 'testvalidated',
         methodName: 'handleValidatedCommand',
         target: TestController,
         schema: simpleSchema,

@@ -5,6 +5,7 @@ import { Server } from '../..'
 import z from 'zod'
 import { SecurityHandlerContract } from '../templates/security/security-handler.contract'
 import { loggers } from '../../shared/logger'
+import { generateSchemaFromTypes } from '../system/schema-generator'
 
 @injectable()
 export class CommandService {
@@ -26,9 +27,13 @@ export class CommandService {
     const { meta, handler } = entry
 
     let validatedArgs: any = args
-    if (meta.schema) {
+
+    // Use explicit schema or auto-generate from paramTypes
+    const schema = meta.schema ?? generateSchemaFromTypes(meta.paramTypes)
+
+    if (schema) {
       try {
-        validatedArgs = await meta.schema.parseAsync(args)
+        validatedArgs = await schema.parseAsync(args)
       } catch (error) {
         if (error instanceof z.ZodError) {
           throw new AppError('VALIDATION_ERROR', `Incorrect usage: ${error.message}`, 'client', {

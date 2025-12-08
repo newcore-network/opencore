@@ -93,7 +93,7 @@ describe('Pipeline Load Benchmarks', () => {
     const simpleController = new SimpleCommandController()
     commandService.register(
       {
-        name: 'simple',
+        command: 'simple',
         methodName: 'handleCommand',
         target: SimpleCommandController,
       },
@@ -103,7 +103,7 @@ describe('Pipeline Load Benchmarks', () => {
     const validatedController = new ValidatedCommandController()
     commandService.register(
       {
-        name: 'validated',
+        command: 'validated',
         methodName: 'handleCommand',
         target: ValidatedCommandController,
         schema: simpleSchema,
@@ -114,7 +114,7 @@ describe('Pipeline Load Benchmarks', () => {
     const guardedController = new GuardedCommandController()
     commandService.register(
       {
-        name: 'guarded',
+        command: 'guarded',
         methodName: 'handleCommand',
         target: GuardedCommandController,
       },
@@ -127,7 +127,7 @@ describe('Pipeline Load Benchmarks', () => {
     const fullController = new FullPipelineController(testService)
     commandService.register(
       {
-        name: 'full',
+        command: 'full',
         methodName: 'handleCommand',
         target: FullPipelineController,
         schema: transferSchema,

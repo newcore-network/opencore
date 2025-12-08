@@ -54,7 +54,7 @@ describe('Command Full Load Benchmarks', () => {
 
     commandService.register(
       {
-        name: 'simple',
+        command: 'simple',
         methodName: 'simpleCommand',
         target: TestController,
       },
@@ -63,7 +63,7 @@ describe('Command Full Load Benchmarks', () => {
 
     commandService.register(
       {
-        name: 'validated',
+        command: 'validated',
         methodName: 'validatedCommand',
         target: TestController,
         schema: validatedSchema,
@@ -73,7 +73,7 @@ describe('Command Full Load Benchmarks', () => {
 
     commandService.register(
       {
-        name: 'guarded',
+        command: 'guarded',
         methodName: 'guardedCommand',
         target: TestController,
       },

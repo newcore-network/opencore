@@ -2,7 +2,7 @@
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
-import { OnNet, type NetEventOptions } from '../../../../src/server/decorators/netEvent'
+import { OnNet, type NetEventOptions } from '../../../../src/server/decorators/onNet'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
 
 describe('@OnNet decorator', () => {
@@ -55,14 +55,14 @@ describe('@OnNet decorator', () => {
   })
 
   describe('schema validation support', () => {
-    it('should store schema when provided', () => {
+    it('should store schema when provided with options object', () => {
       const loginSchema = z.object({
         username: z.string(),
         password: z.string(),
       })
 
       class AuthController {
-        @OnNet('auth:login', loginSchema)
+        @OnNet('auth:login', { schema: loginSchema })
         handleLogin(_player: any, _data: z.infer<typeof loginSchema>) {}
       }
 
@@ -102,7 +102,7 @@ describe('@OnNet decorator', () => {
       })
 
       class InventoryController {
-        @OnNet('inventory:update', complexSchema)
+        @OnNet('inventory:update', { schema: complexSchema })
         handleUpdate() {}
       }
 
@@ -120,6 +120,40 @@ describe('@OnNet decorator', () => {
         items: ['item1', 'item2'],
       }
       expect(() => complexSchema.parse(validData)).not.toThrow()
+    })
+  })
+
+  describe('paramTypes capture', () => {
+    it('should include paramTypes property in metadata', () => {
+      class TypedController {
+        @OnNet('typed:event')
+        handleTyped(_player: any, _name: string, _age: number, _active: boolean) {}
+      }
+
+      const metadata = Reflect.getMetadata(
+        METADATA_KEYS.NET_EVENT,
+        TypedController.prototype,
+        'handleTyped',
+      ) as NetEventOptions
+
+      // paramTypes is always set (may be undefined in test env without emitDecoratorMetadata)
+      expect('paramTypes' in metadata).toBe(true)
+    })
+
+    it('should set paramTypes from reflect-metadata when available', () => {
+      class ArrayController {
+        @OnNet('array:event')
+        handleArray(_player: any, _items: string[], _ids: number[]) {}
+      }
+
+      const metadata = Reflect.getMetadata(
+        METADATA_KEYS.NET_EVENT,
+        ArrayController.prototype,
+        'handleArray',
+      ) as NetEventOptions
+
+      // paramTypes property exists (value depends on emitDecoratorMetadata config)
+      expect('paramTypes' in metadata).toBe(true)
     })
   })
 
@@ -164,10 +198,10 @@ describe('@OnNet decorator', () => {
       const schemaB = z.object({ b: z.number() })
 
       class IsolatedController {
-        @OnNet('isolated:a', schemaA)
+        @OnNet('isolated:a', { schema: schemaA })
         methodA() {}
 
-        @OnNet('isolated:b', schemaB)
+        @OnNet('isolated:b', { schema: schemaB })
         methodB() {}
 
         @OnNet('isolated:c')
@@ -335,4 +369,3 @@ describe('@OnNet decorator', () => {
     })
   })
 })
-

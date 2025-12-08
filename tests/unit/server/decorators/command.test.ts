@@ -20,7 +20,7 @@ describe('@Command decorator', () => {
       ) as CommandMetadata
 
       expect(metadata).toBeDefined()
-      expect(metadata.name).toBe('heal')
+      expect(metadata.command).toBe('heal')
     })
 
     it('should set methodName correctly', () => {
@@ -75,7 +75,7 @@ describe('@Command decorator', () => {
     it('should register command with full configuration', () => {
       class TestController {
         @Command({
-          name: 'deposit',
+          command: 'deposit',
           description: 'Deposit money into your bank account',
           usage: '/deposit <amount>',
         })
@@ -88,7 +88,7 @@ describe('@Command decorator', () => {
         'handleDeposit',
       ) as CommandMetadata
 
-      expect(metadata.name).toBe('deposit')
+      expect(metadata.command).toBe('deposit')
       expect(metadata.description).toBe('Deposit money into your bank account')
       expect(metadata.usage).toBe('/deposit <amount>')
     })
@@ -100,7 +100,7 @@ describe('@Command decorator', () => {
 
       class BankController {
         @Command({
-          name: 'withdraw',
+          command: 'withdraw',
           description: 'Withdraw money',
           schema: depositSchema,
         })
@@ -119,7 +119,7 @@ describe('@Command decorator', () => {
     it('should allow partial configuration', () => {
       class TestController {
         @Command({
-          name: 'kick',
+          command: 'kick',
           description: 'Kick a player from the server',
         })
         kickPlayer() {}
@@ -131,7 +131,7 @@ describe('@Command decorator', () => {
         'kickPlayer',
       ) as CommandMetadata
 
-      expect(metadata.name).toBe('kick')
+      expect(metadata.command).toBe('kick')
       expect(metadata.description).toBe('Kick a player from the server')
       expect(metadata.usage).toBeUndefined()
       expect(metadata.schema).toBeUndefined()
@@ -145,13 +145,13 @@ describe('@Command decorator', () => {
         kickPlayer() {}
 
         @Command({
-          name: 'ban',
+          command: 'ban',
           description: 'Ban a player',
         })
         banPlayer() {}
 
         @Command({
-          name: 'unban',
+          command: 'unban',
           description: 'Remove a ban',
           usage: '/unban <player_id>',
         })
@@ -176,10 +176,10 @@ describe('@Command decorator', () => {
         'unbanPlayer',
       ) as CommandMetadata
 
-      expect(kickMeta.name).toBe('kick')
-      expect(banMeta.name).toBe('ban')
+      expect(kickMeta.command).toBe('kick')
+      expect(banMeta.command).toBe('ban')
       expect(banMeta.description).toBe('Ban a player')
-      expect(unbanMeta.name).toBe('unban')
+      expect(unbanMeta.command).toBe('unban')
       expect(unbanMeta.usage).toBe('/unban <player_id>')
     })
 
@@ -187,7 +187,7 @@ describe('@Command decorator', () => {
       const schemaA = z.object({ reason: z.string() })
 
       class ModerationController {
-        @Command({ name: 'warn', schema: schemaA })
+        @Command({ command: 'warn', schema: schemaA })
         warnPlayer() {}
 
         @Command('mute')
@@ -306,7 +306,7 @@ describe('@Command decorator', () => {
             prototype,
             method,
           ) as CommandMetadata
-          return meta.name
+          return meta.command
         })
 
       expect(commands).toHaveLength(3)
@@ -329,7 +329,7 @@ describe('@Command decorator', () => {
         'teleportToPosition2',
       ) as CommandMetadata
 
-      expect(metadata.name).toBe('tp2')
+      expect(metadata.command).toBe('tp2')
     })
 
     it('should handle long descriptions', () => {
@@ -338,7 +338,7 @@ describe('@Command decorator', () => {
         'including all the parameters it accepts and the expected behavior when executed by different user types.'
 
       class TestController {
-        @Command({ name: 'complex', description: longDescription })
+        @Command({ command: 'complex', description: longDescription })
         complexCommand() {}
       }
 
@@ -357,7 +357,7 @@ describe('@Command decorator', () => {
   arg2: The second argument`
 
       class TestController {
-        @Command({ name: 'multiline', usage })
+        @Command({ command: 'multiline', usage })
         multilineCommand() {}
       }
 

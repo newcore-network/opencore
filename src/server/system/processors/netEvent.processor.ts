@@ -7,6 +7,7 @@ import { SecurityHandlerContract } from '../../templates/security/security-handl
 import { SecurityError } from '../../../utils'
 import { loggers } from '../../../shared/logger'
 import z from 'zod'
+import { generateSchemaFromTypes } from '../schema-generator'
 
 @injectable()
 export class NetEventProcessor implements DecoratorProcessor {
@@ -50,12 +51,13 @@ export class NetEventProcessor implements DecoratorProcessor {
 
       let validatedArgs = args
 
-      if (metadata.schema) {
-        try {
-          const payload = args[0]
-          const parsed = metadata.schema.parse(payload)
+      const schema = generateSchemaFromTypes(metadata.paramTypes)
 
-          validatedArgs = [parsed]
+      if (schema) {
+        try {
+          const parsed = schema.parse(args)
+          validatedArgs = Array.isArray(parsed) ? parsed : [parsed]
+
         } catch (error) {
           if (error instanceof z.ZodError) {
             const violation = new SecurityError(

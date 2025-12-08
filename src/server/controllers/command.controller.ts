@@ -5,27 +5,21 @@ import { Controller } from '../decorators'
 import { loggers } from '../../shared/logger'
 import {z} from 'zod'
 
-const schema = z.object({
-  commandName: z.string(),
-  args: z.array(z.string()),
-  raw: z.string(),
-})
-
 @Controller()
 export class CommandNetworkController {
   constructor(private readonly commandService: CommandService) {}
 
-  @OnNet('core:internal:executeCommand', schema)
-  async onCommandReceived(player: Player, args: z.infer<typeof schema>) {
+  @OnNet('core:internal:executeCommand')
+  async onCommandReceived(player: Player, command: string, args: string[], raw: string) {
     try {
-      loggers.command.trace(`Received: /${args.commandName}`, {
+      loggers.command.trace(`Received: /${command}`, {
         playerId: player.clientID,
         playerName: player.name,
       })
-      await this.commandService.execute(player, args.commandName, args.args, args.raw)
+      await this.commandService.execute(player, command, args, raw)
     } catch (error) {
       loggers.command.error(
-        `Execution failed: /${args.commandName}`,  
+        `Execution failed: /${command}`,  
         {
           playerId: player.clientID,
         },

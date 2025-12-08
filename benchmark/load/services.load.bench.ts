@@ -46,7 +46,7 @@ describe('Services Load Benchmarks', () => {
       const controller = new TestController()
       commandService.register(
         {
-          name: 'test',
+          command: 'test',
           methodName: 'handleCommand',
           target: TestController,
         },
@@ -55,7 +55,7 @@ describe('Services Load Benchmarks', () => {
 
       commandService.register(
         {
-          name: 'testvalidated',
+          command: 'testvalidated',
           methodName: 'handleCommand',
           target: TestController,
           schema: testSchema,
@@ -74,7 +74,7 @@ describe('Services Load Benchmarks', () => {
           const start = performance.now()
           commandService.register(
             {
-              name: `test-${i}`,
+              command: `test-${i}`,
               methodName: 'handleCommand',
               target: TestController,
             },
