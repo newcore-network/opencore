@@ -1,11 +1,11 @@
-# OpenCore Framework
+# OpenCore Framework - Unstable beta ❗
 
 > **The robust TypeScript Engine for FiveM.**
 > Built on strong OOP principles, Layered Architecture, and Security-first design.
 > _Stop writing scripts; start engineering gameplay._
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Version](https://img.shields.io/badge/beta-1.0.0-orange.svg)](https://github.com/newcore-network/opencore)
+[![Version](https://img.shields.io/badge/beta-1.0.3-orange.svg)](https://github.com/newcore-network/opencore)
 ![Tests](https://img.shields.io/badge/tests-265%20passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-43%25-yellow)
 ![Core Decorators](https://img.shields.io/badge/core%20decorators-100%25-brightgreen)
