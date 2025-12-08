@@ -3,9 +3,9 @@ import { Player } from '../entities/player'
 
 function typeToZodSchema(type: any): z.ZodType {
   switch (type) {
-    case String: return z.string()
-    case Number: return z.number()
-    case Boolean: return z.boolean()
+    case String: return z.coerce.string()
+    case Number: return z.coerce.number()
+    case Boolean: return z.coerce.boolean()
     case Array: return z.array(z.any())
     case Object: return z.any()
     default: return z.any()
