@@ -1,3 +1,5 @@
+import { _mode } from './core'
+
 // Framework modules
 export * from './core'
 export * from './decorators'
@@ -17,7 +19,9 @@ export type * from './types/core-events'
 // Controllers
 import './controllers/command.controller'
 import './controllers/chat.controller'
-import './controllers/session.controller'
+if (_mode === 'CORE') {
+  import('./controllers/session.controller')
+}
 import './controllers/player-export.controller'
 import './controllers/principal-export.controller'
 
