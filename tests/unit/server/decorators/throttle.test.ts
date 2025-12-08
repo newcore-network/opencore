@@ -91,7 +91,9 @@ describe('@Throttle decorator', () => {
       await instance.action.call(instance, player)
       await instance.action.call(instance, player)
 
-      await expect(instance.action.call(instance, player)).rejects.toThrow('Custom rate limit message')
+      await expect(instance.action.call(instance, player)).rejects.toThrow(
+        'Custom rate limit message',
+      )
     })
 
     it('should use custom onExceed action', async () => {
@@ -333,4 +335,3 @@ describe('@Throttle decorator', () => {
     })
   })
 })
-

@@ -11,4 +11,3 @@ export function OnLocalEvent(eventName: string) {
     Reflect.defineMetadata(METADATA_KEYS.LOCAL_EVENT, { eventName }, target, propertyKey)
   }
 }
-

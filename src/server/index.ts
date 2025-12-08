@@ -18,7 +18,5 @@ export type * from './types/core-events'
 import './controllers/command.controller'
 import './controllers/chat.controller'
 
-
 import { di } from './container'
 globalThis.oc_container = di
-

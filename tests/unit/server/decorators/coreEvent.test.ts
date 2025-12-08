@@ -204,4 +204,3 @@ describe('@OnCoreEvent decorator', () => {
     })
   })
 })
-

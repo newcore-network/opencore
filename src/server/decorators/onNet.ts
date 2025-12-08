@@ -8,7 +8,7 @@ export interface NetEventOptions {
   paramTypes?: any
 }
 
-type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: TArgs) => any;
+type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: TArgs) => any
 
 /**
  * Registers a server-side network event handler.
@@ -56,14 +56,11 @@ type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: T
  * @param options - Optional configuration object.
  * @param options.schema - Zod schema for strict payload validation.
  */
-export function OnNet<TArgs extends any[]>(
-  eventName: string,
-  options?: { schema?: z.ZodType }
-) {
+export function OnNet<TArgs extends any[]>(eventName: string, options?: { schema?: z.ZodType }) {
   return <H extends ServerNetHandler<TArgs>>(
     target: any,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<H>
+    descriptor: TypedPropertyDescriptor<H>,
   ) => {
     const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey)
     const metadata: NetEventOptions = { eventName, schema: options?.schema, paramTypes }

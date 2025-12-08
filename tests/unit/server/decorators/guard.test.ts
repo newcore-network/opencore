@@ -290,13 +290,9 @@ describe('@Guard decorator', () => {
         unguarded() {}
       }
 
-      expect(
-        Reflect.hasMetadata('core:guard', TestController.prototype, 'guarded'),
-      ).toBe(true)
+      expect(Reflect.hasMetadata('core:guard', TestController.prototype, 'guarded')).toBe(true)
 
-      expect(
-        Reflect.hasMetadata('core:guard', TestController.prototype, 'unguarded'),
-      ).toBe(false)
+      expect(Reflect.hasMetadata('core:guard', TestController.prototype, 'unguarded')).toBe(false)
     })
 
     it('should support scanning for all guarded methods', () => {

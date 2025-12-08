@@ -149,4 +149,3 @@ export class NotificationService {
     EndTextCommandDisplayHelp(2, false, false, -1)
   }
 }
-

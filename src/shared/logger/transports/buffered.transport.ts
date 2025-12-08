@@ -197,4 +197,3 @@ export class BufferedTransport implements LogTransport {
     this.clear()
   }
 }
-

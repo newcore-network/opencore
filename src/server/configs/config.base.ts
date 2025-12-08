@@ -74,4 +74,3 @@ export function createFluentConfigurator<T extends object>(state: T): FluentConf
 
   return configurator
 }
-

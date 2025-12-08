@@ -12,11 +12,7 @@ describe('@Public decorator', () => {
         login() {}
       }
 
-      const metadata = Reflect.getMetadata(
-        METADATA_KEYS.PUBLIC,
-        AuthController.prototype,
-        'login',
-      )
+      const metadata = Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'login')
 
       expect(metadata).toBe(true)
     })
@@ -61,13 +57,13 @@ describe('@Public decorator', () => {
         authenticatedMethod() {}
       }
 
-      expect(
-        Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'login'),
-      ).toBe(true)
+      expect(Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'login')).toBe(
+        true,
+      )
 
-      expect(
-        Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'register'),
-      ).toBe(true)
+      expect(Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'register')).toBe(
+        true,
+      )
 
       expect(
         Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'forgotPassword'),
@@ -129,10 +125,23 @@ describe('@Public decorator', () => {
       }
 
       // Set some fake OnNet metadata
-      Reflect.defineMetadata('core:meta:net_event', { eventName: 'auth:login' }, AuthController.prototype, 'login')
+      Reflect.defineMetadata(
+        'core:meta:net_event',
+        { eventName: 'auth:login' },
+        AuthController.prototype,
+        'login',
+      )
 
-      const publicMeta = Reflect.getMetadata(METADATA_KEYS.PUBLIC, AuthController.prototype, 'login')
-      const eventMeta = Reflect.getMetadata('core:meta:net_event', AuthController.prototype, 'login')
+      const publicMeta = Reflect.getMetadata(
+        METADATA_KEYS.PUBLIC,
+        AuthController.prototype,
+        'login',
+      )
+      const eventMeta = Reflect.getMetadata(
+        'core:meta:net_event',
+        AuthController.prototype,
+        'login',
+      )
 
       expect(publicMeta).toBe(true)
       expect(eventMeta.eventName).toBe('auth:login')
@@ -175,9 +184,9 @@ describe('@Public decorator', () => {
         undecorated() {}
       }
 
-      expect(
-        Reflect.hasMetadata(METADATA_KEYS.PUBLIC, TestController.prototype, 'decorated'),
-      ).toBe(true)
+      expect(Reflect.hasMetadata(METADATA_KEYS.PUBLIC, TestController.prototype, 'decorated')).toBe(
+        true,
+      )
 
       expect(
         Reflect.hasMetadata(METADATA_KEYS.PUBLIC, TestController.prototype, 'undecorated'),
@@ -185,4 +194,3 @@ describe('@Public decorator', () => {
     })
   })
 })
-

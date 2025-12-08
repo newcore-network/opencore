@@ -1,6 +1,6 @@
-import { Player } from "../../entities"
+import type { Player } from '../../entities'
 
-type CommandArgs = string[] | any;
+type CommandArgs = string[] | any
 
 /**
  * Template for admin controller implementations.

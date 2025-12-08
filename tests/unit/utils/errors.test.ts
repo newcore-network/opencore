@@ -181,4 +181,3 @@ describe('isAppError', () => {
     expect(isAppError(500)).toBe(false)
   })
 })
-

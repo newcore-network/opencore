@@ -11,4 +11,3 @@ export function Interval(ms: number) {
     Reflect.defineMetadata(METADATA_KEYS.INTERVAL, { interval: ms }, target, propertyKey)
   }
 }
-

@@ -12,11 +12,7 @@ describe('@OnTick decorator', () => {
         onTick() {}
       }
 
-      const metadata = Reflect.getMetadata(
-        METADATA_KEYS.TICK,
-        TickController.prototype,
-        'onTick',
-      )
+      const metadata = Reflect.getMetadata(METADATA_KEYS.TICK, TickController.prototype, 'onTick')
 
       expect(metadata).toBeDefined()
       expect(metadata).toEqual({})
@@ -60,9 +56,9 @@ describe('@OnTick decorator', () => {
         Reflect.hasMetadata(METADATA_KEYS.TICK, GameController.prototype, 'updateVehicles'),
       ).toBe(true)
 
-      expect(
-        Reflect.hasMetadata(METADATA_KEYS.TICK, GameController.prototype, 'updateWorld'),
-      ).toBe(true)
+      expect(Reflect.hasMetadata(METADATA_KEYS.TICK, GameController.prototype, 'updateWorld')).toBe(
+        true,
+      )
     })
   })
 
@@ -121,9 +117,9 @@ describe('@OnTick decorator', () => {
         normalMethod() {}
       }
 
-      expect(
-        Reflect.hasMetadata(METADATA_KEYS.TICK, TestController.prototype, 'tickMethod'),
-      ).toBe(true)
+      expect(Reflect.hasMetadata(METADATA_KEYS.TICK, TestController.prototype, 'tickMethod')).toBe(
+        true,
+      )
 
       expect(
         Reflect.hasMetadata(METADATA_KEYS.TICK, TestController.prototype, 'normalMethod'),
@@ -172,14 +168,26 @@ describe('@OnTick decorator', () => {
       }
 
       // Manually add some other metadata
-      Reflect.defineMetadata('custom:meta', { value: 'test' }, MixedController.prototype, 'tickHandler')
+      Reflect.defineMetadata(
+        'custom:meta',
+        { value: 'test' },
+        MixedController.prototype,
+        'tickHandler',
+      )
 
-      const tickMeta = Reflect.getMetadata(METADATA_KEYS.TICK, MixedController.prototype, 'tickHandler')
-      const customMeta = Reflect.getMetadata('custom:meta', MixedController.prototype, 'tickHandler')
+      const tickMeta = Reflect.getMetadata(
+        METADATA_KEYS.TICK,
+        MixedController.prototype,
+        'tickHandler',
+      )
+      const customMeta = Reflect.getMetadata(
+        'custom:meta',
+        MixedController.prototype,
+        'tickHandler',
+      )
 
       expect(tickMeta).toEqual({})
       expect(customMeta).toEqual({ value: 'test' })
     })
   })
 })
-

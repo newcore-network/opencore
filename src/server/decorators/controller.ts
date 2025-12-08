@@ -6,18 +6,18 @@ export const serverControllerRegistry: ClassConstructor[] = []
 
 /**
  * Class decorator used to mark a class as a Server Controller.
- * 
+ *
  * This decorator performs the following actions:
  * 1. Marks the class as `@injectable` (via tsyringe) for dependency injection.
  * 2. Defines metadata identifying the class as a 'server' type controller.
  * 3. Automatically adds the class constructor to the `serverControllerRegistry`.
- * 
+ *
  * @returns The decorator function to apply to the class.
- * 
+ *
  * @example
  * ```ts
  * import { Controller } from '@core/server/decorators'
- * 
+ *
  * @Server.Controller()
  * export class PlayerController {
  *   constructor(private playerService: PlayerService) {

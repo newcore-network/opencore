@@ -1,6 +1,5 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
-
 /**
  * Export
  * -----------------------------------------
@@ -30,7 +29,7 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
  *     return this.accountService.find(id)
  *   }
  * }
- * 
+ *
  * // From another resource:
  * // const result = exports['core-resource'].getAccountById('1234')
  *```

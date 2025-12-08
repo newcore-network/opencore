@@ -20,4 +20,3 @@ export function OnResourceStop() {
     Reflect.defineMetadata(METADATA_KEYS.RESOURCE_STOP, {}, target, propertyKey)
   }
 }
-

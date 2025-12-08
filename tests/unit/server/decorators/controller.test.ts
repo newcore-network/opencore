@@ -166,4 +166,3 @@ describe('@Controller decorator', () => {
     })
   })
 })
-

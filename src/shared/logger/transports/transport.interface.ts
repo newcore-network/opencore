@@ -42,4 +42,3 @@ export interface LogTransport {
    */
   destroy?(): void
 }
-

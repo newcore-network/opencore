@@ -64,4 +64,3 @@ export class ResourceStopProcessor implements DecoratorProcessor {
     clientLifecycle.debug(`Registered resource stop handler: ${handlerName}`)
   }
 }
-

@@ -1,4 +1,10 @@
-import { LogDomain, LogDomainLabels, LogLevel, LogLevelLabels, type LogEntry } from '../logger.types'
+import {
+  LogDomain,
+  LogDomainLabels,
+  LogLevel,
+  LogLevelLabels,
+  type LogEntry,
+} from '../logger.types'
 import type { LogTransport } from './transport.interface'
 
 /**
@@ -154,4 +160,3 @@ export class ConsoleTransport implements LogTransport {
     }
   }
 }
-

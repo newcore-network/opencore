@@ -37,7 +37,7 @@ export interface CommandMetadata extends CommandConfig {
   paramTypes?: any
 }
 
-type ServerCommandHandler = (player: Player, ...args: any[]) => any;
+type ServerCommandHandler = (player: Player, ...args: any[]) => any
 
 /**
  * Decorator used to mark a controller method as a command.
@@ -52,9 +52,9 @@ type ServerCommandHandler = (player: Player, ...args: any[]) => any;
  */
 export function Command(configOrName: string | CommandConfig) {
   return <T extends ServerCommandHandler>(
-    target: any, 
-    propertyKey: string, 
-    descriptor: TypedPropertyDescriptor<T>
+    target: any,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<T>,
   ) => {
     const config: CommandConfig =
       typeof configOrName === 'string' ? { command: configOrName } : configOrName

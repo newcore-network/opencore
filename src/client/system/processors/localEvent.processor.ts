@@ -31,4 +31,3 @@ export class LocalEventProcessor implements DecoratorProcessor {
     clientLocalEvent.debug(`Registered: ${metadata.eventName} -> ${handlerName}`)
   }
 }
-

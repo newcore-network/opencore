@@ -286,10 +286,8 @@ export class SpawnService {
       return
     }
 
-    if (!this.appearanceService) {
-      // No hay servicio registrado, hacemos fallback a default
+    if (!this.appearanceService.validateAppearance(appearance)) {
       SetPedDefaultComponentVariation(ped)
-      loggers.spawn.warn('Appearance provided but AppearanceService is not registered')
       return
     }
 

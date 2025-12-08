@@ -1,4 +1,5 @@
-import { container, DependencyContainer } from 'tsyringe'
+import type { DependencyContainer } from 'tsyringe'
+import { container } from 'tsyringe'
 
 /**
  * Resets the global DI container to a clean state.
@@ -53,4 +54,3 @@ export function createContainerWithMocks(): DependencyContainer {
 
   return testContainer
 }
-

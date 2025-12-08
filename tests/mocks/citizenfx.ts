@@ -162,13 +162,17 @@ export const HasAnimDictLoaded = vi.fn((dict: string) => true)
 export const TaskPlayAnim = vi.fn((...args: any[]) => {})
 export const ClearPedTasks = vi.fn((ped: number) => {})
 export const ClearPedTasksImmediately = vi.fn((ped: number) => {})
-export const IsEntityPlayingAnim = vi.fn((entity: number, dict: string, name: string, flag: number) => false)
+export const IsEntityPlayingAnim = vi.fn(
+  (entity: number, dict: string, name: string, flag: number) => false,
+)
 
 // Respawn
 export const NetworkResurrectLocalPlayer = vi.fn((...args: any[]) => {})
 
 // Controls
-export const DisableControlAction = vi.fn((padIndex: number, control: number, disable: boolean) => {})
+export const DisableControlAction = vi.fn(
+  (padIndex: number, control: number, disable: boolean) => {},
+)
 export const IsControlPressed = vi.fn((padIndex: number, control: number) => false)
 export const IsControlJustPressed = vi.fn((padIndex: number, control: number) => false)
 
