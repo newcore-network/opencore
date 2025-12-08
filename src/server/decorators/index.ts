@@ -1,7 +1,7 @@
 export * from './bind'
 export * from './utils'
 export { Command, CommandConfig } from './command'
-export * from './coreEvent'
+export * from './onFrameworkEvent'
 export * from './onNet'
 export * from './onTick'
 export { Controller } from './controller'

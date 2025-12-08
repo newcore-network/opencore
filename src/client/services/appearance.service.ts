@@ -1,6 +1,9 @@
 import { injectable } from 'tsyringe'
 import { PlayerAppearance } from '../interfaces/appearance.interface'
 
+/**
+ * @experimental This may change soon in the future. It is not yet recommended for use
+ */
 @injectable()
 export class AppearanceService {
   async applyAppearance(ped: number, appearance: PlayerAppearance): Promise<void> {

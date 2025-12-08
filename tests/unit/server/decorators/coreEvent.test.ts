@@ -1,14 +1,14 @@
 // @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
-import { OnCoreEvent } from '../../../../src/server/decorators/coreEvent'
+import { OnFrameworkEvent } from '../../../../src/server/decorators/coreEvent'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
 
-describe('@OnCoreEvent decorator', () => {
+describe('@OnFrameworkEvent decorator', () => {
   describe('event registration', () => {
     it('should register playerConnecting event', () => {
       class SessionController {
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         handleConnecting() {}
       }
 
@@ -24,7 +24,7 @@ describe('@OnCoreEvent decorator', () => {
 
     it('should register playerDropped event', () => {
       class SessionController {
-        @OnCoreEvent('playerDropped')
+        @OnFrameworkEvent('playerDropped')
         handleDropped() {}
       }
 
@@ -39,7 +39,7 @@ describe('@OnCoreEvent decorator', () => {
 
     it('should register playerSessionCreated event', () => {
       class SessionController {
-        @OnCoreEvent('playerSessionCreated')
+        @OnFrameworkEvent('playerSessionCreated')
         handleSessionCreated() {}
       }
 
@@ -56,13 +56,13 @@ describe('@OnCoreEvent decorator', () => {
   describe('multiple handlers', () => {
     it('should allow multiple core event handlers in same controller', () => {
       class LifecycleController {
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         onConnect() {}
 
-        @OnCoreEvent('playerDropped')
+        @OnFrameworkEvent('playerDropped')
         onDrop() {}
 
-        @OnCoreEvent('playerSessionCreated')
+        @OnFrameworkEvent('playerSessionCreated')
         onSession() {}
       }
 
@@ -91,10 +91,10 @@ describe('@OnCoreEvent decorator', () => {
 
     it('should keep metadata isolated between methods', () => {
       class TestController {
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         method1() {}
 
-        @OnCoreEvent('playerDropped')
+        @OnFrameworkEvent('playerDropped')
         method2() {}
       }
 
@@ -117,7 +117,7 @@ describe('@OnCoreEvent decorator', () => {
   describe('method preservation', () => {
     it('should not modify original method', () => {
       class TestController {
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         calculate(a: number, b: number) {
           return a + b
         }
@@ -129,7 +129,7 @@ describe('@OnCoreEvent decorator', () => {
 
     it('should preserve async methods', async () => {
       class TestController {
-        @OnCoreEvent('playerSessionCreated')
+        @OnFrameworkEvent('playerSessionCreated')
         async fetchData() {
           return 'data'
         }
@@ -144,7 +144,7 @@ describe('@OnCoreEvent decorator', () => {
       class TestController {
         private prefix = 'Player: '
 
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         formatPlayer(name: string) {
           return this.prefix + name
         }
@@ -158,7 +158,7 @@ describe('@OnCoreEvent decorator', () => {
   describe('metadata discovery', () => {
     it('should allow checking if method handles core event', () => {
       class TestController {
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         decorated() {}
 
         normal() {}
@@ -175,12 +175,12 @@ describe('@OnCoreEvent decorator', () => {
 
     it('should support scanning for all core event handlers', () => {
       class EventController {
-        @OnCoreEvent('playerConnecting')
+        @OnFrameworkEvent('playerConnecting')
         onConnect() {}
 
         helper() {}
 
-        @OnCoreEvent('playerDropped')
+        @OnFrameworkEvent('playerDropped')
         onDrop() {}
 
         anotherHelper() {}

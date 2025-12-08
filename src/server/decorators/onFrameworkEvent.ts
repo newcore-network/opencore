@@ -14,14 +14,14 @@ import type { CoreEventMap } from '../types/core-events'
  * @Server.Controller()
  * export class SystemController {
  *
- *   @OnCoreEvent('server:ready')
+ *   @OnFrameworkEvent('server:ready')
  *   public onServerStart() {
  *     console.log('OpenCore Framework is ready!')
  *   }
  * }
  * ```
  */
-export function OnCoreEvent<K extends keyof CoreEventMap>(event: K) {
+export function OnFrameworkEvent<K extends keyof CoreEventMap>(event: K) {
   return (target: any, propertyKey: string) => {
     Reflect.defineMetadata(METADATA_KEYS.CORE_EVENT, { event }, target, propertyKey)
   }
