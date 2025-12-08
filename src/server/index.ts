@@ -19,6 +19,7 @@ import './controllers/command.controller'
 import './controllers/chat.controller'
 import './controllers/session.controller'
 import './controllers/player-export.controller'
+import './controllers/principal-export.controller'
 
 import { di } from './container'
 globalThis.oc_container = di
