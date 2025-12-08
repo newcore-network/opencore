@@ -8,6 +8,7 @@ import { SecurityError } from '../../../utils'
 import { loggers } from '../../../shared/logger'
 import z from 'zod'
 import { generateSchemaFromTypes } from '../schema-generator'
+import { resolveMethod } from '../../helpers/resolve-method'
 
 @injectable()
 export class NetEventProcessor implements DecoratorProcessor {
@@ -18,15 +19,19 @@ export class NetEventProcessor implements DecoratorProcessor {
     private securityHandler: SecurityHandlerContract,
   ) {}
 
-  process(target: any, methodName: string, metadata: NetEventOptions) {
-    const handler = target[methodName].bind(target)
-    const handlerName = `${target.constructor.name}.${methodName}`
+  process(instance: any, methodName: string, metadata: NetEventOptions) {
+    const result = resolveMethod(
+      instance,
+      methodName,
+      `[NetEventProcessor] Method "${methodName}" not found`,
+    )
+    if (!result) return
+    const { handler, handlerName, proto } = result
 
-    const proto = Object.getPrototypeOf(target)
     const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) === true
 
     onNet(metadata.eventName, async (...args: any[]) => {
-      const sourceId = Number(global.source)
+      const sourceId = Number(source)
       const player = this.playerService.getByClient(sourceId)
 
       if (!player) {
@@ -57,7 +62,6 @@ export class NetEventProcessor implements DecoratorProcessor {
         try {
           const parsed = schema.parse(args)
           validatedArgs = Array.isArray(parsed) ? parsed : [parsed]
-
         } catch (error) {
           if (error instanceof z.ZodError) {
             const violation = new SecurityError(

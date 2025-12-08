@@ -3,14 +3,21 @@ import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { onCoreEvent } from '../../bus/core-event-bus'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { loggers } from '../../../shared/logger'
+import { resolveMethod } from '../../helpers/resolve-method'
 
 @injectable()
 export class CoreEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.CORE_EVENT
 
-  process(target: any, methodName: string, metadata: { event: string }) {
-    const handler = target[methodName].bind(target)
-    const handlerName = `${target.constructor.name}.${methodName}`
+  process(instance: any, methodName: string, metadata: { event: string }) {
+    const result = resolveMethod(
+      instance,
+      methodName,
+      `[CoreEventProcessor] Method "${methodName}" not found`,
+    )
+    if (!result) return
+
+    const { handler, handlerName } = result
 
     onCoreEvent(metadata.event as any, (payload) => {
       try {

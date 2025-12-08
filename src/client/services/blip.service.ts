@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { Vector3 } from '../../../utils'
+import type { Vector3 } from '../../utils'
 
 export interface BlipOptions {
   /** Blip sprite ID (icon) */
@@ -253,4 +253,3 @@ export class BlipService {
     }
   }
 }
-

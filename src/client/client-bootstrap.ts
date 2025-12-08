@@ -2,23 +2,30 @@ import { MetadataScanner } from '../system/metadata.scanner'
 import { di } from './client-container'
 import { clientControllerRegistry } from './decorators'
 import { playerClientLoader } from './player/player.loader'
+import {
+  BlipService,
+  MarkerService,
+  NotificationService,
+  PedService,
+  ProgressService,
+  SpawnService,
+  StreamingService,
+  TextUIService,
+  VehicleService,
+} from './services'
 import { registerSystemClient } from './system/processors.register'
 import { NuiBridge } from './ui-bridge'
 
 // Services
-import { Spawner } from './services/core'
-import { NotificationService, TextUIService, ProgressService } from './services/ui'
-import { MarkerService, BlipService, VehicleService, PedService } from './services/world'
-import { StreamingService } from './services/streaming'
 
-const bootServices = [Spawner] as const
+const bootServices = [SpawnService] as const
 
 /**
  * Basic setup for client, for configs, decorators, containers... etc
  */
 function setSingletons() {
   // Core services
-  di.registerSingleton(Spawner, Spawner)
+  di.registerSingleton(SpawnService, SpawnService)
 
   // NUI
   di.registerSingleton(NuiBridge, NuiBridge)

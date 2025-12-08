@@ -3,3 +3,4 @@ dist/
 .cursorignore
 /coverage
 benchmark/reports/
+.windsurf/

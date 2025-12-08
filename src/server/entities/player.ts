@@ -109,7 +109,7 @@ export class Player {
    * @param vector - The target coordinates (x, y, z).
    */
   teleportClient(vector: Vector3) {
-    this.emit('core:spawner:teleport', vector)
+    this.emit('opencore:spawner:teleport', vector)
   }
 
   /**

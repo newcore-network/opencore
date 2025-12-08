@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { Vector3 } from '../../../utils'
+import type { Vector3 } from '../../utils'
 
 export interface PedSpawnOptions {
   /** Model name or hash */
@@ -79,7 +79,16 @@ export class PedService {
     }
 
     // Create the ped
-    const ped = CreatePed(4, modelHash, position.x, position.y, position.z, heading, networked, true)
+    const ped = CreatePed(
+      4,
+      modelHash,
+      position.x,
+      position.y,
+      position.z,
+      heading,
+      networked,
+      true,
+    )
 
     SetModelAsNoLongerNeeded(modelHash)
 
@@ -387,4 +396,3 @@ export class PedService {
     return ped ? DoesEntityExist(ped.handle) : false
   }
 }
-

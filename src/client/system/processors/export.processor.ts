@@ -13,7 +13,7 @@ export class ClientExportProcessor implements DecoratorProcessor {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
 
-    exports(metadata.exportName, async (...args: any[]) => {
+    ;(globalThis as any).exports(metadata.exportName, async (...args: any[]) => {
       try {
         return await handler(...args)
       } catch (error) {

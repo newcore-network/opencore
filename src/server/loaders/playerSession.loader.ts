@@ -11,8 +11,8 @@ export const playerSessionLoader = () => {
   // Initialize persistence service (resolves provider if configured)
   persistenceService.initialize()
 
-  on('playerJoining', async (source: string) => {
-    const clientId = Number(source)
+  on('playerJoining', async () => {
+    const clientId = source
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
     const player = playerManager.bind(clientId, { license })
 
@@ -28,10 +28,20 @@ export const playerSessionLoader = () => {
       clientId,
       license,
     })
+
+    setImmediate(() => {
+      const currentPlayer = playerManager.getByClient(clientId)
+      if (!currentPlayer) return
+
+      emitCoreEvent('core:playerFullyConnected', {
+        clientId,
+        license,
+      })
+    })
   })
 
-  on('playerDropped', async () => {
-    const clientId = Number(global.source)
+  on('playerDropped', async (source: string) => {
+    const clientId = Number(source)
     const player = playerManager.getByClient(clientId)
 
     // Save player data before destroying session

@@ -3,7 +3,6 @@ import { CommandService } from '../services/command.service'
 import { Player } from '../entities'
 import { Controller } from '../decorators'
 import { loggers } from '../../shared/logger'
-import {z} from 'zod'
 
 @Controller()
 export class CommandNetworkController {
@@ -19,7 +18,7 @@ export class CommandNetworkController {
       await this.commandService.execute(player, command, args, raw)
     } catch (error) {
       loggers.command.error(
-        `Execution failed: /${command}`,  
+        `Execution failed: /${command}`,
         {
           playerId: player.clientID,
         },

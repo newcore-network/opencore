@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { Vector3 } from '../../../utils'
+import type { Vector3 } from '../../utils'
 
 export interface TextUIOptions {
   /** Font (0-8) */
@@ -218,4 +218,3 @@ export class TextUIService {
     }
   }
 }
-

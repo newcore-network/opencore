@@ -13,8 +13,14 @@ export interface TransferCompletedPayload {
   targetId: number
 }
 
+export interface PlayerFullyConnectedPayload {
+  clientId: number
+  license: string
+}
+
 export type CoreEventMap = {
   'core:playerSessionCreated': PlayerSessionCreatedPayload
   'core:playerSessionDestroyed': PlayerSessionDestroyedPayload
   'core:transfer:completed': TransferCompletedPayload
+  'core:playerFullyConnected': PlayerFullyConnectedPayload
 }

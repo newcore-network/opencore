@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { Vector3 } from '../../../utils'
+import type { Vector3 } from '../../utils'
 
 export interface VehicleSpawnOptions {
   /** Model name or hash */
@@ -352,4 +352,3 @@ export class VehicleService {
     SetVehicleOnGroundProperly(vehicle)
   }
 }
-

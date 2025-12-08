@@ -4,3 +4,5 @@ export * from './player/player'
 export * from './ui-bridge'
 export * from './services'
 export * from './types'
+
+import './controllers/spawner.controller'
