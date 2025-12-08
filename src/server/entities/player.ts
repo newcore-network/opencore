@@ -1,5 +1,5 @@
 import type { Vector3 } from '../../utils'
-import type { LinkedID, PlayerSession } from '../services/player.service'
+import type { LinkedID, PlayerSession } from '../services/core/player.service'
 
 /**
  * Core-level representation of a connected player on the server.

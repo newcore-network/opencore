@@ -1,6 +1,7 @@
 import { injectable } from 'tsyringe'
 import type { UUIDTypes } from 'uuid'
-import { Player } from '../entities/player'
+import { Player } from '../../entities'
+import { PlayerServiceContract } from '../contracts/player.service.contract'
 
 /**
  * Type representing a linked account identifier. This come from your persistence layer
@@ -25,7 +26,7 @@ export interface PlayerSession {
  * to Core `Player` entities.
  */
 @injectable()
-export class PlayerService {
+export class PlayerService extends PlayerServiceContract {
   /**
    * Internal map storing active player sessions indexed by their FiveM client ID (source).
    */
@@ -128,9 +129,9 @@ export class PlayerService {
    * @param key - The metadata key to retrieve.
    * @returns The value cast to type `T`, or `undefined` if the key or player doesn't exist.
    */
-  getMeta<T = unknown>(clientID: number, key: string): T | undefined {
+  async getMeta<T = unknown>(clientID: number, key: string): Promise<T | undefined> {
     const player = this.playersByClient.get(clientID)
-    return player?.getMeta<T>(key)
+    return await player?.getMeta<T>(key)
   }
 
   /**

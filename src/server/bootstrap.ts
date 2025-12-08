@@ -1,14 +1,13 @@
 import { di } from './container'
-import { playerSessionLoader } from './loaders/playerSession.loader'
 import { PrincipalProviderContract } from './templates'
 import { MetadataScanner } from '../system/metadata.scanner'
 import { registerSystemServer } from './system/processors.register'
-import { registerServicesServer } from './services/registers'
+import { registerServicesServer } from './services/services.register'
 import { loggers } from '../shared/logger'
 import { AuthProviderContract } from './templates/auth/auth-provider.contract'
 import { serverControllerRegistry } from './decorators/controller'
 
-const check = () => {
+const checkProviders = () => {
   if (!di.isRegistered(PrincipalProviderContract as any)) {
     const errorMsg =
       'No Principal Provider configured. ' +
@@ -26,6 +25,10 @@ const check = () => {
   }
 }
 
+export interface BootstrapOptions {
+  mode: 'CORE' | 'RESOURCE'
+}
+
 /**
  * Bootstraps the OpenCore Server Application Context.
  *
@@ -41,25 +44,20 @@ const check = () => {
  *
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
-export async function initServer() {
+export async function initServer(options: BootstrapOptions = { mode: 'CORE' }) {
   loggers.bootstrap.info('Initializing OpenCore Server...')
 
-  check()
-
-  // Register core services
-  registerServicesServer()
+  registerServicesServer(options.mode)
   loggers.bootstrap.debug('Core services registered')
 
-  // Register system processors
   registerSystemServer()
   loggers.bootstrap.debug('System processors registered')
 
-  // Extras
-  playerSessionLoader()
-  loggers.bootstrap.debug('Player session loader active')
+  if (options.mode === 'CORE') {
+    checkProviders()
+  }
 
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(serverControllerRegistry)
-
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 }

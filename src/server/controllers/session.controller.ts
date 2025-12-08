@@ -8,7 +8,7 @@ import { PlayerPersistenceService } from '../services/persistence.service'
 @Controller()
 export class SessionController {
   constructor(
-    private readonly playerManager: PlayerService,
+    private readonly playerService: PlayerService,
     private readonly persistance: PlayerPersistenceService,
   ) {}
 
@@ -16,7 +16,7 @@ export class SessionController {
   public async onPlayerJoining(): Promise<void> {
     const clientId = source
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
-    const player = this.playerManager.bind(clientId, { license })
+    const player = this.playerService.bind(clientId, { license })
 
     loggers.session.info(`Player session created`, {
       clientId,
@@ -28,7 +28,7 @@ export class SessionController {
     emitCoreEvent('core:playerSessionCreated', { clientId, license })
 
     setImmediate(() => {
-      const currentPlayer = this.playerManager.getByClient(clientId)
+      const currentPlayer = this.playerService.getByClient(clientId)
       if (!currentPlayer) return
       emitCoreEvent('core:playerFullyConnected', { clientId, license })
     })
@@ -37,13 +37,13 @@ export class SessionController {
   @OnFiveMEvent('playerDropped')
   public async onPlayerDropped(): Promise<void> {
     const clientId = Number(source)
-    const player = this.playerManager.getByClient(clientId)
+    const player = this.playerService.getByClient(clientId)
 
     if (player) {
       await this.persistance.handleSessionSave(player)
     }
 
-    this.playerManager.unbindByClient(clientId)
+    this.playerService.unbindByClient(clientId)
     emitCoreEvent('core:playerSessionDestroyed', { clientId })
     loggers.session.info(`Player session destroyed`, { clientId })
   }

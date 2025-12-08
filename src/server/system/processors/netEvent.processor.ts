@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
-import { PlayerService } from '../../services/player.service'
+import { PlayerService } from '../../services/core/player.service'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { NetEventOptions } from '../../decorators'
 import { SecurityHandlerContract } from '../../templates/security/security-handler.contract'
