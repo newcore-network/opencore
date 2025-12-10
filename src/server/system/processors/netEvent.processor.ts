@@ -4,7 +4,7 @@ import { PlayerService } from '../../services/core/player.service'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { NetEventOptions } from '../../decorators'
 import { SecurityHandlerContract } from '../../templates/security/security-handler.contract'
-import { SecurityError } from '../../../utils'
+import { AppError, SecurityError } from '../../../utils'
 import { loggers } from '../../../shared/logger'
 import z from 'zod'
 import { generateSchemaFromTypes } from '../schema-generator'
@@ -55,8 +55,17 @@ export class NetEventProcessor implements DecoratorProcessor {
       }
 
       let validatedArgs = args
+      let schema: z.ZodType | undefined
 
-      const schema = generateSchemaFromTypes(metadata.paramTypes)
+      try {
+        schema = generateSchemaFromTypes(metadata.paramTypes)
+      } catch (error) {
+        if (error instanceof AppError) {
+          loggers.netEvent.fatal(error.message, { playerId: source }, error)
+          return
+        }
+        throw error
+      }
 
       if (schema) {
         try {

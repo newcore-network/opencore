@@ -1,5 +1,6 @@
 import z from 'zod'
 import { Player } from '../entities/player'
+import { AppError } from '../../utils'
 
 function typeToZodSchema(type: any): z.ZodType {
   switch (type) {
@@ -18,11 +19,15 @@ function typeToZodSchema(type: any): z.ZodType {
   }
 }
 
-export function generateSchemaFromTypes(paramTypes: any[]): z.ZodTuple | null {
-  if (!paramTypes || paramTypes.length <= 1) return null
+export function generateSchemaFromTypes(paramTypes: any[]): z.ZodTuple | undefined {
+  if (!paramTypes || paramTypes.length <= 1) return undefined
 
   if (paramTypes[0] !== Player) {
-    throw new Error(`@OnNet: First parameter must be Player, got ${paramTypes[0]?.name}`)
+    throw new AppError(
+      'VALIDATION_ERROR',
+      `First parameter must be Player, got ${paramTypes[0]?.name}`,
+      'core',
+    )
   }
 
   const argSchemas = paramTypes.slice(1).map(typeToZodSchema)

@@ -20,16 +20,26 @@ export class CommandService {
 
   async execute(player: Server.Player, commandName: string, args: string[], raw: string) {
     const entry = this.commands.get(commandName.toLowerCase())
-
     if (!entry) {
       return
     }
+
     const { meta, handler } = entry
 
     let validatedArgs: any = args
+    let schema: z.ZodType | undefined
 
-    // Use explicit schema or auto-generate from paramTypes
-    const schema = meta.schema ?? generateSchemaFromTypes(meta.paramTypes)
+    if (!schema) {
+      try {
+        schema = generateSchemaFromTypes(meta.paramTypes)
+      } catch (error) {
+        if (error instanceof AppError) {
+          loggers.command.fatal(error.message, { playerId: source }, error)
+          return
+        }
+        throw error
+      }
+    }
 
     if (schema) {
       try {
