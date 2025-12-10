@@ -1,4 +1,4 @@
-# OpenCore Framework - Unstable beta ❗
+# OpenCore Framework - Unstable ALPHA ❗
 
 > **The robust TypeScript Engine for FiveM.**
 > Built on strong OOP principles, Layered Architecture, and Security-first design.
