@@ -79,6 +79,11 @@ export class Player {
     emitNet(eventName, this.clientID, ...args)
   }
 
+  /** used to send a private message to the player */
+  send(message: string, type: 'chat' | 'error' | 'success' | 'warning' = 'chat') {
+    emitNet('core:chat:send', this.clientID, message, type)
+  }
+
   /**
    * Teleports the player to a given position using Server-Side natives.
    *

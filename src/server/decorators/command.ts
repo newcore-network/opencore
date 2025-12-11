@@ -2,6 +2,7 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
 import type { ClassConstructor } from '../../system/class-constructor'
 import type z from 'zod'
 import type { Player } from '../entities/player'
+import { getParameterNames } from '../helpers/function-helper'
 
 export interface CommandConfig {
   /**
@@ -34,7 +35,8 @@ export interface CommandConfig {
 export interface CommandMetadata extends CommandConfig {
   methodName: string
   target: ClassConstructor
-  paramTypes?: any
+  paramTypes: any
+  paramNames: string[]
 }
 
 type ServerCommandHandler = (player: Player, ...args: any[]) => any
@@ -56,16 +58,20 @@ export function Command(configOrName: string | CommandConfig) {
     propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>,
   ) => {
+    if (!descriptor.value)
+      throw new Error(`@Command(): descriptor.value is undefined for method '${propertyKey}'`)
+
     const config: CommandConfig =
       typeof configOrName === 'string' ? { command: configOrName } : configOrName
-
     const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey)
+    const paramNames = getParameterNames(descriptor.value)
 
     const metadata: CommandMetadata = {
       ...config,
       methodName: propertyKey,
       target: target.constructor,
       paramTypes,
+      paramNames,
     }
 
     Reflect.defineMetadata(METADATA_KEYS.COMMAND, metadata, target, propertyKey)

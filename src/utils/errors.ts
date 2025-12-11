@@ -12,6 +12,9 @@ export type FrameworkErroCode =
   | 'NO_RANK_IN_PRINCIPAL'
   | 'UNKNOWN'
   | 'GAME_STATE_ERROR'
+  | 'SCHEMA_MISMATCH'
+  | 'COMMAND_NOT_FOUND'
+  | 'COMMAND_DUPLICATE'
 
 export type ErrorOrigin = 'client' | 'server' | 'core' | 'external'
 
