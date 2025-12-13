@@ -33,7 +33,7 @@ export const serverBridge = {
    * @returns The player ID if found, null otherwise
    */
   getPlayerId(clientID: number): string | null {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       return getPlayerService().getPlayerId(clientID)
     }
     return getCoreExports().getPlayerId(clientID)
@@ -47,7 +47,7 @@ export const serverBridge = {
    * @returns A promise that resolves with the metadata value, or undefined if not found
    */
   async getPlayerMeta<T = unknown>(clientID: number, key: string): Promise<T | undefined> {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       return getPlayerService().getMeta<T>(clientID, key)
     }
     return getCoreExports().getPlayerMeta<T>(clientID, key)
@@ -60,7 +60,7 @@ export const serverBridge = {
    * @param value - The value to store
    */
   setPlayerMeta(clientID: number, key: string, value: unknown): void {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       getPlayerService().setMeta(clientID, key, value)
       return
     }
@@ -73,7 +73,7 @@ export const serverBridge = {
    * @returns A promise that resolves with the principal object, or null if not found
    */
   async getPrincipal(clientID: number): Promise<any> {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       const player = getPlayerService().getByClient(clientID)
       if (!player) return null
       return getPrincipalProvider().getPrincipal(player)

@@ -9,18 +9,35 @@ import { ExportProcessor } from './processors/export.processor'
 import { FiveMEventProcessor } from './processors/fivemEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
 import { TickProcessor } from './processors/tick.processor'
+import type { RuntimeContext } from '../runtime'
 
-export function registerSystemServer() {
-  di.register('DecoratorProcessor', { useClass: NetEventProcessor })
-  di.register('DecoratorProcessor', { useClass: TickProcessor })
-  di.register('DecoratorProcessor', { useClass: ExportProcessor })
-  di.register('DecoratorProcessor', { useClass: CoreEventProcessor })
-  di.register('DecoratorProcessor', { useClass: CommandProcessor })
-  di.register('DecoratorProcessor', { useClass: FiveMEventProcessor })
-  if (!di.isRegistered(SecurityHandlerContract as any)) {
-    di.registerSingleton(SecurityHandlerContract as any, DefaultSecurityHandler)
+export function registerSystemServer(ctx: RuntimeContext) {
+  const { features } = ctx
+
+  if (features.netEvents.enabled) {
+    di.register('DecoratorProcessor', { useClass: NetEventProcessor })
+
+    if (!di.isRegistered(SecurityHandlerContract as any)) {
+      di.registerSingleton(SecurityHandlerContract as any, DefaultSecurityHandler)
+    }
+    if (!di.isRegistered(NetEventSecurityObserverContract as any)) {
+      di.registerSingleton(NetEventSecurityObserverContract as any, DefaultNetEventSecurityObserver)
+    }
   }
-  if (!di.isRegistered(NetEventSecurityObserverContract as any)) {
-    di.registerSingleton(NetEventSecurityObserverContract as any, DefaultNetEventSecurityObserver)
+
+  di.register('DecoratorProcessor', { useClass: TickProcessor })
+
+  if (features.exports.enabled) {
+    di.register('DecoratorProcessor', { useClass: ExportProcessor })
+  }
+
+  di.register('DecoratorProcessor', { useClass: CoreEventProcessor })
+
+  if (features.commands.enabled) {
+    di.register('DecoratorProcessor', { useClass: CommandProcessor })
+  }
+
+  if (features.fiveMEvents.enabled) {
+    di.register('DecoratorProcessor', { useClass: FiveMEventProcessor })
   }
 }
