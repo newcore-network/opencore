@@ -12,6 +12,7 @@ import { resolveMethod } from '../../helpers/resolve-method'
 import { SecurityError } from '../../../utils/error/security.error'
 import {
   NetEventInvalidPayloadContext,
+  NetEventInvalidPayloadReason,
   NetEventSecurityObserverContract,
 } from '../../templates/security/net-event-security-observer.contract'
 import { Player } from '../../entities'
@@ -35,9 +36,7 @@ export class NetEventProcessor implements DecoratorProcessor {
     )
     if (!result) return
     const { handler, handlerName, proto } = result
-
     const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) === true
-
     onNet(metadata.eventName, async (...args: any[]) => {
       const sourceId = Number(source)
       const player = this.playerService.getByClient(sourceId)
@@ -96,79 +95,28 @@ export class NetEventProcessor implements DecoratorProcessor {
         }
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const invalidCount = this.incrementInvalidCount(player, metadata.eventName)
-          const zodSummary = this.summarizeZodError(error)
-
-          const ctx: NetEventInvalidPayloadContext = {
+          await this.handleInvalidPayload({
+            player,
             event: metadata.eventName,
-            reason: 'zod',
-            playerId: player.clientID,
-            accountId: player.accountID,
-            invalidCount,
-            zodSummary,
+            schema,
             receivedArgsCount: args.length,
-            expectedArgsCount: schema instanceof z.ZodTuple ? schema.array.length : 1,
-          }
-
-          loggers.netEvent.warn(`Invalid payload`, {
-            event: ctx.event,
-            playerId: ctx.playerId,
-            accountId: ctx.accountId,
-            invalidCount: ctx.invalidCount,
-            zodSummary: ctx.zodSummary,
+            reason: 'zod',
+            zodError: error,
           })
-
-          await this.safeObserve(player, ctx)
-
-          const violation = new SecurityError(
-            'LOG',
-            `Invalid data received in ${metadata.eventName}`,
-            { issues: zodSummary },
-          )
-
-          await this.securityHandler.handleViolation(player, violation).catch(() => {
-            coreLogger.error(`Failed to handle security violation`, {
-              event: metadata.eventName,
-              playerId: player.clientID,
-            })
-          })
-
           return
         }
         if (error instanceof SecurityError) {
-          const invalidCount = this.incrementInvalidCount(player, metadata.eventName)
-
-          const ctx: NetEventInvalidPayloadContext = {
+          await this.handleInvalidPayload({
+            player,
             event: metadata.eventName,
-            reason: error.message.includes('Invalid argument count')
-              ? 'arg_count'
-              : 'security_error',
-            playerId: player.clientID,
-            accountId: player.accountID,
-            invalidCount,
+            schema,
             receivedArgsCount: args.length,
-            expectedArgsCount: schema instanceof z.ZodTuple ? schema.array.length : 1,
-          }
-
-          loggers.netEvent.warn(`Invalid payload`, {
-            event: ctx.event,
-            playerId: ctx.playerId,
-            accountId: ctx.accountId,
-            invalidCount: ctx.invalidCount,
-            reason: ctx.reason,
+            reason: this.reasonFromSecurityError(error),
+            violation: error,
           })
-
-          await this.safeObserve(player, ctx)
-
-          await this.securityHandler.handleViolation(player, error).catch(() => {
-            coreLogger.error(`Failed to handle security violation`, {
-              event: metadata.eventName,
-              playerId: player.clientID,
-            })
-          })
-
           return
         }
+
         loggers.netEvent.error(
           `Validation error in event`,
           {
@@ -184,37 +132,14 @@ export class NetEventProcessor implements DecoratorProcessor {
         await handler(player, ...validatedArgs)
       } catch (error) {
         if (error instanceof SecurityError) {
-          const invalidCount = this.incrementInvalidCount(player, metadata.eventName)
-
-          const ctx: NetEventInvalidPayloadContext = {
+          await this.handleInvalidPayload({
+            player,
             event: metadata.eventName,
-            reason: error.message.includes('Invalid argument count')
-              ? 'arg_count'
-              : 'security_error',
-            playerId: player.clientID,
-            accountId: player.accountID,
-            invalidCount,
+            schema,
             receivedArgsCount: args.length,
-            expectedArgsCount: schema instanceof z.ZodTuple ? schema.array.length : 1,
-          }
-
-          loggers.netEvent.warn(`Invalid payload`, {
-            event: ctx.event,
-            playerId: ctx.playerId,
-            accountId: ctx.accountId,
-            invalidCount: ctx.invalidCount,
-            reason: ctx.reason,
+            reason: this.reasonFromSecurityError(error),
+            violation: error,
           })
-
-          await this.safeObserve(player, ctx)
-
-          await this.securityHandler.handleViolation(player, error).catch(() => {
-            coreLogger.error(`Failed to handle security violation`, {
-              event: metadata.eventName,
-              playerId: player.clientID,
-            })
-          })
-
           return
         }
         loggers.netEvent.error(
@@ -230,6 +155,63 @@ export class NetEventProcessor implements DecoratorProcessor {
     })
 
     loggers.netEvent.debug(`Registered: ${metadata.eventName} -> ${handlerName}`)
+  }
+
+  private async safeHandleViolation(player: Player, violation: SecurityError, event: string) {
+    try {
+      await this.securityHandler.handleViolation(player, violation)
+    } catch (e) {
+      loggers.security.fatal(
+        `Failed to handle security violation`,
+        { event, playerId: player.clientID },
+        e as Error,
+      )
+    }
+  }
+
+  private reasonFromSecurityError(error: SecurityError): NetEventInvalidPayloadReason {
+    return error.message.includes('Invalid argument count') ? 'arg_count' : 'security_error'
+  }
+  private async handleInvalidPayload(params: {
+    player: Player
+    event: string
+    schema: z.ZodType
+    receivedArgsCount: number
+    reason: NetEventInvalidPayloadReason
+    zodError?: z.ZodError
+    violation?: SecurityError
+  }): Promise<void> {
+    const invalidCount = this.incrementInvalidCount(params.player, params.event)
+    const zodSummary = params.zodError ? this.summarizeZodError(params.zodError) : undefined
+    const ctx: NetEventInvalidPayloadContext = {
+      event: params.event,
+      reason: params.reason,
+      playerId: params.player.clientID,
+      accountId: params.player.accountID,
+      invalidCount,
+      zodSummary,
+      receivedArgsCount: params.receivedArgsCount,
+      expectedArgsCount: this.getExpectedArgsCount(params.schema),
+    }
+    loggers.netEvent.warn(`Invalid payload`, {
+      event: ctx.event,
+      playerId: ctx.playerId,
+      accountId: ctx.accountId,
+      invalidCount: ctx.invalidCount,
+      reason: ctx.reason,
+      zodSummary: ctx.zodSummary,
+    })
+    await this.safeObserve(params.player, ctx)
+    if (params.violation) {
+      await this.safeHandleViolation(params.player, params.violation, params.event)
+      return
+    }
+    if (params.zodError) {
+      const violation = new SecurityError('LOG', `Invalid data received in ${params.event}`, {
+        issues: zodSummary ?? params.zodError.message,
+      })
+      await this.safeHandleViolation(params.player, violation, params.event)
+    }
   }
 
   private incrementInvalidCount(player: Player, event: string): number {
@@ -257,5 +239,15 @@ export class NetEventProcessor implements DecoratorProcessor {
         e as Error,
       )
     }
+  }
+  private getExpectedArgsCount(schema: z.ZodType): number | undefined {
+    if (schema instanceof z.ZodTuple) {
+      const defItems = (schema as any)?._def?.items
+      if (Array.isArray(defItems)) return defItems.length
+      const items = (schema as any)?.items
+      if (Array.isArray(items)) return items.length
+      return undefined
+    }
+    return 1
   }
 }
