@@ -24,6 +24,7 @@ if (_mode === 'CORE') {
 }
 import './controllers/player-export.controller'
 import './controllers/principal-export.controller'
+export * from './bootstrap.validation'
 
 import { di } from './container'
 globalThis.oc_container = di

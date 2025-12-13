@@ -6,6 +6,10 @@ import { registerServicesServer } from './services/services.register'
 import { loggers } from '../shared/logger'
 import { AuthProviderContract } from './templates/auth/auth-provider.contract'
 import { serverControllerRegistry } from './decorators/controller'
+import {
+  registerDefaultBootstrapValidators,
+  runBootstrapValidatorsOrThrow,
+} from './bootstrap.validation'
 
 const checkProviders = () => {
   if (!di.isRegistered(PrincipalProviderContract as any)) {
@@ -56,6 +60,9 @@ export async function initServer(options: BootstrapOptions = { mode: 'CORE' }) {
   if (options.mode === 'CORE') {
     checkProviders()
   }
+
+  registerDefaultBootstrapValidators()
+  await runBootstrapValidatorsOrThrow()
 
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(serverControllerRegistry)

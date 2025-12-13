@@ -1,28 +1,7 @@
-/**
- * Database Service
- *
- * Main entry point for database operations. Acts as a factory/wrapper
- * that delegates to the registered database adapter.
- *
- * @example
- * ```typescript
- * import { DatabaseService } from '@open-core/framework/server'
- * import { inject, injectable } from 'tsyringe'
- *
- * @injectable()
- * class UserService {
- *   constructor(@inject(DatabaseService) private db: DatabaseService) {}
- *
- *   async getUser(id: number) {
- *     return this.db.single<User>('SELECT * FROM users WHERE id = ?', [id])
- *   }
- * }
- * ```
- */
-
 import { injectable } from 'tsyringe'
 import { DatabaseContract } from './database.contract'
-import { OxMySQLAdapter } from './adapters/oxmysql.adapter'
+import { ResourceDatabaseAdapter } from './adapters/resource.adapter'
+import { registerDatabaseAdapterFactory, resolveDatabaseAdapterFactory } from './adapter.registry'
 import type {
   DatabaseConfig,
   ExecuteResult,
@@ -30,13 +9,17 @@ import type {
   TransactionInput,
   TransactionSharedParams,
 } from './types'
+import { OxMySQLAdapter } from './adapters/oxmysql.adapter'
 
-/**
- * Database Service
- *
- * Singleton service that provides database operations through
- * a pluggable adapter system. Uses oxmysql by default.
- */
+let defaultFactoriesRegistered = false
+
+function registerDefaultDatabaseFactories(): void {
+  if (defaultFactoriesRegistered) return
+  registerDatabaseAdapterFactory('resource', () => new ResourceDatabaseAdapter())
+  registerDatabaseAdapterFactory('oxmysql', () => new OxMySQLAdapter())
+  defaultFactoriesRegistered = true
+}
+
 @injectable()
 export class DatabaseService extends DatabaseContract {
   private adapter: DatabaseContract | null = null
@@ -53,14 +36,29 @@ export class DatabaseService extends DatabaseContract {
 
     this.config = config
 
-    // Use oxmysql by default
+    registerDefaultDatabaseFactories()
+
     if (!this.adapter) {
-      this.adapter = new OxMySQLAdapter()
+      const adapterName = config.adapter?.trim() || GetConvar('newcore_db_adapter', '').trim() || ''
+
+      if (!adapterName) {
+        throw new Error(
+          "[NewCore] Database adapter is not configured. Set 'newcore_db_adapter' (recommended: 'resource') or call initDatabase({ adapter: 'resource' }).",
+        )
+      }
+
+      const factory = resolveDatabaseAdapterFactory(adapterName)
+      if (!factory) {
+        throw new Error(
+          `[NewCore] Unknown database adapter '${adapterName}'. Register it via registerDatabaseAdapterFactory('${adapterName}', factory).`,
+        )
+      }
+
+      this.adapter = factory()
     }
 
     this.isInitialized = true
   }
-
   /**
    * Check if the service is initialized
    */
@@ -98,9 +96,12 @@ export class DatabaseService extends DatabaseContract {
    * Ensure the service is initialized before operations
    */
   private ensureInitialized(): void {
-    if (!this.adapter) {
-      // Auto-initialize with defaults if not initialized
+    if (!this.isInitialized) {
       this.initialize()
+    }
+
+    if (!this.adapter) {
+      throw new Error('[NewCore] Database adapter not initialized')
     }
   }
 
