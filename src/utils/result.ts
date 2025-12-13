@@ -1,4 +1,4 @@
-import type { AppError } from './errors'
+import type { AppError } from './error/app.error'
 
 export interface Ok<T> {
   ok: true

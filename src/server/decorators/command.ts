@@ -18,16 +18,12 @@ export interface CommandConfig {
    */
   usage?: string
   /**
-   * The command schema, used to validate the arguments, validated with zod
-   * @example
-   * ```ts
-   * Server.Command({
-   *   command: 'revive',
-   *   schema: z.object({
-   *     player: z.string(),
-   *   }),
-   * })
-   * ```
+   * Optional Zod schema for command argument validation.
+   *
+   * - `z.tuple([...])`: positional args validation.
+   * - `z.object({...})`: named args validation (maps args to parameter names).
+   *
+   * If omitted, the framework auto-validates only primitive arg types (`string|number|boolean|any[]`).
    */
   schema?: z.ZodType
 }
@@ -42,14 +38,25 @@ export interface CommandMetadata extends CommandConfig {
 type ServerCommandHandler = (player: Player, ...args: any[]) => any
 
 /**
- * Decorator used to mark a controller method as a command.
- * This method will be registered and then executed by the command service.
- * It will depend on the chat you have implemented following the dependency conventions.
+ * Marks a method as a chat command. This is connected with the chat module.
  *
- * @param configOrName - The command name (e.g. "revive", "deposit")
- * @validation zod schema
- * @handlerSignature ```ts
- *  (player: Server.Player, args: any[]) => any
+ * Handler rules:
+ * - First parameter must be `Player`.
+ *
+ * Validation:
+ * - If `config.schema` is provided:
+ *   - `z.tuple([...])`: validates positional args (`args: string[]`).
+ *   - `z.object({...})`: maps `{ [paramName]: args[index] }` and validates named args.
+ * - If `config.schema` is omitted: the framework auto-validates only primitive arg types
+ *   (`string|number|boolean|any[]`). Complex types require an explicit schema.
+ *
+ * @param configOrName Command name or config object.
+ *
+ * @example DTO JSON in one argument
+ * ```ts
+ * const dto = z.preprocess((v) => JSON.parse(v as string), z.object({ amount: z.number() }))
+ * @Command({ command: 'deposit', usage: '/deposit <json>', schema: z.tuple([dto]) })
+ * deposit(player: Player, data: z.infer<typeof dto>) {}
  * ```
  */
 export function Command(configOrName: string | CommandConfig) {

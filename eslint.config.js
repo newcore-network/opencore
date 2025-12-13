@@ -5,7 +5,7 @@ const prettierPlugin = require('eslint-plugin-prettier')
 /** @type {import('eslint').Linter.Config[]} */
 module.exports = [
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: ['dist/**', 'node_modules/**', 'tests/**', 'benchmark/**', 'vitest.config.ts'],
   },
   {
     files: ['**/*.ts'],

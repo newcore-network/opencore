@@ -25,7 +25,7 @@ export class CommandService {
   async execute(player: Player, commandName: string, args: string[]) {
     const entry = this.commands.get(commandName.toLowerCase())
     if (!entry)
-      throw new AppError('COMMAND_NOT_FOUND', `Command not found: ${commandName}`, 'client')
+      throw new AppError('COMMAND:NOT_FOUND', `Command not found: ${commandName}`, 'client')
 
     const { meta, handler } = entry
 
@@ -39,13 +39,9 @@ export class CommandService {
 
       // CASE 2 — Autogeneration failed
       if (!schema) {
-        // If there are no arguments expect player only → OK
-        if (paramNames.length === 0) {
-          return await handler(player)
-        }
         // If handler expects args but no schema exists → ERROR
         throw new AppError(
-          'SCHEMA_MISMATCH',
+          'SCHEMA:MISMATCH',
           `Command '${meta.command}' has parameters ${paramNames.join(
             ', ',
           )} but no schema was provided.`,
@@ -62,7 +58,7 @@ export class CommandService {
       for (const p of paramNames) {
         if (!keys.includes(p)) {
           throw new AppError(
-            'SCHEMA_MISMATCH',
+            'SCHEMA:MISMATCH',
             `Command '${meta.command}' is missing schema for parameter '${p}'.`,
             'core',
           )
@@ -73,7 +69,7 @@ export class CommandService {
       for (const key of keys) {
         if (!paramNames.includes(key)) {
           throw new AppError(
-            'SCHEMA_MISMATCH',
+            'SCHEMA:MISMATCH',
             `Schema for command '${meta.command}' defines '${key}', but handler does not.`,
             'core',
           )
@@ -88,7 +84,7 @@ export class CommandService {
 
       // Validate
       const validated = await schema.parseAsync(inputObj).catch(() => {
-        throw new AppError('VALIDATION_ERROR', `Incorrect usage, use: ${meta.usage}`, 'client', {
+        throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
           usage: meta.usage,
         })
       })
@@ -101,7 +97,7 @@ export class CommandService {
     // CASE 4 — Tuple schema (auto-generated)
     if (schema instanceof z.ZodTuple) {
       const validated = await schema.parseAsync(args).catch(() => {
-        throw new AppError('VALIDATION_ERROR', `Incorrect usage, use: ${meta.usage}`, 'client', {
+        throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
           usage: meta.usage,
         })
       })

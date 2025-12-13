@@ -14,6 +14,6 @@ export class PrincipalExportController {
   async getPrincipal(source: number) {
     const player = this.playerService.getByClient(source)
     if (!player) return null
-    return this.principalProvider.getPrincipal(player)
+    return await this.principalProvider.getPrincipal(player)
   }
 }

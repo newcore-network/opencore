@@ -30,7 +30,7 @@ export class CommandNetworkController {
       await this.commandService.execute(player, command, args)
     } catch (error) {
       if (error instanceof AppError) {
-        if (error.code === 'VALIDATION_ERROR' || error.code === 'COMMAND_NOT_FOUND')
+        if (error.code === 'GAME:BAD_REQUEST' || error.code === 'COMMAND:NOT_FOUND')
           player.send(error.message, 'error')
         else player.send('An error occurred while executing the command', 'error')
 

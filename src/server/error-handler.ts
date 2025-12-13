@@ -1,7 +1,7 @@
 import { AppError, isAppError } from '../utils'
-import type { ErrorOrigin } from '../utils/'
 import type { CommandMetadata } from './decorators/command'
 import { loggers } from '../shared/logger'
+import { type ErrorOrigin } from '../utils/error/types/common.error-codes'
 
 function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   if (isAppError(error)) {

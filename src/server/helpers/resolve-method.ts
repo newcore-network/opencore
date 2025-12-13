@@ -31,7 +31,12 @@ export function resolveMethod(
     return { handler, handlerName, proto }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new AppError('UNKNOWN', `[${error.name}] ${error.message}`, 'server', error.stack)
+      throw new AppError(
+        'COMMON:UNKNOWN',
+        `[${error.name}] ${error.message}`,
+        'server',
+        error.stack,
+      )
     } else throw error
   }
 }

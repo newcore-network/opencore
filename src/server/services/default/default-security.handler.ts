@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
 import { SecurityHandlerContract } from '../../templates/security/security-handler.contract'
 import { Server } from '../../..'
-import { SecurityError } from '../../../utils/errors'
 import { loggers } from '../../../shared/logger'
+import { SecurityError } from '../../../utils/error/security.error'
 
 @injectable()
 export class DefaultSecurityHandler extends SecurityHandlerContract {

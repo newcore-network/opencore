@@ -2,7 +2,7 @@ import { container } from 'tsyringe'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import type { Server } from '../..'
 import type { SecurityAction } from '../types/security.types'
-import { SecurityError } from '../../utils'
+import { SecurityError } from '../../utils/error/security.error'
 
 interface ThrottleOptions {
   /**
