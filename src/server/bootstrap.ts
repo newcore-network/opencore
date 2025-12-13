@@ -68,3 +68,7 @@ export async function initServer(options: BootstrapOptions = { mode: 'CORE' }) {
   scanner.scan(serverControllerRegistry)
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 }
+
+import('./controllers/command.controller')
+import('./controllers/chat.controller')
+import('./controllers/session.controller')

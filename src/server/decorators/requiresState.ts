@@ -74,7 +74,7 @@ export function RequiresState(req: StateRequirement) {
         for (const state of req.has) {
           if (!player.hasState(state)) {
             throw new AppError(
-              'GAME_STATE_ERROR',
+              'GAME:INVALID_STATE',
               req.errorMessage || `You must be [${state}] to do this.`,
               'client',
             )
@@ -86,7 +86,7 @@ export function RequiresState(req: StateRequirement) {
         for (const state of req.missing) {
           if (player.hasState(state)) {
             throw new AppError(
-              'GAME_STATE_ERROR',
+              'GAME:INVALID_STATE',
               req.errorMessage || `You can't do this while you're [${state}].`,
               'client',
             )

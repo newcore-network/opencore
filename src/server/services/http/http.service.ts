@@ -93,14 +93,14 @@ export class HttpService {
 
       if (err instanceof DOMException && err.name === 'AbortError') {
         throw new AppError(
-          'NETWORK_ERROR',
+          'NETWORK:ERROR',
           `${method} ${url} timed out after ${timeoutMs}ms`,
           'external',
           { timeout: timeoutMs },
         )
       }
 
-      throw new AppError('NETWORK_ERROR', `Network error calling ${method} ${url}`, 'external', {
+      throw new AppError('NETWORK:ERROR', `Network error calling ${method} ${url}`, 'external', {
         endpoint: url,
         method,
         cause: err instanceof Error ? err.message : String(err),
@@ -112,11 +112,11 @@ export class HttpService {
 
   private async handleResponse<T>(response: Response, method: string, url: string): Promise<T> {
     if (!response.ok) {
-      let code: FrameworkErrorCode = 'API_ERROR'
+      let code: FrameworkErrorCode = 'API:ERROR'
       let errorBody: unknown = null
 
       if (response.status === 401 || response.status === 403) {
-        code = 'UNAUTHORIZED'
+        code = 'AUTH:UNAUTHORIZED'
       }
 
       try {
