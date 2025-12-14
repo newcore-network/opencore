@@ -1,6 +1,6 @@
 import { MetadataScanner } from '../system/metadata.scanner'
 import { di } from './client-container'
-import { clientControllerRegistry } from './decorators'
+import { getClientControllerRegistry } from './decorators'
 import { playerClientLoader } from './player/player.loader'
 import {
   BlipService,
@@ -66,5 +66,5 @@ export async function initClientCore() {
   playerClientLoader()
 
   const scanner = di.resolve(MetadataScanner)
-  scanner.scan(clientControllerRegistry)
+  scanner.scan(getClientControllerRegistry())
 }

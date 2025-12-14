@@ -26,10 +26,17 @@ export interface FeatureContract {
 
 export type FrameworkFeatures = Record<FeatureName, FeatureContract>
 
+export interface ResourceGrants {
+  database?: boolean
+  principal?: boolean
+  auth?: boolean
+}
+
 export interface ServerRuntimeOptions {
   mode: FrameworkMode
   features: FrameworkFeatures
   coreResourceName: string
+  resourceGrants?: ResourceGrants
 }
 
 export type RuntimeContext = ServerRuntimeOptions
@@ -71,7 +78,7 @@ export function setRuntimeContext(ctx: RuntimeContext): void {
 export function getRuntimeContext(): RuntimeContext {
   if (!runtimeContext) {
     throw new Error(
-      '[OpenCore] RuntimeContext is not initialized. Call Server.init({ mode, features }) before using the framework.',
+      '[OpenCore] RuntimeContext is not initialized. Call Server.init({ mode, ... }) before using the framework.',
     )
   }
   return runtimeContext
@@ -87,6 +94,7 @@ export interface ServerInitOptions {
   mode: FrameworkMode
   features?: Partial<Record<FeatureName, Partial<FeatureContract>>>
   coreResourceName?: string
+  resourceGrants?: ResourceGrants
 }
 
 function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
@@ -164,6 +172,7 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
     mode: options.mode,
     features,
     coreResourceName: options.coreResourceName ?? 'core',
+    resourceGrants: options.resourceGrants,
   }
 }
 
@@ -187,7 +196,7 @@ export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
     throw new Error('[OpenCore] Invalid runtime options')
   }
 
-  const { mode, features, coreResourceName } = ctx
+  const { mode, features, coreResourceName, resourceGrants } = ctx
   if (!mode) throw new Error('[OpenCore] Runtime mode is required')
   if (mode === 'RESOURCE') {
     if (!coreResourceName || typeof coreResourceName !== 'string' || !coreResourceName.trim()) {
@@ -196,6 +205,26 @@ export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
   }
 
   assertFeatureKeys(features)
+
+  if (mode === 'RESOURCE') {
+    if (features.database.enabled && !resourceGrants?.database) {
+      throw new Error(
+        `[OpenCore] Feature 'database' is forbidden in RESOURCE mode unless resourceGrants.database=true`,
+      )
+    }
+
+    if (features.principal.enabled && !resourceGrants?.principal) {
+      throw new Error(
+        `[OpenCore] Feature 'principal' is forbidden in RESOURCE mode unless resourceGrants.principal=true`,
+      )
+    }
+
+    if (features.auth.enabled && !resourceGrants?.auth) {
+      throw new Error(
+        `[OpenCore] Feature 'auth' is forbidden in RESOURCE mode unless resourceGrants.auth=true`,
+      )
+    }
+  }
 
   if (mode === 'RESOURCE') {
     const needsCoreExports =

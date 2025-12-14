@@ -12,7 +12,25 @@ import { RemotePrincipalProvider } from './remote/remote-principal.provider'
 import type { RuntimeContext } from '../runtime'
 
 export function registerServicesServer(ctx: RuntimeContext) {
-  const { mode, features } = ctx
+  const { mode, features, resourceGrants } = ctx
+
+  if (mode === 'RESOURCE') {
+    if (features.database.enabled && !resourceGrants?.database) {
+      throw new Error(
+        `[OpenCore] Feature 'database' is forbidden in RESOURCE mode unless resourceGrants.database=true`,
+      )
+    }
+    if (features.principal.enabled && !resourceGrants?.principal) {
+      throw new Error(
+        `[OpenCore] Feature 'principal' is forbidden in RESOURCE mode unless resourceGrants.principal=true`,
+      )
+    }
+    if (features.auth.enabled && !resourceGrants?.auth) {
+      throw new Error(
+        `[OpenCore] Feature 'auth' is forbidden in RESOURCE mode unless resourceGrants.auth=true`,
+      )
+    }
+  }
 
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {

@@ -5,7 +5,7 @@ import { registerSystemServer } from './system/processors.register'
 import { registerServicesServer } from './services/services.register'
 import { loggers } from '../shared/logger'
 import { AuthProviderContract } from './templates/auth/auth-provider.contract'
-import { serverControllerRegistry } from './decorators/controller'
+import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
   setRuntimeContext,
@@ -113,6 +113,6 @@ export async function initServer(options: ServerRuntimeOptions) {
   }
 
   const scanner = di.resolve(MetadataScanner)
-  scanner.scan(serverControllerRegistry)
+  scanner.scan(getServerControllerRegistry())
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 }
