@@ -9,3 +9,4 @@ export * from './config.service'
 export * from '../database'
 
 export * from './core/player.service'
+export * from './contracts/player.service.contract'

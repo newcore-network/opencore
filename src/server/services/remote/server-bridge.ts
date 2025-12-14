@@ -1,5 +1,6 @@
 import { di } from '../../container'
 import { _mode } from '../../core'
+import { getRuntimeContext } from '../../runtime'
 import { PlayerServiceContract } from '../contracts/player.service.contract'
 import { PrincipalProviderContract } from '../../templates'
 
@@ -88,9 +89,12 @@ export const serverBridge = {
  * @throws Error if core exports are not available
  */
 function getCoreExports(): CoreExports {
-  const core = (globalThis as any).exports?.core as CoreExports | undefined
+  const { coreResourceName } = getRuntimeContext()
+  const core = (globalThis as any).exports?.[coreResourceName] as CoreExports | undefined
   if (!core) {
-    throw new Error('[OpenCore] Core exports are unavailable. Is the resource core loaded?')
+    throw new Error(
+      `[OpenCore] Core exports are unavailable for resource '${coreResourceName}'. Is the core resource loaded?`,
+    )
   }
   return core
 }
