@@ -17,6 +17,7 @@ import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
+import { registerServerCapabilities } from './capabilities/register-capabilities'
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
@@ -97,9 +98,9 @@ export async function initServer(options: ServerRuntimeOptions) {
     scope: getFrameworkModeScope(ctx.mode),
   })
 
+  registerServerCapabilities()
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
-
   registerSystemServer(ctx)
   loggers.bootstrap.debug('System processors registered')
 
