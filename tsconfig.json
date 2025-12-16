@@ -16,6 +16,6 @@
     "types": ["@citizenfx/server", "@citizenfx/client"],
     "noEmit": true
   },
-  "include": ["src"],
+  "include": ["src", "tests"],
   "exclude": ["dist"]
 }
