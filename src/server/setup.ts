@@ -5,6 +5,7 @@ import { SecurityHandlerContract } from './templates/security/security-handler.c
 import { PlayerPersistenceContract } from './templates/persistence'
 import { loggers } from '../shared/logger'
 import { AuthProviderContract } from './templates/auth/auth-provider.contract'
+import { NetEventSecurityObserverContract } from './templates/security/net-event-security-observer.contract'
 
 export function setPrincipalProvider(provider: ClassConstructor<PrincipalProviderContract>) {
   di.registerSingleton(PrincipalProviderContract as any, provider)
@@ -24,4 +25,11 @@ export function setSecurityHandler(handler: ClassConstructor<SecurityHandlerCont
 export function setPersistenceProvider(provider: ClassConstructor<PlayerPersistenceContract>) {
   di.registerSingleton(PlayerPersistenceContract as any, provider)
   loggers.bootstrap.info(`Persistence Provider configured: ${provider.name}`)
+}
+
+export function setNetEventSecurityObserver(
+  observer: ClassConstructor<NetEventSecurityObserverContract>,
+) {
+  di.registerSingleton(NetEventSecurityObserverContract as any, observer)
+  loggers.bootstrap.info(`NetEvent Security Observer configured: ${observer.name}`)
 }

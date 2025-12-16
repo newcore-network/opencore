@@ -30,10 +30,10 @@ export class AccessControlService {
    */
   async hasRank(player: Server.Player, minRank: number): Promise<boolean> {
     const principal = await this.principalProvider.getPrincipal(player)
-    if (!principal) throw new AppError('UNAUTHORIZED', 'No principal found', 'core')
+    if (!principal) throw new AppError('AUTH:UNAUTHORIZED', 'No principal found', 'core')
     if (principal.rank === undefined)
       throw new AppError(
-        'NO_RANK_IN_PRINCIPAL',
+        'GAME:NO_RANK_IN_PRINCIPAL',
         "You're trying to compare a Principal rank, but there's no defined rank! ",
         'core',
       )
@@ -79,7 +79,7 @@ export class AccessControlService {
       const hasRank = await this.hasRank(player, requirements.minRank)
       if (!hasRank) {
         throw new AppError(
-          'PERMISSION_DENIED',
+          'AUTH:PERMISSION_DENIED',
           `Access Denied: Requires minimum rank level ${requirements.minRank}`,
           'core',
         )
@@ -90,7 +90,7 @@ export class AccessControlService {
       const hasPerm = await this.hasPermission(player, requirements.permission)
       if (!hasPerm) {
         throw new AppError(
-          'PERMISSION_DENIED',
+          'AUTH:PERMISSION_DENIED',
           `Access Denied: Missing required permission '${requirements.permission}'`,
           'core',
         )

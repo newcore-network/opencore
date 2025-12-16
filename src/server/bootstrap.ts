@@ -5,28 +5,70 @@ import { registerSystemServer } from './system/processors.register'
 import { registerServicesServer } from './services/services.register'
 import { loggers } from '../shared/logger'
 import { AuthProviderContract } from './templates/auth/auth-provider.contract'
-import { serverControllerRegistry } from './decorators/controller'
+import { getServerControllerRegistry } from './decorators/controller'
+import {
+  getFrameworkModeScope,
+  setRuntimeContext,
+  type RuntimeContext,
+  type ServerRuntimeOptions,
+  validateRuntimeContextOrThrow,
+} from './runtime'
+import {
+  registerDefaultBootstrapValidators,
+  runBootstrapValidatorsOrThrow,
+} from './bootstrap.validation'
+import { registerServerCapabilities } from './capabilities/register-capabilities'
 
-const checkProviders = () => {
-  if (!di.isRegistered(PrincipalProviderContract as any)) {
-    const errorMsg =
-      'No Principal Provider configured. ' +
-      "Please call 'Server.setPrincipalProvider(YourProvider)' before init(). This is required for authentication and authorization."
-    loggers.bootstrap.fatal(errorMsg)
-    throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
+function checkProviders(ctx: RuntimeContext): void {
+  if (ctx.mode === 'RESOURCE') return
+
+  if (ctx.features.principal.enabled && ctx.features.principal.required) {
+    if (!di.isRegistered(PrincipalProviderContract as any)) {
+      const errorMsg =
+        'No Principal Provider configured. ' +
+        "Please call 'Server.setPrincipalProvider(YourProvider)' before init(). This is required for authorization."
+      loggers.bootstrap.fatal(errorMsg)
+      throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
+    }
   }
 
-  if (!di.isRegistered(AuthProviderContract as any)) {
-    const errorMsg =
-      'No Authentication Provider configured. ' +
-      "Please call 'Server.setAuthProvider(YourProvider)' before init(). This is required for authentication and authorization."
-    loggers.bootstrap.fatal(errorMsg)
-    throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
+  if (ctx.features.auth.enabled && ctx.features.auth.required) {
+    if (!di.isRegistered(AuthProviderContract as any)) {
+      const errorMsg =
+        'No Authentication Provider configured. ' +
+        "Please call 'Server.setAuthProvider(YourProvider)' before init(). This is required for authentication."
+      loggers.bootstrap.fatal(errorMsg)
+      throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
+    }
   }
 }
 
-export interface BootstrapOptions {
-  mode: 'CORE' | 'RESOURCE'
+async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
+  if (ctx.features.commands.enabled) {
+    await import('./controllers/command.controller')
+  }
+
+  if (ctx.features.chat.enabled && ctx.features.chat.export && ctx.features.exports.enabled) {
+    if (ctx.mode !== 'RESOURCE') {
+      await import('./controllers/chat.controller')
+    }
+  }
+
+  if (ctx.features.sessionLifecycle.enabled && ctx.mode !== 'RESOURCE') {
+    await import('./controllers/session.controller')
+  }
+
+  if (ctx.features.players.enabled && ctx.features.players.export && ctx.features.exports.enabled) {
+    await import('./controllers/player-export.controller')
+  }
+
+  if (
+    ctx.features.principal.enabled &&
+    ctx.features.principal.export &&
+    ctx.features.exports.enabled
+  ) {
+    await import('./controllers/principal-export.controller')
+  }
 }
 
 /**
@@ -44,20 +86,34 @@ export interface BootstrapOptions {
  *
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
-export async function initServer(options: BootstrapOptions = { mode: 'CORE' }) {
+export async function initServer(options: ServerRuntimeOptions) {
+  validateRuntimeContextOrThrow(options)
+  setRuntimeContext(options)
+
+  const ctx: RuntimeContext = options
   loggers.bootstrap.info('Initializing OpenCore Server...')
 
-  registerServicesServer(options.mode)
-  loggers.bootstrap.debug('Core services registered')
+  loggers.bootstrap.debug('Runtime configuration', {
+    mode: ctx.mode,
+    scope: getFrameworkModeScope(ctx.mode),
+  })
 
-  registerSystemServer()
+  registerServerCapabilities()
+  registerServicesServer(ctx)
+  loggers.bootstrap.debug('Core services registered')
+  registerSystemServer(ctx)
   loggers.bootstrap.debug('System processors registered')
 
-  if (options.mode === 'CORE') {
-    checkProviders()
+  checkProviders(ctx)
+
+  await loadFrameworkControllers(ctx)
+
+  if (ctx.features.database.enabled) {
+    registerDefaultBootstrapValidators()
+    await runBootstrapValidatorsOrThrow()
   }
 
   const scanner = di.resolve(MetadataScanner)
-  scanner.scan(serverControllerRegistry)
+  scanner.scan(getServerControllerRegistry())
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 }

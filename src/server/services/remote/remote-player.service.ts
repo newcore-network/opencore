@@ -1,9 +1,15 @@
 import { injectable } from 'tsyringe'
 import { Player } from '../../entities'
+import { getRuntimeContext } from '../../runtime'
 import { PlayerServiceContract } from '../contracts/player.service.contract'
 
 @injectable()
 export class RemotePlayerService extends PlayerServiceContract {
+  private get core() {
+    const { coreResourceName } = getRuntimeContext()
+    return (exports as any)[coreResourceName]
+  }
+
   /**
    * Note: This Player is a local instance, it does not have the actual data in 'session'
    * methods that require internal state will fail or must be adapted
@@ -26,14 +32,14 @@ export class RemotePlayerService extends PlayerServiceContract {
   }
 
   getPlayerId(clientID: number): string | null {
-    return exports['core'].getPlayerId(clientID)
+    return this.core.getPlayerId(clientID)
   }
 
   async getMeta<T = unknown>(clientID: number, key: string): Promise<T | undefined> {
-    return exports['core'].getPlayerMeta(clientID, key)
+    return this.core.getPlayerMeta(clientID, key)
   }
 
   setMeta(clientID: number, key: string, value: unknown): void {
-    exports['core'].setPlayerMeta(clientID, key, value)
+    this.core.setPlayerMeta(clientID, key, value)
   }
 }

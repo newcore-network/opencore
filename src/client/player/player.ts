@@ -167,6 +167,7 @@ class Player {
 
   /** Get currently equipped weapon hash */
   get currentWeapon(): number {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, weaponHash] = GetCurrentPedWeapon(this.ped, true)
     return weaponHash
   }

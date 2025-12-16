@@ -1,7 +1,6 @@
-import { _mode } from './core'
-
 // Framework modules
 export * from './core'
+export * from './runtime'
 export * from './decorators'
 export * from './templates'
 export * from './services'
@@ -16,14 +15,7 @@ export * from './setup'
 // Types
 export type * from './types/core-events'
 
-// Controllers
-import './controllers/command.controller'
-import './controllers/chat.controller'
-if (_mode === 'CORE') {
-  import('./controllers/session.controller')
-}
-import './controllers/player-export.controller'
-import './controllers/principal-export.controller'
+export * from './bootstrap.validation'
 
 import { di } from './container'
 globalThis.oc_container = di

@@ -1,7 +1,7 @@
 import { AppError, isAppError } from '../utils'
-import type { ErrorOrigin } from '../utils/'
 import type { CommandMetadata } from './decorators/command'
 import { loggers } from '../shared/logger'
+import { type ErrorOrigin } from '../utils/error/types/common.error-codes'
 
 function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   if (isAppError(error)) {
@@ -9,10 +9,10 @@ function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   }
 
   if (error instanceof Error) {
-    return new AppError('UNKNOWN', error.message, origin, { stack: error.stack })
+    return new AppError('COMMON:UNKNOWN', error.message, origin, { stack: error.stack })
   }
 
-  return new AppError('UNKNOWN', String(error), origin, { raw: error })
+  return new AppError('COMMON:UNKNOWN', String(error), origin, { raw: error })
 }
 
 export function handleCommandError(error: unknown, meta: CommandMetadata, playerId: number | null) {
@@ -30,10 +30,9 @@ export function handleCommandError(error: unknown, meta: CommandMetadata, player
 
   if (playerId !== null) {
     switch (appError.code) {
-      case 'VALIDATION_ERROR':
-      case 'INSUFFICIENT_FUNDS':
-      case 'PERMISSION_DENIED':
-      case 'UNAUTHORIZED':
+      case 'ECONOMY:INSUFFICIENT_FUNDS':
+      case 'AUTH:PERMISSION_DENIED':
+      case 'AUTH:UNAUTHORIZED':
         emitNet('chat:addMessage', playerId, {
           args: ['^1Error', appError.message],
         })

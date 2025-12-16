@@ -1,9 +1,15 @@
-import { type BootstrapOptions, initServer } from './bootstrap'
-export let _mode: 'CORE' | 'RESOURCE'
+import { initServer } from './bootstrap'
+import {
+  resolveRuntimeOptions,
+  type FrameworkMode,
+  type ServerInitOptions,
+  type ServerRuntimeOptions,
+} from './runtime'
 
-export async function init(resourceType: 'CORE' | 'RESOURCE' = 'CORE') {
-  let op: BootstrapOptions = { mode: resourceType }
-  _mode = resourceType
-  if (resourceType == 'CORE') initServer(op)
-  if (resourceType == 'RESOURCE') initServer(op)
+export let _mode: FrameworkMode
+
+export async function init(options: ServerInitOptions) {
+  const resolved: ServerRuntimeOptions = resolveRuntimeOptions(options)
+  _mode = resolved.mode
+  await initServer(resolved)
 }

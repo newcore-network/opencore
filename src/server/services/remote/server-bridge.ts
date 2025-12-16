@@ -1,5 +1,6 @@
 import { di } from '../../container'
 import { _mode } from '../../core'
+import { getRuntimeContext } from '../../runtime'
 import { PlayerServiceContract } from '../contracts/player.service.contract'
 import { PrincipalProviderContract } from '../../templates'
 
@@ -33,7 +34,7 @@ export const serverBridge = {
    * @returns The player ID if found, null otherwise
    */
   getPlayerId(clientID: number): string | null {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       return getPlayerService().getPlayerId(clientID)
     }
     return getCoreExports().getPlayerId(clientID)
@@ -47,7 +48,7 @@ export const serverBridge = {
    * @returns A promise that resolves with the metadata value, or undefined if not found
    */
   async getPlayerMeta<T = unknown>(clientID: number, key: string): Promise<T | undefined> {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       return getPlayerService().getMeta<T>(clientID, key)
     }
     return getCoreExports().getPlayerMeta<T>(clientID, key)
@@ -60,7 +61,7 @@ export const serverBridge = {
    * @param value - The value to store
    */
   setPlayerMeta(clientID: number, key: string, value: unknown): void {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       getPlayerService().setMeta(clientID, key, value)
       return
     }
@@ -73,7 +74,7 @@ export const serverBridge = {
    * @returns A promise that resolves with the principal object, or null if not found
    */
   async getPrincipal(clientID: number): Promise<any> {
-    if (_mode === 'CORE') {
+    if (_mode !== 'RESOURCE') {
       const player = getPlayerService().getByClient(clientID)
       if (!player) return null
       return getPrincipalProvider().getPrincipal(player)
@@ -88,9 +89,12 @@ export const serverBridge = {
  * @throws Error if core exports are not available
  */
 function getCoreExports(): CoreExports {
-  const core = (globalThis as any).exports?.core as CoreExports | undefined
+  const { coreResourceName } = getRuntimeContext()
+  const core = (globalThis as any).exports?.[coreResourceName] as CoreExports | undefined
   if (!core) {
-    throw new Error('[OpenCore] Core exports are unavailable. Is the resource core loaded?')
+    throw new Error(
+      `[OpenCore] Core exports are unavailable for resource '${coreResourceName}'. Is the core resource loaded?`,
+    )
   }
   return core
 }
