@@ -1,6 +1,6 @@
-import { injectable } from 'tsyringe';
-import { EventEmitter } from 'events';
-import { IEngineEvents } from '../IEngineEvents';
+import { injectable } from 'tsyringe'
+import { EventEmitter } from 'events'
+import { IEngineEvents } from '../IEngineEvents'
 
 /**
  * Node.js implementation of IEngineEvents using EventEmitter.
@@ -11,23 +11,23 @@ import { IEngineEvents } from '../IEngineEvents';
  */
 @injectable()
 export class NodeEngineEvents implements IEngineEvents {
-  private eventEmitter = new EventEmitter();
+  private eventEmitter = new EventEmitter()
 
   on(eventName: string, handler: (...args: any[]) => void): void {
-    this.eventEmitter.on(eventName, handler);
+    this.eventEmitter.on(eventName, handler)
   }
 
   /**
    * Utility method for testing: emit an engine event
    */
   emit(eventName: string, ...args: any[]): void {
-    this.eventEmitter.emit(eventName, ...args);
+    this.eventEmitter.emit(eventName, ...args)
   }
 
   /**
    * Utility method for testing: clear all event listeners
    */
   clearListeners(): void {
-    this.eventEmitter.removeAllListeners();
+    this.eventEmitter.removeAllListeners()
   }
 }

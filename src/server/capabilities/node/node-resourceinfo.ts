@@ -1,5 +1,5 @@
-import { injectable } from 'tsyringe';
-import { IResourceInfo } from '../IResourceInfo';
+import { injectable } from 'tsyringe'
+import { IResourceInfo } from '../IResourceInfo'
 
 /**
  * Node.js implementation of IResourceInfo.
@@ -12,6 +12,6 @@ import { IResourceInfo } from '../IResourceInfo';
 @injectable()
 export class NodeResourceInfo implements IResourceInfo {
   getCurrentResourceName(): string {
-    return process.env.RESOURCE_NAME || 'default';
+    return process.env.RESOURCE_NAME || 'default'
   }
 }

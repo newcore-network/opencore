@@ -41,23 +41,19 @@ export function registerServerCapabilities(platform?: Platform): void {
       di.registerSingleton(INetTransport as any, NodeNetTransport)
     if (!di.isRegistered(IEngineEvents as any))
       di.registerSingleton(IEngineEvents as any, NodeEngineEvents)
-    if (!di.isRegistered(IExports as any))
-      di.registerSingleton(IExports as any, NodeExports)
+    if (!di.isRegistered(IExports as any)) di.registerSingleton(IExports as any, NodeExports)
     if (!di.isRegistered(IResourceInfo as any))
       di.registerSingleton(IResourceInfo as any, NodeResourceInfo)
-    if (!di.isRegistered(ITick as any))
-      di.registerSingleton(ITick as any, NodeTick)
+    if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, NodeTick)
   } else {
     // Register FiveM implementations
     if (!di.isRegistered(INetTransport as any))
       di.registerSingleton(INetTransport as any, FiveMNetTransport)
     if (!di.isRegistered(IEngineEvents as any))
       di.registerSingleton(IEngineEvents as any, FiveMEngineEvents)
-    if (!di.isRegistered(IExports as any))
-      di.registerSingleton(IExports as any, FiveMExports)
+    if (!di.isRegistered(IExports as any)) di.registerSingleton(IExports as any, FiveMExports)
     if (!di.isRegistered(IResourceInfo as any))
       di.registerSingleton(IResourceInfo as any, FiveMResourceInfo)
-    if (!di.isRegistered(ITick as any))
-      di.registerSingleton(ITick as any, FiveMTick)
+    if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, FiveMTick)
   }
 }

@@ -15,20 +15,22 @@
 import 'reflect-metadata'
 import { initServer } from '../src/server/bootstrap'
 import { Controller } from '../src/server/decorators/controller'
-import { NetEvent } from '../src/server/decorators/netEvent'
+import { OnNet } from '../src/server/decorators/onNet'
 import { Export } from '../src/server/decorators/export'
 import { di } from '../src/server/container'
 import { INetTransport } from '../src/server/capabilities/INetTransport'
 import { IExports } from '../src/server/capabilities/IExports'
 import { NodeNetTransport } from '../src/server/capabilities/node/node-net-transport'
 import { NodeExports } from '../src/server/capabilities/node/node-exports'
+import { Player } from '../src/server'
 
 // Example Controller
 @Controller()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ExampleController {
-  @NetEvent('example:greet')
-  handleGreeting(clientId: number, name: string) {
-    console.log(`[NetEvent] Client ${clientId} says: Hello, ${name}!`)
+  @OnNet('example:greet')
+  handleGreeting(player: Player, name: string) {
+    console.log(`[NetEvent] Client ${player.clientID} says: Hello, ${name}!`)
     return `Welcome, ${name}!`
   }
 
@@ -60,7 +62,6 @@ class ExampleController {
 async function main() {
   console.log('=== OpenCore Node.js Bootstrap Example ===\n')
 
-  // Set resource name via environment variable
   process.env.RESOURCE_NAME = 'example-node-resource'
 
   // Initialize the server
@@ -70,16 +71,47 @@ async function main() {
     features: {
       netEvents: { enabled: true, provider: 'core', export: false, scope: 'core', required: false },
       exports: { enabled: true, provider: 'core', export: false, scope: 'core', required: false },
-      commands: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      fiveMEvents: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      players: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      sessionLifecycle: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
+      commands: {
+        enabled: false,
+        provider: 'local',
+        export: false,
+        scope: 'core',
+        required: false,
+      },
+      fiveMEvents: {
+        enabled: false,
+        provider: 'local',
+        export: false,
+        scope: 'core',
+        required: false,
+      },
+      players: { enabled: true, provider: 'core', export: false, scope: 'core', required: false },
+      sessionLifecycle: {
+        enabled: false,
+        provider: 'local',
+        export: false,
+        scope: 'core',
+        required: false,
+      },
       chat: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      principal: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      database: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
+      principal: {
+        enabled: false,
+        provider: 'local',
+        export: false,
+        scope: 'core',
+        required: false,
+      },
+      database: {
+        enabled: false,
+        provider: 'local',
+        export: false,
+        scope: 'core',
+        required: false,
+      },
       http: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
       auth: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
     },
+    coreResourceName: 'node-enviroment',
   })
 
   console.log('✓ Runtime initialized successfully!\n')
@@ -91,7 +123,7 @@ async function main() {
   transport.simulateClientEvent('example:greet', 99, 'Bob')
 
   // Wait for event processing
-  await new Promise(resolve => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100))
 
   // Demonstrate Export calls
   console.log('\n--- Testing Exports ---')
@@ -114,7 +146,7 @@ async function main() {
   console.log('without any FiveM dependencies.\n')
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Fatal error during bootstrap:', error)
   process.exit(1)
 })
