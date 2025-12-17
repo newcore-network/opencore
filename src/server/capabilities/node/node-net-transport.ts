@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { EventEmitter } from 'events'
-import { INetTransport, NetEventContext } from '../INetTransport'
+import { INetTransport, NetEventContext, NetTarget } from '../INetTransport'
 
 /**
  * Node.js implementation of INetTransport using EventEmitter.
@@ -25,7 +25,7 @@ export class NodeNetTransport implements INetTransport {
     this.handlers.get(eventName)!.push(handler)
   }
 
-  emitNet(eventName: string, target: number | number[], ...args: any[]): void {
+  emitNet(eventName: string, target: NetTarget, ...args: any[]): void {
     const context: NetEventContext = {
       clientId: Array.isArray(target) ? target[0] : target,
     }
