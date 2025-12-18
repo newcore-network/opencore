@@ -1,4 +1,3 @@
-// @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
 import { OnTick } from '../../../../src/server/decorators/onTick'

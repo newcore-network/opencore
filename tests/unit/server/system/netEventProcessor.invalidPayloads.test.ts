@@ -6,6 +6,7 @@ import { PlayerService } from '../../../../src/server/services/core/player.servi
 import { NetEventProcessor } from '../../../../src/server/system/processors/netEvent.processor'
 import { SecurityHandlerContract } from '../../../../src/server/templates/security/security-handler.contract'
 import { NetEventSecurityObserverContract } from '../../../../src/server/templates/security/net-event-security-observer.contract'
+import { INetTransport } from '../../../../src/server/capabilities/INetTransport'
 
 describe('NetEventProcessor invalid payload resilience', () => {
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
@@ -15,17 +16,18 @@ describe('NetEventProcessor invalid payload resilience', () => {
 
     const securityHandler: SecurityHandlerContract = {
       handleViolation: vi.fn().mockResolvedValue(undefined),
-    } as any
+    }
 
     const observer: NetEventSecurityObserverContract = {
       onInvalidPayload: vi.fn().mockResolvedValue(undefined),
-    } as any
+    }
 
-    const processor = new NetEventProcessor(
-      playerService as any,
-      securityHandler as any,
-      observer as any,
-    )
+    const netAbstract: INetTransport = {
+      emitNet: vi.fn().mockResolvedValue(undefined),
+      onNet: vi.fn().mockResolvedValue(undefined),
+    }
+
+    const processor = new NetEventProcessor(playerService, securityHandler, observer, netAbstract)
 
     class TestController {
       async handle() {}
@@ -72,11 +74,12 @@ describe('NetEventProcessor invalid payload resilience', () => {
       onInvalidPayload: vi.fn().mockResolvedValue(undefined),
     } as any
 
-    const processor = new NetEventProcessor(
-      playerService as any,
-      securityHandler as any,
-      observer as any,
-    )
+    const netAbstract: INetTransport = {
+      emitNet: vi.fn().mockResolvedValue(undefined),
+      onNet: vi.fn().mockResolvedValue(undefined),
+    }
+
+    const processor = new NetEventProcessor(playerService, securityHandler, observer, netAbstract)
 
     class TestController {
       async handle() {}

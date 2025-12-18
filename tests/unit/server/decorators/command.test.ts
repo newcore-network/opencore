@@ -1,9 +1,9 @@
-// @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
 import { Command, type CommandMetadata } from '../../../../src/server/decorators/command'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
+import { Player } from '../../../../src/server'
 
 describe('@Command decorator', () => {
   describe('string argument (simple usage)', () => {
@@ -215,13 +215,14 @@ describe('@Command decorator', () => {
     it('should not modify the original method behavior', () => {
       class MathController {
         @Command('calculate')
-        add(a: number, b: number) {
+        add(_player: Player, a: number, b: number) {
           return a + b
         }
       }
 
       const instance = new MathController()
-      expect(instance.add(5, 3)).toBe(8)
+      const fakePlayer = new Player({ clientID: Number(Math.random() * 50), meta: {} })
+      expect(instance.add(fakePlayer, 5, 3)).toBe(8)
     })
 
     it('should preserve async methods', async () => {
@@ -242,13 +243,14 @@ describe('@Command decorator', () => {
         private prefix = 'Result: '
 
         @Command('format')
-        formatResult(value: string) {
+        formatResult(_player: Player, value: string) {
           return this.prefix + value
         }
       }
 
       const instance = new ContextController()
-      expect(instance.formatResult('test')).toBe('Result: test')
+      const fakePlayer = new Player({ clientID: Number(Math.random() * 50), meta: {} })
+      expect(instance.formatResult(fakePlayer, 'test')).toBe('Result: test')
     })
   })
 

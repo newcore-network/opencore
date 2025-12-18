@@ -1,11 +1,8 @@
-// @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { container } from 'tsyringe'
 import { Guard, type GuardOptions } from '../../../../src/server/decorators/guard'
 import { AccessControlService } from '../../../../src/server/services/access-control.service'
-import { PrincipalProviderContract } from '../../../../src/server/templates/security/principal-provider.contract'
-import { AppError } from '../../../../src/utils'
 
 // Mock player type
 interface MockPlayer {
@@ -169,9 +166,7 @@ describe('@Guard decorator', () => {
 
       const instance = new TestController()
 
-      await expect(instance.guardedMethod.call(instance, null)).rejects.toThrow(
-        'Guard Security Error',
-      )
+      await expect(instance.guardedMethod.call(instance)).rejects.toThrow('Guard Security Error')
     })
 
     it('should throw when first argument is undefined', async () => {
@@ -184,9 +179,7 @@ describe('@Guard decorator', () => {
 
       const instance = new TestController()
 
-      await expect(instance.guardedMethod.call(instance, undefined)).rejects.toThrow(
-        'Guard Security Error',
-      )
+      await expect(instance.guardedMethod.call(instance)).rejects.toThrow('Guard Security Error')
     })
 
     it('should throw when first argument has no clientID', async () => {
@@ -200,9 +193,7 @@ describe('@Guard decorator', () => {
       const instance = new TestController()
       const invalidPlayer = { name: 'NoClientID' }
 
-      await expect(instance.guardedMethod.call(instance, invalidPlayer)).rejects.toThrow(
-        'Guard Security Error',
-      )
+      await expect(instance.guardedMethod.call(instance)).rejects.toThrow('Guard Security Error')
     })
   })
 
