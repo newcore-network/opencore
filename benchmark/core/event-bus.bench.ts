@@ -74,4 +74,3 @@ export async function runEventBusBenchmark(): Promise<Bench> {
 
   return bench
 }
-

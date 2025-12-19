@@ -29,6 +29,7 @@ pnpm test:watch         # Watch mode
 ```
 
 Run a single test file:
+
 ```bash
 npx vitest run tests/unit/server/decorators/command.test.ts
 ```
@@ -46,6 +47,7 @@ pnpm bench:all          # Full benchmark suite with reports
 ### 1. Core (Kernel) — Engine-Agnostic Infrastructure
 
 Located in `src/system/` and `src/shared/`. Contains:
+
 - Dependency Injection container (tsyringe)
 - Decorators and metadata scanning (`MetadataScanner`)
 - Internal event bus
@@ -57,6 +59,7 @@ Located in `src/system/` and `src/shared/`. Contains:
 ### 2. Runtime — Multiplayer Execution Model
 
 Located in `src/server/` and `src/client/` (non-adapter parts). Contains:
+
 - Player sessions and lifecycle
 - Controllers and processors
 - Command routing and validation
@@ -68,6 +71,7 @@ The Runtime defines **what the server does**, but not **how the engine does it**
 ### 3. Adapter (FiveM) — Platform-Specific Integration
 
 The FiveM adapter:
+
 - Translates engine events into runtime events
 - Wraps FiveM natives (`emitNet`, `onNet`, `source`, etc.)
 - Implements networking, scheduling, exports, and engine hooks
@@ -79,11 +83,11 @@ The FiveM adapter:
 
 Every OpenCore instance runs in exactly one explicit mode (configured via `Server.init()`):
 
-| Mode | Purpose |
-|------|---------|
-| **CORE** | Authoritative runtime. Source of truth for identity, permissions, sessions. Exposes stable APIs via exports. |
-| **RESOURCE** | Standard FiveM resource using OpenCore. Non-authoritative. Implements gameplay systems. Communicates with CORE via events/exports. |
-| **STANDALONE** | Fully self-contained instance for testing, tooling, simulations, or small servers. May run in FiveM or Node.js. |
+| Mode           | Purpose                                                                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **CORE**       | Authoritative runtime. Source of truth for identity, permissions, sessions. Exposes stable APIs via exports.                       |
+| **RESOURCE**   | Standard FiveM resource using OpenCore. Non-authoritative. Implements gameplay systems. Communicates with CORE via events/exports. |
+| **STANDALONE** | Fully self-contained instance for testing, tooling, simulations, or small servers. May run in FiveM or Node.js.                    |
 
 Feature availability and provider sources vary by mode—see `src/server/runtime.ts` for validation rules.
 
@@ -97,6 +101,7 @@ The core pattern connecting decorators to runtime behavior:
 4. **Bootstrap** initializes DI container and triggers scanning
 
 Adding a new decorator:
+
 1. Create decorator in `decorators/` that defines metadata
 2. Create processor in `system/processors/` implementing `DecoratorProcessor`
 3. Register processor in `system/processors.register.ts`
@@ -104,6 +109,7 @@ Adding a new decorator:
 ## Framework Scope
 
 The `@open-core/framework` package contains only **transversal infrastructure**:
+
 - Dependency Injection
 - Decorators (`Controller`, `Service`, `OnNet`, `Command`, `Guard`, etc.)
 - Event and command systems

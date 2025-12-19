@@ -133,4 +133,3 @@ describe('Core Events Load Benchmarks', () => {
     })
   }
 })
-

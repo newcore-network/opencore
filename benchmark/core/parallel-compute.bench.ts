@@ -207,4 +207,3 @@ export async function runParallelComputeBenchmark(): Promise<Bench> {
 
   return bench
 }
-

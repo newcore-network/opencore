@@ -54,4 +54,3 @@ export async function runRateLimiterBenchmark(): Promise<Bench> {
 
   return bench
 }
-
