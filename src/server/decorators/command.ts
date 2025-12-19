@@ -1,7 +1,7 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 import type { ClassConstructor } from '../../system/class-constructor'
 import type z from 'zod'
-import type { Player } from '../entities/player'
+import { Player } from '../entities/player'
 import { getParameterNames } from '../helpers/function-helper'
 
 export interface CommandConfig {
@@ -33,9 +33,10 @@ export interface CommandMetadata extends CommandConfig {
   target: ClassConstructor
   paramTypes: any
   paramNames: string[]
+  expectsPlayer: boolean
 }
 
-type ServerCommandHandler = (player: Player, ...args: any[]) => any
+type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)
 
 /**
  * Marks a method as a chat command. This is connected with the chat module.
@@ -70,15 +71,22 @@ export function Command(configOrName: string | CommandConfig) {
 
     const config: CommandConfig =
       typeof configOrName === 'string' ? { command: configOrName } : configOrName
-    const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey)
-    const paramNames = getParameterNames(descriptor.value)
+    const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey) ?? []
+    const expectsPlayer = paramTypes.length > 0 && paramTypes[0] === Player
+    if (paramTypes.length > 0 && !expectsPlayer) {
+      throw new Error(
+        `@Command '${config.command}': first parameter must be Player if parameters are present`,
+      )
+    }
 
+    const paramNames = getParameterNames(descriptor.value)
     const metadata: CommandMetadata = {
       ...config,
       methodName: propertyKey,
       target: target.constructor,
       paramTypes,
       paramNames,
+      expectsPlayer,
     }
 
     Reflect.defineMetadata(METADATA_KEYS.COMMAND, metadata, target, propertyKey)

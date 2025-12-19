@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe'
+import { injectable, inject } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { PlayerServiceContract } from '../../services/contracts/player.service.contract'
 import { METADATA_KEYS } from '../metadata-server.keys'
@@ -16,6 +16,7 @@ import {
   NetEventSecurityObserverContract,
 } from '../../templates/security/net-event-security-observer.contract'
 import { Player } from '../../entities'
+import { INetTransport } from '../../capabilities/INetTransport'
 
 @injectable()
 export class NetEventProcessor implements DecoratorProcessor {
@@ -23,9 +24,11 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    private playerService: PlayerServiceContract,
-    private securityHandler: SecurityHandlerContract,
+    @inject(PlayerServiceContract as any) private playerService: PlayerServiceContract,
+    @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
+    @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
+    @inject(INetTransport as any) private netTransport: INetTransport,
   ) {}
 
   process(instance: any, methodName: string, metadata: NetEventOptions) {
@@ -37,14 +40,14 @@ export class NetEventProcessor implements DecoratorProcessor {
     if (!result) return
     const { handler, handlerName, proto } = result
     const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) === true
-    onNet(metadata.eventName, async (...args: any[]) => {
-      const sourceId = Number(source)
-      const player = this.playerService.getByClient(sourceId)
+    this.netTransport.onNet(metadata.eventName, async (ctx, ...args: any[]) => {
+      const clientId = ctx.clientId
+      const player = this.playerService.getByClient(clientId)
 
       if (!player) {
         loggers.netEvent.warn(`Event ignored: Player session not found`, {
           event: metadata.eventName,
-          clientId: sourceId,
+          clientId: clientId,
         })
         return
       }
@@ -55,7 +58,7 @@ export class NetEventProcessor implements DecoratorProcessor {
       if (!isPublic && !player.accountID) {
         loggers.security.warn(`Unauthenticated request blocked`, {
           event: metadata.eventName,
-          clientId: sourceId,
+          clientId: clientId,
         })
         player.emit('core:auth:required', { event: metadata.eventName })
         return
@@ -68,7 +71,7 @@ export class NetEventProcessor implements DecoratorProcessor {
         schema = metadata.schema ?? generateSchemaFromTypes(metadata.paramTypes)
       } catch (error) {
         if (error instanceof AppError) {
-          loggers.netEvent.fatal(error.message, { playerId: source }, error)
+          loggers.netEvent.fatal(error.message, { playerId: clientId }, error)
           return
         }
         throw error
@@ -77,7 +80,7 @@ export class NetEventProcessor implements DecoratorProcessor {
       if (!schema) {
         loggers.netEvent.fatal(
           `Event '${metadata.eventName}' expects complex args but has no schema. Provide options.schema in @OnNet().`,
-          { event: metadata.eventName, playerId: source },
+          { event: metadata.eventName, playerId: clientId },
         )
         return
       }

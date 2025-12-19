@@ -1,9 +1,9 @@
-// @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
 import { OnNet, type NetEventOptions } from '../../../../src/server/decorators/onNet'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
+import { Player } from '../../../../src/server'
 
 describe('@OnNet decorator', () => {
   describe('basic metadata registration', () => {
@@ -98,7 +98,7 @@ describe('@OnNet decorator', () => {
           name: z.string(),
         }),
         items: z.array(z.string()),
-        metadata: z.record(z.unknown()).optional(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
       })
 
       class InventoryController {
@@ -236,13 +236,14 @@ describe('@OnNet decorator', () => {
     it('should not modify the original method', () => {
       class PreservationController {
         @OnNet('test:preserve')
-        calculate(x: number, y: number) {
+        calculate(_player: Player, x: number, y: number) {
           return x + y
         }
       }
 
       const instance = new PreservationController()
-      const result = instance.calculate(5, 3)
+      const fakePlayer = new Player({ clientID: Number(Math.random() * 50), meta: {} })
+      const result = instance.calculate(fakePlayer, 5, 3)
 
       expect(result).toBe(8)
     })

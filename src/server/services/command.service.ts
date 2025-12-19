@@ -30,11 +30,22 @@ export class CommandService {
     const { meta, handler } = entry
 
     // Delete Player from args, player is the first argument for convention
-    const paramNames = meta.paramNames.slice(1)
+    const paramNames = meta.expectsPlayer ? meta.paramNames.slice(1) : meta.paramNames
     let schema: z.ZodTypeAny | undefined = meta.schema
 
-    // CASE 1 — No schema provided by user → try autogenerate
+    // if player is not the first argument, that's mean no need arguments
+    // and no need type verification
+    if (!meta.expectsPlayer) {
+      if (args.length > 0) {
+        throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
+          usage: meta.usage,
+        })
+      }
+      return await handler()
+    }
+
     if (!schema) {
+      // CASE 1 — No schema provided by user → try autogenerate
       schema = generateSchemaFromTypes(meta.paramTypes)
 
       // CASE 2 — Autogeneration failed

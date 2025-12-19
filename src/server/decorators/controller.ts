@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe'
 import type { ClassConstructor } from '../../system/class-constructor'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
-const serverControllerRegistryByResource = new Map<string, Set<ClassConstructor>>()
+export const _serverControllerRegistryByResource = new Map<string, Set<ClassConstructor>>()
 
 function getCurrentResourceNameSafe(): string {
   const fn = (globalThis as any).GetCurrentResourceName
@@ -15,10 +15,10 @@ function getCurrentResourceNameSafe(): string {
 
 export function getServerControllerRegistry(resourceName?: string): ClassConstructor[] {
   const key = resourceName ?? getCurrentResourceNameSafe()
-  let registry = serverControllerRegistryByResource.get(key)
+  let registry = _serverControllerRegistryByResource.get(key)
   if (!registry) {
     registry = new Set<ClassConstructor>()
-    serverControllerRegistryByResource.set(key, registry)
+    _serverControllerRegistryByResource.set(key, registry)
   }
   return Array.from(registry)
 }
@@ -29,7 +29,7 @@ export function getServerControllerRegistry(resourceName?: string): ClassConstru
  * This decorator performs the following actions:
  * 1. Marks the class as `@injectable` (via tsyringe) for dependency injection.
  * 2. Defines metadata identifying the class as a 'server' type controller.
- * 3. Automatically adds the class constructor to the `serverControllerRegistry`.
+ * 3. Automatically adds the class constructor to the `_serverControllerRegistryByResource`.
  *
  * @returns The decorator function to apply to the class.
  *
@@ -50,10 +50,10 @@ export function Controller(): (target: ClassConstructor) => void {
     injectable()(target)
     Reflect.defineMetadata(METADATA_KEYS.CONTROLLER, { type: 'server' }, target)
     const key = getCurrentResourceNameSafe()
-    let registry = serverControllerRegistryByResource.get(key)
+    let registry = _serverControllerRegistryByResource.get(key)
     if (!registry) {
       registry = new Set<ClassConstructor>()
-      serverControllerRegistryByResource.set(key, registry)
+      _serverControllerRegistryByResource.set(key, registry)
     }
     registry.add(target)
   }

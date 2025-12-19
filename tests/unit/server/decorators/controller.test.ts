@@ -1,23 +1,24 @@
-// @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
-import { Controller, serverControllerRegistry } from '../../../../src/server/decorators/controller'
+import {
+  _serverControllerRegistryByResource,
+  Controller,
+} from '../../../../src/server/decorators/controller'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
 
 describe('@Controller decorator', () => {
   beforeEach(() => {
-    // Clear the registry between tests
-    serverControllerRegistry.length = 0
+    _serverControllerRegistryByResource.clear()
     container.clearInstances()
   })
 
   describe('class registration', () => {
-    it('should register the class in serverControllerRegistry', () => {
+    it('should register the class in _serverControllerRegistryByResource', () => {
       @Controller()
       class TestController {}
 
-      expect(serverControllerRegistry).toContain(TestController)
+      expect(_serverControllerRegistryByResource).toContain(TestController)
     })
 
     it('should register multiple controllers', () => {
@@ -30,10 +31,10 @@ describe('@Controller decorator', () => {
       @Controller()
       class ThirdController {}
 
-      expect(serverControllerRegistry).toHaveLength(3)
-      expect(serverControllerRegistry).toContain(FirstController)
-      expect(serverControllerRegistry).toContain(SecondController)
-      expect(serverControllerRegistry).toContain(ThirdController)
+      expect(_serverControllerRegistryByResource).toHaveLength(3)
+      expect(_serverControllerRegistryByResource).toContain(FirstController)
+      expect(_serverControllerRegistryByResource).toContain(SecondController)
+      expect(_serverControllerRegistryByResource).toContain(ThirdController)
     })
 
     it('should not register the same class twice when decorated once', () => {
@@ -41,7 +42,9 @@ describe('@Controller decorator', () => {
       class UniqueController {}
 
       // Only one entry should exist
-      const count = serverControllerRegistry.filter((c) => c === UniqueController).length
+      const count = [..._serverControllerRegistryByResource.values()].filter((set) =>
+        set.has(UniqueController),
+      ).length
       expect(count).toBe(1)
     })
   })

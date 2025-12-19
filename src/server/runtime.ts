@@ -17,10 +17,36 @@ export type FeatureName =
   | 'sessionLifecycle'
 
 export interface FeatureContract {
+  /**
+   * Enables or disables the feature at runtime.
+   *
+   * If `required` is `true`, this must also be `true` (otherwise validation will throw).
+   */
   enabled: boolean
+  /**
+   * Determines where the implementation comes from.
+   *
+   * - `core`: feature is provided by the core resource (via exports when applicable)
+   * - `local`: feature is implemented/handled locally by the current runtime (resource/standalone)
+   */
   provider: FeatureProvider
+  /**
+   * Whether the feature should be exposed through the framework's export layer.
+   *
+   * Note: exporting typically requires the `exports` feature to be enabled.
+   */
   export: boolean
+  /**
+   * The runtime scope this feature contract is intended for.
+   *
+   * Must match the scope derived from the current FrameworkMode
+   */
   scope: FeatureScope
+  /**
+   * Marks the feature as mandatory for the current runtime configuration.
+   *
+   * When `true`, the feature cannot be disabled (`enabled` must be `true`).
+   */
   required: boolean
 }
 

@@ -1,10 +1,9 @@
-// @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { container } from 'tsyringe'
 import { Throttle } from '../../../../src/server/decorators/throttle'
 import { RateLimiterService } from '../../../../src/server/services/rate-limiter.service'
-import { SecurityError } from '../../../../src/utils'
+import { SecurityError } from '../../../../src/utils/error/security.error'
 
 // Mock player type
 interface MockPlayer {
