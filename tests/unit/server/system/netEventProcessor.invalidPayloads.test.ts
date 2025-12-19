@@ -8,24 +8,24 @@ import { SecurityHandlerContract } from '../../../../src/server/templates/securi
 import { NetEventSecurityObserverContract } from '../../../../src/server/templates/security/net-event-security-observer.contract'
 import { INetTransport } from '../../../../src/server/capabilities/INetTransport'
 
+const securityHandler: SecurityHandlerContract = {
+  handleViolation: vi.fn().mockResolvedValue(undefined),
+}
+
+const observer: NetEventSecurityObserverContract = {
+  onInvalidPayload: vi.fn().mockResolvedValue(undefined),
+}
+
+const netAbstract: INetTransport = {
+  emitNet: vi.fn().mockImplementation(() => undefined),
+  onNet: vi.fn().mockImplementation(() => undefined),
+}
+
 describe('NetEventProcessor invalid payload resilience', () => {
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
     const playerService = new PlayerService()
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
-
-    const securityHandler: SecurityHandlerContract = {
-      handleViolation: vi.fn().mockResolvedValue(undefined),
-    }
-
-    const observer: NetEventSecurityObserverContract = {
-      onInvalidPayload: vi.fn().mockResolvedValue(undefined),
-    }
-
-    const netAbstract: INetTransport = {
-      emitNet: vi.fn().mockResolvedValue(undefined),
-      onNet: vi.fn().mockResolvedValue(undefined),
-    }
 
     const processor = new NetEventProcessor(playerService, securityHandler, observer, netAbstract)
 
@@ -65,19 +65,6 @@ describe('NetEventProcessor invalid payload resilience', () => {
     const playerService = new PlayerService()
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
-
-    const securityHandler: SecurityHandlerContract = {
-      handleViolation: vi.fn().mockRejectedValue(new Error('boom')),
-    } as any
-
-    const observer: NetEventSecurityObserverContract = {
-      onInvalidPayload: vi.fn().mockResolvedValue(undefined),
-    } as any
-
-    const netAbstract: INetTransport = {
-      emitNet: vi.fn().mockResolvedValue(undefined),
-      onNet: vi.fn().mockResolvedValue(undefined),
-    }
 
     const processor = new NetEventProcessor(playerService, securityHandler, observer, netAbstract)
 

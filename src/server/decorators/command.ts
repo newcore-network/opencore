@@ -33,6 +33,7 @@ export interface CommandMetadata extends CommandConfig {
   target: ClassConstructor
   paramTypes: any
   paramNames: string[]
+  expectsPlayer: boolean
 }
 
 type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)
@@ -70,20 +71,22 @@ export function Command(configOrName: string | CommandConfig) {
 
     const config: CommandConfig =
       typeof configOrName === 'string' ? { command: configOrName } : configOrName
-    const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey)
-    if (paramTypes?.length > 0 && paramTypes[0] !== Player) {
+    const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey) ?? []
+    const expectsPlayer = paramTypes.length > 0 && paramTypes[0] === Player
+    if (paramTypes.length > 0 && !expectsPlayer) {
       throw new Error(
         `@Command '${config.command}': first parameter must be Player if parameters are present`,
       )
     }
-    const paramNames = getParameterNames(descriptor.value)
 
+    const paramNames = getParameterNames(descriptor.value)
     const metadata: CommandMetadata = {
       ...config,
       methodName: propertyKey,
       target: target.constructor,
       paramTypes,
       paramNames,
+      expectsPlayer,
     }
 
     Reflect.defineMetadata(METADATA_KEYS.COMMAND, metadata, target, propertyKey)

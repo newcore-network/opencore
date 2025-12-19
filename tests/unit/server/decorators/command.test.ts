@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
 import { Command, type CommandMetadata } from '../../../../src/server/decorators/command'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
-import { Player } from '../../../../src/server'
+import { Player } from '../../../../src/server/entities/player'
 
 describe('@Command decorator', () => {
   describe('string argument (simple usage)', () => {
@@ -370,6 +370,53 @@ describe('@Command decorator', () => {
       ) as CommandMetadata
 
       expect(metadata.usage).toBe(usage)
+    })
+  })
+  describe('expectsPlayer + signature rules', () => {
+    it('should set expectsPlayer=false when handler has no parameters', () => {
+      class NoArgsController {
+        @Command('ping')
+        ping() {}
+      }
+
+      const metadata = Reflect.getMetadata(
+        METADATA_KEYS.COMMAND,
+        NoArgsController.prototype,
+        'ping',
+      ) as CommandMetadata
+
+      expect(metadata.expectsPlayer).toBe(false)
+    })
+
+    it('should set expectsPlayer=true when first parameter is Player', () => {
+      class PlayerOnlyController {
+        whoami(_player: Player) {}
+      }
+      Reflect.defineMetadata(
+        'design:paramtypes',
+        [Player],
+        PlayerOnlyController.prototype,
+        'whoami',
+      )
+      const descriptor = Object.getOwnPropertyDescriptor(PlayerOnlyController.prototype, 'whoami')!
+      Command('whoami')(PlayerOnlyController.prototype, 'whoami', descriptor as any)
+      const metadata = Reflect.getMetadata(
+        METADATA_KEYS.COMMAND,
+        PlayerOnlyController.prototype,
+        'whoami',
+      ) as CommandMetadata
+      expect(metadata.expectsPlayer).toBe(true)
+    })
+
+    it('should throw if handler has parameters and first is not Player', () => {
+      class InvalidController {
+        bad(_x: number) {}
+      }
+      Reflect.defineMetadata('design:paramtypes', [Number], InvalidController.prototype, 'bad')
+      const descriptor = Object.getOwnPropertyDescriptor(InvalidController.prototype, 'bad')!
+      expect(() => {
+        Command('bad')(InvalidController.prototype, 'bad', descriptor as any)
+      }).toThrow(/first parameter must be Player/i)
     })
   })
 })

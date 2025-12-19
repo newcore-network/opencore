@@ -7,7 +7,7 @@ export function resolveMethod(
   errorMessage: string,
 ):
   | {
-      handler: Function
+      handler: (...args: any[]) => any
       handlerName: string
       proto: any
     }

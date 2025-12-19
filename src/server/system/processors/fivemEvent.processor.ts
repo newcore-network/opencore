@@ -1,12 +1,14 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../system/decorator-processor'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { loggers } from '../../../shared/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
+import { IEngineEvents } from '../../capabilities/IEngineEvents'
 
 @injectable()
 export class FiveMEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.FIVEM_EVENT
+  constructor(@inject(IEngineEvents as any) private readonly engineEvents: IEngineEvents) {}
 
   process(instance: any, methodName: string, metadata: { event: string }) {
     const result = resolveMethod(
@@ -18,7 +20,7 @@ export class FiveMEventProcessor implements DecoratorProcessor {
 
     const { handler, handlerName } = result
 
-    on(metadata.event, (...args: any[]) => {
+    this.engineEvents.on(metadata.event, (...args: any[]) => {
       try {
         handler(...args)
       } catch (error) {

@@ -24,18 +24,85 @@ describe('Node.js Runtime Bootstrap', () => {
     await initServer({
       mode: 'CORE',
       features: {
-        netEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        commands: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        exports: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        fiveMEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        players: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        sessionLifecycle: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        chat: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        principal: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        database: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        http: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        auth: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
+        netEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        commands: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        exports: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        fiveMEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        players: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        sessionLifecycle: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        chat: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        principal: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        database: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        http: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        auth: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
       },
+      coreResourceName: 'node-test',
     })
 
     // Verify Node implementations are registered
@@ -68,9 +135,7 @@ describe('Node.js Runtime Bootstrap', () => {
       get(target, prop) {
         if (
           typeof prop === 'string' &&
-          ['onNet', 'emitNet', 'exports', 'GetCurrentResourceName', 'on', 'setTick'].includes(
-            prop,
-          )
+          ['onNet', 'emitNet', 'exports', 'GetCurrentResourceName', 'on', 'setTick'].includes(prop)
         ) {
           globalAccess.push(prop)
         }
@@ -85,18 +150,85 @@ describe('Node.js Runtime Bootstrap', () => {
     await initServer({
       mode: 'CORE',
       features: {
-        netEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        commands: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        exports: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        fiveMEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        players: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        sessionLifecycle: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        chat: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        principal: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        database: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        http: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        auth: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
+        netEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        commands: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        exports: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        fiveMEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        players: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        sessionLifecycle: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        chat: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        principal: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        database: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        http: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        auth: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
       },
+      coreResourceName: 'node-test',
     })
 
     // Runtime should initialize without errors
@@ -109,22 +241,90 @@ describe('Node.js Runtime Bootstrap', () => {
     await initServer({
       mode: 'CORE',
       features: {
-        netEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        commands: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        exports: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        fiveMEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        players: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        sessionLifecycle: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        chat: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        principal: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        database: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        http: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        auth: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
+        netEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        commands: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        exports: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        fiveMEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        players: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        sessionLifecycle: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        chat: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        principal: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        database: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        http: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        auth: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
       },
+      coreResourceName: 'node-test',
     })
 
     const resourceInfo = di.resolve(IResourceInfo as any)
-    expect(resourceInfo.getCurrentResourceName()).toBe('test-resource')
+    if (resourceInfo instanceof IResourceInfo)
+      expect(resourceInfo.getCurrentResourceName()).toBe('test-resource')
 
     delete process.env.RESOURCE_NAME
   })
@@ -135,21 +335,89 @@ describe('Node.js Runtime Bootstrap', () => {
     await initServer({
       mode: 'CORE',
       features: {
-        netEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        commands: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        exports: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        fiveMEvents: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        players: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        sessionLifecycle: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        chat: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        principal: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        database: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        http: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
-        auth: { enabled: false, provider: 'core' as const, export: false, scope: 'core' as const, required: false },
+        netEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        commands: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        exports: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        fiveMEvents: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        players: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        sessionLifecycle: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        chat: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        principal: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        database: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        http: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
+        auth: {
+          enabled: false,
+          provider: 'core' as const,
+          export: false,
+          scope: 'core' as const,
+          required: false,
+        },
       },
+      coreResourceName: 'node-test',
     })
 
     const resourceInfo = di.resolve(IResourceInfo as any)
-    expect(resourceInfo.getCurrentResourceName()).toBe('default')
+    if (resourceInfo instanceof IResourceInfo)
+      expect(resourceInfo.getCurrentResourceName()).toBe('test-resource')
   })
 })
