@@ -5,3 +5,4 @@ dist/
 benchmark/reports/
 .windsurf/
 .claude/
+CLAUDE.md
