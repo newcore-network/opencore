@@ -3,7 +3,7 @@ import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { CommandService } from '../../src/runtime/server/services/command.service'
 import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
 import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
-import { emitCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
+import { emitFrameworkEvent } from '../../src/runtime/server/bus/core-event-bus'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
@@ -33,12 +33,12 @@ class MockPrincipalProvider extends PrincipalProviderContract {
 }
 
 let eventBusEmissions = 0
-const originalEmitCoreEvent = emitCoreEvent
+const originalEmitCoreEvent = emitFrameworkEvent
 
 class TestService {
   async processTransfer(player: any, amount: number, targetId: number) {
     const result = { success: true, amount, targetId }
-    emitCoreEvent('core:transfer:completed', { playerId: player.clientID, amount, targetId })
+    emitFrameworkEvent('core:transfer:completed', { playerId: player.clientID, amount, targetId })
     eventBusEmissions++
     return result
   }
