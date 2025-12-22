@@ -9,8 +9,6 @@ It is not a gamemode or RP framework. It provides:
 - An event/command system
 - Security primitives (validation, access control, rate limiting)
 
-Repository: https://github.com/newcore-network/opencore
-
 License: MPL-2.0
 
 ## Scope
