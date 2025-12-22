@@ -6,7 +6,7 @@ import { PlayerService } from '../../../../src/server/services/core/player.servi
 import { NetEventProcessor } from '../../../../src/server/system/processors/netEvent.processor'
 import { SecurityHandlerContract } from '../../../../src/server/templates/security/security-handler.contract'
 import { NetEventSecurityObserverContract } from '../../../../src/server/templates/security/net-event-security-observer.contract'
-import { INetTransport } from '../../../../src/server/capabilities/INetTransport'
+import { INetTransport, NetEventContext } from '../../../../src/server/capabilities/INetTransport'
 
 const securityHandler: SecurityHandlerContract = {
   handleViolation: vi.fn().mockResolvedValue(undefined),
@@ -17,8 +17,17 @@ const observer: NetEventSecurityObserverContract = {
 }
 
 const netAbstract: INetTransport = {
-  emitNet: vi.fn().mockImplementation(() => undefined),
-  onNet: vi.fn().mockImplementation(() => undefined),
+  emitNet: vi.fn(),
+  onNet: vi
+    .fn()
+    .mockImplementation(
+      (
+        eventName: string,
+        handler: (ctx: NetEventContext, ...args: any[]) => void | Promise<void>,
+      ) => {
+        registeredNetEvents.set(eventName, handler)
+      },
+    ),
 }
 
 describe('NetEventProcessor invalid payload resilience', () => {
@@ -42,10 +51,12 @@ describe('NetEventProcessor invalid payload resilience', () => {
 
     const fn = registeredNetEvents.get('test:event')
     expect(fn).toBeDefined()
-    ;(global as any).source = 1
+
+    // Create context with clientId instead of using global.source
+    const ctx: NetEventContext = { clientId: 1 }
 
     for (let i = 0; i < 10; i++) {
-      await expect(fn!({ a: 123 })).resolves.toBeUndefined()
+      await expect(fn!(ctx, { a: 123 })).resolves.toBeUndefined()
     }
 
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(10)
@@ -81,9 +92,11 @@ describe('NetEventProcessor invalid payload resilience', () => {
 
     const fn = registeredNetEvents.get('test:event:throws')
     expect(fn).toBeDefined()
-    ;(global as any).source = 1
 
-    await expect(fn!({ a: 123 })).resolves.toBeUndefined()
+    // Create context with clientId instead of using global.source
+    const ctx: NetEventContext = { clientId: 1 }
+
+    await expect(fn!(ctx, { a: 123 })).resolves.toBeUndefined()
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(1)
   })
 })

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
 import {
   _serverControllerRegistryByResource,
+  getServerControllerRegistry,
   Controller,
 } from '../../../../src/server/decorators/controller'
 import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
@@ -18,7 +19,8 @@ describe('@Controller decorator', () => {
       @Controller()
       class TestController {}
 
-      expect(_serverControllerRegistryByResource).toContain(TestController)
+      const registry = getServerControllerRegistry()
+      expect(registry).toContain(TestController)
     })
 
     it('should register multiple controllers', () => {
@@ -31,10 +33,11 @@ describe('@Controller decorator', () => {
       @Controller()
       class ThirdController {}
 
-      expect(_serverControllerRegistryByResource).toHaveLength(3)
-      expect(_serverControllerRegistryByResource).toContain(FirstController)
-      expect(_serverControllerRegistryByResource).toContain(SecondController)
-      expect(_serverControllerRegistryByResource).toContain(ThirdController)
+      const registry = getServerControllerRegistry()
+      expect(registry).toHaveLength(3)
+      expect(registry).toContain(FirstController)
+      expect(registry).toContain(SecondController)
+      expect(registry).toContain(ThirdController)
     })
 
     it('should not register the same class twice when decorated once', () => {
