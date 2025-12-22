@@ -1,30 +1,29 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
- * Marks a server-side NetEvent handler as publicly accessible.
+ * Marks a server-side net-event handler as publicly accessible.
  *
- * This decorator disables authentication requirements for the
- * decorated method. It should only be applied to endpoints used for:
- * - Login
- * - Registration
- * - Public information retrieval
+ * @remarks
+ * This decorator disables authentication requirements for the decorated method.
+ * It is intended to be used together with {@link OnNet}.
  *
- * ## Security Warning
- * This decorator must be used with caution. Public endpoints must NOT
- * modify sensitive game state unless necessary.
+ * Security warning:
+ * - Use with caution.
+ * - Public endpoints should not mutate sensitive game state unless strictly necessary.
  *
- * ## Example
+ * @returns Method decorator that marks a handler as unauthenticated.
+ *
+ * @example
  * ```ts
- * class AuthServerController {
- *   @Public()
- *   @OnNet("auth:login")
+ * @Server.Controller()
+ * export class AuthController {
+ *   @Server.Public()
+ *   @Server.OnNet('auth:login')
  *   async login(player: Server.Player, credentials: AuthCredentials) {
  *     // no authentication required for this event
  *   }
  * }
  * ```
- *
- * @returns Method decorator that marks a handler as unauthenticated.
  */
 export function Public() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

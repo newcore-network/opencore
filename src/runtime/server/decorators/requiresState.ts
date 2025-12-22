@@ -30,34 +30,41 @@ export interface StateRequirement {
 /**
  * Enforces gameplay state requirements before executing a method.
  *
- * The decorator intercepts the method call and verifies whether
- * the player satisfies required state flags (e.g. "dead", "cuffed",
- * "on_duty_police").
+ * @remarks
+ * The decorator wraps the original method and verifies whether the player satisfies required
+ * state flags (e.g. `dead`, `cuffed`, `on_duty_police`).
  *
- * ## Whitelist (`has`)
- * The player MUST have *all* required states. Missing any state blocks execution.
+ * Rules:
+ * - The decorated method must receive a `Server.Player` instance as its first argument.
  *
- * ## Blacklist (`missing`)
- * The player MUST NOT have any of the forbidden states.
- *
- * ## Error Handling
- * - Throws a normal Error if the method is called without a valid Player.
- * - Throws an `AppError(GAME_STATE_ERROR)` if validation fails.
- *
- * ## Example
- * ```ts
- * @RequiresState({ missing: ["dead", "cuffed"] })
- * openInventory(player: Server.Player) { ... }
- *
- * @RequiresState({
- *   has: ["police_duty"],
- *   missing: ["dead"],
- *   errorMessage: "You must be on duty to access the armory."
- * })
- * openArmory(player: Server.Player) { ... }
- * ```
+ * Validation:
+ * - `req.has`: the player must have *all* of these states.
+ * - `req.missing`: the player must have *none* of these states.
  *
  * @param req - State validation configuration.
+ *
+ * @throws Error - If the method is invoked without a `Player` as the first argument.
+ * @throws AppError - If the player does not satisfy the configured requirements.
+ *
+ * @example
+ * ```ts
+ * @Server.Controller()
+ * export class InventoryController {
+ *   @Server.RequiresState({ missing: ['dead', 'cuffed'] })
+ *   openInventory(player: Server.Player) {
+ *     // ...
+ *   }
+ *
+ *   @Server.RequiresState({
+ *     has: ['police_duty'],
+ *     missing: ['dead'],
+ *     errorMessage: 'You must be on duty to access the armory.',
+ *   })
+ *   openArmory(player: Server.Player) {
+ *     // ...
+ *   }
+ * }
+ * ```
  */
 export function RequiresState(req: StateRequirement) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

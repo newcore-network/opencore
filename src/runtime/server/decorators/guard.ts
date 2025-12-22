@@ -17,43 +17,36 @@ export interface GuardOptions {
 }
 
 /**
- * Guard
- * ------------------------------------------------------------
  * Declarative access-control decorator for controller methods.
  *
- * `@Guard()` protects a method by enforcing rank and/or
- * permission requirements before executing it.
+ * @remarks
+ * `@Guard()` protects a method by enforcing rank and/or permission requirements before executing it.
  *
- * Requirements are evaluated through the AccessControlService,
- * which determines whether the player (first argument of the
- * method) is authorized to perform the action.
- *
- * Usage of this decorator allows you to express authorization
- * rules directly at the controller level, promoting a clean
- * and explicit security model.
- *
- * @param options GuardOptions
- *   - rank: minimum rank required to execute the method.
- *   - permission: specific permission required.
+ * Requirements are evaluated through {@link AccessControlService}, which determines whether the
+ * player (first argument of the method) is authorized to perform the action.
  *
  * Notes:
- * - The decorated method must receive a `Server.Player`
- *   instance as its first argument.
- * - When compiling improperly (e.g., benchmarks, stripped
- *   decorators), the PropertyDescriptor may be missing.
- *   In that case, only metadata is recorded and execution
- *   fallback is disabled. This should *never* occur in a
- *   production environment.
+ * - The decorated method must receive a `Server.Player` instance as its first argument.
+ * - In stripped decorator builds (e.g. benchmarks), the `PropertyDescriptor` may be missing.
+ *   In that case the decorator stores metadata only and does not wrap the method.
  *
+ * @param options - Guard options.
+ * @param options.rank - Minimum rank required.
+ * @param options.permission - Permission required.
+ *
+ * @throws Error - If the method is invoked without a valid `Player` as the first argument.
+ *
+ * @example
  * ```ts
+ * @Server.Controller()
  * export class FactionController {
  *   @Server.Guard({ permission: 'factions.manage' })
- *   async createFaction(player: Player, dto: CreateFactionDTO) {
+ *   async createFaction(player: Server.Player, dto: CreateFactionDTO) {
  *     return this.service.create(dto)
  *   }
  *
  *   @Server.Guard({ rank: 3 })
- *   async promoteMember(player: Player, memberID: string) {
+ *   async promoteMember(player: Server.Player, memberID: string) {
  *     return this.service.promote(player, memberID)
  *   }
  * }

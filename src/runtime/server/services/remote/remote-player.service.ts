@@ -4,6 +4,14 @@ import { getRuntimeContext } from '../../runtime'
 import { PlayerServiceContract } from '../contracts/player.service.contract'
 import { IPlayerInfo } from '../../../../adapters'
 
+/**
+ * Player service implementation for `RESOURCE` mode.
+ *
+ * @remarks
+ * This service does not own the authoritative player session data.
+ * It provides a thin proxy over core exports and returns locally constructed {@link Player}
+ * instances for convenience.
+ */
 @injectable()
 export class RemotePlayerService extends PlayerServiceContract {
   constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {
@@ -16,8 +24,11 @@ export class RemotePlayerService extends PlayerServiceContract {
   }
 
   /**
-   * Note: This Player is a local instance, it does not have the actual data in 'session'
-   * methods that require internal state will fail or must be adapted
+   * Returns a local {@link Player} instance for a client ID.
+   *
+   * @remarks
+   * The returned instance is not backed by the core session store.
+   * Methods that depend on server-side session state may not behave the same as in CORE mode.
    */
   getByClient(clientID: number): Player | null {
     return new Player({ clientID, meta: {} }, this.playerInfo)

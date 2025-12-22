@@ -3,6 +3,12 @@ import { PrincipalProviderContract, Principal } from '../../templates'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 
+/**
+ * Principal provider implementation for `RESOURCE` mode.
+ *
+ * @remarks
+ * This provider delegates principal resolution to the core resource via exports.
+ */
 @injectable()
 export class RemotePrincipalProvider extends PrincipalProviderContract {
   private get core() {

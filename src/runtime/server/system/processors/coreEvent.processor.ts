@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { onCoreEvent } from '../../bus/core-event-bus'
+import { onFrameworkEvent } from '../../bus/core-event-bus'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { loggers } from '../../../../kernel/shared/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
@@ -19,7 +19,7 @@ export class CoreEventProcessor implements DecoratorProcessor {
 
     const { handler, handlerName } = result
 
-    onCoreEvent(metadata.event as any, (payload) => {
+    onFrameworkEvent(metadata.event as any, (payload) => {
       try {
         handler(payload)
       } catch (error) {

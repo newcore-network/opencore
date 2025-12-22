@@ -2,21 +2,21 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
 import type { CoreEventMap } from '../types/core-events'
 
 /**
- * Method decorator used to register a method as a listener for an internal OpenCore framework event.
+ * Registers a method as a listener for an internal OpenCore framework event.
  *
- * When the specified framework event is emitted, this method will be automatically triggered
- * with the arguments provided by the event payload.
+ * @remarks
+ * This decorator only stores metadata. The framework binds listeners during bootstrap by scanning
+ * controller methods.
  *
- * @param event - The name of the core event to listen for (typed strictly to `CoreEventMap`).
+ * @param event - Core event name, strongly typed to {@link CoreEventMap}.
  *
- *
+ * @example
  * ```ts
  * @Server.Controller()
  * export class SystemController {
- *
- *   @OnFrameworkEvent('server:ready')
- *   public onServerStart() {
- *     console.log('OpenCore Framework is ready!')
+ *   @Server.OnFrameworkEvent('server:ready')
+ *   onServerReady() {
+ *     console.log('OpenCore framework is ready')
  *   }
  * }
  * ```

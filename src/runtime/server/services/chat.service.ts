@@ -2,8 +2,21 @@ import { injectable } from 'tsyringe'
 import { Server } from '../../..'
 import { RGB } from '../../../kernel/utils'
 
+/**
+ * Service for sending chat messages to players.
+ *
+ * @remarks
+ * This service emits framework chat events over the network.
+ */
 @injectable()
 export class ChatService {
+  /**
+   * Broadcast a chat message to all connected players.
+   *
+   * @param message - Message body.
+   * @param author - Author label shown in chat. Defaults to `SYSTEM`.
+   * @param color - Message color (RGB). Defaults to white.
+   */
   broadcast(message: string, author: string = 'SYSTEM', color: RGB = { r: 255, g: 255, b: 255 }) {
     emitNet('core:chat:message', -1, {
       args: [author, message],
@@ -11,6 +24,14 @@ export class ChatService {
     })
   }
 
+  /**
+   * Send a private chat message to a single player.
+   *
+   * @param player - Target player.
+   * @param message - Message body.
+   * @param author - Author label shown in chat. Defaults to `Private`.
+   * @param color - Message color (RGB).
+   */
   sendPrivate(
     player: Server.Player,
     message: string,
@@ -23,6 +44,11 @@ export class ChatService {
     })
   }
 
+  /**
+   * Clear chat for a single player.
+   *
+   * @param player - Target player.
+   */
   clearChat(player: Server.Player) {
     emitNet('core:chat:clear', player.clientID)
   }

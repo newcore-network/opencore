@@ -26,29 +26,38 @@ interface ThrottleOptions {
 /**
  * Rate-limits how frequently a method can be called by a specific player.
  *
- * Uses `RateLimiterService` and a unique key composed of:
- * `playerID:ClassName:MethodName`.
+ * @remarks
+ * Uses {@link RateLimiterService} with a key composed of:
+ * `clientId:ClassName:MethodName`.
  *
- * ## Overload
- * - `@Throttle(5, 1000)` → limit = 5 calls per 1000 ms
+ * Overloads:
+ * - `@Throttle(5, 1000)` → 5 calls per 1000 ms
  * - `@Throttle({ limit, windowMs, onExceed, message })`
  *
- * ## Behavior
- * If the rate limit is exceeded:
- * - A `SecurityError` is thrown.
- * - Optional custom behavior (`onExceed`) may be executed.
+ * Behavior:
+ * - If the rate limit is exceeded, a {@link SecurityError} is thrown.
+ * - If the method is called without a valid `Player` context (first argument), the limiter is skipped.
  *
- * ## Example
+ * @param optionsOrLimit - Number (simple overload) or full config object.
+ * @param windowMs - Time window for the numeric overload.
+ *
+ * @throws SecurityError - When the rate limit is exceeded.
+ *
+ * @example
  * ```ts
- * @Throttle(5, 2000)
- * async search(player: Server.Player, query: string) { ... }
+ * @Server.Controller()
+ * export class MarketController {
+ *   @Server.Throttle(5, 2000)
+ *   async search(player: Server.Player, query: string) {
+ *     // ...
+ *   }
  *
- * @Throttle({ limit: 1, windowMs: 5000, message: "Too fast!" })
- * async placeOrder(player: Server.Player) { ... }
+ *   @Server.Throttle({ limit: 1, windowMs: 5000, message: 'Too fast!' })
+ *   async placeOrder(player: Server.Player) {
+ *     // ...
+ *   }
+ * }
  * ```
- *
- * @param optionsOrLimit - Number (simple mode) or full config object.
- * @param windowMs - Time window for numeric overload.
  */
 export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: number) {
   return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {

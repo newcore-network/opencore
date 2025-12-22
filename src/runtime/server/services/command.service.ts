@@ -6,12 +6,28 @@ import { loggers } from '../../../kernel/shared/logger'
 import { generateSchemaFromTypes } from '../system/schema-generator'
 import { Player } from '../entities'
 
+/**
+ * Runtime service that registers and executes chat commands.
+ *
+ * @remarks
+ * Controllers declare commands via {@link Command}. During bootstrap the framework collects
+ * command metadata and calls {@link CommandService.register}.
+ *
+ * At execution time, this service validates and coerces arguments based on the command schema
+ * (explicit Zod schema or auto-generated schema from parameter types).
+ */
 @injectable()
 export class CommandService {
   constructor() {}
 
   private commands = new Map<string, { meta: CommandMetadata; handler: Function }>()
 
+  /**
+   * Registers a command handler.
+   *
+   * @param meta - Command metadata collected from the {@link Command} decorator.
+   * @param handler - The bound method to invoke.
+   */
   register(meta: CommandMetadata, handler: Function) {
     if (this.commands.has(meta.command.toLowerCase())) {
       loggers.command.error(`Command '${meta.command}' is already registered. Skipped`, {
@@ -22,6 +38,21 @@ export class CommandService {
     loggers.command.debug(`Registered: /${meta.command}${meta.schema ? ' [Validated]' : ''}`)
   }
 
+  /**
+   * Executes a registered command.
+   *
+   * @remarks
+   * Argument parsing behavior depends on the schema:
+   * - Zod object schema: maps raw args to parameter names.
+   * - Zod tuple schema: validates positional args.
+   * - No schema: attempts to generate a schema from parameter types.
+   *
+   * @param player - Player invoking the command.
+   * @param commandName - Command name (without the leading `/`).
+   * @param args - Raw argument list (strings).
+   *
+   * @throws AppError - If the command does not exist, the schema mismatches parameters, or validation fails.
+   */
   async execute(player: Player, commandName: string, args: string[]) {
     const entry = this.commands.get(commandName.toLowerCase())
     if (!entry)
@@ -120,6 +151,9 @@ export class CommandService {
     return await handler(player)
   }
 
+  /**
+   * Returns a list of all registered commands.
+   */
   getAllCommands() {
     return Array.from(this.commands.values()).map((c) => ({
       command: c.meta.command,

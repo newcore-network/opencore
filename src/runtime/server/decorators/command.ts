@@ -39,25 +39,37 @@ export interface CommandMetadata extends CommandConfig {
 type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)
 
 /**
- * Marks a method as a chat command. This is connected with the chat module.
+ * Registers a method as a chat command.
  *
+ * @remarks
  * Handler rules:
- * - First parameter must be `Player`.
+ * - If the handler has parameters, the first parameter must be `Player`.
  *
- * Validation:
+ * Validation rules:
  * - If `config.schema` is provided:
- *   - `z.tuple([...])`: validates positional args (`args: string[]`).
- *   - `z.object({...})`: maps `{ [paramName]: args[index] }` and validates named args.
- * - If `config.schema` is omitted: the framework auto-validates only primitive arg types
- *   (`string|number|boolean|any[]`). Complex types require an explicit schema.
+ *   - `z.tuple([...])` validates positional args.
+ *   - `z.object({...})` validates named args by mapping chat args to parameter names.
+ * - If `config.schema` is omitted, the framework can only auto-validate primitive types
+ *   (`string|number|boolean|any[]`). Complex payloads should use an explicit Zod schema.
  *
- * @param configOrName Command name or config object.
+ * @param configOrName - Command name or full command config.
  *
- * @example DTO JSON in one argument
+ * @throws Error - If applied to a method without a valid descriptor.
+ * @throws Error - If the method has parameters but does not declare `Player` as the first parameter.
+ *
+ * @example
  * ```ts
+ * import { z } from 'zod'
+ *
  * const dto = z.preprocess((v) => JSON.parse(v as string), z.object({ amount: z.number() }))
- * @Command({ command: 'deposit', usage: '/deposit <json>', schema: z.tuple([dto]) })
- * deposit(player: Player, data: z.infer<typeof dto>) {}
+ *
+ * @Server.Controller()
+ * export class BankController {
+ *   @Server.Command({ command: 'deposit', usage: '/deposit <json>', schema: z.tuple([dto]) })
+ *   deposit(player: Player, data: z.infer<typeof dto>) {
+ *     // ...
+ *   }
+ * }
  * ```
  */
 export function Command(configOrName: string | CommandConfig) {

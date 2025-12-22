@@ -8,7 +8,7 @@ const handlers: {
   [E in CoreEventName]?: CoreEventHandler<E>[]
 } = {}
 
-export function onCoreEvent<E extends CoreEventName>(
+export function onFrameworkEvent<E extends CoreEventName>(
   event: E,
   handler: CoreEventHandler<E>,
 ): () => void {
@@ -21,7 +21,7 @@ export function onCoreEvent<E extends CoreEventName>(
   }
 }
 
-export function emitCoreEvent<E extends CoreEventName>(event: E, payload: CoreEventMap[E]) {
+export function emitFrameworkEvent<E extends CoreEventName>(event: E, payload: CoreEventMap[E]) {
   const list = handlers[event] as CoreEventHandler<E>[] | undefined
   if (!list) return
 

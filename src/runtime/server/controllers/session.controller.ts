@@ -1,5 +1,5 @@
 import { loggers } from '../../../kernel/shared'
-import { emitCoreEvent } from '../bus/core-event-bus'
+import { emitFrameworkEvent } from '../bus/core-event-bus'
 import { Controller } from '../decorators'
 import { OnFiveMEvent } from '../decorators/onFiveMEvent'
 import { PlayerService } from '../services'
@@ -25,12 +25,12 @@ export class SessionController {
 
     await this.persistance.handleSessionLoad(player)
 
-    emitCoreEvent('core:playerSessionCreated', { clientId, license })
+    emitFrameworkEvent('core:playerSessionCreated', { clientId, license })
 
     setImmediate(() => {
       const currentPlayer = this.playerService.getByClient(clientId)
       if (!currentPlayer) return
-      emitCoreEvent('core:playerFullyConnected', { clientId, license })
+      emitFrameworkEvent('core:playerFullyConnected', { clientId, license })
     })
   }
 
@@ -44,7 +44,7 @@ export class SessionController {
     }
 
     this.playerService.unbindByClient(clientId)
-    emitCoreEvent('core:playerSessionDestroyed', { clientId })
+    emitFrameworkEvent('core:playerSessionDestroyed', { clientId })
     loggers.session.info(`Player session destroyed`, { clientId })
   }
 }

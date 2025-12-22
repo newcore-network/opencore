@@ -11,6 +11,18 @@ import { PrincipalProviderContract } from '../templates'
 import { RemotePrincipalProvider } from './remote/remote-principal.provider'
 import type { RuntimeContext } from '../runtime'
 
+/**
+ * Registers server runtime services in the dependency injection container.
+ *
+ * @remarks
+ * This function enforces feature gating based on the runtime mode:
+ * - In `RESOURCE` mode, some features require explicit grants (`resourceGrants`).
+ * - Service bindings may resolve to local implementations (CORE mode) or remote proxies.
+ *
+ * @param ctx - Runtime context containing mode, feature flags, and optional resource grants.
+ *
+ * @throws Error - If a forbidden feature is enabled in `RESOURCE` mode without the corresponding grant.
+ */
 export function registerServicesServer(ctx: RuntimeContext) {
   const { mode, features, resourceGrants } = ctx
 

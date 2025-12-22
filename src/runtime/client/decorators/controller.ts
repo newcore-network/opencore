@@ -23,6 +23,23 @@ export function getClientControllerRegistry(resourceName?: string): ClassConstru
   return Array.from(registry)
 }
 
+/**
+ * Marks a class as a Client Controller.
+ *
+ * @remarks
+ * This decorator:
+ * - Marks the class as `@injectable()` (tsyringe) for dependency injection.
+ * - Stores controller metadata identifying it as a `client` controller.
+ * - Adds the class to an internal registry so the runtime can discover it during bootstrap.
+ *
+ * @example
+ * ```ts
+ * @Client.Controller()
+ * export class HudController {
+ *   constructor(private readonly notifications: NotificationService) {}
+ * }
+ * ```
+ */
 export function Controller() {
   return function (target: ClassConstructor) {
     injectable()(target)

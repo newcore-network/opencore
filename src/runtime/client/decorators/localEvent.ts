@@ -1,10 +1,24 @@
 import { METADATA_KEYS } from '../system/metadata-client.keys'
 
 /**
- * Decorator for handling local events (non-networked).
- * Use this for client-side only events.
+ * Registers a method as a listener for a local (non-networked) client event.
  *
- * @param eventName - The name of the local event to listen for
+ * @remarks
+ * This decorator only stores metadata. During bootstrap, the framework binds the method to the
+ * local event name.
+ *
+ * @param eventName - Local event name.
+ *
+ * @example
+ * ```ts
+ * @Client.Controller()
+ * export class UiController {
+ *   @Client.OnLocalEvent('ui:toggle')
+ *   toggleUi() {
+ *     // ...
+ *   }
+ * }
+ * ```
  */
 export function OnLocalEvent(eventName: string) {
   return (target: any, propertyKey: string) => {

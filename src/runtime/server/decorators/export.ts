@@ -1,42 +1,27 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
- * Export
- * -----------------------------------------
- * Declares a method as an externally accessible export
- * within the FiveM environment.
+ * Exposes a method as a FiveM server export.
  *
- * Methods decorated with `@Export()` are automatically
- * registered by the framework and exposed as native
- * FXServer exports, allowing other resources to call them
- * using:
+ * @remarks
+ * This decorator only stores metadata. During bootstrap, the framework registers the export so that
+ * other resources can call it via `exports['resourceName'][exportName](...)`.
  *
- *   exports.resourceName.exportName(...)
+ * @param name - Optional export name. If omitted, the method name is used.
  *
- * This decorator is typically used inside controller
- * classes, where the framework’s module loader inspects
- * metadata to register commands, events and exports
- * consistently.
- *
- * @param name Optional name to expose. If omitted,
- *             the method name is used.
- *
+ * @example
  * ```ts
  * @Server.Controller()
  * export class AccountController {
  *   @Server.Export('getAccountById')
- *   getAccount(id: string) {
+ *   getAccountById(id: string) {
  *     return this.accountService.find(id)
  *   }
  * }
  *
  * // From another resource:
  * // const result = exports['core-resource'].getAccountById('1234')
- *```
- * Internally, this decorator stores metadata used by
- * the server bootstrap to automatically register the
- * export through FXServer's `global.exports` API.
- *
+ * ```
  */
 export function Export(name?: string) {
   return (target: any, propertyKey: string) => {

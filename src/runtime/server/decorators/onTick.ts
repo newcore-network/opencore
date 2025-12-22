@@ -1,35 +1,24 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
- * OnTick
- * ------------------------------------------------------------
- * Marks a method to be executed on every server tick.
+ * Registers a method to be executed on every server tick.
  *
- * Methods decorated with `@OnTick()` are automatically
- * registered by the framework's scheduler and invoked on each
- * FXServer tick (~ every 0–10 ms depending on workload).
+ * @remarks
+ * This decorator only stores metadata. During bootstrap, the framework binds tick handlers to the
+ * FiveM tick cycle.
  *
- * This decorator should be used for lightweight recurring
- * logic: status updates, background checks, cleanup tasks,
- * or time-based processes relevant to gameplay.
+ * Tick handlers should be lightweight and non-blocking.
  *
- * Heavy or blocking operations should be avoided inside tick
- * handlers, as they directly impact global server performance.
- *
+ * @example
  * ```ts
+ * @Server.Controller()
  * export class SyncController {
- *   @OnTick()
+ *   @Server.OnTick()
  *   updatePlayers() {
- *     // Runs every tick
  *     this.service.syncPositions()
  *   }
  * }
- *
  * ```
- *
- * Internally, the decorator only stores metadata. The
- * server bootstrap scans for this metadata and binds the
- * method to FiveM's tick cycle.
  */
 export function OnTick() {
   return (target: any, propertyKey: string) => {

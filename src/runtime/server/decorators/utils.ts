@@ -4,28 +4,25 @@ import type { BindingScope } from './bind'
 /**
  * Marks a class as a framework-managed Service.
  *
- * The decorator binds the class into the dependency injection
- * container using the provided scope (default: `singleton`).
  *
- * Services represent reusable, stateless or stateful logic such as:
- * - Business rules
- * - Utility layers
- * - Gameplay systems
- * - Internal modules
+ * @remarks
+ * This decorator binds the class into the dependency injection container using the provided scope
+ * (default: `singleton`).
  *
- * This decorator is a convenience wrapper over `@Bind()`, allowing
- * future extension of service-specific behavior without changing
- * end-user code.
+ * `@Service()` is a convenience wrapper over {@link Bind}. It exists so service-specific behavior
+ * can be added in the future without changing user code.
  *
- * ## Example
+ * @param options.scope - Optional binding scope (`singleton` | `transient`).
+ *
+ * @example
  * ```ts
- * @Service()
+ * @Server.Service()
  * export class InventoryService {
- *   addItem() { ... }
+ *   addItem() {
+ *     // ...
+ *   }
  * }
  * ```
- *
- * @param options.scope - Optional binding scope (`singleton` | `transient`)
  */
 export function Service(options?: { scope?: BindingScope }) {
   return Bind(options?.scope ?? 'singleton')
@@ -34,26 +31,26 @@ export function Service(options?: { scope?: BindingScope }) {
 /**
  * Marks a class as a Repository within the framework.
  *
- * A Repository abstracts persistence operations (e.g., database,
- * API, in-memory, or hybrid storage). It is registered in the
- * dependency injection container using the provided scope
+ *
+ * @remarks
+ * A repository abstracts persistence operations (database, API, in-memory, or hybrid storage).
+ * It is registered in the dependency injection container using the provided scope
  * (default: `singleton`).
  *
- * `@Repo()` is intentionally separate from `@Service()` to clearly
- * distinguish persistence-oriented classes from business logic.
- * In the future, repository-specific behavior (caching layers,
- * transactional wrappers, profiling, etc.) can be attached here
- * without modifying user code.
+ * `@Repo()` is intentionally separate from {@link Service} to distinguish persistence-oriented
+ * classes from business logic.
  *
- * ## Example
+ * @param options.scope - Optional binding scope (`singleton` | `transient`).
+ *
+ * @example
  * ```ts
- * @Repo()
+ * @Server.Repo()
  * export class AccountRepository {
- *   async findById(id: string) { ... }
+ *   async findById(id: string) {
+ *     // ...
+ *   }
  * }
  * ```
- *
- * @param options.scope - Optional binding scope (`singleton` | `transient`)
  */
 export function Repo(options?: { scope?: BindingScope }) {
   return Bind(options?.scope ?? 'singleton')

@@ -22,25 +22,36 @@ export interface NetEventOptions {
 type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: TArgs) => any
 
 /**
- * Register a server-side network event handler.
+ * Registers a method as a server-side network event handler.
  *
+ * @remarks
  * Rules:
  * - First parameter must be `Player` (injected from the caller).
+ *
+ * Validation:
  * - If `options.schema` is provided:
- *   - `z.tuple([...])`: validates all positional args.
+ *   - `z.tuple([...])` validates all positional args.
  *   - otherwise: expects exactly 1 arg and validates `args[0]` (DTO payload pattern).
- * - If `options.schema` is not provided: only primitive args are auto-validated from runtime param types
- *   (`string|number|boolean|any[]`). Complex types require an explicit schema.
+ * - If `options.schema` is omitted, only primitive args can be auto-validated from runtime param types
+ *   (`string|number|boolean|any[]`). Complex payloads should use an explicit schema.
  *
- * @param eventName Network event name.
- * @param options Optional config.
- * @param options.schema Zod schema for payload validation.
+ * Authentication:
+ * - Handlers are typically protected by the framework's net-event security layer.
+ * - Use {@link Public} to explicitly mark a handler as unauthenticated.
  *
- * # Example
+ * @param eventName - Network event name.
+ * @param options - Optional config.
+ * @param options.schema - Zod schema for payload validation.
  *
+ * @example
  * ```ts
- * @OnNet("myevent")
- * handleMyEvent(player: Player, data: string) {}
+ * @Server.Controller()
+ * export class ExampleController {
+ *   @Server.OnNet('example:ping')
+ *   ping(player: Player, message: string) {
+ *     // ...
+ *   }
+ * }
  * ```
  */
 export function OnNet<TArgs extends any[]>(
