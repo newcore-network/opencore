@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { CommandService } from '../../src/runtime/server/services/command.service'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
 import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
 import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
 import { emitCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
@@ -9,8 +8,9 @@ import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
-import type { Player } from '../../src/runtime/server/entities/player'
+import { Player } from '../../src/runtime/server/entities/player'
 import type { Principal } from '../../src/runtime/server/templates/security/permission.types'
+import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 
 class MockPrincipalProvider extends PrincipalProviderContract {
   private principals = new Map<string, Principal>()
@@ -45,19 +45,19 @@ class TestService {
 }
 
 class SimpleCommandController {
-  async handleCommand(player: any, args: any[]) {
+  async handleCommand(player: any, arg1: string) {
     return { success: true }
   }
 }
 
 class ValidatedCommandController {
-  async handleCommand(player: any, args: [number, string]) {
-    return { success: true, args }
+  async handleCommand(player: any, amount: number, name: string) {
+    return { success: true, amount, name }
   }
 }
 
 class GuardedCommandController {
-  async handleCommand(player: any, args: any[]) {
+  async handleCommand(player: any, arg1: string) {
     return { success: true }
   }
 }
@@ -65,8 +65,7 @@ class GuardedCommandController {
 class FullPipelineController {
   constructor(private testService: TestService) {}
 
-  async handleCommand(player: any, args: [number, number]) {
-    const [amount, targetId] = args
+  async handleCommand(player: any, amount: number, targetId: number) {
     return await this.testService.processTransfer(player, amount, targetId)
   }
 }
@@ -84,59 +83,79 @@ describe('Pipeline Load Benchmarks', () => {
     resetCitizenFxMocks()
     eventBusEmissions = 0
 
-    const securityHandler = new DefaultSecurityHandler()
     principalProvider = new MockPrincipalProvider()
-    commandService = new CommandService(securityHandler)
+    commandService = new CommandService()
     accessControl = new AccessControlService(principalProvider)
     testService = new TestService()
 
     const simpleController = new SimpleCommandController()
-    commandService.register(
-      {
-        command: 'simple',
-        methodName: 'handleCommand',
-        target: SimpleCommandController,
-      },
-      simpleController.handleCommand.bind(simpleController),
-    )
+
+    const simpleMeta: CommandMetadata = {
+      command: 'simple',
+      methodName: 'handleCommand',
+      target: SimpleCommandController,
+      paramTypes: [Player, String],
+      paramNames: ['player', 'arg1'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/simple <arg1>',
+      schema: undefined,
+    }
+    commandService.register(simpleMeta, simpleController.handleCommand.bind(simpleController))
 
     const validatedController = new ValidatedCommandController()
+
+    const validatedMeta: CommandMetadata = {
+      command: 'validated',
+      methodName: 'handleCommand',
+      target: ValidatedCommandController,
+      paramTypes: [Player, Number, String],
+      paramNames: ['player', 'amount', 'name'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/validated <amount> <name>',
+      schema: simpleSchema,
+    }
     commandService.register(
-      {
-        command: 'validated',
-        methodName: 'handleCommand',
-        target: ValidatedCommandController,
-        schema: simpleSchema,
-      },
+      validatedMeta,
       validatedController.handleCommand.bind(validatedController),
     )
 
     const guardedController = new GuardedCommandController()
-    commandService.register(
-      {
-        command: 'guarded',
-        methodName: 'handleCommand',
-        target: GuardedCommandController,
-      },
-      async (player: any, args: any[]) => {
-        await accessControl.enforce(player, { minRank: 1 })
-        return guardedController.handleCommand(player, args)
-      },
-    )
+
+    const guardedMeta: CommandMetadata = {
+      command: 'guarded',
+      methodName: 'handleCommand',
+      target: GuardedCommandController,
+      paramTypes: [Player, String],
+      paramNames: ['player', 'arg1'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/guarded <arg1>',
+      schema: undefined,
+    }
+    commandService.register(guardedMeta, async (player: any, arg1: string) => {
+      await accessControl.enforce(player, { minRank: 1 })
+      return guardedController.handleCommand(player, arg1)
+    })
 
     const fullController = new FullPipelineController(testService)
-    commandService.register(
-      {
-        command: 'full',
-        methodName: 'handleCommand',
-        target: FullPipelineController,
-        schema: transferSchema,
-      },
-      async (player: any, args: any[]) => {
-        await accessControl.enforce(player, { minRank: 1 })
-        return fullController.handleCommand(player, args as [number, number])
-      },
-    )
+
+    const fullMeta: CommandMetadata = {
+      command: 'full',
+      methodName: 'handleCommand',
+      target: FullPipelineController,
+      paramTypes: [Player, Number, Number],
+      paramNames: ['player', 'amount', 'targetId'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/full <amount> <targetId>',
+      schema: transferSchema,
+    }
+    commandService.register(fullMeta, async (player: any, amount: number, targetId: number) => {
+      await accessControl.enforce(player, { minRank: 1 })
+      return fullController.handleCommand(player, amount, targetId)
+    })
   })
 
   const scenarios = getAllScenarios()
@@ -148,7 +167,7 @@ describe('Pipeline Load Benchmarks', () => {
 
       for (const player of players) {
         const start = performance.now()
-        await commandService.execute(player, 'simple', ['arg1'], '/simple arg1')
+        await commandService.execute(player, 'simple', ['arg1'])
         const end = performance.now()
         timings.push(end - start)
       }
@@ -171,7 +190,7 @@ describe('Pipeline Load Benchmarks', () => {
 
       for (const player of players) {
         const start = performance.now()
-        await commandService.execute(player, 'validated', ['123', 'test'], '/validated 123 test')
+        await commandService.execute(player, 'validated', ['123', 'test'])
         const end = performance.now()
         timings.push(end - start)
       }
@@ -204,7 +223,7 @@ describe('Pipeline Load Benchmarks', () => {
 
       for (const player of players) {
         const start = performance.now()
-        await commandService.execute(player, 'guarded', ['arg1'], '/guarded arg1')
+        await commandService.execute(player, 'guarded', ['arg1'])
         const end = performance.now()
         timings.push(end - start)
       }

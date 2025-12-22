@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetCitizenFxMocks, registeredNetEvents } from '../../tests/mocks/citizenfx'
-import { PlayerService } from '../../src/runtime/server/services/player.service'
+import { PlayerService } from '../../src/runtime/server/services/core/player.service'
 import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
 import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
+import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/services/default/default-net-event-security-observer'
+import { FiveMNetTransport } from '../../src/adapters/fivem/fivem-net-transport'
 
 class TestController {
   private callCount = 0
@@ -37,13 +40,17 @@ describe('Net Events Load Benchmarks', () => {
     registeredNetEvents.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    playerService = new PlayerService()
-    processor = new NetEventProcessor(playerService, securityHandler)
+    const playerInfo = new NodePlayerInfo()
+    playerService = new PlayerService(playerInfo)
+    const observer = new DefaultNetEventSecurityObserver()
+    const netTransport = new FiveMNetTransport()
+    processor = new NetEventProcessor(playerService, securityHandler, observer, netTransport)
     controller = new TestController()
 
     processor.process(controller, 'handleEvent', {
       eventName: 'test:event',
       schema: eventSchema,
+      paramTypes: [Object],
     })
   })
 

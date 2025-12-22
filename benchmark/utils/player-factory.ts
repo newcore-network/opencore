@@ -1,5 +1,8 @@
-import type { LinkedID, PlayerSession } from '../../src/runtime/server/services/player.service'
+import type { LinkedID, PlayerSession } from '../../src/runtime/server/services/core/player.service'
 import { Player } from '../../src/runtime/server/entities/player'
+import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+
+const playerInfo = new NodePlayerInfo()
 
 export interface PlayerConfig {
   clientID: number
@@ -23,7 +26,7 @@ export class PlayerFactory {
       meta: config?.meta ?? {},
     }
 
-    const player = new Player(session)
+    const player = new Player(session, playerInfo)
 
     if (config?.states) {
       for (const state of config.states) {

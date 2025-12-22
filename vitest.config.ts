@@ -45,14 +45,14 @@ export default defineConfig({
           globals: true,
         },
       },
-      // {
-      //   test: {
-      //     name: 'benchmark',
-      //     include: ['benchmark/load/**/*.load.bench.ts'],
-      //     setupFiles: ['./tests/setup.ts'],
-      //     globals: true,
-      //   },
-      // },
+      {
+        test: {
+          name: 'benchmark',
+          include: ['benchmark/load/**/*.load.bench.ts'],
+          setupFiles: ['./tests/setup.ts'],
+          globals: true,
+        },
+      },
     ],
   },
   esbuild: {

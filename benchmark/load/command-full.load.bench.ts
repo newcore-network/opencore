@@ -7,27 +7,32 @@ import {
 import { CommandService } from '../../src/runtime/server/services/command.service'
 import { CommandNetworkController } from '../../src/runtime/server/controllers/command.controller'
 import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
-import { PlayerService } from '../../src/runtime/server/services/player.service'
+import { PlayerService } from '../../src/runtime/server/services/core/player.service'
 import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
+import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
+import { Player } from '../../src/runtime/server/entities/player'
+import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/services/default/default-net-event-security-observer'
+import { FiveMNetTransport } from '../../src/adapters/fivem/fivem-net-transport'
 
 class TestController {
-  async simpleCommand(player: any, args: any[]) {
+  async simpleCommand(player: any, arg1: string) {
     return { success: true }
   }
 
-  async validatedCommand(player: any, args: [number, string]) {
-    return { success: true, args }
+  async validatedCommand(player: any, amount: number, name: string) {
+    return { success: true, amount, name }
   }
 
-  async guardedCommand(player: any, args: any[]) {
+  async guardedCommand(player: any, arg1: string) {
     return { success: true }
   }
 
-  async throttledCommand(player: any, args: any[]) {
+  async throttledCommand(player: any, arg1: string) {
     return { success: true }
   }
 }
@@ -46,42 +51,62 @@ describe('Command Full Load Benchmarks', () => {
     registeredCommands.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    playerService = new PlayerService()
-    commandService = new CommandService(securityHandler)
-    netEventProcessor = new NetEventProcessor(playerService, securityHandler)
+    const playerInfo = new NodePlayerInfo()
+    playerService = new PlayerService(playerInfo)
+    commandService = new CommandService()
+    const observer = new DefaultNetEventSecurityObserver()
+    const netTransport = new FiveMNetTransport()
+    netEventProcessor = new NetEventProcessor(
+      playerService,
+      securityHandler,
+      observer,
+      netTransport,
+    )
     testController = new TestController()
     commandController = new CommandNetworkController(commandService)
 
-    commandService.register(
-      {
-        command: 'simple',
-        methodName: 'simpleCommand',
-        target: TestController,
-      },
-      testController.simpleCommand.bind(testController),
-    )
+    const metaSimple: CommandMetadata = {
+      command: 'simple',
+      methodName: 'simpleCommand',
+      target: TestController,
+      paramTypes: [Player, String],
+      paramNames: ['player', 'arg1'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/simple <arg1>',
+      schema: undefined,
+    }
+    commandService.register(metaSimple, testController.simpleCommand.bind(testController))
 
-    commandService.register(
-      {
-        command: 'validated',
-        methodName: 'validatedCommand',
-        target: TestController,
-        schema: validatedSchema,
-      },
-      testController.validatedCommand.bind(testController),
-    )
+    const metaValidated: CommandMetadata = {
+      command: 'validated',
+      methodName: 'validatedCommand',
+      target: TestController,
+      paramTypes: [Player, Number, String],
+      paramNames: ['player', 'amount', 'name'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/validated <amount> <name>',
+      schema: validatedSchema,
+    }
+    commandService.register(metaValidated, testController.validatedCommand.bind(testController))
 
-    commandService.register(
-      {
-        command: 'guarded',
-        methodName: 'guardedCommand',
-        target: TestController,
-      },
-      testController.guardedCommand.bind(testController),
-    )
+    const metaGuarded: CommandMetadata = {
+      command: 'guarded',
+      methodName: 'guardedCommand',
+      target: TestController,
+      paramTypes: [Player, String],
+      paramNames: ['player', 'arg1'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/guarded <arg1>',
+      schema: undefined,
+    }
+    commandService.register(metaGuarded, testController.guardedCommand.bind(testController))
 
     netEventProcessor.process(commandController, 'onCommandReceived', {
-      eventName: 'core:internal:executeCommand',
+      eventName: 'core:execute-command',
+      paramTypes: [Player, String, Array],
     })
   })
 
@@ -108,7 +133,7 @@ describe('Command Full Load Benchmarks', () => {
             handler(player.clientID, ['arg1'])
           }
 
-          await commandService.execute(player, 'simple', ['arg1'], '/simple arg1')
+          await commandService.execute(player, 'simple', ['arg1'])
 
           const end = performance.now()
           timings.push(end - start)
@@ -145,7 +170,7 @@ describe('Command Full Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          await commandService.execute(player, 'validated', ['123', 'test'], '/validated 123 test')
+          await commandService.execute(player, 'validated', ['123', 'test'])
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -181,7 +206,7 @@ describe('Command Full Load Benchmarks', () => {
       const promises = players.map(async (player) => {
         const start = performance.now()
         try {
-          await commandService.execute(player, 'simple', ['arg1'], '/simple arg1')
+          await commandService.execute(player, 'simple', ['arg1'])
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -216,16 +241,16 @@ describe('Command Full Load Benchmarks', () => {
       let successCount = 0
       let errorCount = 0
 
-      const netEventHandler = registeredNetEvents.get('core:internal:executeCommand')
+      const netEventHandler = registeredNetEvents.get('core:execute-command')
 
       for (const player of players) {
         const start = performance.now()
         try {
           if (netEventHandler) {
             ;(global as any).source = player.clientID
-            await netEventHandler('simple', ['arg1'], '/simple arg1')
+            await netEventHandler('simple', ['arg1'])
           } else {
-            await commandService.execute(player, 'simple', ['arg1'], '/simple arg1')
+            await commandService.execute(player, 'simple', ['arg1'])
           }
 
           const end = performance.now()

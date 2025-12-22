@@ -51,8 +51,7 @@ describe('Bootstrap Load Benchmarks', () => {
   beforeEach(() => {
     resetCitizenFxMocks()
 
-    const securityHandler = new DefaultSecurityHandler()
-    commandService = new CommandService(securityHandler)
+    commandService = new CommandService()
     processor = new CommandProcessor(commandService)
   })
 

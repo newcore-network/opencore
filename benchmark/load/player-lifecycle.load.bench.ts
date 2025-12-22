@@ -2,10 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
 import { resetContainer } from '../../tests/helpers/di.helper'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { PlayerService } from '../../src/runtime/server/services/player.service'
+import { PlayerService } from '../../src/runtime/server/services/core/player.service'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { IPlayerInfo } from '../../src/adapters'
+import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
 
 describe('Player Lifecycle Load Benchmarks', () => {
   let playerService: PlayerService
@@ -14,6 +16,7 @@ describe('Player Lifecycle Load Benchmarks', () => {
     resetContainer()
     resetCitizenFxMocks()
 
+    container.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
     container.registerSingleton(PlayerService, PlayerService)
 
     playerService = container.resolve(PlayerService)

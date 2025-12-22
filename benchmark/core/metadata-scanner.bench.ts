@@ -3,9 +3,8 @@ import { container } from 'tsyringe'
 import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
 import { DecoratorProcessor } from '../../src/kernel/di/decorator-processor'
 import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
-import { Command } from '../../src/runtime/server/decorators/command'
-import { Controller } from '../../src/runtime/server/decorators/controller'
 import { resetContainer } from '../../tests/helpers/di.helper'
+import { injectable } from 'tsyringe'
 
 class MockProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.COMMAND
@@ -16,41 +15,52 @@ class MockProcessor implements DecoratorProcessor {
   }
 }
 
-// @ts-ignore - experimentalDecorators compatibility
-@Controller()
 class TestController1 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test1')
   method1() {}
 
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test2')
   method2() {}
 
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test3')
   method3() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
-@Controller()
 class TestController2 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test4')
   method1() {}
 
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test5')
   method2() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
-@Controller()
 class TestController3 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test6')
   method1() {}
 }
+
+// Make controllers injectable for MetadataScanner (container.resolve)
+injectable()(TestController1)
+injectable()(TestController2)
+injectable()(TestController3)
+
+// Register command metadata manually to avoid decorator runtime incompatibilities under tsx
+function defineCommandMeta(target: any, methodName: string, command: string) {
+  Reflect.defineMetadata(
+    METADATA_KEYS.COMMAND,
+    {
+      command,
+      methodName,
+      target: target.constructor,
+      paramTypes: [],
+      paramNames: [],
+      expectsPlayer: false,
+    },
+    target,
+    methodName,
+  )
+}
+
+defineCommandMeta(TestController1.prototype, 'method1', 'test1')
+defineCommandMeta(TestController1.prototype, 'method2', 'test2')
+defineCommandMeta(TestController1.prototype, 'method3', 'test3')
+defineCommandMeta(TestController2.prototype, 'method1', 'test4')
+defineCommandMeta(TestController2.prototype, 'method2', 'test5')
+defineCommandMeta(TestController3.prototype, 'method1', 'test6')
 
 export async function runMetadataScannerBenchmark(): Promise<Bench> {
   const bench = new Bench({ time: 1000 })

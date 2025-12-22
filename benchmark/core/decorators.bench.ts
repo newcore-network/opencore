@@ -1,58 +1,118 @@
 import { Bench } from 'tinybench'
 import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
-import { Command } from '../../src/runtime/server/decorators/command'
-import { Controller } from '../../src/runtime/server/decorators/controller'
-import { Guard } from '../../src/runtime/server/decorators/guard'
-import { Throttle } from '../../src/runtime/server/decorators/throttle'
+import { injectable } from 'tsyringe'
 
-// @ts-ignore - experimentalDecorators compatibility
-@Controller()
 class TestController {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('test')
-  // @ts-ignore - experimentalDecorators compatibility
-  @Guard({ rank: 1 })
   async testMethod() {
     return 'test'
   }
 }
 
-// Benchmark classes defined at module level to ensure PropertyDescriptor is available
-// @ts-ignore - experimentalDecorators compatibility
 class TempController1 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('temp')
   method() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
 class TempController2 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('temp')
-  // @ts-ignore - experimentalDecorators compatibility
-  @Guard({ rank: 1 })
   method() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
 class TempController3 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('temp')
-  // @ts-ignore - experimentalDecorators compatibility
-  @Guard({ rank: 1 })
-  // @ts-ignore - experimentalDecorators compatibility
-  @Throttle(5, 1000)
   method() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
 class TempController4 {
-  // @ts-ignore - experimentalDecorators compatibility
-  @Command('temp')
-  // @ts-ignore - experimentalDecorators compatibility
-  @Guard({ rank: 1 })
   method() {}
 }
+
+// Make benchmark controllers injectable (not strictly required for this file, but consistent with framework usage)
+injectable()(TestController)
+injectable()(TempController1)
+injectable()(TempController2)
+injectable()(TempController3)
+injectable()(TempController4)
+
+// Register metadata manually to avoid decorator runtime incompatibilities under tsx
+Reflect.defineMetadata(
+  METADATA_KEYS.COMMAND,
+  {
+    command: 'test',
+    methodName: 'testMethod',
+    target: TestController,
+    paramTypes: [],
+    paramNames: [],
+    expectsPlayer: false,
+  },
+  TestController.prototype,
+  'testMethod',
+)
+Reflect.defineMetadata('core:guard', { rank: 1 }, TestController.prototype, 'testMethod')
+
+Reflect.defineMetadata(
+  METADATA_KEYS.COMMAND,
+  {
+    command: 'temp',
+    methodName: 'method',
+    target: TempController1,
+    paramTypes: [],
+    paramNames: [],
+    expectsPlayer: false,
+  },
+  TempController1.prototype,
+  'method',
+)
+
+Reflect.defineMetadata(
+  METADATA_KEYS.COMMAND,
+  {
+    command: 'temp',
+    methodName: 'method',
+    target: TempController2,
+    paramTypes: [],
+    paramNames: [],
+    expectsPlayer: false,
+  },
+  TempController2.prototype,
+  'method',
+)
+Reflect.defineMetadata('core:guard', { rank: 1 }, TempController2.prototype, 'method')
+
+Reflect.defineMetadata(
+  METADATA_KEYS.COMMAND,
+  {
+    command: 'temp',
+    methodName: 'method',
+    target: TempController3,
+    paramTypes: [],
+    paramNames: [],
+    expectsPlayer: false,
+  },
+  TempController3.prototype,
+  'method',
+)
+Reflect.defineMetadata('core:guard', { rank: 1 }, TempController3.prototype, 'method')
+
+// Keep a throttle marker metadata for benchmark parity (Throttle decorator uses runtime wrapping, which we skip here)
+Reflect.defineMetadata(
+  'core:throttle',
+  { limit: 5, windowMs: 1000 },
+  TempController3.prototype,
+  'method',
+)
+
+Reflect.defineMetadata(
+  METADATA_KEYS.COMMAND,
+  {
+    command: 'temp',
+    methodName: 'method',
+    target: TempController4,
+    paramTypes: [],
+    paramNames: [],
+    expectsPlayer: false,
+  },
+  TempController4.prototype,
+  'method',
+)
+Reflect.defineMetadata('core:guard', { rank: 1 }, TempController4.prototype, 'method')
 
 export async function runDecoratorsBenchmark(): Promise<Bench> {
   const bench = new Bench({ time: 1000 })

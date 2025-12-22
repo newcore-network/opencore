@@ -1,13 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { CommandService } from '../../src/runtime/server/services/command.service'
-import { PlayerService } from '../../src/runtime/server/services/player.service'
+import { PlayerService } from '../../src/runtime/server/services/core/player.service'
 import { HttpService } from '../../src/runtime/server/services/http/http.service'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
+import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
+import { Player } from '../../src/runtime/server/entities/player'
 
 global.fetch = vi.fn(() =>
   Promise.resolve({
@@ -18,7 +20,7 @@ global.fetch = vi.fn(() =>
 ) as any
 
 class TestController {
-  async handleCommand(player: any, args: any[]) {
+  async handleCommand(player: any, arg1: string) {
     return { success: true }
   }
 }
@@ -33,9 +35,9 @@ describe('Services Load Benchmarks', () => {
   beforeEach(() => {
     resetCitizenFxMocks()
 
-    const securityHandler = new DefaultSecurityHandler()
-    playerService = new PlayerService()
-    commandService = new CommandService(securityHandler)
+    const playerInfo = new NodePlayerInfo()
+    playerService = new PlayerService(playerInfo)
+    commandService = new CommandService()
     httpService = new HttpService()
   })
 
@@ -44,24 +46,32 @@ describe('Services Load Benchmarks', () => {
   describe('CommandService', () => {
     beforeEach(() => {
       const controller = new TestController()
-      commandService.register(
-        {
-          command: 'test',
-          methodName: 'handleCommand',
-          target: TestController,
-        },
-        controller.handleCommand.bind(controller),
-      )
 
-      commandService.register(
-        {
-          command: 'testvalidated',
-          methodName: 'handleCommand',
-          target: TestController,
-          schema: testSchema,
-        },
-        controller.handleCommand.bind(controller),
-      )
+      const metaSimple: CommandMetadata = {
+        command: 'test',
+        methodName: 'handleCommand',
+        target: TestController,
+        paramTypes: [Player, String],
+        paramNames: ['player', 'arg1'],
+        expectsPlayer: true,
+        description: undefined,
+        usage: '/test <arg1>',
+        schema: undefined,
+      }
+      commandService.register(metaSimple, controller.handleCommand.bind(controller))
+
+      const metaValidated: CommandMetadata = {
+        command: 'testvalidated',
+        methodName: 'handleCommand',
+        target: TestController,
+        paramTypes: [Player, Number, String],
+        paramNames: ['player', 'amount', 'name'],
+        expectsPlayer: true,
+        description: undefined,
+        usage: '/testvalidated <amount> <name>',
+        schema: testSchema,
+      }
+      commandService.register(metaValidated, controller.handleCommand.bind(controller))
     })
 
     for (const playerCount of scenarios) {
@@ -72,14 +82,18 @@ describe('Services Load Benchmarks', () => {
         for (let i = 0; i < iterations; i++) {
           const controller = new TestController()
           const start = performance.now()
-          commandService.register(
-            {
-              command: `test-${i}`,
-              methodName: 'handleCommand',
-              target: TestController,
-            },
-            controller.handleCommand.bind(controller),
-          )
+          const meta: CommandMetadata = {
+            command: `test-${i}`,
+            methodName: 'handleCommand',
+            target: TestController,
+            paramTypes: [Player, String],
+            paramNames: ['player', 'arg1'],
+            expectsPlayer: true,
+            description: undefined,
+            usage: `/test-${i} <arg1>`,
+            schema: undefined,
+          }
+          commandService.register(meta, controller.handleCommand.bind(controller))
           const end = performance.now()
           timings.push(end - start)
         }
@@ -101,7 +115,7 @@ describe('Services Load Benchmarks', () => {
 
         for (const player of players) {
           const start = performance.now()
-          await commandService.execute(player, 'test', ['arg1'], '/test arg1')
+          await commandService.execute(player, 'test', ['arg1'])
           const end = performance.now()
           timings.push(end - start)
         }
@@ -124,12 +138,7 @@ describe('Services Load Benchmarks', () => {
 
         for (const player of players) {
           const start = performance.now()
-          await commandService.execute(
-            player,
-            'testvalidated',
-            ['123', 'test'],
-            '/testvalidated 123 test',
-          )
+          await commandService.execute(player, 'testvalidated', ['123', 'test'])
           const end = performance.now()
           timings.push(end - start)
         }

@@ -5,7 +5,7 @@ import {
   registeredNetEvents,
 } from '../../tests/mocks/citizenfx'
 import { CommandService } from '../../src/runtime/server/services/command.service'
-import { PlayerService } from '../../src/runtime/server/services/player.service'
+import { PlayerService } from '../../src/runtime/server/services/core/player.service'
 import { CommandNetworkController } from '../../src/runtime/server/controllers/command.controller'
 import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
 import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
@@ -13,13 +13,18 @@ import { TickSimulator } from '../utils/tick-simulator'
 import { PlayerFactory } from '../utils/player-factory'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
+import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/services/default/default-net-event-security-observer'
+import { FiveMNetTransport } from '../../src/adapters/fivem/fivem-net-transport'
+import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
+import { Player } from '../../src/runtime/server/entities/player'
 ;(global as any).setTick = (handler: () => void | Promise<void>) => {}
 
 class StressTestController {
   private commandCount = 0
   private eventCount = 0
 
-  async handleCommand(player: any, args: any[]) {
+  async handleCommand(player: any, amount: number, name: string) {
     this.commandCount++
     return { success: true, count: this.commandCount }
   }
@@ -54,30 +59,43 @@ describe('Stress Test Load Benchmarks', () => {
     registeredNetEvents.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    playerService = new PlayerService()
-    commandService = new CommandService(securityHandler)
-    netEventProcessor = new NetEventProcessor(playerService, securityHandler)
+    const playerInfo = new NodePlayerInfo()
+    playerService = new PlayerService(playerInfo)
+    commandService = new CommandService()
+    const observer = new DefaultNetEventSecurityObserver()
+    const netTransport = new FiveMNetTransport()
+    netEventProcessor = new NetEventProcessor(
+      playerService,
+      securityHandler,
+      observer,
+      netTransport,
+    )
     commandController = new CommandNetworkController(commandService)
     testController = new StressTestController()
     tickSimulator = new TickSimulator()
 
-    commandService.register(
-      {
-        command: 'stress',
-        methodName: 'handleCommand',
-        target: StressTestController,
-        schema: commandSchema,
-      },
-      testController.handleCommand.bind(testController),
-    )
+    const metaStress: CommandMetadata = {
+      command: 'stress',
+      methodName: 'handleCommand',
+      target: StressTestController,
+      paramTypes: [Player, Number, String],
+      paramNames: ['player', 'amount', 'name'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/stress <amount> <name>',
+      schema: commandSchema,
+    }
+    commandService.register(metaStress, testController.handleCommand.bind(testController))
 
     netEventProcessor.process(testController, 'handleEvent', {
       eventName: 'stress:event',
       schema: eventSchema,
+      paramTypes: [Object],
     })
 
     netEventProcessor.process(commandController, 'onCommandReceived', {
-      eventName: 'core:internal:executeCommand',
+      eventName: 'core:execute-command',
+      paramTypes: [Player, String, Array],
     })
 
     for (let i = 0; i < 10; i++) {
@@ -113,7 +131,7 @@ describe('Stress Test Load Benchmarks', () => {
       Array.from({ length: commandsPerPlayer }, async () => {
         const start = performance.now()
         try {
-          await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
+          await commandService.execute(player, 'stress', ['123', 'test'])
           const end = performance.now()
           commandTimings.push(end - start)
         } catch (error) {}
@@ -207,7 +225,7 @@ describe('Stress Test Load Benchmarks', () => {
 
     for (const player of players) {
       const start = performance.now()
-      await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
+      await commandService.execute(player, 'stress', ['123', 'test'])
       const end = performance.now()
       sequentialTimings.push(end - start)
     }
@@ -220,7 +238,7 @@ describe('Stress Test Load Benchmarks', () => {
 
     const promises = players.map(async (player) => {
       const start = performance.now()
-      await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
+      await commandService.execute(player, 'stress', ['123', 'test'])
       const end = performance.now()
       concurrentTimings.push(end - start)
     })
@@ -280,7 +298,7 @@ describe('Stress Test Load Benchmarks', () => {
 
       const promises = batch.map(async (player) => {
         const start = performance.now()
-        await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
+        await commandService.execute(player, 'stress', ['123', 'test'])
         const end = performance.now()
         timings.push(end - start)
       })
@@ -337,7 +355,7 @@ describe('Stress Test Load Benchmarks', () => {
 
     const allPromises = [
       ...players.slice(0, 100).map(async (player) => {
-        await commandService.execute(player, 'stress', ['123', 'test'], '/stress 123 test')
+        await commandService.execute(player, 'stress', ['123', 'test'])
       }),
 
       ...players.slice(100, 200).map(async (player) => {

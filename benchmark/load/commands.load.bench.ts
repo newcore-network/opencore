@@ -1,23 +1,24 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetCitizenFxMocks, registeredCommands } from '../../tests/mocks/citizenfx'
 import { CommandService } from '../../src/runtime/server/services/command.service'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
+import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
+import { Player } from '../../src/runtime/server/entities/player'
 
 class TestController {
   private callCount = 0
 
-  async handleCommand(player: any, args: any[]) {
+  async handleCommand(player: any, arg1: string) {
     this.callCount++
-    return { success: true, args }
+    return { success: true, arg1 }
   }
 
-  async handleValidatedCommand(player: any, args: [number, number]) {
+  async handleValidatedCommand(player: any, amount: number, name: string) {
     this.callCount++
-    return { success: true, args }
+    return { success: true, amount, name }
   }
 
   getCallCount() {
@@ -35,28 +36,36 @@ describe('Commands Load Benchmarks', () => {
     resetCitizenFxMocks()
     registeredCommands.clear()
 
-    const securityHandler = new DefaultSecurityHandler()
-    commandService = new CommandService(securityHandler)
+    commandService = new CommandService()
     controller = new TestController()
 
-    commandService.register(
-      {
-        command: 'test',
-        methodName: 'handleCommand',
-        target: TestController,
-      },
-      controller.handleCommand.bind(controller),
-    )
+    const metaSimple: CommandMetadata = {
+      command: 'test',
+      methodName: 'handleCommand',
+      target: TestController,
+      paramTypes: [Player, String],
+      paramNames: ['player', 'arg1'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/test <arg1>',
+      schema: undefined,
+    }
 
-    commandService.register(
-      {
-        command: 'testvalidated',
-        methodName: 'handleValidatedCommand',
-        target: TestController,
-        schema: simpleSchema,
-      },
-      controller.handleValidatedCommand.bind(controller),
-    )
+    commandService.register(metaSimple, controller.handleCommand.bind(controller))
+
+    const metaValidated: CommandMetadata = {
+      command: 'testvalidated',
+      methodName: 'handleValidatedCommand',
+      target: TestController,
+      paramTypes: [Player, Number, String],
+      paramNames: ['player', 'amount', 'name'],
+      expectsPlayer: true,
+      description: undefined,
+      usage: '/testvalidated <amount> <name>',
+      schema: simpleSchema,
+    }
+
+    commandService.register(metaValidated, controller.handleValidatedCommand.bind(controller))
   })
 
   const scenarios = getAllScenarios()
@@ -71,7 +80,7 @@ describe('Commands Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          await commandService.execute(player, 'test', ['arg1', 'arg2'], '/test arg1 arg2')
+          await commandService.execute(player, 'test', ['arg1'])
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -104,12 +113,7 @@ describe('Commands Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          await commandService.execute(
-            player,
-            'testvalidated',
-            ['123', 'test'],
-            '/testvalidated 123 test',
-          )
+          await commandService.execute(player, 'testvalidated', ['123', 'test'])
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -141,7 +145,7 @@ describe('Commands Load Benchmarks', () => {
       const promises = players.map(async (player) => {
         const start = performance.now()
         try {
-          await commandService.execute(player, 'test', ['arg1'], '/test arg1')
+          await commandService.execute(player, 'test', ['arg1'])
           const end = performance.now()
           timings.push(end - start)
           successCount++
