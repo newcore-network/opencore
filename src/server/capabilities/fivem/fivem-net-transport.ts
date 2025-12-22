@@ -12,6 +12,14 @@ export class FiveMNetTransport extends INetTransport {
   }
 
   emitNet(eventName: string, target: NetTarget, ...args: any[]): void {
+    if (Array.isArray(target)) {
+      for (let index = 0; index < target.length; index++) {
+        const cliendId = target[index]
+        ;(globalThis as any).emitNet(eventName, cliendId, ...args)
+      }
+      return
+    }
+
     const realTarget = target === 'all' ? -1 : target
     ;(globalThis as any).emitNet(eventName, realTarget, ...args)
   }

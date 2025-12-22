@@ -1,6 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { NodeNetTransport } from '../../../../src/server/capabilities/node/node-net-transport'
-import type { NetEventContext } from '../../../../src/server/capabilities/INetTransport'
 
 describe('NodeNetTransport', () => {
   let transport: NodeNetTransport
@@ -95,6 +94,21 @@ describe('NodeNetTransport', () => {
     await new Promise((resolve) => setImmediate(resolve))
 
     // Should use first client in array
-    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ clientId: 5 }), 'broadcast')
+    expect(handler).toHaveBeenCalledTimes(3)
+    expect(handler).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ clientId: 5 }),
+      'broadcast',
+    )
+    expect(handler).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ clientId: 10 }),
+      'broadcast',
+    )
+    expect(handler).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({ clientId: 15 }),
+      'broadcast',
+    )
   })
 })

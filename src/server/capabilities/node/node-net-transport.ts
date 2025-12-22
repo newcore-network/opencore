@@ -23,9 +23,15 @@ export class NodeNetTransport implements INetTransport {
   }
 
   emitNet(eventName: string, target: NetTarget, ...args: any[]): void {
-    const ctx: NetEventContext = {
-      clientId: target === 'all' ? -1 : target,
+    if (Array.isArray(target)) {
+      for (let index = 0; index < target.length; index++) {
+        const clientId = target[index]
+        const ctx: NetEventContext = { clientId }
+        this.eventEmitter.emit(eventName, ctx, ...args)
+      }
+      return
     }
+    const ctx: NetEventContext = { clientId: target === 'all' ? -1 : target }
     this.eventEmitter.emit(eventName, ctx, ...args)
   }
 

@@ -1,4 +1,4 @@
-export type NetTarget = number | 'all'
+export type NetTarget = number | number[] | 'all'
 
 export type NetEventContext = {
   clientId: number
