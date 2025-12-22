@@ -1,5 +1,5 @@
-import type { LinkedID, PlayerSession } from '../../src/server/services/player.service'
-import { Player } from '../../src/server/entities/player'
+import type { LinkedID, PlayerSession } from '../../src/runtime/server/services/player.service'
+import { Player } from '../../src/runtime/server/entities/player'
 
 export interface PlayerConfig {
   clientID: number

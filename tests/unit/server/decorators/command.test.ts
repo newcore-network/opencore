@@ -1,9 +1,9 @@
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
-import { Command, type CommandMetadata } from '../../../../src/server/decorators/command'
-import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
-import { Player } from '../../../../src/server/entities/player'
+import { Command, type CommandMetadata } from '../../../../src/runtime/server/decorators/command'
+import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
+import { Player } from '../../../../src/runtime/server/entities/player'
 
 describe('@Command decorator', () => {
   describe('string argument (simple usage)', () => {

@@ -1,10 +1,10 @@
 // tests/unit/server/system/processors/export.processor.test.ts
 import 'reflect-metadata'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ExportProcessor } from '../../../../../src/server/system/processors/export.processor'
-import { IExports } from '../../../../../src/server/capabilities/IExports'
-import { Export } from '../../../../../src/server/decorators/export'
-import { METADATA_KEYS } from '../../../../../src/server/system/metadata-server.keys'
+import { ExportProcessor } from '../../../../../src/runtime/server/system/processors/export.processor'
+import { Export } from '../../../../../src/runtime/server/decorators/export'
+import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
+import { IExports } from '../../../../../src/adapters'
 
 /**
  * Mock implementation of IExports for testing.

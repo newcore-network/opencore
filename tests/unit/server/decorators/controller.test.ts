@@ -5,8 +5,8 @@ import {
   _serverControllerRegistryByResource,
   getServerControllerRegistry,
   Controller,
-} from '../../../../src/server/decorators/controller'
-import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
+} from '../../../../src/runtime/server/decorators/controller'
+import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 
 describe('@Controller decorator', () => {
   beforeEach(() => {

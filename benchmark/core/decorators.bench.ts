@@ -1,9 +1,9 @@
 import { Bench } from 'tinybench'
-import { METADATA_KEYS } from '../../src/server/system/metadata-server.keys'
-import { Command } from '../../src/server/decorators/command'
-import { Controller } from '../../src/server/decorators/controller'
-import { Guard } from '../../src/server/decorators/guard'
-import { Throttle } from '../../src/server/decorators/throttle'
+import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
+import { Command } from '../../src/runtime/server/decorators/command'
+import { Controller } from '../../src/runtime/server/decorators/controller'
+import { Guard } from '../../src/runtime/server/decorators/guard'
+import { Throttle } from '../../src/runtime/server/decorators/throttle'
 
 // @ts-ignore - experimentalDecorators compatibility
 @Controller()

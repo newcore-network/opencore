@@ -1,17 +1,15 @@
 // tests/unit/server/system/processors/netEvent.processor.test.ts
 import 'reflect-metadata'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { NetEventProcessor } from '../../../../../src/server/system/processors/netEvent.processor'
-import {
-  INetTransport,
-  NetEventContext,
-} from '../../../../../src/server/capabilities/INetTransport'
-import { PlayerServiceContract } from '../../../../../src/server/services/contracts/player.service.contract'
-import { SecurityHandlerContract } from '../../../../../src/server/templates/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../../../src/server/templates/security/net-event-security-observer.contract'
-import { OnNet } from '../../../../../src/server/decorators/onNet'
-import { METADATA_KEYS } from '../../../../../src/server/system/metadata-server.keys'
-import { Player } from '../../../../../src/server/entities'
+import { NetEventProcessor } from '../../../../../src/runtime/server/system/processors/netEvent.processor'
+
+import { PlayerServiceContract } from '../../../../../src/runtime/server/services/contracts/player.service.contract'
+import { SecurityHandlerContract } from '../../../../../src/runtime/server/templates/security/security-handler.contract'
+import { NetEventSecurityObserverContract } from '../../../../../src/runtime/server/templates/security/net-event-security-observer.contract'
+import { OnNet } from '../../../../../src/runtime/server/decorators/onNet'
+import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
+import { Player } from '../../../../../src/runtime/server/entities'
+import { INetTransport, NetEventContext } from '../../../../../src/adapters'
 
 class MockNetTransport extends INetTransport {
   onNet(

@@ -1,9 +1,9 @@
 import 'reflect-metadata'
 import { describe, it, expect, vi } from 'vitest'
-import { CommandService } from '../../../../src/server/services/command.service'
-import type { CommandMetadata } from '../../../../src/server/decorators/command'
-import { Player } from '../../../../src/server'
-import { AppError } from '../../../../src/utils'
+import { CommandService } from '../../../../src/runtime/server/services/command.service'
+import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
+import { Player } from '../../../../src/runtime/server'
+import { AppError } from '../../../../src/kernel/utils'
 
 describe('CommandService.execute', () => {
   it('should allow handler() when expectsPlayer=false and args are empty', async () => {

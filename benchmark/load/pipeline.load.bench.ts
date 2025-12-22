@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { CommandService } from '../../src/server/services/command.service'
-import { DefaultSecurityHandler } from '../../src/server/services/default/default-security.handler'
-import { AccessControlService } from '../../src/server/services/access-control.service'
-import { PrincipalProviderContract } from '../../src/server/templates/security/principal-provider.contract'
-import { emitCoreEvent } from '../../src/server/bus/core-event-bus'
+import { CommandService } from '../../src/runtime/server/services/command.service'
+import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
+import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
+import { emitCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { z } from 'zod'
-import type { Player } from '../../src/server/entities/player'
-import type { Principal } from '../../src/server/templates/security/permission.types'
+import type { Player } from '../../src/runtime/server/entities/player'
+import type { Principal } from '../../src/runtime/server/templates/security/permission.types'
 
 class MockPrincipalProvider extends PrincipalProviderContract {
   private principals = new Map<string, Principal>()

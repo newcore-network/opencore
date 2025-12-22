@@ -1,10 +1,10 @@
 import { Bench } from 'tinybench'
 import { container } from 'tsyringe'
-import { MetadataScanner } from '../../src/system/metadata.scanner'
-import { DecoratorProcessor } from '../../src/system/decorator-processor'
-import { METADATA_KEYS } from '../../src/server/system/metadata-server.keys'
-import { Command } from '../../src/server/decorators/command'
-import { Controller } from '../../src/server/decorators/controller'
+import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
+import { DecoratorProcessor } from '../../src/kernel/di/decorator-processor'
+import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
+import { Command } from '../../src/runtime/server/decorators/command'
+import { Controller } from '../../src/runtime/server/decorators/controller'
 import { resetContainer } from '../../tests/helpers/di.helper'
 
 class MockProcessor implements DecoratorProcessor {

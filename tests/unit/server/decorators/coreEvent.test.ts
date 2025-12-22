@@ -1,8 +1,8 @@
 // @ts-nocheck - Decorators use legacy format, tests pass correctly
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
-import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
-import { OnFrameworkEvent } from '../../../../src/server/decorators/onFrameworkEvent'
+import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
+import { OnFrameworkEvent } from '../../../../src/runtime/server/decorators/onFrameworkEvent'
 
 describe('@OnFrameworkEvent decorator', () => {
   describe('event registration', () => {

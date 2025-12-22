@@ -9,7 +9,7 @@ import {
   initParallelCompute,
   shutdownParallelCompute,
   type Vector3Like,
-} from '../../src/server/services/parallel'
+} from '../../src/runtime/server/services/parallel'
 
 // Generate test entities
 function generateEntities(count: number): Vector3Like[] {

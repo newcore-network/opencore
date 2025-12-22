@@ -1,5 +1,5 @@
 import { Bench } from 'tinybench'
-import { RateLimiterService } from '../../src/server/services/rate-limiter.service'
+import { RateLimiterService } from '../../src/runtime/server/services/rate-limiter.service'
 
 export async function runRateLimiterBenchmark(): Promise<Bench> {
   const bench = new Bench({ time: 1000 })

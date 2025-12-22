@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
 import { resetContainer } from '../../tests/helpers/di.helper'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { TickProcessor } from '../../src/server/system/processors/tick.processor'
+import { TickProcessor } from '../../src/runtime/server/system/processors/tick.processor'
 import { TickSimulator, createTestTickSimulator } from '../utils/tick-simulator'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 

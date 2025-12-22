@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { onCoreEvent, emitCoreEvent } from '../../src/server/bus/core-event-bus'
+import { onCoreEvent, emitCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
-import type { CoreEventMap } from '../../src/server/types/core-events'
+import type { CoreEventMap } from '../../src/runtime/server/types/core-events'
 
 describe('Core Events Load Benchmarks', () => {
   beforeEach(() => {

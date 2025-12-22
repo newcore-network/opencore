@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { AccessControlService } from '../../src/server/services/access-control.service'
-import { PrincipalProviderContract } from '../../src/server/templates/security/principal-provider.contract'
+import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
+import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
 import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios, getRealisticRankDistribution } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
-import type { Player } from '../../src/server/entities/player'
-import type { Principal } from '../../src/server/templates/security/permission.types'
+import type { Player } from '../../src/runtime/server/entities/player'
+import type { Principal } from '../../src/runtime/server/templates/security/permission.types'
 
 class MockPrincipalProvider extends PrincipalProviderContract {
   private principals = new Map<string, Principal>()

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
 import { resetContainer } from '../../helpers/di.helper'
-import { PrincipalProviderContract } from '../../../src/server/templates/security/principal-provider.contract'
-import { AuthProviderContract } from '../../../src/server/templates/auth/auth-provider.contract'
-import { setPrincipalProvider, setAuthProvider } from '../../../src/server/setup'
+import { PrincipalProviderContract } from '../../../src/runtime/server/templates/security/principal-provider.contract'
+import { AuthProviderContract } from '../../../src/runtime/server/templates/auth/auth-provider.contract'
+import { setPrincipalProvider, setAuthProvider } from '../../../src/runtime/server/setup'
 
 // Mock implementations
 class MockPrincipalProvider extends PrincipalProviderContract {

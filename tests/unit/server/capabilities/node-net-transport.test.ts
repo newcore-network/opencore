@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { NodeNetTransport } from '../../../../src/server/capabilities/node/node-net-transport'
+import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
 
 describe('NodeNetTransport', () => {
   let transport: NodeNetTransport

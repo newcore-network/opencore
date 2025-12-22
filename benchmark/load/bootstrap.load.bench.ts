@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { MetadataScanner } from '../../src/system/metadata.scanner'
-import { Command } from '../../src/server/decorators/command'
-import { Controller } from '../../src/server/decorators/controller'
-import { CommandProcessor } from '../../src/server/system/processors/command.processor'
-import { CommandService } from '../../src/server/services/command.service'
-import { DefaultSecurityHandler } from '../../src/server/services/default/default-security.handler'
+import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
+import { Command } from '../../src/runtime/server/decorators/command'
+import { Controller } from '../../src/runtime/server/decorators/controller'
+import { CommandProcessor } from '../../src/runtime/server/system/processors/command.processor'
+import { CommandService } from '../../src/runtime/server/services/command.service'
+import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 
 // @ts-ignore - experimentalDecorators compatibility

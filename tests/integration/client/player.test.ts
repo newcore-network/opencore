@@ -23,7 +23,7 @@ import {
 } from '../../mocks/citizenfx'
 
 // Import after mocks are set up
-import { ClientPlayer } from '../../../src/client/player/player'
+import { ClientPlayer } from '../../../src/runtime/client/player/player'
 
 describe('ClientPlayer', () => {
   beforeEach(() => {

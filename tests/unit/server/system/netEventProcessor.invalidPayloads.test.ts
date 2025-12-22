@@ -2,11 +2,11 @@ import 'reflect-metadata'
 import { describe, it, expect, vi } from 'vitest'
 import { z } from 'zod'
 import { registeredNetEvents } from '../../../mocks/citizenfx'
-import { PlayerService } from '../../../../src/server/services/core/player.service'
-import { NetEventProcessor } from '../../../../src/server/system/processors/netEvent.processor'
-import { SecurityHandlerContract } from '../../../../src/server/templates/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../../src/server/templates/security/net-event-security-observer.contract'
-import { INetTransport, NetEventContext } from '../../../../src/server/capabilities/INetTransport'
+import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
+import { NetEventProcessor } from '../../../../src/runtime/server/system/processors/netEvent.processor'
+import { SecurityHandlerContract } from '../../../../src/runtime/server/templates/security/security-handler.contract'
+import { NetEventSecurityObserverContract } from '../../../../src/runtime/server/templates/security/net-event-security-observer.contract'
+import { INetTransport, NetEventContext } from '../../../../src/adapters'
 
 const securityHandler: SecurityHandlerContract = {
   handleViolation: vi.fn().mockResolvedValue(undefined),

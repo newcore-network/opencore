@@ -4,11 +4,11 @@ import {
   registeredCommands,
   registeredNetEvents,
 } from '../../tests/mocks/citizenfx'
-import { CommandService } from '../../src/server/services/command.service'
-import { PlayerService } from '../../src/server/services/player.service'
-import { CommandNetworkController } from '../../src/server/controllers/command.controller'
-import { DefaultSecurityHandler } from '../../src/server/services/default/default-security.handler'
-import { NetEventProcessor } from '../../src/server/system/processors/netEvent.processor'
+import { CommandService } from '../../src/runtime/server/services/command.service'
+import { PlayerService } from '../../src/runtime/server/services/player.service'
+import { CommandNetworkController } from '../../src/runtime/server/controllers/command.controller'
+import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
 import { TickSimulator } from '../utils/tick-simulator'
 import { PlayerFactory } from '../utils/player-factory'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
