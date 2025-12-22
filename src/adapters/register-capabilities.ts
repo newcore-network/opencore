@@ -14,6 +14,9 @@ import { NodeExports } from './node/node-exports'
 import { NodeNetTransport } from './node/node-net-transport'
 import { NodeResourceInfo } from './node/node-resourceinfo'
 import { NodeTick } from './node/node-tick'
+import { IPlayerInfo } from './contracts/IPlayerInfo'
+import { NodePlayerInfo } from './node/node-playerinfo'
+import { FiveMPlayerInfo } from './fivem/fivem-playerinfo'
 
 export type Platform = 'fivem' | 'node'
 
@@ -45,6 +48,8 @@ export function registerServerCapabilities(platform?: Platform): void {
     if (!di.isRegistered(IResourceInfo as any))
       di.registerSingleton(IResourceInfo as any, NodeResourceInfo)
     if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, NodeTick)
+    if (!di.isRegistered(IPlayerInfo as any))
+      di.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
   } else {
     // Register FiveM implementations
     if (!di.isRegistered(INetTransport as any))
@@ -55,5 +60,7 @@ export function registerServerCapabilities(platform?: Platform): void {
     if (!di.isRegistered(IResourceInfo as any))
       di.registerSingleton(IResourceInfo as any, FiveMResourceInfo)
     if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, FiveMTick)
+    if (!di.isRegistered(IPlayerInfo as any))
+      di.registerSingleton(IPlayerInfo as any, FiveMPlayerInfo)
   }
 }

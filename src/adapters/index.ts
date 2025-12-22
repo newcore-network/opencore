@@ -9,6 +9,7 @@ export * from './contracts/IEngineEvents'
 export * from './contracts/IExports'
 export * from './contracts/IResourceInfo'
 export * from './contracts/ITick'
+export * from './contracts/IPlayerInfo'
 
 // Database adapters
 export { OxMySQLAdapter } from './database/oxmysql.adapter'

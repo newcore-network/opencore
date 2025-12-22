@@ -1,3 +1,4 @@
+import { type IPlayerInfo } from '../../../adapters'
 import type { Vector3 } from '../../../kernel/utils'
 import type { LinkedID, PlayerSession } from '../services/core/player.service'
 
@@ -20,7 +21,10 @@ export class Player {
    *
    * @param session - The internal session data structure holding ID and metadata.
    */
-  constructor(private readonly session: PlayerSession) {}
+  constructor(
+    private readonly session: PlayerSession,
+    private readonly playerInfo: IPlayerInfo,
+  ) {}
 
   /**
    * The numeric FiveM Server ID (Source) of the player.
@@ -50,7 +54,7 @@ export class Player {
    * The display name of the player (Steam name or FiveM username).
    */
   get name(): string {
-    return GetPlayerName(this.clientIDStr)
+    return this.playerInfo.getPlayerName(this.clientID) ?? `Player#${this.clientID}`
   }
 
   /**

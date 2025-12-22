@@ -1,7 +1,8 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import type { UUIDTypes } from 'uuid'
 import { Player } from '../../entities'
 import { PlayerServiceContract } from '../contracts/player.service.contract'
+import { IPlayerInfo } from '../../../../adapters'
 
 /**
  * Type representing a linked account identifier. This come from your persistence layer
@@ -32,6 +33,10 @@ export class PlayerService extends PlayerServiceContract {
    */
   private playersByClient = new Map<number, Player>()
 
+  constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {
+    super()
+  }
+
   /**
    * Initializes a new player session for a connecting client.
    *
@@ -49,7 +54,7 @@ export class PlayerService extends PlayerServiceContract {
       meta: {},
     }
 
-    const player = new Player(session)
+    const player = new Player(session, this.playerInfo)
     this.playersByClient.set(clientID, player)
 
     return player
