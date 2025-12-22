@@ -44,40 +44,61 @@ pnpm bench:all          # Full benchmark suite with reports
 
 ## Architectural Layers
 
-### 1. Core (Kernel) — Engine-Agnostic Infrastructure
+OpenCore follows a **Ports & Adapters (Hexagonal) Architecture**
+applied to a multiplayer runtime.
 
-Located in `src/system/` and `src/shared/`. Contains:
+### 1. Kernel — Engine-Agnostic Infrastructure
 
-- Dependency Injection container (tsyringe)
-- Decorators and metadata scanning (`MetadataScanner`)
-- Internal event bus
-- Logging and configuration
-- Shared contracts and value objects
+Located in `src/kernel/`.
 
-**The Core must never depend on FiveM globals or APIs.**
+Contains:
+
+- Dependency Injection container
+- Structural decorators and metadata definitions
+- Metadata scanning utilities
+- Core contracts and value objects
+- Logging and configuration primitives
+
+The Kernel defines **system rules**, not execution.
+It must never depend on runtime state, execution side, or engine APIs.
+
+**The Kernel must never depend on FiveM globals or APIs.**
 
 ### 2. Runtime — Multiplayer Execution Model
 
-Located in `src/server/` and `src/client/` (non-adapter parts). Contains:
+Located in `src/runtime/`.
 
-- Player sessions and lifecycle
+Contains:
+
+- Session and lifecycle management
 - Controllers and processors
-- Command routing and validation
-- Security enforcement (guards, throttling, state requirements)
-- Internal services and managers
+- Runtime-level decorators (event bindings, lifecycle hooks)
+- Security enforcement and validation
+- Execution context (server/client)
 
-The Runtime defines **what the server does**, but not **how the engine does it**.
+The Runtime decides **what runs**, but not **how it runs**.
+It is engine-agnostic and depends only on declared platform capabilities.
 
-### 3. Adapter (FiveM) — Platform-Specific Integration
+### 3. Adapters — Platform Integration
 
-The FiveM adapter:
+Located in `src/adapters/` or external repositories.
 
-- Translates engine events into runtime events
-- Wraps FiveM natives (`emitNet`, `onNet`, `source`, etc.)
-- Implements networking, scheduling, exports, and engine hooks
-- Is the **only place** where FiveM globals and natives are allowed
+Adapters implement platform-specific capabilities such as:
 
-**Adapters contain no gameplay logic and no business rules.**
+- Networking
+- Engine lifecycle events
+- Exports
+- Resource metadata
+
+The runtime never auto-detects the platform.
+The adapter is selected explicitly at bootstrap time.
+
+Example adapters:
+
+- FiveM adapter (external package)
+- Node adapter (internal, for tests and simulation)
+
+Adapters contain no gameplay logic and no business rules.
 
 ## Operating Modes
 

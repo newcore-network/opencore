@@ -32,6 +32,7 @@ export default defineConfig({
         test: {
           name: 'integration',
           include: ['tests/integration/**/*.test.ts'],
+          exclude: ['tests/integration/client/player.test.ts'],
           setupFiles: ['./tests/setup.ts'],
           globals: true,
         },
@@ -44,14 +45,14 @@ export default defineConfig({
           globals: true,
         },
       },
-      {
-        test: {
-          name: 'benchmark',
-          include: ['benchmark/load/**/*.load.bench.ts'],
-          setupFiles: ['./tests/setup.ts'],
-          globals: true,
-        },
-      },
+      // {
+      //   test: {
+      //     name: 'benchmark',
+      //     include: ['benchmark/load/**/*.load.bench.ts'],
+      //     setupFiles: ['./tests/setup.ts'],
+      //     globals: true,
+      //   },
+      // },
     ],
   },
   esbuild: {

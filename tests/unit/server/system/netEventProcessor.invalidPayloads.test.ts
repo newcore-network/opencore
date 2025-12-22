@@ -7,6 +7,8 @@ import { NetEventProcessor } from '../../../../src/runtime/server/system/process
 import { SecurityHandlerContract } from '../../../../src/runtime/server/templates/security/security-handler.contract'
 import { NetEventSecurityObserverContract } from '../../../../src/runtime/server/templates/security/net-event-security-observer.contract'
 import { INetTransport, NetEventContext } from '../../../../src/adapters'
+import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
+import { beforeEach } from 'vitest'
 
 const securityHandler: SecurityHandlerContract = {
   handleViolation: vi.fn().mockResolvedValue(undefined),
@@ -30,9 +32,15 @@ const netAbstract: INetTransport = {
     ),
 }
 
+const playerInfo = new NodePlayerInfo()
+
 describe('NetEventProcessor invalid payload resilience', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
-    const playerService = new PlayerService()
+    const playerService = new PlayerService(playerInfo)
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
@@ -73,7 +81,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash even if handleViolation throws', async () => {
-    const playerService = new PlayerService()
+    const playerService = new PlayerService(playerInfo)
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 

@@ -148,6 +148,7 @@ export class ConsoleTransport implements LogTransport {
 
     // Output context if present (excluding source and domain which are already shown)
     if (context) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { source, domain: _, ...rest } = context
       if (Object.keys(rest).length > 0) {
         console.debug(`${dim}  └─ context:${reset}`, rest)

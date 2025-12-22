@@ -304,6 +304,7 @@ export class PedService {
     const peds: number[] = []
     const playerPed = PlayerPedId()
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [handle, _] = FindFirstPed(0)
     let ped = handle
 

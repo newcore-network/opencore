@@ -189,6 +189,7 @@ export class BufferedTransport implements LogTransport {
 
   private cleanContext(context?: Record<string, unknown>): Record<string, unknown> {
     if (!context) return {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { source, domain, ...rest } = context
     return rest
   }

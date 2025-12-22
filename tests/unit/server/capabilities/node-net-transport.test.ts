@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
 

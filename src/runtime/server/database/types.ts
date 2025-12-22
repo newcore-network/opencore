@@ -72,4 +72,5 @@ export type TransactionInput = TransactionQuery[] | TransactionQueryTuple[] | st
 /**
  * Database adapter factory function type
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 export type DatabaseAdapterFactory = () => import('./database.contract').DatabaseContract

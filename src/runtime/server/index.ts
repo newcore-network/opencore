@@ -1,5 +1,5 @@
 // Framework modules
-export * from './core'
+export { init } from './core'
 export * from './runtime'
 export * from './decorators'
 export * from './templates'

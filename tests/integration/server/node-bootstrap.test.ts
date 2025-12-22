@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { resetContainer } from '../../helpers/di.helper'
 import { initServer } from '../../../src/runtime/server/bootstrap'

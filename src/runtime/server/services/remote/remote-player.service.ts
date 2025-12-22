@@ -1,10 +1,15 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { PlayerServiceContract } from '../contracts/player.service.contract'
+import { IPlayerInfo } from '../../../../adapters'
 
 @injectable()
 export class RemotePlayerService extends PlayerServiceContract {
+  constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {
+    super()
+  }
+
   private get core() {
     const { coreResourceName } = getRuntimeContext()
     return (exports as any)[coreResourceName]
@@ -15,10 +20,7 @@ export class RemotePlayerService extends PlayerServiceContract {
    * methods that require internal state will fail or must be adapted
    */
   getByClient(clientID: number): Player | null {
-    if (GetPlayerName(clientID.toString())) {
-      return new Player({ clientID, meta: {} })
-    }
-    return null
+    return new Player({ clientID, meta: {} }, this.playerInfo)
   }
 
   getAll(): Player[] {
@@ -26,7 +28,7 @@ export class RemotePlayerService extends PlayerServiceContract {
     const numPlayers = GetNumPlayerIndices()
     for (let i = 0; i < numPlayers; i++) {
       const src = parseInt(GetPlayerFromIndex(i))
-      players.push(new Player({ clientID: src, meta: {} }))
+      players.push(new Player({ clientID: src, meta: {} }, this.playerInfo))
     }
     return players
   }
