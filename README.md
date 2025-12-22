@@ -1,4 +1,4 @@
-# OpenCore Framework (v1.0.0-alpha.1)
+# OpenCore Framework (v0.1.0-alpha.2)
 
 OpenCore is a TypeScript multiplayer runtime framework targeting FiveM via an adapter.
 
