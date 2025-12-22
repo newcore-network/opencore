@@ -1,4 +1,3 @@
-// tests/unit/server/system/processors/export.processor.test.ts
 import 'reflect-metadata'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ExportProcessor } from '../../../../../src/runtime/server/system/processors/export.processor'
