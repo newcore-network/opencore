@@ -39,7 +39,7 @@ export class NetEventProcessor implements DecoratorProcessor {
     )
     if (!result) return
     const { handler, handlerName, proto } = result
-    const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) === true
+    const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) as boolean
     this.netTransport.onNet(metadata.eventName, async (ctx, ...args: any[]) => {
       const clientId = ctx.clientId
       const player = this.playerService.getByClient(clientId)
@@ -51,7 +51,6 @@ export class NetEventProcessor implements DecoratorProcessor {
         })
         return
       }
-
       // ═══════════════════════════════════════════════════════════════
       // SECURE BY DEFAULT: Require authentication unless @Public()
       // ═══════════════════════════════════════════════════════════════

@@ -34,6 +34,7 @@ export interface CommandMetadata extends CommandConfig {
   paramTypes: any
   paramNames: string[]
   expectsPlayer: boolean
+  isPublic?: boolean
 }
 
 type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)

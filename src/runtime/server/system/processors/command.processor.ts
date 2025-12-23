@@ -11,6 +11,19 @@ export class CommandProcessor implements DecoratorProcessor {
 
   process(target: any, methodName: string, metadata: CommandMetadata) {
     const handler = target[methodName].bind(target)
-    this.commandService.register(metadata, handler)
+
+    // Check if method has @Public decorator
+    const proto = Object.getPrototypeOf(target)
+    const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) as
+      | boolean
+      | undefined
+
+    // Enrich metadata with isPublic flag
+    const enrichedMetadata: CommandMetadata = {
+      ...metadata,
+      isPublic: isPublic ?? false,
+    }
+
+    this.commandService.register(enrichedMetadata, handler)
   }
 }

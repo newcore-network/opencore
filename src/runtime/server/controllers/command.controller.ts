@@ -1,7 +1,7 @@
 import { OnNet } from '../decorators/onNet'
 import { CommandService } from '../services/command.service'
 import { Player } from '../entities'
-import { Controller } from '../decorators'
+import { Controller, Public } from '../decorators'
 import { loggers } from '../../../kernel/shared/logger'
 import { AppError } from '../../../kernel/utils'
 
@@ -9,6 +9,7 @@ import { AppError } from '../../../kernel/utils'
 export class CommandNetworkController {
   constructor(private readonly commandService: CommandService) {}
 
+  @Public()
   @OnNet('core:execute-command')
   async onCommandReceived(player: Player, command: string, args: string[]) {
     try {

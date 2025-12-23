@@ -2,6 +2,7 @@ import type { Server } from '../../..'
 import { di } from '../../../kernel/di/container'
 import { AccessControlService } from '../services'
 import { loggers } from '../../../kernel/shared/logger'
+import { AppError } from '../../../kernel'
 
 export interface GuardOptions {
   /**
@@ -75,10 +76,18 @@ export function Guard(options: GuardOptions) {
       }
 
       const accessControl = di.resolve(AccessControlService)
-      await accessControl.enforce(player, {
-        minRank: options.rank,
-        permission: options.permission,
-      })
+      try {
+        await accessControl.enforce(player, {
+          minRank: options.rank,
+          permission: options.permission,
+        })
+      } catch (error) {
+        // Send user-friendly error message for authorization failures
+        if (error instanceof AppError && error.code === 'AUTH:PERMISSION_DENIED') {
+          player.send(error.message, 'error')
+        }
+        throw error
+      }
       return originalMethod.apply(this, args)
     }
     // no need a defined metadata key, as we won't read it later

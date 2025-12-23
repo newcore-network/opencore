@@ -11,7 +11,6 @@ import { Player } from '../entities'
  *
  * @remarks
  * Controllers declare commands via {@link Command}. During bootstrap the framework collects
- * command metadata and calls {@link CommandService.register}.
  *
  * At execution time, this service validates and coerces arguments based on the command schema
  * (explicit Zod schema or auto-generated schema from parameter types).
@@ -20,7 +19,10 @@ import { Player } from '../entities'
 export class CommandService {
   constructor() {}
 
-  private commands = new Map<string, { meta: CommandMetadata; handler: Function }>()
+  private commands = new Map<
+    string,
+    { meta: CommandMetadata; handler: Function; isPublic: boolean }
+  >()
 
   /**
    * Registers a command handler.
@@ -34,14 +36,25 @@ export class CommandService {
         command: meta.command,
       })
     }
-    this.commands.set(meta.command.toLowerCase(), { meta, handler })
-    loggers.command.debug(`Registered: /${meta.command}${meta.schema ? ' [Validated]' : ''}`)
+
+    this.commands.set(meta.command.toLowerCase(), {
+      meta,
+      handler,
+      isPublic: meta.isPublic ?? false,
+    })
+
+    const publicFlag = meta.isPublic ? ' [Public]' : ''
+    const schemaFlag = meta.schema ? ' [Validated]' : ''
+    loggers.command.debug(`Registered: /${meta.command}${publicFlag}${schemaFlag}`)
   }
 
   /**
    * Executes a registered command.
    *
    * @remarks
+   * **Security**: Commands require authentication by default unless marked with @Public().
+   * Unauthenticated attempts are blocked gracefully with player notification.
+   *
    * Argument parsing behavior depends on the schema:
    * - Zod object schema: maps raw args to parameter names.
    * - Zod tuple schema: validates positional args.
@@ -58,7 +71,22 @@ export class CommandService {
     if (!entry)
       throw new AppError('COMMAND:NOT_FOUND', `Command not found: ${commandName}`, 'client')
 
-    const { meta, handler } = entry
+    const { meta, handler, isPublic } = entry
+
+    // ═══════════════════════════════════════════════════════════════
+    // SECURE BY DEFAULT: Require authentication unless @Public()
+    // ═══════════════════════════════════════════════════════════════
+    if (!isPublic) {
+      if (!player.accountID) {
+        loggers.security.warn(`Unauthenticated command attempt blocked`, {
+          command: commandName,
+          clientId: player.clientID,
+        })
+        player.emit('core:auth:required', { command: commandName })
+        player.send('You must be authenticated to use this command', 'error')
+        return
+      }
+    }
 
     // Delete Player from args, player is the first argument for convention
     const paramNames = meta.expectsPlayer ? meta.paramNames.slice(1) : meta.paramNames
@@ -159,6 +187,7 @@ export class CommandService {
       command: c.meta.command,
       description: c.meta.description ?? '',
       usage: c.meta.usage ?? '',
+      isPublic: c.isPublic,
     }))
   }
 }

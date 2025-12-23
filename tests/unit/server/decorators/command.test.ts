@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
 import { Command, type CommandMetadata } from '../../../../src/runtime/server/decorators/command'
+import { Public } from '../../../../src/runtime/server/decorators/public'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 import { Player } from '../../../../src/runtime/server/entities/player'
 
@@ -417,6 +418,75 @@ describe('@Command decorator', () => {
       expect(() => {
         Command('bad')(InvalidController.prototype, 'bad', descriptor as any)
       }).toThrow(/first parameter must be Player/i)
+    })
+  })
+
+  describe('@Command with @Public', () => {
+    it('should preserve @Public metadata when used with @Command', () => {
+      class TestController {
+        @Public()
+        @Command('public-cmd')
+        publicCommand(_player: Player) {}
+      }
+
+      const hasPublic = Reflect.getMetadata(
+        METADATA_KEYS.PUBLIC,
+        TestController.prototype,
+        'publicCommand',
+      )
+
+      const commandMeta = Reflect.getMetadata(
+        METADATA_KEYS.COMMAND,
+        TestController.prototype,
+        'publicCommand',
+      ) as CommandMetadata
+
+      expect(hasPublic).toBe(true)
+      expect(commandMeta).toBeDefined()
+      expect(commandMeta.command).toBe('public-cmd')
+    })
+
+    it('should not have @Public metadata by default', () => {
+      class TestController {
+        @Command('private-cmd')
+        privateCommand(_player: Player) {}
+      }
+
+      const hasPublic = Reflect.getMetadata(
+        METADATA_KEYS.PUBLIC,
+        TestController.prototype,
+        'privateCommand',
+      )
+
+      expect(hasPublic).toBeUndefined()
+    })
+
+    it('should work with full command config and @Public', () => {
+      class TestController {
+        @Public()
+        @Command({
+          command: 'help',
+          description: 'Show help',
+          usage: '/help',
+        })
+        helpCommand(_player: Player) {}
+      }
+
+      const hasPublic = Reflect.getMetadata(
+        METADATA_KEYS.PUBLIC,
+        TestController.prototype,
+        'helpCommand',
+      )
+
+      const commandMeta = Reflect.getMetadata(
+        METADATA_KEYS.COMMAND,
+        TestController.prototype,
+        'helpCommand',
+      ) as CommandMetadata
+
+      expect(hasPublic).toBe(true)
+      expect(commandMeta.command).toBe('help')
+      expect(commandMeta.description).toBe('Show help')
     })
   })
 })
