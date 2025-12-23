@@ -1,12 +1,12 @@
 import { Controller } from '../decorators'
 import { Export } from '../decorators/export'
-import { PlayerServiceContract } from '../services/contracts/player.service.contract'
+import { PlayerDirectoryContract } from '../services/contracts/player.service.contract'
 import { PrincipalProviderContract } from '../templates'
 
 @Controller()
 export class PrincipalExportController {
   constructor(
-    private readonly playerService: PlayerServiceContract,
+    private readonly playerService: PlayerDirectoryContract,
     private readonly principalProvider: PrincipalProviderContract,
   ) {}
 

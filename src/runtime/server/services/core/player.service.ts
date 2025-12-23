@@ -1,14 +1,15 @@
 import { inject, injectable } from 'tsyringe'
 import type { UUIDTypes } from 'uuid'
 import { Player } from '../../entities'
-import { PlayerServiceContract } from '../contracts/player.service.contract'
+import { PlayerDirectoryContract } from '../contracts/player.service.contract'
 import { IPlayerInfo } from '../../../../adapters'
+import { PlayerSessionLifecycleContract } from '../contracts/player-session-lifecycle.contract'
 
 /**
  * Type representing a linked account identifier. This come from your persistence layer
  * and is used to associate a Player session with their stored data.
  */
-export type LinkedID = string | UUIDTypes
+export type LinkedID = string | UUIDTypes | number
 
 export interface PlayerSession {
   clientID: number
@@ -27,15 +28,13 @@ export interface PlayerSession {
  * to Core `Player` entities.
  */
 @injectable()
-export class PlayerService extends PlayerServiceContract {
+export class PlayerService implements PlayerDirectoryContract, PlayerSessionLifecycleContract {
   /**
    * Internal map storing active player sessions indexed by their FiveM client ID (source).
    */
   private playersByClient = new Map<number, Player>()
 
-  constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {
-    super()
-  }
+  constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {}
 
   /**
    * Initializes a new player session for a connecting client.
@@ -48,15 +47,23 @@ export class PlayerService extends PlayerServiceContract {
    * @returns The newly created `Player` instance.
    */
   bind(clientID: number, identifiers?: PlayerSession['identifiers']): Player {
+    console.log('[DEBUG][PlayerService instance]', this)
     const session: PlayerSession = {
       clientID,
       identifiers,
       meta: {},
     }
+    console.log('DEBUG;' + clientID + ' and type of' + typeof clientID)
 
     const player = new Player(session, this.playerInfo)
     this.playersByClient.set(clientID, player)
-
+    console.log(
+      'DEBUG; map entries after bind:',
+      Array.from(this.playersByClient.entries()).map(([id, player]) => ({
+        clientID: id,
+        player: player,
+      })),
+    )
     return player
   }
 
@@ -83,10 +90,8 @@ export class PlayerService extends PlayerServiceContract {
    *
    * @param clientID - The FiveM server ID of the player disconnecting.
    */
-  unbindByClient(clientID: number) {
-    const player = this.playersByClient.get(clientID)
-    if (!player) return
-
+  unbind(clientID: number) {
+    console.log(`DEBUG; UNBINED PLAYER ${clientID}`)
     this.playersByClient.delete(clientID)
   }
 
@@ -97,7 +102,21 @@ export class PlayerService extends PlayerServiceContract {
    * @returns The `Player` instance if found, or `null` if the session does not exist.
    */
   getByClient(clientID: number): Player | null {
-    return this.playersByClient.get(clientID) ?? null
+    const player = this.playersByClient.get(clientID)
+    if (!player) {
+      console.log('[DEBUG][PlayerService instance]', this)
+      console.log(`DEBUG; not found ???, was not id(${clientID})`)
+      console.log(
+        'DEBUG; map entries:',
+        Array.from(this.playersByClient.entries()).map(([id, player]) => ({
+          clientID: id,
+          player: player,
+        })),
+      )
+      console.log('DEBUG; end')
+      return null
+    }
+    return player
   }
 
   /**

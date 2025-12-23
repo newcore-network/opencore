@@ -1,6 +1,6 @@
 import type { Player } from '../../entities'
 
-export abstract class PlayerServiceContract {
+export abstract class PlayerDirectoryContract {
   abstract getByClient(clientID: number): Player | null
   abstract getAll(): Player[]
   abstract getPlayerId(clientID: number): string | null

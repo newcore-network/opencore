@@ -5,11 +5,12 @@ import { CommandService } from './command.service'
 import { HttpService } from './http/http.service'
 import { PlayerService } from './core/player.service'
 import { PlayerPersistenceService } from './persistence.service'
-import { PlayerServiceContract } from './contracts/player.service.contract'
+import { PlayerDirectoryContract } from './contracts/player.service.contract'
 import { RemotePlayerService } from './remote/remote-player.service'
 import { PrincipalProviderContract } from '../templates'
 import { RemotePrincipalProvider } from './remote/remote-principal.provider'
 import type { RuntimeContext } from '../runtime'
+import { PlayerSessionLifecycleContract } from './contracts/player-session-lifecycle.contract'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -46,10 +47,11 @@ export function registerServicesServer(ctx: RuntimeContext) {
 
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {
-      di.registerSingleton(PlayerServiceContract as any, PlayerService)
-      di.registerSingleton(PlayerService, PlayerService)
+      di.registerSingleton(PlayerService)
+      di.register(PlayerDirectoryContract as any, { useToken: PlayerService })
+      di.register(PlayerSessionLifecycleContract as any, { useToken: PlayerService })
     } else {
-      di.registerSingleton(PlayerServiceContract as any, RemotePlayerService)
+      di.registerSingleton(PlayerDirectoryContract as any, RemotePlayerService)
     }
   }
 

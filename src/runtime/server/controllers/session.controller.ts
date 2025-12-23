@@ -2,21 +2,24 @@ import { loggers } from '../../../kernel/shared'
 import { emitFrameworkEvent } from '../bus/core-event-bus'
 import { Controller } from '../decorators'
 import { OnFiveMEvent } from '../decorators/onFiveMEvent'
-import { PlayerService } from '../services'
+import { PlayerDirectoryContract } from '../services'
+import { PlayerSessionLifecycleContract } from '../services/contracts/player-session-lifecycle.contract'
 import { PlayerPersistenceService } from '../services/persistence.service'
 
 @Controller()
 export class SessionController {
   constructor(
-    private readonly playerService: PlayerService,
+    private readonly playerSessionLifecycle: PlayerSessionLifecycleContract,
+    private readonly playerDirectory: PlayerDirectoryContract,
     private readonly persistance: PlayerPersistenceService,
   ) {}
 
   @OnFiveMEvent('playerJoining')
   public async onPlayerJoining(): Promise<void> {
-    const clientId = source
+    const clientId = Number(source)
+    console.log('DEBUG;' + clientId + ' and type of' + typeof clientId)
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
-    const player = this.playerService.bind(clientId, { license })
+    const player = this.playerSessionLifecycle.bind(clientId, { license })
 
     loggers.session.info(`Player session created`, {
       clientId,
@@ -28,7 +31,7 @@ export class SessionController {
     emitFrameworkEvent('core:playerSessionCreated', { clientId, license })
 
     setImmediate(() => {
-      const currentPlayer = this.playerService.getByClient(clientId)
+      const currentPlayer = this.playerDirectory.getByClient(clientId)
       if (!currentPlayer) return
       emitFrameworkEvent('core:playerFullyConnected', { clientId, license })
     })
@@ -37,13 +40,13 @@ export class SessionController {
   @OnFiveMEvent('playerDropped')
   public async onPlayerDropped(): Promise<void> {
     const clientId = Number(source)
-    const player = this.playerService.getByClient(clientId)
+    const player = this.playerDirectory.getByClient(clientId)
 
     if (player) {
       await this.persistance.handleSessionSave(player)
     }
 
-    this.playerService.unbindByClient(clientId)
+    this.playerSessionLifecycle.unbind(clientId)
     emitFrameworkEvent('core:playerSessionDestroyed', { clientId })
     loggers.session.info(`Player session destroyed`, { clientId })
   }

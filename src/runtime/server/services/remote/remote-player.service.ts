@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import { PlayerServiceContract } from '../contracts/player.service.contract'
+import { PlayerDirectoryContract } from '../contracts/player.service.contract'
 import { IPlayerInfo } from '../../../../adapters'
 
 /**
@@ -13,7 +13,7 @@ import { IPlayerInfo } from '../../../../adapters'
  * instances for convenience.
  */
 @injectable()
-export class RemotePlayerService extends PlayerServiceContract {
+export class RemotePlayerService extends PlayerDirectoryContract {
   constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {
     super()
   }

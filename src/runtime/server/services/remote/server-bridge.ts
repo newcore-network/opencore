@@ -1,7 +1,7 @@
 import { di } from '../../../../kernel/di/container'
 import { _mode } from '../../core'
 import { getRuntimeContext } from '../../runtime'
-import { PlayerServiceContract } from '../contracts/player.service.contract'
+import { PlayerDirectoryContract } from '../contracts/player.service.contract'
 import { PrincipalProviderContract } from '../../templates'
 
 /**
@@ -103,8 +103,8 @@ function getCoreExports(): CoreExports {
  * Gets the player service from the dependency injection container
  * @returns An instance of PlayerServiceContract
  */
-function getPlayerService(): PlayerServiceContract {
-  return di.resolve(PlayerServiceContract as any) as PlayerServiceContract
+function getPlayerService(): PlayerDirectoryContract {
+  return di.resolve(PlayerDirectoryContract as any) as PlayerDirectoryContract
 }
 
 /**

@@ -2,13 +2,13 @@ import { RGB } from '../../../kernel/utils'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { ChatService } from '../services/chat.service'
-import { PlayerServiceContract } from '../services/contracts/player.service.contract'
+import { PlayerDirectoryContract } from '../services/contracts/player.service.contract'
 
 @Controller()
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
-    private readonly playerService: PlayerServiceContract,
+    private readonly playerService: PlayerDirectoryContract,
   ) {}
 
   @Export()

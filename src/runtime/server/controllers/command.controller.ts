@@ -13,7 +13,9 @@ export class CommandNetworkController {
   async onCommandReceived(player: Player, command: string, args: string[]) {
     try {
       if (command.startsWith('/')) command = command.slice(1)
-
+      if (!player.clientID || player.clientID === null || player.clientID === undefined) {
+        console.log('DEBUG; Player entity not received in core:execute-command')
+      }
       if (args.length > 10 || !/^[a-zA-Z0-9:_-]+$/.test(command)) {
         loggers.command.warn(`Rejected suspicious command: ${command}`, {
           playerId: player.clientID,

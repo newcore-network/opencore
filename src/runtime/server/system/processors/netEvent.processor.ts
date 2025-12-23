@@ -1,6 +1,6 @@
 import { injectable, inject } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { PlayerServiceContract } from '../../services/contracts/player.service.contract'
+import { PlayerDirectoryContract } from '../../services/contracts/player.service.contract'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { NetEventOptions } from '../../decorators'
 import { SecurityHandlerContract } from '../../templates/security/security-handler.contract'
@@ -24,7 +24,7 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    @inject(PlayerServiceContract as any) private playerService: PlayerServiceContract,
+    @inject(PlayerDirectoryContract as any) private playerService: PlayerDirectoryContract,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
