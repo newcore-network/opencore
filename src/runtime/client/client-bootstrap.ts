@@ -110,6 +110,11 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   const mode: ClientMode = options.mode ?? 'CORE'
   const resourceName = getCurrentResourceNameSafe()
 
+  // Register system processors early (needed for MetadataScanner)
+  // These processors are safe - they just process metadata, they don't register event handlers
+  // Each resource bundle needs its own copy registered in its DI container
+  registerSystemClient()
+
   // Check if already initialized
   const existingContext = getClientRuntimeContext()
   if (existingContext?.isInitialized) {
@@ -137,12 +142,8 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   // Register all services in DI (available in all modes)
   registerServices()
 
-  // Register system processors (only in CORE mode)
-  if (mode === 'CORE') {
-    registerSystemClient()
-  }
-
-  // Bootstrap services
+  // Bootstrap services (only in CORE mode)
+  // This is where services that register global event handlers are initialized
   await bootstrapServices(mode)
 
   // Player loader (only in CORE mode)
