@@ -121,6 +121,10 @@ export class Player {
     this.emit('opencore:spawner:teleport', vector)
   }
 
+  spawn(vector: Vector3, model = 'mp_m_freemode_01') {
+    this.emit('opencore:spawner:spawn', { position: vector, model })
+  }
+
   /**
    * Disconnects the player from the server.
    *
