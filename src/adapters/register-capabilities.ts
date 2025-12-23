@@ -4,19 +4,7 @@ import { IEngineEvents } from './contracts/IEngineEvents'
 import { IExports } from './contracts/IExports'
 import { IResourceInfo } from './contracts/IResourceInfo'
 import { ITick } from './contracts/ITick'
-import { FiveMEngineEvents } from './fivem/fivem-engine-events'
-import { FiveMExports } from './fivem/fivem-exports'
-import { FiveMNetTransport } from './fivem/fivem-net-transport'
-import { FiveMResourceInfo } from './fivem/fivem-resourceinfo'
-import { FiveMTick } from './fivem/fivem-tick'
-import { NodeEngineEvents } from './node/node-engine-events'
-import { NodeExports } from './node/node-exports'
-import { NodeNetTransport } from './node/node-net-transport'
-import { NodeResourceInfo } from './node/node-resourceinfo'
-import { NodeTick } from './node/node-tick'
 import { IPlayerInfo } from './contracts/IPlayerInfo'
-import { NodePlayerInfo } from './node/node-playerinfo'
-import { FiveMPlayerInfo } from './fivem/fivem-playerinfo'
 
 export type Platform = 'fivem' | 'node'
 
@@ -35,10 +23,27 @@ function detectPlatform(): Platform {
  * Registers platform-specific capability implementations
  * @param platform - Optional platform override. If not provided, platform is auto-detected.
  */
-export function registerServerCapabilities(platform?: Platform): void {
+export async function registerServerCapabilities(platform?: Platform): Promise<void> {
   const targetPlatform = platform ?? detectPlatform()
 
   if (targetPlatform === 'node') {
+    // Dynamically import Node.js implementations only when needed
+    const [
+      { NodeNetTransport },
+      { NodeEngineEvents },
+      { NodeExports },
+      { NodeResourceInfo },
+      { NodeTick },
+      { NodePlayerInfo },
+    ] = await Promise.all([
+      import('./node/node-net-transport'),
+      import('./node/node-engine-events'),
+      import('./node/node-exports'),
+      import('./node/node-resourceinfo'),
+      import('./node/node-tick'),
+      import('./node/node-playerinfo'),
+    ])
+
     // Register Node.js implementations
     if (!di.isRegistered(INetTransport as any))
       di.registerSingleton(INetTransport as any, NodeNetTransport)
@@ -51,6 +56,23 @@ export function registerServerCapabilities(platform?: Platform): void {
     if (!di.isRegistered(IPlayerInfo as any))
       di.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
   } else {
+    // Dynamically import FiveM implementations only when needed
+    const [
+      { FiveMNetTransport },
+      { FiveMEngineEvents },
+      { FiveMExports },
+      { FiveMResourceInfo },
+      { FiveMTick },
+      { FiveMPlayerInfo },
+    ] = await Promise.all([
+      import('./fivem/fivem-net-transport'),
+      import('./fivem/fivem-engine-events'),
+      import('./fivem/fivem-exports'),
+      import('./fivem/fivem-resourceinfo'),
+      import('./fivem/fivem-tick'),
+      import('./fivem/fivem-playerinfo'),
+    ])
+
     // Register FiveM implementations
     if (!di.isRegistered(INetTransport as any))
       di.registerSingleton(INetTransport as any, FiveMNetTransport)

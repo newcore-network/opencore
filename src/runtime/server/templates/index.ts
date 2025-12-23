@@ -1,8 +1,11 @@
 // Abstract templates and contracts
-export * from './security/principal-provider.contract'
 export * from './repository'
 export * from './persistence'
 export * from './auth/auth-provider.contract'
+
+export * from './security/principal-provider.contract'
+export * from './security/net-event-security-observer.contract'
+export * from './security/security-handler.contract'
 
 // Types related to security
 export type * from './security/permission.types'

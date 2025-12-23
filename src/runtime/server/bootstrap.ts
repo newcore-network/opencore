@@ -98,7 +98,7 @@ export async function initServer(options: ServerRuntimeOptions) {
     scope: getFrameworkModeScope(ctx.mode),
   })
 
-  registerServerCapabilities()
+  await registerServerCapabilities()
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
   registerSystemServer(ctx)

@@ -4,8 +4,8 @@ import { registerServerCapabilities } from '../../../../src/adapters/register-ca
 import { IEngineEvents, IExports, INetTransport, IResourceInfo } from '../../../../src/adapters'
 
 describe('registerServerCapabilities', () => {
-  it('registers and resolves capabilities', () => {
-    registerServerCapabilities()
+  it('registers and resolves capabilities', async () => {
+    await registerServerCapabilities()
 
     expect(di.resolve(INetTransport as any)).toBeDefined()
     expect(di.resolve(IEngineEvents as any)).toBeDefined()
