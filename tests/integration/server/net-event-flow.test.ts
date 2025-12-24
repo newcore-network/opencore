@@ -1,15 +1,15 @@
 import 'reflect-metadata'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { z } from 'zod'
-import { NetEventProcessor } from '../../../src/server/system/processors/netEvent.processor'
-import { NodeNetTransport } from '../../../src/server/capabilities/node/node-net-transport'
-import { PlayerServiceContract } from '../../../src/server/services/contracts/player.service.contract'
-import { SecurityHandlerContract } from '../../../src/server/templates/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../src/server/templates/security/net-event-security-observer.contract'
-import { OnNet } from '../../../src/server/decorators/onNet'
-import { Public } from '../../../src/server/decorators/public'
-import { METADATA_KEYS } from '../../../src/server/system/metadata-server.keys'
-import { Player } from '../../../src/server/entities'
+import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
+import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
+import { PlayerDirectoryContract } from '../../../src/runtime/server/services/contracts/player.service.contract'
+import { SecurityHandlerContract } from '../../../src/runtime/server/templates/security/security-handler.contract'
+import { NetEventSecurityObserverContract } from '../../../src/runtime/server/templates/security/net-event-security-observer.contract'
+import { OnNet } from '../../../src/runtime/server/decorators/onNet'
+import { Public } from '../../../src/runtime/server/decorators/public'
+import { METADATA_KEYS } from '../../../src/runtime/server/system/metadata-server.keys'
+import { Player } from '../../../src/runtime/server/entities'
 
 /**
  * Creates a mock Player instance with configurable session state.
@@ -45,7 +45,7 @@ function waitForEventProcessing(): Promise<void> {
 
 describe('NetEventProcessor Node Runtime Flow', () => {
   let transport: NodeNetTransport
-  let mockPlayerService: PlayerServiceContract
+  let mockPlayerService: PlayerDirectoryContract
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
   let processor: NetEventProcessor

@@ -1,360 +1,223 @@
-# OpenCore Framework - Unstable ALPHA ❗
+# OpenCore Framework (v0.1.0-alpha.2)
 
-> **The robust TypeScript Engine for FiveM.**
-> Built on strong OOP principles, Layered Architecture, and Security-first design.
-> _Stop writing scripts; start engineering gameplay._
+OpenCore is a TypeScript multiplayer runtime framework targeting FiveM via an adapter.
 
-[![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Version](https://img.shields.io/badge/beta-1.0.3-orange.svg)](https://github.com/newcore-network/opencore)
-![Tests](https://img.shields.io/badge/tests-265%20passing-brightgreen)
-![Coverage](https://img.shields.io/badge/coverage-43%25-yellow)
-![Core Decorators](https://img.shields.io/badge/core%20decorators-100%25-brightgreen)
+It is not a gamemode or RP framework. It provides:
 
-## 📋 Table of Contents
+- A stable execution model (server and client)
+- Dependency Injection and metadata-driven wiring
+- An event/command system
+- Security primitives (validation, access control, rate limiting)
 
-- [Why OpenCore?](#-why-opencore)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Security System](#️-security-system)
-- [Architecture](#️-architecture)
-- [Testing](#-testing)
-- [Performance](#-performance--benchmarks)
-- [Project Structure](#-project-structure)
-- [Scripts](#-available-scripts)
-- [License](#-license)
+License: MPL-2.0
 
----
+## Scope
 
-## 🚀 Why OpenCore?
+This package (`@open-core/framework`) contains transversal infrastructure only.
 
-OpenCore transforms FiveM development from chaotic scripting into professional software engineering. Inspired by enterprise frameworks like **Spring Boot** and **NestJS**, it brings structure, security, and strict typing to your server.
+- Controllers, services, decorators, and processors
+- Session/lifecycle primitives and contracts
+- Adapters and capability registration
 
-### ✨ Key Features
+Gameplay logic must live in separate resources/modules.
 
-- **🛡️ Security by Design:** Built-in Input Validation (**Zod**), Rate Limiting (`@Throttle`), and Access Control (`@Guard`).
-- **🏗️ Decoupled Architecture:** Logic is separated into **Controllers**, **Services**, and **Entities**.
-- **💉 Dependency Injection:** Full IoC container powered by `tsyringe`.
-- **📝 Type-Safe:** No more guessing `source` types or argument structures.
-- **📡 Event-Driven:** Powerful Event Bus for internal and network communication.
-- **⚡ High Performance:** Sub-microsecond latencies, millions of ops/sec.
-- **🧪 Fully Tested:** Comprehensive unit, integration, and load tests.
-
----
-
-## 📦 Installation
+## Installation
 
 ```bash
 pnpm add @open-core/framework reflect-metadata tsyringe zod uuid
 ```
 
-> **Note:** Ensure you have `experimentalDecorators` and `emitDecoratorMetadata` enabled in your `tsconfig.json`.
+This framework uses TypeScript decorators. Ensure your project has decorators enabled.
 
----
+## Imports and entry points
 
-## ⚡ Quick Start
+The package exposes subpath entry points:
 
-Define a Controller, validate inputs with Zod, and protect it with a Guard. Zero boilerplate.
+- `@open-core/framework` (root)
+- `@open-core/framework/server`
+- `@open-core/framework/client`
+- `@open-core/framework/shared`
+- `@open-core/framework/utils`
 
-**Server-side:**
+Most projects will import the `Server`/`Client` namespaces:
+
+```ts
+import { Server } from '@open-core/framework'
+```
+
+Or directly:
+
+```ts
+import { Server } from '@open-core/framework/server'
+```
+
+## Architecture
+
+OpenCore follows a Ports & Adapters (Hexagonal) architecture.
+
+- Kernel (`src/kernel`): engine-agnostic infrastructure (DI, logger, metadata scanning)
+- Runtime (`src/runtime`): multiplayer execution model (controllers, processors, security, lifecycle)
+- Adapters (`src/adapters`): platform integration (FiveM, Node testing)
+
+The runtime never auto-detects the platform. Adapters are selected explicitly at bootstrap time.
+
+## Operating modes
+
+Each instance runs in exactly one mode configured via `Server.init()`:
+
+- `CORE`: authoritative runtime. Typically provides identity/auth/players via exports.
+- `RESOURCE`: a normal FiveM resource using CORE as provider for some features.
+- `STANDALONE`: a self-contained runtime (useful for tooling, simulations, or small servers).
+
+## Server bootstrap
+
+Initialize the server runtime:
+
+```ts
+import { Server } from '@open-core/framework/server'
+
+await Server.init({
+  mode: 'STANDALONE',
+  features: {
+    commands: { enabled: true },
+    netEvents: { enabled: true },
+  },
+})
+```
+
+Some features require providers (depending on your mode and configuration). Configure them before calling `init()`:
+
+```ts
+import { Server } from '@open-core/framework/server'
+
+Server.setPrincipalProvider(MyPrincipalProvider)
+Server.setAuthProvider(MyAuthProvider)
+Server.setSecurityHandler(MySecurityHandler)
+Server.setPersistenceProvider(MyPlayerPersistence)
+Server.setNetEventSecurityObserver(MyNetEventSecurityObserver)
+```
+
+## Controllers and decorators
+
+OpenCore uses a decorator + processor pattern.
+
+Decorators store metadata with `Reflect.defineMetadata()`. During bootstrap, the `MetadataScanner` reads metadata and processors register handlers.
+
+### Commands
 
 ```ts
 import { Server } from '@open-core/framework/server'
 import { z } from 'zod'
 
-// 1. Define your Input Schema
-const TransferSchema = z.tuple([
-  z.coerce.number().positive(), // Target ID
-  z.coerce.number().min(1).max(50000), // Amount
-])
+const TransferSchema = z.tuple([z.coerce.number().int().positive(), z.coerce.number().min(1)])
 
 @Server.Controller()
 export class BankController {
-  constructor(private readonly bankService: BankService) {}
-
   @Server.Command({
-    name: 'transfer',
+    command: 'transfer',
+    usage: '/transfer <id> <amount>',
     schema: TransferSchema,
-    usage: '/transfer [id] [amount]',
   })
-  @Server.Guard({ rank: 1 }) // Must be at least Rank 1 (User)
-  @Server.Throttle(1, 2000) // Max 1 request per 2 seconds
-  async handleTransfer(player: Server.Player, args: z.infer<typeof TransferSchema>) {
+  @Server.Guard({ rank: 1 })
+  @Server.Throttle(1, 2000)
+  async transfer(player: Server.Player, args: z.infer<typeof TransferSchema>) {
     const [targetId, amount] = args
-
-    // Logic is pure and type-safe
-    await this.bankService.transfer(player, targetId, amount)
-
-    player.emit('chat:message', `Successfully transferred $${amount}`)
+    player.emit('chat:message', `transfer -> ${targetId} (${amount})`)
   }
 }
 ```
 
----
+### Network events
 
-## 🛡️ Security System
-
-OpenCore handles the dirty work so you can focus on gameplay.
-
-### 1. Input Validation (`@Command`, `@OnNet`)
-
-All network inputs are validated against Zod schemas before they reach your logic. Malformed packets are rejected automatically.
-
-### 2. Access Control (`@Guard`)
-
-Protect methods with granular permissions or hierarchical ranks:
+`@OnNet()` handlers always receive `Player` as the first parameter.
 
 ```ts
-@Server.Guard({ permission: 'admin.ban' })
-@Server.Guard({ rank: 10 }) // Admin level
+import { Server } from '@open-core/framework/server'
+import { z } from 'zod'
+
+const PayloadSchema = z.object({ action: z.string(), amount: z.number().int().positive() })
+
+@Server.Controller()
+export class ExampleNetController {
+  @Server.OnNet('bank:action', { schema: PayloadSchema })
+  async onBankAction(player: Server.Player, payload: z.infer<typeof PayloadSchema>) {
+    player.emit('chat:message', `action=${payload.action} amount=${payload.amount}`)
+  }
+}
 ```
 
-### 3. Rate Limiting (`@Throttle`)
+### Security decorators
 
-Prevent abuse with configurable rate limits:
+- `@Guard({ rank })` or `@Guard({ permission })`
+- `@Throttle(limit, windowMs)`
+- `@RequiresState({ missing: [...] })`
 
-```ts
-@Server.Throttle(5, 10000) // 5 requests per 10 seconds
-```
+## Testing
 
-### 4. State Management (`@RequiresState`)
-
-Avoid "dead player exploits" or interaction glitches:
-
-```ts
-@Server.RequiresState({ missing: ['dead', 'cuffed'] })
-openInventory(player: Server.Player) { ... }
-```
-
----
-
-## 🏗️ Architecture
-
-OpenCore follows a clean, layered architecture:
-
-| Layer           | Responsibility                                               | Example          |
-| --------------- | ------------------------------------------------------------ | ---------------- |
-| **Controllers** | Handle entry points (Commands, Events, NUI). Keep them thin. | `BankController` |
-| **Services**    | Contain business logic. Singletons injectable anywhere.      | `BankService`    |
-| **Entities**    | Wrappers around FiveM objects with rich APIs.                | `Player`         |
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                     Client / FiveM                       │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────┐
-│                    Controllers                           │
-│  @Command  @OnNet  @NUI  @GameEvent  @OnTick            │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────┐
-│              Security Layer (Middleware)                 │
-│  @Guard  @Throttle  @RequiresState  Zod Validation      │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────┐
-│                     Services                             │
-│  Business Logic  •  PlayerService  •  BankService       │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────┐
-│                  Core Event Bus                          │
-│  Internal Events  •  Cross-Service Communication        │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🧪 Testing
-
-OpenCore has a comprehensive testing suite using **Vitest**.
-
-### Test Categories
-
-| Category        | Description                             | Command                 |
-| --------------- | --------------------------------------- | ----------------------- |
-| **Unit**        | Individual components and decorators    | `pnpm test:unit`        |
-| **Integration** | Component interactions and bootstrap    | `pnpm test:integration` |
-| **Load**        | Performance under simulated player load | `pnpm bench:load`       |
-| **All Tests**   | Run everything                          | `pnpm test`             |
-
-### Running Tests
+Tests run with Vitest.
 
 ```bash
-# Run all tests
 pnpm test
-
-# Run specific test suites
 pnpm test:unit
 pnpm test:integration
-
-# Watch mode for development
-pnpm test:watch
-
-# Generate coverage report
 pnpm test:coverage
 ```
 
-### Test Structure
+Note: `pnpm test` does not run benchmarks.
 
-```
-tests/
-├── unit/              # Unit tests
-│   ├── server/
-│   │   └── decorators/
-│   │       ├── command.test.ts
-│   │       ├── guard.test.ts
-│   │       ├── throttle.test.ts
-│   │       └── ...
-│   └── utils/
-├── integration/       # Integration tests
-│   ├── client/
-│   └── server/
-├── mocks/             # FiveM mocks
-│   └── citizenfx.ts
-└── helpers/           # Test utilities
-```
+## Benchmarks
 
-### Coverage
+There are two benchmark suites:
 
-All core decorators are **100% tested**:
-
-- `@Command`, `@Guard`, `@Throttle`, `@OnNet`, `@OnTick`
-- `@Controller`, `@Public`, `@Export`, `@CoreEvent`, `@Bind`
-
----
-
-## ⚡ Performance & Benchmarks
-
-OpenCore is built for performance. Our benchmark suite validates that the framework can handle production workloads with ease.
-
-### Run Benchmarks
+- Core benchmarks (Tinybench)
+- Load benchmarks (Vitest project `benchmark`)
 
 ```bash
-# Core component benchmarks (Tinybench)
 pnpm bench:core
-
-# Load benchmarks with player simulation (Vitest)
 pnpm bench:load
-
-# Full benchmark suite with reports
 pnpm bench:all
 ```
 
-### Latest Results (v0.6.0-beta.1)
+### Snapshot (latest local run)
 
-#### Core Components
+These values are a small extract from a recent local run (Dec 22, 2025). Results vary by machine.
 
-| Component         | Operation          | Throughput    | Latency |
-| ----------------- | ------------------ | ------------- | ------- |
-| **DI Container**  | Resolve service    | 1.65M ops/sec | 0.61μs  |
-| **Zod**           | Simple validation  | 1.99M ops/sec | 0.50μs  |
-| **Zod**           | Complex validation | 1.00M ops/sec | 1.00μs  |
-| **RateLimiter**   | Key check          | 2.56M ops/sec | 0.39μs  |
-| **AccessControl** | Permission check   | 2.76M ops/sec | 0.36μs  |
-| **EventBus**      | Emit event         | 3.22M ops/sec | 0.31μs  |
-| **Decorators**    | Define metadata    | 5.48M ops/sec | 0.18μs  |
+- **Core**
+  - Decorators - Define metadata (Command): `~5.72M ops/sec` (mean `0.17μs`)
+  - EventBus - Multiple event types: `~2.01M ops/sec` (mean `0.50μs`)
+  - Dependency Injection (simple resolve): `~1.7M ops/sec`
+- **Load**
+  - Net Events - Simple (10 players): `~28.85K ops/sec` (p95 `0.25ms`)
+  - Net Events - Concurrent (500 players): `~1.18M ops/sec` (p95 `0.40ms`)
+  - Commands (validated, ~500 players): `~14M ops/sec`
 
-#### Load Tests (500 Concurrent Players)
+Full reports and methodology are available in benchmark/README.md.
 
-| Scenario                    | Throughput      | p95 Latency | Error Rate |
-| --------------------------- | --------------- | ----------- | ---------- |
-| **Net Events (Simple)**     | 92.59M ops/sec  | 0.80μs      | 0.00%      |
-| **Net Events (Validated)**  | 11.47M ops/sec  | 2.70μs      | 0.00%      |
-| **Net Events (Concurrent)** | 1.61M ops/sec   | 294.22μs    | 0.00%      |
-| **Serialization (Large)**   | 146.53K ops/sec | 951.11μs    | 0.00%      |
+### Reports
 
-#### Key Performance Highlights
+Benchmark reports are generated under `benchmark/reports/`.
 
-- ✅ **Zero error rate** across all load scenarios (10 → 500 players)
-- ✅ **Sub-microsecond latency** for core operations
-- ✅ **Excellent scalability** - handles 500+ concurrent players
-- ✅ **Consistent p95/p99** - predictable latency behavior
+- `pnpm bench:all` generates aggregated reports (text/json/html)
+- Load metrics used by load benchmarks are persisted in `benchmark/reports/.load-metrics.json`
 
-> Full benchmark details available in [`benchmark/README.md`](./benchmark/README.md)
+For details about the benchmark system, see `benchmark/README.md`.
 
----
-
-## 📁 Project Structure
-
-```
-opencore/
-├── src/
-│   ├── client/           # Client-side framework
-│   │   ├── decorators/   # @OnNet, @Key, @Tick, @NUI, etc.
-│   │   ├── services/     # Streaming, UI, World services
-│   │   └── system/       # Processors and metadata
-│   ├── server/           # Server-side framework
-│   │   ├── decorators/   # @Command, @Guard, @Throttle, etc.
-│   │   ├── services/     # Player, Command, RateLimiter, etc.
-│   │   ├── entities/     # Player entity
-│   │   └── bus/          # Core Event Bus
-│   ├── shared/           # Shared utilities
-│   │   └── logger/       # Logging system
-│   └── system/           # Core system (MetadataScanner, DI)
-├── tests/                # Test suites
-│   ├── unit/
-│   ├── integration/
-│   └── mocks/
-├── benchmark/            # Performance benchmarks
-│   ├── core/             # Tinybench benchmarks
-│   ├── load/             # Vitest load tests
-│   └── reports/          # Generated reports
-└── dist/                 # Compiled output
-```
-
----
-
-## 📜 Available Scripts
-
-| Script                  | Description                      |
-| ----------------------- | -------------------------------- |
-| `pnpm build`            | Compile TypeScript to JavaScript |
-| `pnpm watch`            | Watch mode for development       |
-| `pnpm lint`             | Run ESLint                       |
-| `pnpm lint:fix`         | Fix ESLint issues                |
-| `pnpm format`           | Format code with Prettier        |
-| `pnpm test`             | Run all tests                    |
-| `pnpm test:unit`        | Run unit tests only              |
-| `pnpm test:integration` | Run integration tests only       |
-| `pnpm test:coverage`    | Generate coverage report         |
-| `pnpm bench`            | Show benchmark options           |
-| `pnpm bench:core`       | Run core benchmarks              |
-| `pnpm bench:load`       | Run load benchmarks              |
-| `pnpm bench:all`        | Run all benchmarks with reports  |
-
----
-
-## Available Modules
-
-A module is a library belonging to the OpenCore family, where you can take advantage of its functionality if you wish, and where we provide the foundation for building a specific system.
-
-- [Open-core Identity](https://github.com/newcore-network/opencore-identity): Flexible identity and permission system for OpenCore. Provides multiple authentication strategies, role management, and permission-based authorization through the framework's Principal system. [NPM](https://www.npmjs.com/package/@open-core/identity).
+## Development scripts
 
 ```bash
-pnpm add @open-core/identity
+pnpm build
+pnpm watch
+pnpm lint
+pnpm lint:fix
+pnpm format
 ```
 
-## 🤝 Contributing
+## Ecosystem
 
-Contributions are welcome! Please ensure:
+OpenCore is designed to be extended via separate packages/resources.
 
-1. All tests pass (`pnpm test`)
-2. Code is formatted (`pnpm format`)
-3. No linting errors (`pnpm lint`)
-4. New features include tests
+- `@open-core/identity`: identity and permission system
 
----
+## License
 
-## 📄 License
-
-OpenCore is licensed under the **MPL-2.0**.
-
-See [LICENSE](./LICENSE) for details.
-
----
-
-<p align="center">
-  <strong>OpenCore Framework</strong><br>
-  <em>Stop scripting. Start engineering.</em>
-</p>
+MPL-2.0. See `LICENSE`.

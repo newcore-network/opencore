@@ -1,5 +1,5 @@
-import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'fs'
-import { join } from 'path'
+import { writeFileSync, readFileSync, existsSync, unlinkSync, mkdirSync } from 'fs'
+import { join, dirname } from 'path'
 import type { LoadTestMetrics } from './metrics'
 
 const METRICS_FILE = join(process.cwd(), 'benchmark', 'reports', '.load-metrics.json')
@@ -21,6 +21,9 @@ interface CollectedMetric {
 }
 
 export function collectLoadMetric(metrics: LoadTestMetrics): void {
+  // Ensure reports directory exists (Vitest runs may start from a clean workspace)
+  mkdirSync(dirname(METRICS_FILE), { recursive: true })
+
   const collected: CollectedMetric = {
     name: metrics.name,
     playerCount: metrics.playerCount,
@@ -45,6 +48,9 @@ export function collectLoadMetric(metrics: LoadTestMetrics): void {
     } catch {
       existingMetrics = []
     }
+  } else {
+    // Initialize file to avoid ENOENT when writing under certain runners
+    writeFileSync(METRICS_FILE, '[]')
   }
 
   existingMetrics.push(collected)
@@ -81,6 +87,7 @@ export function readCollectedMetrics(): LoadTestMetrics[] {
 }
 
 export function clearCollectedMetrics(): void {
+  mkdirSync(dirname(METRICS_FILE), { recursive: true })
   if (existsSync(METRICS_FILE)) {
     unlinkSync(METRICS_FILE)
   }

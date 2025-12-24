@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { NodeNetTransport } from '../../../../src/server/capabilities/node/node-net-transport'
-import type { NetEventContext } from '../../../../src/server/capabilities/INetTransport'
+import 'reflect-metadata'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
 
 describe('NodeNetTransport', () => {
   let transport: NodeNetTransport
@@ -26,14 +26,10 @@ describe('NodeNetTransport', () => {
     transport.emitNet(eventName, 1, 'arg1', 'arg2')
 
     // Wait for event loop
-    await new Promise(resolve => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
 
     expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ clientId: 1 }),
-      'arg1',
-      'arg2',
-    )
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ clientId: 1 }), 'arg1', 'arg2')
   })
 
   it('should pass correct clientId in context', async () => {
@@ -44,7 +40,7 @@ describe('NodeNetTransport', () => {
     transport.onNet(eventName, handler)
     transport.emitNet(eventName, clientId, 'data')
 
-    await new Promise(resolve => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
 
     expect(handler).toHaveBeenCalledWith(expect.objectContaining({ clientId: 42 }), 'data')
   })
@@ -58,7 +54,7 @@ describe('NodeNetTransport', () => {
     transport.onNet(eventName, handler2)
     transport.emitNet(eventName, 1, 'test')
 
-    await new Promise(resolve => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
 
     expect(handler1).toHaveBeenCalledWith(expect.objectContaining({ clientId: 1 }), 'test')
     expect(handler2).toHaveBeenCalledWith(expect.objectContaining({ clientId: 1 }), 'test')
@@ -71,7 +67,7 @@ describe('NodeNetTransport', () => {
     transport.onNet(eventName, handler)
     transport.simulateClientEvent(eventName, 99, 'payload')
 
-    await new Promise(resolve => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
 
     expect(handler).toHaveBeenCalledWith(expect.objectContaining({ clientId: 99 }), 'payload')
   })
@@ -84,7 +80,7 @@ describe('NodeNetTransport', () => {
     transport.clearHandlers()
     transport.emitNet(eventName, 1, 'data')
 
-    await new Promise(resolve => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
 
     expect(handler).not.toHaveBeenCalled()
   })
@@ -96,9 +92,24 @@ describe('NodeNetTransport', () => {
     transport.onNet(eventName, handler)
     transport.emitNet(eventName, [5, 10, 15], 'broadcast')
 
-    await new Promise(resolve => setImmediate(resolve))
+    await new Promise((resolve) => setImmediate(resolve))
 
     // Should use first client in array
-    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ clientId: 5 }), 'broadcast')
+    expect(handler).toHaveBeenCalledTimes(3)
+    expect(handler).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ clientId: 5 }),
+      'broadcast',
+    )
+    expect(handler).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ clientId: 10 }),
+      'broadcast',
+    )
+    expect(handler).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({ clientId: 15 }),
+      'broadcast',
+    )
   })
 })

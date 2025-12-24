@@ -42,10 +42,7 @@ const nestedSchema = z.object({
   }),
 })
 
-const tupleSchema = z.tuple([
-  z.coerce.number().positive(),
-  z.coerce.number().min(1).max(50000),
-])
+const tupleSchema = z.tuple([z.coerce.number().positive(), z.coerce.number().min(1).max(50000)])
 
 const simpleData = {
   name: 'TestPlayer',
@@ -124,4 +121,3 @@ export async function runValidationBenchmark(): Promise<Bench> {
 
   return bench
 }
-

@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
-import { Export } from '../../../../src/server/decorators/export'
-import { METADATA_KEYS } from '../../../../src/server/system/metadata-server.keys'
+import { Export } from '../../../../src/runtime/server/decorators/export'
+import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 
 describe('@Export decorator', () => {
   describe('default export name', () => {

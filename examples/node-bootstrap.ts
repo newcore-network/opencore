@@ -13,16 +13,13 @@
  */
 
 import 'reflect-metadata'
-import { initServer } from '../src/server/bootstrap'
-import { Controller } from '../src/server/decorators/controller'
-import { OnNet } from '../src/server/decorators/onNet'
-import { Export } from '../src/server/decorators/export'
-import { di } from '../src/server/container'
-import { INetTransport } from '../src/server/capabilities/INetTransport'
-import { IExports } from '../src/server/capabilities/IExports'
-import { NodeNetTransport } from '../src/server/capabilities/node/node-net-transport'
-import { NodeExports } from '../src/server/capabilities/node/node-exports'
-import { Player } from '../src/server'
+import { INetTransport, IExports } from '../src/adapters'
+import { NodeNetTransport, NodeExports } from '../src/adapters/node'
+import { di } from '../src/kernel'
+import { Export } from '../src/runtime/client'
+import { Controller, OnNet } from '../src/runtime/server'
+import { initServer } from '../src/runtime/server/bootstrap'
+import { Player } from '../src/runtime/server'
 
 // Example Controller
 @Controller()

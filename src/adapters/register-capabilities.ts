@@ -1,0 +1,88 @@
+import { di } from '../kernel/di/container'
+import { INetTransport } from './contracts/INetTransport'
+import { IEngineEvents } from './contracts/IEngineEvents'
+import { IExports } from './contracts/IExports'
+import { IResourceInfo } from './contracts/IResourceInfo'
+import { ITick } from './contracts/ITick'
+import { IPlayerInfo } from './contracts/IPlayerInfo'
+
+export type Platform = 'fivem' | 'node'
+
+/**
+ * Detects the current runtime platform
+ */
+function detectPlatform(): Platform {
+  // Check for FiveM-specific globals
+  if (typeof (globalThis as any).GetCurrentResourceName === 'function') {
+    return 'fivem'
+  }
+  return 'node'
+}
+
+/**
+ * Registers platform-specific capability implementations
+ * @param platform - Optional platform override. If not provided, platform is auto-detected.
+ */
+export async function registerServerCapabilities(platform?: Platform): Promise<void> {
+  const targetPlatform = platform ?? detectPlatform()
+
+  if (targetPlatform === 'node') {
+    // Dynamically import Node.js implementations only when needed
+    const [
+      { NodeNetTransport },
+      { NodeEngineEvents },
+      { NodeExports },
+      { NodeResourceInfo },
+      { NodeTick },
+      { NodePlayerInfo },
+    ] = await Promise.all([
+      import('./node/node-net-transport'),
+      import('./node/node-engine-events'),
+      import('./node/node-exports'),
+      import('./node/node-resourceinfo'),
+      import('./node/node-tick'),
+      import('./node/node-playerinfo'),
+    ])
+
+    // Register Node.js implementations
+    if (!di.isRegistered(INetTransport as any))
+      di.registerSingleton(INetTransport as any, NodeNetTransport)
+    if (!di.isRegistered(IEngineEvents as any))
+      di.registerSingleton(IEngineEvents as any, NodeEngineEvents)
+    if (!di.isRegistered(IExports as any)) di.registerSingleton(IExports as any, NodeExports)
+    if (!di.isRegistered(IResourceInfo as any))
+      di.registerSingleton(IResourceInfo as any, NodeResourceInfo)
+    if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, NodeTick)
+    if (!di.isRegistered(IPlayerInfo as any))
+      di.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
+  } else {
+    // Dynamically import FiveM implementations only when needed
+    const [
+      { FiveMNetTransport },
+      { FiveMEngineEvents },
+      { FiveMExports },
+      { FiveMResourceInfo },
+      { FiveMTick },
+      { FiveMPlayerInfo },
+    ] = await Promise.all([
+      import('./fivem/fivem-net-transport'),
+      import('./fivem/fivem-engine-events'),
+      import('./fivem/fivem-exports'),
+      import('./fivem/fivem-resourceinfo'),
+      import('./fivem/fivem-tick'),
+      import('./fivem/fivem-playerinfo'),
+    ])
+
+    // Register FiveM implementations
+    if (!di.isRegistered(INetTransport as any))
+      di.registerSingleton(INetTransport as any, FiveMNetTransport)
+    if (!di.isRegistered(IEngineEvents as any))
+      di.registerSingleton(IEngineEvents as any, FiveMEngineEvents)
+    if (!di.isRegistered(IExports as any)) di.registerSingleton(IExports as any, FiveMExports)
+    if (!di.isRegistered(IResourceInfo as any))
+      di.registerSingleton(IResourceInfo as any, FiveMResourceInfo)
+    if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, FiveMTick)
+    if (!di.isRegistered(IPlayerInfo as any))
+      di.registerSingleton(IPlayerInfo as any, FiveMPlayerInfo)
+  }
+}

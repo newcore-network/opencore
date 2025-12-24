@@ -2,11 +2,13 @@ import 'reflect-metadata'
 import { describe, it, expect, vi } from 'vitest'
 import { z } from 'zod'
 import { registeredNetEvents } from '../../../mocks/citizenfx'
-import { PlayerService } from '../../../../src/server/services/core/player.service'
-import { NetEventProcessor } from '../../../../src/server/system/processors/netEvent.processor'
-import { SecurityHandlerContract } from '../../../../src/server/templates/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../../src/server/templates/security/net-event-security-observer.contract'
-import { INetTransport } from '../../../../src/server/capabilities/INetTransport'
+import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
+import { NetEventProcessor } from '../../../../src/runtime/server/system/processors/netEvent.processor'
+import { SecurityHandlerContract } from '../../../../src/runtime/server/templates/security/security-handler.contract'
+import { NetEventSecurityObserverContract } from '../../../../src/runtime/server/templates/security/net-event-security-observer.contract'
+import { INetTransport, NetEventContext } from '../../../../src/adapters'
+import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
+import { beforeEach } from 'vitest'
 
 const securityHandler: SecurityHandlerContract = {
   handleViolation: vi.fn().mockResolvedValue(undefined),
@@ -17,13 +19,28 @@ const observer: NetEventSecurityObserverContract = {
 }
 
 const netAbstract: INetTransport = {
-  emitNet: vi.fn().mockImplementation(() => undefined),
-  onNet: vi.fn().mockImplementation(() => undefined),
+  emitNet: vi.fn(),
+  onNet: vi
+    .fn()
+    .mockImplementation(
+      (
+        eventName: string,
+        handler: (ctx: NetEventContext, ...args: any[]) => void | Promise<void>,
+      ) => {
+        registeredNetEvents.set(eventName, handler)
+      },
+    ),
 }
 
+const playerInfo = new NodePlayerInfo()
+
 describe('NetEventProcessor invalid payload resilience', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
-    const playerService = new PlayerService()
+    const playerService = new PlayerService(playerInfo)
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
@@ -42,10 +59,12 @@ describe('NetEventProcessor invalid payload resilience', () => {
 
     const fn = registeredNetEvents.get('test:event')
     expect(fn).toBeDefined()
-    ;(global as any).source = 1
+
+    // Create context with clientId instead of using global.source
+    const ctx: NetEventContext = { clientId: 1 }
 
     for (let i = 0; i < 10; i++) {
-      await expect(fn!({ a: 123 })).resolves.toBeUndefined()
+      await expect(fn!(ctx, { a: 123 })).resolves.toBeUndefined()
     }
 
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(10)
@@ -62,7 +81,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash even if handleViolation throws', async () => {
-    const playerService = new PlayerService()
+    const playerService = new PlayerService(playerInfo)
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
@@ -81,9 +100,11 @@ describe('NetEventProcessor invalid payload resilience', () => {
 
     const fn = registeredNetEvents.get('test:event:throws')
     expect(fn).toBeDefined()
-    ;(global as any).source = 1
 
-    await expect(fn!({ a: 123 })).resolves.toBeUndefined()
+    // Create context with clientId instead of using global.source
+    const ctx: NetEventContext = { clientId: 1 }
+
+    await expect(fn!(ctx, { a: 123 })).resolves.toBeUndefined()
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(1)
   })
 })

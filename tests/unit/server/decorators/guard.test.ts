@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { container } from 'tsyringe'
-import { Guard, type GuardOptions } from '../../../../src/server/decorators/guard'
-import { AccessControlService } from '../../../../src/server/services/access-control.service'
+import { Guard, type GuardOptions } from '../../../../src/runtime/server/decorators/guard'
+import { AccessControlService } from '../../../../src/runtime/server/services/access-control.service'
 
 // Mock player type
 interface MockPlayer {

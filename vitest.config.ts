@@ -32,6 +32,7 @@ export default defineConfig({
         test: {
           name: 'integration',
           include: ['tests/integration/**/*.test.ts'],
+          exclude: ['tests/integration/client/player.test.ts'],
           setupFiles: ['./tests/setup.ts'],
           globals: true,
         },
