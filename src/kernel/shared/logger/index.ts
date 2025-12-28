@@ -16,5 +16,16 @@ export { coreLogger, loggers } from './core-logger'
 export type { LogTransport } from './transports/transport.interface'
 export { ConsoleTransport } from './transports/console.transport'
 export type { ConsoleTransportOptions } from './transports/console.transport'
+export { SimpleConsoleTransport } from './transports/simple-console.transport'
+export type { SimpleConsoleTransportOptions } from './transports/simple-console.transport'
 export { BufferedTransport } from './transports/buffered.transport'
 export type { BufferedTransportOptions, LogOutputFormat } from './transports/buffered.transport'
+
+// Environment utilities
+export {
+  isClientEnvironment,
+  isServerEnvironment,
+  isFiveMEnvironment,
+  getLogLevelFromEnv,
+  isDebugMode,
+} from './logger.env'

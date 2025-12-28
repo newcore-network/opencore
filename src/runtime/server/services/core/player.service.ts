@@ -5,6 +5,7 @@ import { IPlayerInfo } from '../../../../adapters'
 import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.object'
+import { loggers } from '../../../../kernel/shared/logger'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.
@@ -35,23 +36,18 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns The newly created `Player` instance.
    */
   bind(clientID: number, identifiers?: PlayerSession['identifiers']): Player {
-    console.log('[DEBUG][PlayerService instance]', this)
     const session: PlayerSession = {
       clientID,
       identifiers,
       meta: {},
     }
-    console.log('DEBUG;' + clientID + ' and type of' + typeof clientID)
 
     const player = new Player(session, this.playerInfo)
     this.playersByClient.set(clientID, player)
-    console.log(
-      'DEBUG; map entries after bind:',
-      Array.from(this.playersByClient.entries()).map(([id, player]) => ({
-        clientID: id,
-        player: player,
-      })),
-    )
+    loggers.session.debug('Player session bound', {
+      clientID,
+      totalPlayers: this.playersByClient.size,
+    })
     return player
   }
 
@@ -79,8 +75,11 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @param clientID - The FiveM server ID of the player disconnecting.
    */
   unbind(clientID: number) {
-    console.log(`DEBUG; UNBINED PLAYER ${clientID}`)
     this.playersByClient.delete(clientID)
+    loggers.session.debug('Player session unbound', {
+      clientID,
+      totalPlayers: this.playersByClient.size,
+    })
   }
 
   /**

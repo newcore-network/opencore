@@ -1,4 +1,5 @@
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
+import { loggers } from '../../kernel/shared/logger'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -122,7 +123,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     if (mode === 'RESOURCE' || mode === 'STANDALONE') {
       const scanner = di.resolve(MetadataScanner)
       scanner.scan(getClientControllerRegistry(resourceName))
-      console.log(`[OpenCore Client] Resource "${resourceName}" controllers registered`)
+      loggers.bootstrap.info(`Resource "${resourceName}" controllers registered`)
       return
     }
 
@@ -161,5 +162,5 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(getClientControllerRegistry(resourceName))
 
-  console.log(`[OpenCore Client] Initialized in ${mode} mode (resource: ${resourceName})`)
+  loggers.bootstrap.info(`Client initialized in ${mode} mode`, { resourceName })
 }
