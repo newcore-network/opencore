@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
-import { PrincipalProviderContract, Principal } from '../../templates'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
+import { Principal, PrincipalProviderContract } from '../../contracts'
 
 /**
  * Principal provider implementation for `RESOURCE` mode.

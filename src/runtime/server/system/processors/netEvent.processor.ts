@@ -3,7 +3,7 @@ import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { NetEventOptions } from '../../decorators'
-import { SecurityHandlerContract } from '../../templates/security/security-handler.contract'
+import { SecurityHandlerContract } from '../../contracts/security/security-handler.contract'
 import { AppError } from '../../../../kernel/utils'
 import { coreLogger, loggers } from '../../../../kernel/shared/logger'
 import z from 'zod'
@@ -14,7 +14,7 @@ import {
   NetEventInvalidPayloadContext,
   NetEventInvalidPayloadReason,
   NetEventSecurityObserverContract,
-} from '../../templates/security/net-event-security-observer.contract'
+} from '../../contracts/security/net-event-security-observer.contract'
 import { Player } from '../../entities'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 

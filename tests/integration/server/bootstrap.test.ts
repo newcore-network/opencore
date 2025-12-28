@@ -2,8 +2,8 @@ import 'reflect-metadata'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
 import { resetContainer } from '../../helpers/di.helper'
-import { PrincipalProviderContract } from '../../../src/runtime/server/templates/security/principal-provider.contract'
-import { AuthProviderContract } from '../../../src/runtime/server/templates/auth/auth-provider.contract'
+import { PrincipalProviderContract } from '../../../src/runtime/server/contracts/security/principal-provider.contract'
+import { AuthProviderContract } from '../../../src/runtime/server/contracts/auth-provider.contract'
 import { setPrincipalProvider, setAuthProvider } from '../../../src/runtime/server/setup'
 
 // Mock implementations

@@ -7,7 +7,7 @@ export class PlayerExportController {
   constructor(private playerService: PlayerDirectoryPort) {}
 
   @Export()
-  getPlayerId(clientID: number): string | null {
+  getPlayerId(clientID: number): string | undefined {
     return this.playerService.getPlayerId(clientID)
   }
 

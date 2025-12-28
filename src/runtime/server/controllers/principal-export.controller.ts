@@ -1,7 +1,7 @@
+import { PrincipalProviderContract } from '../contracts'
 import { Controller } from '../decorators'
 import { Export } from '../decorators/export'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import { PrincipalProviderContract } from '../templates'
 
 @Controller()
 export class PrincipalExportController {

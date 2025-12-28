@@ -1,7 +1,5 @@
-import type { PlayerSessionCreatedPayload } from '../../types/core-events'
-import type { Player } from '../../entities/player'
-import type { LinkedID } from '../../services'
-import type { Server } from '../../../..'
+import type { Server } from '../../..'
+import type { LinkedID } from '../services/types/linked-id'
 
 export interface AuthCredentials {
   /** Standard username/password auth */

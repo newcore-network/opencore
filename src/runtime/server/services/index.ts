@@ -1,3 +1,4 @@
+// Services
 export { CommandService } from './command.service'
 export { HttpService, type HttpOptions } from './http/http.service'
 export { AccessControlService } from './access-control.service'
@@ -11,3 +12,7 @@ export * from '../database'
 // Contract Services
 export * from './ports/player-directory.port'
 export * from './ports/player-session-lifecycle.port'
+
+// Types & Interfaces
+export * from './types/linked-id'
+export * from './types/player-session.object'

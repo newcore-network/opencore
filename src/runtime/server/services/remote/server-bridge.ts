@@ -1,8 +1,8 @@
 import { di } from '../../../../kernel/di/container'
+import { PrincipalProviderContract } from '../../contracts'
 import { _mode } from '../../core'
 import { getRuntimeContext } from '../../runtime'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
-import { PrincipalProviderContract } from '../../templates'
 
 /**
  * Defines the interface for core exports that can be called from the server bridge.

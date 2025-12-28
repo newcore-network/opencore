@@ -1,11 +1,10 @@
 import type { ClassConstructor } from '../../kernel/di/class-constructor'
 import { di } from '../../kernel/di/container'
-import { PrincipalProviderContract } from './templates'
-import { SecurityHandlerContract } from './templates/security/security-handler.contract'
-import { PlayerPersistenceContract } from './templates/persistence'
+import { SecurityHandlerContract } from './contracts/security/security-handler.contract'
 import { loggers } from '../../kernel/shared/logger'
-import { AuthProviderContract } from './templates/auth/auth-provider.contract'
-import { NetEventSecurityObserverContract } from './templates/security/net-event-security-observer.contract'
+import { AuthProviderContract } from './contracts/auth-provider.contract'
+import { NetEventSecurityObserverContract } from './contracts/security/net-event-security-observer.contract'
+import { PlayerPersistenceContract, PrincipalProviderContract } from './contracts'
 
 export function setPrincipalProvider(provider: ClassConstructor<PrincipalProviderContract>) {
   di.registerSingleton(PrincipalProviderContract as any, provider)

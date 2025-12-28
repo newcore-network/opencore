@@ -1,10 +1,9 @@
 import { di } from '../../kernel/di/container'
-import { PrincipalProviderContract } from './templates'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { registerSystemServer } from './system/processors.register'
 import { registerServicesServer } from './services/services.register'
 import { loggers } from '../../kernel/shared/logger'
-import { AuthProviderContract } from './templates/auth/auth-provider.contract'
+import { AuthProviderContract } from './contracts/auth-provider.contract'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
@@ -18,6 +17,7 @@ import {
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
+import { PrincipalProviderContract } from './contracts/security/principal-provider.contract'
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return

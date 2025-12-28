@@ -1,6 +1,7 @@
 import { type IPlayerInfo } from '../../../adapters'
 import type { Vector3 } from '../../../kernel/utils'
-import type { LinkedID, PlayerSession } from '../services/core/player.service'
+import type { LinkedID } from '../services/types/linked-id'
+import type { PlayerSession } from '../services/types/player-session.object'
 
 /**
  * Core-level representation of a connected player on the server.

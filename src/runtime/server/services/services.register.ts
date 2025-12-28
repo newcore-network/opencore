@@ -7,10 +7,10 @@ import { PlayerService } from './core/player.service'
 import { PlayerPersistenceService } from './persistence.service'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
 import { RemotePlayerService } from './remote/remote-player.service'
-import { PrincipalProviderContract } from '../templates'
 import { RemotePrincipalProvider } from './remote/remote-principal.provider'
 import type { RuntimeContext } from '../runtime'
 import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
+import { PrincipalProviderContract } from '../contracts'
 
 /**
  * Registers server runtime services in the dependency injection container.

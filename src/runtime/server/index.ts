@@ -2,6 +2,7 @@
 export { init } from './core'
 export * from './runtime'
 export * from './decorators'
+export * from './contracts/index'
 export * from './templates'
 export * from './services'
 

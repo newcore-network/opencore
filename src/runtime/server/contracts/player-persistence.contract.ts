@@ -1,4 +1,4 @@
-import type { Player } from '../../entities/player'
+import type { Player } from '../entities'
 
 /**
  * Configuration for player data persistence behavior.

@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe'
 
 import { AppError } from '../../../kernel/utils'
 import { Server } from '../../..'
-import { PrincipalProviderContract } from '../templates'
+import { PrincipalProviderContract } from '../contracts'
 
 /**
  * **Core Security Service**
