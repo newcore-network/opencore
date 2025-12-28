@@ -1,12 +1,12 @@
 import { Controller, Export } from '../decorators'
 import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { PrincipalPort } from '../services/ports/principal.port'
 import type { CommandRegistrationDto, SecurityMetadata } from '../types/core-exports'
 import { AppError } from '../../../kernel/utils'
 import { SecurityError } from '../../../kernel/utils/error/security.error'
 import { loggers } from '../../../kernel/shared/logger'
 import { injectable } from 'tsyringe'
-import { AccessControlService } from '../services/access-control.service'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import { Player } from '../entities'
 
@@ -34,7 +34,7 @@ export class CommandExportController {
   constructor(
     private commandService: CommandExecutionPort,
     private playerDirectory: PlayerDirectoryPort,
-    private accessControl: AccessControlService,
+    private principalPort: PrincipalPort,
     private rateLimiter: RateLimiterService,
   ) {}
 
@@ -152,7 +152,7 @@ export class CommandExportController {
 
     // 1. Validate @Guard (rank/permission)
     if (security.guard) {
-      await this.accessControl.enforce(player, security.guard)
+      await this.principalPort.enforce(player, security.guard)
     }
 
     // 2. Validate @Throttle (rate limiting)

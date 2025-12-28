@@ -2,7 +2,7 @@ import 'reflect-metadata'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { container } from 'tsyringe'
 import { Guard, type GuardOptions } from '../../../../src/runtime/server/decorators/guard'
-import { AccessControlService } from '../../../../src/runtime/server/services/access-control.service'
+import { PrincipalPort } from '../../../../src/runtime/server/services/ports/principal.port'
 
 // Mock player type
 interface MockPlayer {
@@ -142,18 +142,18 @@ describe('@Guard decorator', () => {
   })
 
   describe('error handling for invalid player', () => {
-    // Mock AccessControlService to bypass DI issues
+    // Mock PrincipalPort to bypass DI issues
     beforeEach(() => {
       container.clearInstances()
 
-      // Create a mock AccessControlService
-      const mockAccessControl = {
+      // Create a mock PrincipalPort
+      const mockPrincipal = {
         enforce: vi.fn().mockResolvedValue(undefined),
         hasRank: vi.fn().mockResolvedValue(true),
         hasPermission: vi.fn().mockResolvedValue(true),
       }
 
-      container.registerInstance(AccessControlService, mockAccessControl as any)
+      container.registerInstance(PrincipalPort as any, mockPrincipal as any)
     })
 
     it('should throw when first argument is null', async () => {
@@ -201,11 +201,11 @@ describe('@Guard decorator', () => {
     beforeEach(() => {
       container.clearInstances()
 
-      const mockAccessControl = {
+      const mockPrincipal = {
         enforce: vi.fn().mockResolvedValue(undefined),
       }
 
-      container.registerInstance(AccessControlService, mockAccessControl as any)
+      container.registerInstance(PrincipalPort as any, mockPrincipal as any)
     })
 
     it('should call original method after guard passes', async () => {

@@ -4,10 +4,12 @@ import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
 import { HttpService } from './http/http.service'
 import { PlayerService } from './core/player.service'
+import { LocalPrincipalService } from './core/principal.service'
 import { PlayerPersistenceService } from './persistence.service'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
+import { PrincipalPort } from './ports/principal.port'
 import { RemotePlayerService } from './remote/remote-player.service'
-import { RemotePrincipalProvider } from './remote/remote-principal.provider'
+import { RemotePrincipalService } from './remote/remote-principal.service'
 import type { RuntimeContext } from '../runtime'
 import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
 import { PrincipalProviderContract } from '../contracts'
@@ -62,8 +64,13 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.principal.enabled) {
-    if (features.principal.provider === 'core' && mode === 'RESOURCE') {
-      di.registerSingleton(PrincipalProviderContract as any, RemotePrincipalProvider)
+    if (features.principal.provider === 'local' || mode === 'CORE' || mode === 'STANDALONE') {
+      // CORE/STANDALONE: Local principal service wraps user's PrincipalProviderContract
+      di.registerSingleton(LocalPrincipalService)
+      di.register(PrincipalPort as any, { useToken: LocalPrincipalService })
+    } else {
+      // RESOURCE: Remote principal service delegates to CORE
+      di.registerSingleton(PrincipalPort as any, RemotePrincipalService)
     }
   }
 

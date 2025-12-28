@@ -2,6 +2,7 @@ import { type IPlayerInfo } from '../../../adapters'
 import type { Vector3 } from '../../../kernel/utils'
 import type { LinkedID } from '../services/types/linked-id'
 import type { PlayerSession } from '../services/types/player-session.object'
+import type { SerializedPlayerData } from '../types/core-exports'
 
 /**
  * Core-level representation of a connected player on the server.
@@ -250,5 +251,24 @@ export class Player {
    */
   getStates(): string[] {
     return Array.from(this.states)
+  }
+
+  /**
+   * Serializes the player data for cross-resource transfer.
+   *
+   * @remarks
+   * Creates a plain object representation of the player session that can be
+   * safely transferred between resources via FiveM exports.
+   *
+   * @returns Serialized player data DTO
+   */
+  serialize(): SerializedPlayerData {
+    return {
+      clientID: this.clientID,
+      accountID: this.accountID,
+      identifiers: this.session.identifiers,
+      meta: { ...this.session.meta },
+      states: this.getStates(),
+    }
   }
 }

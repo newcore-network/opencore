@@ -16,18 +16,21 @@ import { LogLevel, parseLogLevel } from './logger.types'
  * Default: 'INFO' for production-like behavior.
  */
 declare const __OPENCORE_LOG_LEVEL__: string | undefined
+declare const __OPENCORE_TARGET__: 'client' | 'server' | undefined
 
 /**
  * Detects if we're running in a FiveM client environment.
  * Client has GetPlayerPed but not GetNumPlayerIndices (server-only native).
  */
 export function isClientEnvironment(): boolean {
+  if (typeof __OPENCORE_TARGET__ !== 'undefined') {
+    return __OPENCORE_TARGET__ === 'client'
+  }
   return (
     typeof (globalThis as any).GetPlayerPed === 'function' &&
     typeof (globalThis as any).GetNumPlayerIndices !== 'function'
   )
 }
-
 /**
  * Detects if we're running in a FiveM server environment.
  */

@@ -1,6 +1,6 @@
 import type { Server } from '../../..'
 import { di } from '../../../kernel/di/container'
-import { AccessControlService } from '../services'
+import { PrincipalPort } from '../services/ports/principal.port'
 import { loggers } from '../../../kernel/shared/logger'
 import { AppError } from '../../../kernel'
 
@@ -23,7 +23,7 @@ export interface GuardOptions {
  * @remarks
  * `@Guard()` protects a method by enforcing rank and/or permission requirements before executing it.
  *
- * Requirements are evaluated through {@link AccessControlService}, which determines whether the
+ * Requirements are evaluated through {@link PrincipalPort}, which determines whether the
  * player (first argument of the method) is authorized to perform the action.
  *
  * Notes:
@@ -75,12 +75,9 @@ export function Guard(options: GuardOptions) {
         throw new Error('Guard Security Error: Context is not a player')
       }
 
-      const accessControl = di.resolve(AccessControlService)
+      const principal = di.resolve(PrincipalPort as any) as PrincipalPort
       try {
-        await accessControl.enforce(player, {
-          minRank: options.rank,
-          permission: options.permission,
-        })
+        await principal.enforce(player, options)
       } catch (error) {
         // Send user-friendly error message for authorization failures
         if (error instanceof AppError && error.code === 'AUTH:PERMISSION_DENIED') {

@@ -483,11 +483,13 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
 
   const sessionLifecycleEnabled = mode !== 'RESOURCE'
 
-  // Commands should export in CORE mode for RESOURCE access
+  // Features that should auto-export in CORE mode for RESOURCE access
   const commandsExport = mode === 'CORE'
+  const playersExport = mode === 'CORE'
+  const principalExport = mode === 'CORE'
 
   return {
-    players: { enabled: true, provider: playersProvider, export: false, scope, required: false },
+    players: { enabled: true, provider: playersProvider, export: playersExport, scope, required: false },
     netEvents: {
       enabled: true,
       provider: netEventsProvider,
@@ -516,7 +518,7 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
     principal: {
       enabled: false,
       provider: principalProvider,
-      export: false,
+      export: principalExport,
       scope,
       required: false,
     },

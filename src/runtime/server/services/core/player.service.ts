@@ -139,4 +139,47 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
   getAll(): Player[] {
     return Array.from(this.playersByClient.values())
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Extended Query Methods
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Retrieves a Player by their persistent account ID.
+   *
+   * @param accountId - The unique account identifier to search for.
+   * @returns The Player if found, or `undefined` if not online.
+   */
+  getByAccountId(accountId: string): Player | undefined {
+    for (const player of this.playersByClient.values()) {
+      if (player.accountID === accountId) {
+        return player
+      }
+    }
+    return undefined
+  }
+
+  /**
+   * Returns the current number of connected players.
+   *
+   * @returns Player count.
+   */
+  getPlayerCount(): number {
+    return this.playersByClient.size
+  }
+
+  /**
+   * Checks if a player with the given account ID is currently online.
+   *
+   * @param accountId - The account identifier to check.
+   * @returns `true` if online, `false` otherwise.
+   */
+  isOnline(accountId: string): boolean {
+    for (const player of this.playersByClient.values()) {
+      if (player.accountID === accountId) {
+        return true
+      }
+    }
+    return false
+  }
 }

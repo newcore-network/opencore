@@ -139,7 +139,35 @@ export async function initServer(options: ServerRuntimeOptions) {
         requiredExports.push('registerCommand', 'executeCommand', 'getAllCommands')
       }
       if (ctx.features.players.provider === 'core') {
-        // Add any player-related exports if needed
+        requiredExports.push(
+          'getPlayerId',
+          'getPlayerData',
+          'getAllPlayersData',
+          'getPlayerByAccountId',
+          'getPlayerCount',
+          'isPlayerOnline',
+          'getPlayerMeta',
+          'setPlayerMeta',
+          'getPlayerStates',
+          'hasPlayerState',
+          'addPlayerState',
+          'removePlayerState',
+        )
+      }
+      if (ctx.features.principal.provider === 'core') {
+        requiredExports.push(
+          'getPrincipal',
+          'getPrincipalByAccountId',
+          'refreshPrincipal',
+          'hasPermission',
+          'hasRank',
+          'hasAnyPermission',
+          'hasAllPermissions',
+          'getPermissions',
+          'getRank',
+          'getPrincipalName',
+          'getPrincipalMeta',
+        )
       }
 
       loggers.bootstrap.debug(`Checking CORE exports`, {
