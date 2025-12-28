@@ -1,7 +1,7 @@
 import { di } from '../../../../kernel/di/container'
 import { _mode } from '../../core'
 import { getRuntimeContext } from '../../runtime'
-import { PlayerDirectoryContract } from '../contracts/player.service.contract'
+import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { PrincipalProviderContract } from '../../templates'
 
 /**
@@ -10,7 +10,7 @@ import { PrincipalProviderContract } from '../../templates'
  */
 type CoreExports = {
   /** Gets the player ID for a given client ID */
-  getPlayerId(clientID: number): string | null
+  getPlayerId(clientID: number): string | undefined
 
   /** Retrieves metadata for a player by client ID and metadata key */
   getPlayerMeta<T = unknown>(clientID: number, key: string): Promise<T | undefined>
@@ -33,7 +33,7 @@ export const serverBridge = {
    * @param clientID - The client ID to look up
    * @returns The player ID if found, null otherwise
    */
-  getPlayerId(clientID: number): string | null {
+  getPlayerId(clientID: number): string | undefined {
     if (_mode !== 'RESOURCE') {
       return getPlayerService().getPlayerId(clientID)
     }
@@ -103,8 +103,8 @@ function getCoreExports(): CoreExports {
  * Gets the player service from the dependency injection container
  * @returns An instance of PlayerServiceContract
  */
-function getPlayerService(): PlayerDirectoryContract {
-  return di.resolve(PlayerDirectoryContract as any) as PlayerDirectoryContract
+function getPlayerService(): PlayerDirectoryPort {
+  return di.resolve(PlayerDirectoryPort as any) as PlayerDirectoryPort
 }
 
 /**

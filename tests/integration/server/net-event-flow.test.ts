@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { z } from 'zod'
 import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
-import { PlayerDirectoryContract } from '../../../src/runtime/server/services/contracts/player.service.contract'
+import { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
 import { SecurityHandlerContract } from '../../../src/runtime/server/templates/security/security-handler.contract'
 import { NetEventSecurityObserverContract } from '../../../src/runtime/server/templates/security/net-event-security-observer.contract'
 import { OnNet } from '../../../src/runtime/server/decorators/onNet'
@@ -45,7 +45,7 @@ function waitForEventProcessing(): Promise<void> {
 
 describe('NetEventProcessor Node Runtime Flow', () => {
   let transport: NodeNetTransport
-  let mockPlayerService: PlayerDirectoryContract
+  let mockPlayerService: PlayerDirectoryPort
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
   let processor: NetEventProcessor

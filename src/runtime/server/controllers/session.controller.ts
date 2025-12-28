@@ -2,15 +2,15 @@ import { loggers } from '../../../kernel/shared'
 import { emitFrameworkEvent } from '../bus/core-event-bus'
 import { Controller } from '../decorators'
 import { OnFiveMEvent } from '../decorators/onFiveMEvent'
-import { PlayerDirectoryContract } from '../services'
-import { PlayerSessionLifecycleContract } from '../services/contracts/player-session-lifecycle.contract'
+import { PlayerDirectoryPort } from '../services'
+import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
 import { PlayerPersistenceService } from '../services/persistence.service'
 
 @Controller()
 export class SessionController {
   constructor(
-    private readonly playerSessionLifecycle: PlayerSessionLifecycleContract,
-    private readonly playerDirectory: PlayerDirectoryContract,
+    private readonly playerSessionLifecycle: PlayerSessionLifecyclePort,
+    private readonly playerDirectory: PlayerDirectoryPort,
     private readonly persistance: PlayerPersistenceService,
   ) {}
 

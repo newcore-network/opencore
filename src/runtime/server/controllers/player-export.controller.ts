@@ -1,10 +1,10 @@
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { PlayerDirectoryContract } from '../services/contracts/player.service.contract'
+import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 @Controller()
 export class PlayerExportController {
-  constructor(private playerService: PlayerDirectoryContract) {}
+  constructor(private playerService: PlayerDirectoryPort) {}
 
   @Export()
   getPlayerId(clientID: number): string | null {

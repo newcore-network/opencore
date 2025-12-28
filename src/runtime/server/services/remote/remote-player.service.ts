@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import { PlayerDirectoryContract } from '../contracts/player.service.contract'
+import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { IPlayerInfo } from '../../../../adapters'
 
 /**
@@ -13,7 +13,7 @@ import { IPlayerInfo } from '../../../../adapters'
  * instances for convenience.
  */
 @injectable()
-export class RemotePlayerService extends PlayerDirectoryContract {
+export class RemotePlayerService extends PlayerDirectoryPort {
   constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {
     super()
   }
@@ -30,7 +30,7 @@ export class RemotePlayerService extends PlayerDirectoryContract {
    * The returned instance is not backed by the core session store.
    * Methods that depend on server-side session state may not behave the same as in CORE mode.
    */
-  getByClient(clientID: number): Player | null {
+  getByClient(clientID: number): Player | undefined {
     return new Player({ clientID, meta: {} }, this.playerInfo)
   }
 
@@ -44,7 +44,7 @@ export class RemotePlayerService extends PlayerDirectoryContract {
     return players
   }
 
-  getPlayerId(clientID: number): string | null {
+  getPlayerId(clientID: number): string | undefined {
     return this.core.getPlayerId(clientID)
   }
 

@@ -1,26 +1,10 @@
 import { inject, injectable } from 'tsyringe'
-import type { UUIDTypes } from 'uuid'
 import { Player } from '../../entities'
-import { PlayerDirectoryContract } from '../contracts/player.service.contract'
+import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { IPlayerInfo } from '../../../../adapters'
-import { PlayerSessionLifecycleContract } from '../contracts/player-session-lifecycle.contract'
-
-/**
- * Type representing a linked account identifier. This come from your persistence layer
- * and is used to associate a Player session with their stored data.
- */
-export type LinkedID = string | UUIDTypes | number
-
-export interface PlayerSession {
-  clientID: number
-  accountID?: LinkedID
-  identifiers?: {
-    license?: string
-    steam?: string
-    discord?: string
-  }
-  meta: Record<string, unknown>
-}
+import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
+import { LinkedID } from '../types/linked-id'
+import { PlayerSession } from '../types/player-session.object'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.
@@ -28,7 +12,7 @@ export interface PlayerSession {
  * to Core `Player` entities.
  */
 @injectable()
-export class PlayerService implements PlayerDirectoryContract, PlayerSessionLifecycleContract {
+export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecyclePort {
   /**
    * Internal map storing active player sessions indexed by their FiveM client ID (source).
    */
@@ -101,22 +85,8 @@ export class PlayerService implements PlayerDirectoryContract, PlayerSessionLife
    * @param clientID - The FiveM server ID to look up.
    * @returns The `Player` instance if found, or `null` if the session does not exist.
    */
-  getByClient(clientID: number): Player | null {
-    const player = this.playersByClient.get(clientID)
-    if (!player) {
-      console.log('[DEBUG][PlayerService instance]', this)
-      console.log(`DEBUG; not found ???, was not id(${clientID})`)
-      console.log(
-        'DEBUG; map entries:',
-        Array.from(this.playersByClient.entries()).map(([id, player]) => ({
-          clientID: id,
-          player: player,
-        })),
-      )
-      console.log('DEBUG; end')
-      return null
-    }
-    return player
+  getByClient(clientID: number): Player | undefined {
+    return this.playersByClient.get(clientID)
   }
 
   /**
@@ -125,9 +95,9 @@ export class PlayerService implements PlayerDirectoryContract, PlayerSessionLife
    * @param clientID - The FiveM server ID to look up.
    * @returns The bound Account ID (string/UUID) if the player is logged in, or `null` otherwise.
    */
-  getPlayerId(clientID: number): string | null {
+  getPlayerId(clientID: number): string | undefined {
     const player = this.playersByClient.get(clientID)
-    return player?.accountID ?? null
+    return player?.accountID
   }
 
   /**
