@@ -1,5 +1,5 @@
 // Services
-export { CommandService } from './command.service'
+export { CommandService } from './core/command.service'
 export { HttpService, type HttpOptions } from './http/http.service'
 export { AccessControlService } from './access-control.service'
 export { ChatService } from './chat.service'

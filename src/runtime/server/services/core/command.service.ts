@@ -1,23 +1,30 @@
 import { injectable } from 'tsyringe'
-import type { CommandMetadata } from '../decorators/command'
-import { AppError } from '../../../kernel/utils'
+import type { CommandMetadata } from '../../decorators/command'
+import { AppError } from '../../../../kernel/utils'
 import z from 'zod'
-import { loggers } from '../../../kernel/shared/logger'
-import { generateSchemaFromTypes } from '../system/schema-generator'
-import { Player } from '../entities'
+import { loggers } from '../../../../kernel/shared/logger'
+import { generateSchemaFromTypes } from '../../system/schema-generator'
+import { Player } from '../../entities'
+import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
 
 /**
- * Runtime service that registers and executes chat commands.
+ * Local command execution service (CORE/STANDALONE modes).
  *
  * @remarks
- * Controllers declare commands via {@link Command}. During bootstrap the framework collects
+ * Maintains an in-memory registry of command handlers and executes them with full validation.
+ * Controllers declare commands via @Command decorator. During bootstrap, the framework
+ * scans and registers handlers via CommandProcessor.
  *
- * At execution time, this service validates and coerces arguments based on the command schema
- * (explicit Zod schema or auto-generated schema from parameter types).
+ * Execution pipeline:
+ * - Enforces authentication (secure by default unless marked @Public)
+ * - Validates arguments using Zod schemas (explicit or auto-generated)
+ * - Coerces argument types before invoking handlers
  */
 @injectable()
-export class CommandService {
-  constructor() {}
+export class CommandService extends CommandExecutionPort {
+  constructor() {
+    super()
+  }
 
   private commands = new Map<
     string,
@@ -182,7 +189,7 @@ export class CommandService {
   /**
    * Returns a list of all registered commands.
    */
-  getAllCommands() {
+  getAllCommands(): CommandInfo[] {
     return Array.from(this.commands.values()).map((c) => ({
       command: c.meta.command,
       description: c.meta.description ?? '',

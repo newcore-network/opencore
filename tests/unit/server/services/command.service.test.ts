@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { describe, it, expect, vi } from 'vitest'
-import { CommandService } from '../../../../src/runtime/server/services/command.service'
+import { CommandService } from '../../../../src/runtime/server/services/core/command.service'
 import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
 import { Player } from '../../../../src/runtime/server'
 import { AppError } from '../../../../src/kernel/utils'

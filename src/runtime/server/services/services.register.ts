@@ -1,7 +1,7 @@
 import { di } from '../../../kernel/di/container'
 import { DatabaseService } from '../database'
 import { ChatService } from './chat.service'
-import { CommandService } from './command.service'
+import { CommandService } from './core/command.service'
 import { HttpService } from './http/http.service'
 import { PlayerService } from './core/player.service'
 import { PlayerPersistenceService } from './persistence.service'
@@ -11,6 +11,8 @@ import { RemotePrincipalProvider } from './remote/remote-principal.provider'
 import type { RuntimeContext } from '../runtime'
 import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
 import { PrincipalProviderContract } from '../contracts'
+import { CommandExecutionPort } from './ports/command-execution.port'
+import { RemoteCommandService } from './remote/remote-command.service'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -74,9 +76,18 @@ export function registerServicesServer(ctx: RuntimeContext) {
   if (features.database.enabled) {
     di.registerSingleton(DatabaseService, DatabaseService)
   }
+
   if (features.commands.enabled) {
-    di.registerSingleton(CommandService, CommandService)
+    if (features.commands.provider === 'local' || mode === 'CORE') {
+      // CORE/STANDALONE: local command execution
+      di.registerSingleton(CommandService)
+      di.register(CommandExecutionPort as any, { useToken: CommandService })
+    } else {
+      // RESOURCE: remote command execution (delegates to CORE)
+      di.registerSingleton(CommandExecutionPort as any, RemoteCommandService)
+    }
   }
+
   if (features.http.enabled) {
     di.registerSingleton(HttpService, HttpService)
   }

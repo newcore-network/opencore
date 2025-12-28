@@ -85,6 +85,7 @@ export function Guard(options: GuardOptions) {
         // Send user-friendly error message for authorization failures
         if (error instanceof AppError && error.code === 'AUTH:PERMISSION_DENIED') {
           player.send(error.message, 'error')
+          return
         }
         throw error
       }

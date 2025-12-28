@@ -1,13 +1,21 @@
 import { OnNet } from '../decorators/onNet'
-import { CommandService } from '../services/command.service'
+import { CommandExecutionPort } from '../services/ports/command-execution.port'
 import { Player } from '../entities'
 import { Controller, Public } from '../decorators'
 import { loggers } from '../../../kernel/shared/logger'
 import { AppError } from '../../../kernel/utils'
 
+/**
+ * Network controller for command execution.
+ *
+ * @remarks
+ * Receives command execution requests from clients and delegates to CommandExecutionPort.
+ * In CORE mode, executes commands directly or delegates to owning resource.
+ * In RESOURCE mode, delegates to CORE via exports.
+ */
 @Controller()
 export class CommandNetworkController {
-  constructor(private readonly commandService: CommandService) {}
+  constructor(private readonly commandService: CommandExecutionPort) {}
 
   @Public()
   @OnNet('core:execute-command')

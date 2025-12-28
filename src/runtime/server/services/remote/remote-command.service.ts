@@ -1,0 +1,88 @@
+import { injectable } from 'tsyringe'
+import { CommandMetadata } from '../../decorators/command'
+import { getRuntimeContext } from '../../runtime'
+import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
+import type { CoreExports } from '../../types/core-exports'
+import { Player } from '../../entities'
+import { loggers } from '../../../../kernel/shared/logger'
+
+/**
+ * Remote command service for RESOURCE mode.
+ *
+ * @remarks
+ * In RESOURCE mode, this service:
+ * - Stores command handlers locally in the resource
+ * - Registers command metadata with CORE via exports
+ * - Executes handlers when invoked by CORE via net event
+ *
+ * Flow:
+ * 1. Resource declares @Command → metadata registered with CORE
+ * 2. Player executes command → CORE validates and emits event to resource
+ * 3. Resource receives event → looks up local handler → executes
+ */
+@injectable()
+export class RemoteCommandService extends CommandExecutionPort {
+  private handlers = new Map<string, Function>()
+
+  /**
+   * Gets typed access to CORE resource exports.
+   */
+  private get core(): CoreExports {
+    const { coreResourceName } = getRuntimeContext()
+    return (exports as any)[coreResourceName]
+  }
+
+  /**
+   * Registers a command handler locally and with CORE.
+   *
+   * @remarks
+   * The handler is stored locally in this resource, while metadata is sent to CORE.
+   * CORE maintains the command registry and delegates execution back to this resource.
+   */
+  register(metadata: CommandMetadata, handler: Function): void {
+    // Store handler locally
+    this.handlers.set(metadata.command.toLowerCase(), handler)
+
+    // Register metadata with CORE
+    this.core.registerCommand({
+      command: metadata.command,
+      description: metadata.description,
+      usage: metadata.usage,
+      isPublic: metadata.isPublic ?? false,
+      resourceName: GetCurrentResourceName(),
+    })
+
+    const publicFlag = metadata.isPublic ? ' [Public]' : ''
+    loggers.command.debug(
+      `Registered remote command: /${metadata.command}${publicFlag} (delegated to CORE)`,
+    )
+  }
+
+  /**
+   * Executes a command handler stored in this resource.
+   *
+   * @remarks
+   * Called by the resource's command execution controller when CORE
+   * emits a command execution event to this resource.
+   */
+  async execute(player: Player, commandName: string, args: string[]): Promise<void> {
+    const handler = this.handlers.get(commandName.toLowerCase())
+    if (!handler) {
+      loggers.command.error(`Handler not found for remote command: ${commandName}`, {
+        command: commandName,
+        resource: GetCurrentResourceName(),
+      })
+      return
+    }
+
+    // Execute local handler
+    return await handler(player, ...args)
+  }
+
+  /**
+   * Returns all commands registered in CORE (local + remote).
+   */
+  getAllCommands(): CommandInfo[] {
+    return this.core.getAllCommands()
+  }
+}
