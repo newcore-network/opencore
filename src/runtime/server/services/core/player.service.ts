@@ -10,6 +10,10 @@ import { PlayerSession } from '../types/player-session.object'
  * Service responsible for managing the lifecycle of player sessions.
  * It acts as the central registry for all connected players, mapping FiveM client IDs
  * to Core `Player` entities.
+ *
+ * @remarks
+ * This service is used as a singleton in the dependency container.
+ * It exposes the operations defined by {@link PlayerDirectoryPort} and {@link PlayerSessionLifecyclePort}.
  */
 @injectable()
 export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecyclePort {
