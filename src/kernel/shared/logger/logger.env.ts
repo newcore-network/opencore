@@ -1,8 +1,25 @@
 import { LogLevel, parseLogLevel } from './logger.types'
 
 /**
+ * Global log level constant.
+ * This value is injected at build-time by the OpenCore CLI based on opencore.config.ts
+ *
+ * @example
+ * ```typescript
+ * // opencore.config.ts
+ * export default {
+ *   logLevel: 'DEBUG', // 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL' | 'OFF'
+ * }
+ * ```
+ *
+ * The CLI will replace `__OPENCORE_LOG_LEVEL__` with the configured value during build.
+ * Default: 'INFO' for production-like behavior.
+ */
+declare const __OPENCORE_LOG_LEVEL__: string | undefined
+
+/**
  * Detects if we're running in a FiveM client environment.
- * Client has GetPlayerPed but not GetCurrentResourceName with player count natives.
+ * Client has GetPlayerPed but not GetNumPlayerIndices (server-only native).
  */
 export function isClientEnvironment(): boolean {
   return (
@@ -26,36 +43,17 @@ export function isFiveMEnvironment(): boolean {
 }
 
 /**
- * Gets the log level from FiveM convar or environment variable.
+ * Gets the configured log level.
  *
- * Priority:
- * 1. FiveM convar: `opencore_log_level`
- * 2. Default: INFO for production-like behavior
- *
- * @example
- * ```lua
- * -- In server.cfg
- * set opencore_log_level "DEBUG"
- * ```
+ * The log level is determined at build-time from opencore.config.ts via the CLI.
+ * If not configured, defaults to INFO.
  *
  * @returns The configured LogLevel
  */
-export function getLogLevelFromEnv(): LogLevel {
-  // Try FiveM convar first
-  if (isFiveMEnvironment()) {
-    try {
-      const GetConvar = (globalThis as any).GetConvar
-      if (typeof GetConvar === 'function') {
-        const convarValue = GetConvar('opencore_log_level', 'INFO')
-        return parseLogLevel(convarValue)
-      }
-    } catch {
-      // Ignore errors, fall through to default
-    }
-  }
-
-  // Default to INFO for production-like behavior
-  return LogLevel.INFO
+export function getLogLevel(): LogLevel {
+  // Use build-time injected value, fallback to INFO
+  const level = typeof __OPENCORE_LOG_LEVEL__ !== 'undefined' ? __OPENCORE_LOG_LEVEL__ : 'INFO'
+  return parseLogLevel(level)
 }
 
 /**
@@ -63,6 +61,5 @@ export function getLogLevelFromEnv(): LogLevel {
  * Debug mode is enabled when log level is DEBUG or TRACE.
  */
 export function isDebugMode(): boolean {
-  const level = getLogLevelFromEnv()
-  return level <= LogLevel.DEBUG
+  return getLogLevel() <= LogLevel.DEBUG
 }

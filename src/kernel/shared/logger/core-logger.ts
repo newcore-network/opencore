@@ -2,7 +2,7 @@ import { LogDomain } from './logger.types'
 import { LoggerService } from './logger.service'
 import { ConsoleTransport } from './transports/console.transport'
 import { SimpleConsoleTransport } from './transports/simple-console.transport'
-import { getLogLevelFromEnv, isClientEnvironment } from './logger.env'
+import { getLogLevel, isClientEnvironment } from './logger.env'
 import type { LogTransport } from './transports/transport.interface'
 
 /**
@@ -11,7 +11,7 @@ import type { LogTransport } from './transports/transport.interface'
  * - Server: ConsoleTransport (with ANSI colors)
  */
 function createTransport(): LogTransport {
-  const logLevel = getLogLevelFromEnv()
+  const logLevel = getLogLevel()
 
   if (isClientEnvironment()) {
     return new SimpleConsoleTransport({
@@ -36,20 +36,22 @@ function createTransport(): LogTransport {
  * via DI instead.
  *
  * Configuration:
- * - Set `opencore_log_level` convar in server.cfg to control log verbosity
+ * - Set `logLevel` in opencore.config.ts to control log verbosity
  * - Values: TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
  * - Default: INFO
  *
  * @example
- * ```lua
- * -- In server.cfg
- * set opencore_log_level "DEBUG"
+ * ```typescript
+ * // opencore.config.ts
+ * export default {
+ *   logLevel: 'DEBUG',
+ * }
  * ```
  *
  * @internal
  */
 export const coreLogger = new LoggerService({
-  minLevel: getLogLevelFromEnv(),
+  minLevel: getLogLevel(),
   defaultDomain: LogDomain.FRAMEWORK,
   defaultSource: 'Core',
   transports: [createTransport()],

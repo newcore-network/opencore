@@ -26,6 +26,6 @@ export {
   isClientEnvironment,
   isServerEnvironment,
   isFiveMEnvironment,
-  getLogLevelFromEnv,
+  getLogLevel,
   isDebugMode,
 } from './logger.env'
