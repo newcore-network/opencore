@@ -14,5 +14,5 @@ export * from './ports/player-directory.port'
 export * from './ports/player-session-lifecycle.port'
 
 // Types & Interfaces
-export * from './types/linked-id'
+export type * from './types/linked-id'
 export * from './types/player-session.object'

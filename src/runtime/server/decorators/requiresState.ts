@@ -9,7 +9,7 @@ export interface StateRequirement {
   /**
    * **Whitelist:** The player **MUST** possess ALL of these states to proceed.
    * If the player is missing any one of these, the execution is blocked.
-   * @example ['on_duty_police', 'in_vehicle']
+   * @example ['on_duty', 'in_vehicle']
    */
   has?: string[]
 
