@@ -1,10 +1,11 @@
-import { injectable } from 'tsyringe'
+import { injectable, inject } from 'tsyringe'
 import { CommandMetadata } from '../../decorators/command'
 import { getRuntimeContext } from '../../runtime'
 import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
 import type { CoreExports } from '../../types/core-exports'
 import { Player } from '../../entities'
 import { loggers } from '../../../../kernel/shared/logger'
+import { IExports } from '../../../../adapters/contracts/IExports'
 
 /**
  * Remote command service for RESOURCE mode.
@@ -24,12 +25,26 @@ import { loggers } from '../../../../kernel/shared/logger'
 export class RemoteCommandService extends CommandExecutionPort {
   private handlers = new Map<string, Function>()
 
+  constructor(@inject(IExports as any) private exportsService: IExports) {
+    super()
+  }
+
   /**
    * Gets typed access to CORE resource exports.
    */
   private get core(): CoreExports {
     const { coreResourceName } = getRuntimeContext()
-    return (exports as any)[coreResourceName]
+    const coreExports = this.exportsService.getResource<CoreExports>(coreResourceName)
+
+    if (!coreExports) {
+      throw new Error(
+        `[OpenCore] CORE resource '${coreResourceName}' exports not found. ` +
+          `Ensure the CORE resource is started BEFORE RESOURCE mode resources. ` +
+          `Add 'ensure ${coreResourceName}' before this resource in server.cfg`,
+      )
+    }
+
+    return coreExports
   }
 
   /**

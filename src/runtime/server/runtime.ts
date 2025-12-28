@@ -1,5 +1,29 @@
 export type FrameworkMode = 'CORE' | 'RESOURCE' | 'STANDALONE'
 
+/**
+ * Feature provider source configuration.
+ *
+ * @remarks
+ * Determines where a feature's implementation comes from:
+ *
+ * - `'core'`: Feature provided by CORE resource via exports
+ *   - Used in RESOURCE mode for: players, principal, auth, commands
+ *   - Triggers remote service implementations that delegate to CORE
+ *
+ * - `'local'`: Feature implemented locally in current resource
+ *   - Used in CORE/STANDALONE for all features
+ *   - Used in RESOURCE for: netEvents, fiveMEvents, exports, http, chat, database
+ *   - Triggers local service implementations
+ *
+ * @example
+ * ```typescript
+ * // RESOURCE mode - commands delegate to CORE
+ * commands: { enabled: true, provider: 'core' }
+ *
+ * // STANDALONE mode - commands execute locally
+ * commands: { enabled: true, provider: 'local' }
+ * ```
+ */
 export type FeatureProvider = 'core' | 'local'
 export type FeatureScope = 'core' | 'resource' | 'standalone'
 
@@ -16,6 +40,254 @@ export type FeatureName =
   | 'auth'
   | 'sessionLifecycle'
 
+// ========================================
+// USER CONFIG (what users configure)
+// ========================================
+
+/**
+ * Base feature configuration (all features support this).
+ */
+export interface BaseFeatureConfig {
+  /**
+   * Enable or disable this feature.
+   *
+   * @defaultValue Varies by feature and mode (see specific feature docs)
+   */
+  enabled?: boolean
+}
+
+/**
+ * Feature configuration with configurable provider.
+ *
+ * @remarks
+ * Only applies to: `players`, `commands`, `principal`, `auth`
+ *
+ * For these features, you can choose:
+ * - `'core'`: Use CORE's implementation (RESOURCE mode)
+ * - `'local'`: Use local implementation (STANDALONE mode)
+ *
+ * **Defaults by mode:**
+ * - CORE: `'core'`
+ * - RESOURCE: `'core'` (delegates to CORE)
+ * - STANDALONE: `'local'`
+ */
+export interface ProviderFeatureConfig extends BaseFeatureConfig {
+  /**
+   * Provider source for this feature.
+   *
+   * @remarks
+   * - RESOURCE mode: Use `'core'` to delegate to CORE (default)
+   * - STANDALONE mode: Must use `'local'` (default)
+   */
+  provider?: FeatureProvider
+}
+
+/**
+ * Feature configuration with export option (CORE mode only).
+ *
+ * @remarks
+ * Only applies to: `players`, `principal`, `chat` in CORE mode
+ *
+ * When `export: true`, the feature exposes FiveM exports for RESOURCE mode access.
+ */
+export interface ExportableFeatureConfig extends BaseFeatureConfig {
+  /**
+   * Whether to expose this feature via FiveM exports.
+   *
+   * @remarks
+   * - Only valid in CORE mode
+   * - Requires `exports` feature to be enabled
+   * - Used by RESOURCE mode to access CORE functionality
+   *
+   * @defaultValue false
+   */
+  export?: boolean
+}
+
+/**
+ * User-facing feature configuration.
+ *
+ * @remarks
+ * This is what users configure in `Server.init({ features: {...} })`.
+ * Internal fields like `scope` and `required` are auto-managed by the framework.
+ */
+export interface UserFeatureConfig {
+  /**
+   * Player management and directory.
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Configurable
+   * - CORE/STANDALONE: Local player management
+   * - RESOURCE: Delegates to CORE
+   *
+   * **Export** (CORE only): When true, exposes player APIs to RESOURCE mode
+   *
+   * @defaultValue
+   * - enabled: true
+   * - provider: 'core' (RESOURCE), 'core' (CORE), 'local' (STANDALONE)
+   * - export: false
+   */
+  players?: ProviderFeatureConfig & ExportableFeatureConfig
+
+  /**
+   * Command registration and execution.
+   *
+   * @remarks
+   * **Dependencies**: Requires `players` to be enabled
+   * **Provider**: Configurable
+   * - CORE/STANDALONE: Local command execution
+   * - RESOURCE: Commands register with CORE for centralized security validation
+   *
+   * **Export** (CORE only): Always exported when enabled (for RESOURCE mode access)
+   *
+   * @defaultValue
+   * - enabled: false
+   * - provider: 'core' (RESOURCE), 'local' (CORE/STANDALONE)
+   * - export: true (CORE only, automatic)
+   */
+  commands?: ProviderFeatureConfig
+
+  /**
+   * Principal (identity) provider for permissions.
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Configurable
+   * - CORE: User-provided PrincipalProvider implementation
+   * - RESOURCE: Delegates to CORE
+   * - STANDALONE: User-provided PrincipalProvider implementation
+   *
+   * **Export** (CORE only): When true, exposes principal APIs to RESOURCE mode
+   *
+   * @defaultValue
+   * - enabled: false
+   * - provider: 'core' (RESOURCE), 'core' (CORE), 'local' (STANDALONE)
+   * - export: false
+   */
+  principal?: ProviderFeatureConfig & ExportableFeatureConfig
+
+  /**
+   * Authentication provider for login/logout.
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Configurable
+   * - CORE: User-provided AuthProvider implementation
+   * - RESOURCE: Delegates to CORE
+   * - STANDALONE: User-provided AuthProvider implementation
+   *
+   * @defaultValue
+   * - enabled: false
+   * - provider: 'core' (RESOURCE), 'core' (CORE), 'local' (STANDALONE)
+   */
+  auth?: ProviderFeatureConfig
+
+  /**
+   * Network events (`onNet` decorator support).
+   *
+   * @remarks
+   * **Dependencies**: Requires `players` to be enabled
+   * **Provider**: Auto-determined (not configurable)
+   * - Always `'local'` (events are handled locally in each resource)
+   *
+   * @defaultValue enabled: true
+   */
+  netEvents?: BaseFeatureConfig
+
+  /**
+   * FiveM lifecycle events (`onServer`, `onClient`, etc.).
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Auto-determined (not configurable)
+   * - Always `'local'`
+   * - Disabled in RESOURCE mode (only CORE/STANDALONE need lifecycle management)
+   *
+   * @defaultValue
+   * - enabled: true (CORE/STANDALONE), false (RESOURCE)
+   */
+  fiveMEvents?: BaseFeatureConfig
+
+  /**
+   * FiveM exports support (`@Export` decorator).
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Auto-determined (not configurable)
+   * - Always `'local'`
+   *
+   * @defaultValue enabled: false
+   */
+  exports?: BaseFeatureConfig
+
+  /**
+   * HTTP server and endpoints.
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Auto-determined (not configurable)
+   * - Always `'local'`
+   *
+   * @defaultValue enabled: false
+   */
+  http?: BaseFeatureConfig
+
+  /**
+   * Chat message handling.
+   *
+   * @remarks
+   * **Dependencies**: Requires `players` to be enabled
+   * **Provider**: Auto-determined (not configurable)
+   * - Always `'local'`
+   *
+   * **Export** (CORE only): When true, exposes chat APIs to RESOURCE mode
+   *
+   * @defaultValue
+   * - enabled: false
+   * - export: false
+   */
+  chat?: BaseFeatureConfig & ExportableFeatureConfig
+
+  /**
+   * Database access.
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Auto-determined (not configurable)
+   * - Always `'local'`
+   *
+   * @defaultValue enabled: false
+   */
+  database?: BaseFeatureConfig
+
+  /**
+   * Session lifecycle management (internal).
+   *
+   * @remarks
+   * **Dependencies**: None
+   * **Provider**: Auto-determined (not configurable)
+   * - Disabled in RESOURCE mode (CORE manages sessions)
+   *
+   * @defaultValue
+   * - enabled: true (CORE/STANDALONE), false (RESOURCE)
+   */
+  sessionLifecycle?: BaseFeatureConfig
+}
+
+// ========================================
+// INTERNAL CONTRACT (framework internals)
+// ========================================
+
+/**
+ * Internal feature contract with all fields resolved.
+ *
+ * @remarks
+ * This is used internally by the framework after merging user config with defaults.
+ * Users don't interact with this directly.
+ *
+ * @internal
+ */
 export interface FeatureContract {
   /**
    * Enables or disables the feature at runtime.
@@ -31,9 +303,10 @@ export interface FeatureContract {
    */
   provider: FeatureProvider
   /**
-   * Whether the feature should be exposed through the framework's export layer.
+   * Marks the feature as exportable via FiveM exports.
    *
-   * Note: exporting typically requires the `exports` feature to be enabled.
+   * Only meaningful in CORE mode. When `true`, the framework dynamically imports
+   * export controllers that expose the feature's API to RESOURCE mode.
    */
   export: boolean
   /**
@@ -116,32 +389,102 @@ export function getFrameworkModeScope(mode: FrameworkMode): FeatureScope {
   return 'standalone'
 }
 
+/**
+ * Server initialization configuration.
+ *
+ * @remarks
+ * Defines the runtime mode and feature configuration for OpenCore.
+ *
+ * @example Minimal CORE Mode
+ * ```typescript
+ * Server.init({
+ *   mode: 'CORE',
+ *   features: {
+ *     commands: { enabled: true },
+ *     principal: { enabled: true },
+ *   }
+ * })
+ * ```
+ *
+ * @example Minimal RESOURCE Mode
+ * ```typescript
+ * Server.init({
+ *   mode: 'RESOURCE',
+ *   coreResourceName: 'my-core',
+ *   features: {
+ *     commands: { enabled: true },  // Auto-uses 'core' provider
+ *   }
+ * })
+ * ```
+ *
+ * @example STANDALONE Mode
+ * ```typescript
+ * Server.init({
+ *   mode: 'STANDALONE',
+ *   features: {
+ *     players: { enabled: true },
+ *     commands: { enabled: true },
+ *   }
+ * })
+ * ```
+ */
 export interface ServerInitOptions {
+  /** Runtime mode determining feature availability and provider sources */
   mode: FrameworkMode
-  features?: Partial<Record<FeatureName, Partial<FeatureContract>>>
+
+  /**
+   * Feature configuration.
+   *
+   * @remarks
+   * All features have sensible defaults. You only need to configure:
+   * - `enabled: true` to enable a feature
+   * - `provider` (optional, only for players/commands/principal/auth if you want non-default)
+   * - `export: true` (optional, CORE mode only, for players/principal/chat)
+   *
+   * **Most features auto-determine their provider based on mode.**
+   * Only configure `provider` if you need to override defaults.
+   */
+  features?: UserFeatureConfig
+
+  /**
+   * Name of the CORE resource.
+   *
+   * @remarks
+   * - **Required in RESOURCE mode** (to locate CORE exports)
+   * - Optional in CORE/STANDALONE modes
+   *
+   * @defaultValue 'core'
+   */
   coreResourceName?: string
+
+  /** Resource grants configuration (CORE mode only) */
   resourceGrants?: ResourceGrants
 }
 
 function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
   const scope = getFrameworkModeScope(mode)
 
-  const baseProvider: FeatureProvider = mode === 'STANDALONE' ? 'local' : 'core'
-  const resourceProvider: FeatureProvider = 'local'
+  // Provider logic:
+  // - CORE/STANDALONE: All features use 'local' (run locally)
+  // - RESOURCE: Some features delegate to CORE ('core'), others run locally ('local')
+  const playersProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
+  const commandsProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
+  const principalProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
+  const authProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
 
-  const playersProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : baseProvider
-  const netEventsProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const fiveMEventsProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const commandsProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const exportsProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const httpProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const chatProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const databaseProvider: FeatureProvider = mode === 'RESOURCE' ? resourceProvider : baseProvider
-  const principalProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : baseProvider
-  const authProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : baseProvider
-  const sessionLifecycleProvider: FeatureProvider = baseProvider
+  // These always use 'local' regardless of mode
+  const netEventsProvider: FeatureProvider = 'local'
+  const fiveMEventsProvider: FeatureProvider = 'local'
+  const exportsProvider: FeatureProvider = 'local'
+  const httpProvider: FeatureProvider = 'local'
+  const chatProvider: FeatureProvider = 'local'
+  const databaseProvider: FeatureProvider = 'local'
+  const sessionLifecycleProvider: FeatureProvider = 'local'
 
   const sessionLifecycleEnabled = mode !== 'RESOURCE'
+
+  // Commands should export in CORE mode for RESOURCE access
+  const commandsExport = mode === 'CORE'
 
   return {
     players: { enabled: true, provider: playersProvider, export: false, scope, required: false },
@@ -159,7 +502,13 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
       scope,
       required: false,
     },
-    commands: { enabled: false, provider: commandsProvider, export: false, scope, required: false },
+    commands: {
+      enabled: false,
+      provider: commandsProvider,
+      export: commandsExport,
+      scope,
+      required: false,
+    },
     exports: { enabled: false, provider: exportsProvider, export: false, scope, required: false },
     http: { enabled: false, provider: httpProvider, export: false, scope, required: false },
     chat: { enabled: false, provider: chatProvider, export: false, scope, required: false },
@@ -188,7 +537,7 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
 
   if (options.features) {
     for (const name of FEATURE_NAMES) {
-      const override = options.features[name]
+      const override = options.features[name as keyof UserFeatureConfig]
       if (!override) continue
       features[name] = { ...defaults[name], ...override } as FeatureContract
     }
@@ -203,66 +552,41 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
 }
 
 function assertFeatureKeys(features: any): asserts features is FrameworkFeatures {
-  if (!features || typeof features !== 'object') {
-    throw new Error(`[OpenCore] Invalid features: expected object, received ${typeof features}`)
-  }
-
-  const missing: string[] = []
-  for (const name of FEATURE_NAMES) {
-    if (!(name in features)) missing.push(name)
-  }
-
-  if (missing.length) {
-    throw new Error(`[OpenCore] Missing feature contracts: ${missing.join(', ')}`)
+  const keys = Object.keys(features)
+  for (const key of keys) {
+    if (!FEATURE_NAMES.includes(key as FeatureName)) {
+      throw new Error(`[OpenCore] Unknown feature: '${key}'`)
+    }
   }
 }
 
-export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
-  if (!ctx || typeof ctx !== 'object') {
-    throw new Error('[OpenCore] Invalid runtime options')
-  }
-
-  const { mode, features, coreResourceName, resourceGrants } = ctx
-  if (!mode) throw new Error('[OpenCore] Runtime mode is required')
-  if (mode === 'RESOURCE') {
-    if (!coreResourceName || typeof coreResourceName !== 'string' || !coreResourceName.trim()) {
-      throw new Error(`[OpenCore] coreResourceName is required in RESOURCE mode`)
-    }
-  }
+export function validateRuntimeOptions(options: ServerRuntimeOptions): void {
+  const { mode, features } = options
 
   assertFeatureKeys(features)
 
-  if (mode === 'RESOURCE') {
-    if (features.database.enabled && !resourceGrants?.database) {
-      throw new Error(
-        `[OpenCore] Feature 'database' is forbidden in RESOURCE mode unless resourceGrants.database=true`,
-      )
-    }
-
-    if (features.principal.enabled && !resourceGrants?.principal) {
-      throw new Error(
-        `[OpenCore] Feature 'principal' is forbidden in RESOURCE mode unless resourceGrants.principal=true`,
-      )
-    }
-
-    if (features.auth.enabled && !resourceGrants?.auth) {
-      throw new Error(
-        `[OpenCore] Feature 'auth' is forbidden in RESOURCE mode unless resourceGrants.auth=true`,
-      )
-    }
+  // If in RESOURCE mode, must have coreResourceName
+  if (mode === 'RESOURCE' && !options.coreResourceName) {
+    throw new Error('[OpenCore] RESOURCE mode requires coreResourceName to be specified')
   }
 
+  // Determine which features need CORE exports in RESOURCE mode
+  const needsCoreExports =
+    mode === 'RESOURCE' &&
+    (features.players.provider === 'core' ||
+      features.commands.provider === 'core' ||
+      features.principal.provider === 'core' ||
+      features.auth.provider === 'core')
+
+  // Validate coreResourceName exists if needed
   if (mode === 'RESOURCE') {
-    const needsCoreExports =
-      (features.players.enabled && features.players.provider === 'core') ||
-      (features.principal.enabled && features.principal.provider === 'core') ||
-      (features.auth.enabled && features.auth.provider === 'core')
+    const { coreResourceName } = options
 
     if (needsCoreExports) {
       const core = (globalThis as any).exports?.[coreResourceName]
       if (!core) {
         throw new Error(
-          `[OpenCore] Core exports are unavailable for resource '${coreResourceName}'. Is the core resource loaded?`,
+          `[OpenCore] CORE resource '${coreResourceName}' not found. Ensure it is started before RESOURCE mode resources.`,
         )
       }
     }
@@ -273,20 +597,18 @@ export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
   for (const name of FEATURE_NAMES) {
     const f = features[name]
 
-    if (!f || typeof f !== 'object') {
-      throw new Error(`[OpenCore] Invalid feature contract for '${name}'`)
-    }
-
-    if (f.required && !f.enabled) {
-      throw new Error(`[OpenCore] Feature '${name}' is required but disabled`)
-    }
-
     if (!f.enabled) {
+      if (f.required) {
+        throw new Error(`[OpenCore] Feature '${name}' is required but disabled`)
+      }
       continue
     }
 
-    if (!FEATURE_ALLOWED_SCOPES[name].includes(scope)) {
-      throw new Error(`[OpenCore] Feature '${name}' cannot be enabled in mode '${mode}'`)
+    const allowedScopes = FEATURE_ALLOWED_SCOPES[name]
+    if (!allowedScopes.includes(scope)) {
+      throw new Error(
+        `[OpenCore] Feature '${name}' is not allowed in scope '${scope}' (allowed: ${allowedScopes.join(', ')})`,
+      )
     }
 
     if (f.scope !== scope) {
@@ -299,12 +621,11 @@ export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
       throw new Error(`[OpenCore] Feature '${name}' cannot be exported when 'exports' is disabled`)
     }
 
-    if (mode === 'CORE' && f.provider !== 'core') {
-      throw new Error(`[OpenCore] Feature '${name}' must use provider 'core' in CORE mode`)
-    }
-
-    if (mode === 'STANDALONE' && f.provider !== 'local') {
-      throw new Error(`[OpenCore] Feature '${name}' must use provider 'local' in STANDALONE mode`)
+    // Validate provider combinations
+    if (mode === 'CORE' && f.provider === 'core') {
+      throw new Error(
+        `[OpenCore] Feature '${name}' cannot use provider='core' in CORE mode (use 'local' instead)`,
+      )
     }
 
     if (mode === 'RESOURCE' && f.provider === 'core' && f.export) {
@@ -314,6 +635,7 @@ export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
     }
   }
 
+  // Feature-specific validations
   if (features.players.enabled && mode === 'RESOURCE' && features.players.provider !== 'core') {
     throw new Error(`[OpenCore] Feature 'players' must use provider 'core' in RESOURCE mode`)
   }
@@ -326,31 +648,32 @@ export function validateRuntimeContextOrThrow(ctx: RuntimeContext): void {
     throw new Error(`[OpenCore] Feature 'auth' must use provider 'core' in RESOURCE mode`)
   }
 
-  if (features.sessionLifecycle.enabled && !features.players.enabled) {
-    throw new Error(`[OpenCore] Feature 'sessionLifecycle' requires 'players' to be enabled`)
+  if (features.commands.enabled && mode === 'RESOURCE' && features.commands.provider !== 'core') {
+    throw new Error(`[OpenCore] Feature 'commands' must use provider 'core' in RESOURCE mode`)
   }
 
-  if (features.sessionLifecycle.enabled && !features.fiveMEvents.enabled) {
-    throw new Error(`[OpenCore] Feature 'sessionLifecycle' requires 'fiveMEvents' to be enabled`)
+  // Commands export validation
+  if (features.commands.export && mode !== 'CORE') {
+    throw new Error(
+      `[OpenCore] Feature 'commands' can only be exported in CORE mode (current mode: '${mode}')`,
+    )
+  }
+
+  // Validate dependencies
+  if (features.commands.enabled && !features.players.enabled) {
+    throw new Error(`[OpenCore] Feature 'commands' requires 'players' to be enabled`)
   }
 
   if (features.netEvents.enabled && !features.players.enabled) {
     throw new Error(`[OpenCore] Feature 'netEvents' requires 'players' to be enabled`)
   }
 
-  if (features.commands.enabled && !features.netEvents.enabled) {
-    throw new Error(`[OpenCore] Feature 'commands' requires 'netEvents' to be enabled`)
-  }
-
   if (features.chat.enabled && !features.players.enabled) {
     throw new Error(`[OpenCore] Feature 'chat' requires 'players' to be enabled`)
   }
-
-  if (features.principal.enabled && !features.players.enabled) {
-    throw new Error(`[OpenCore] Feature 'principal' requires 'players' to be enabled`)
-  }
-
-  if (features.auth.enabled && !features.players.enabled) {
-    throw new Error(`[OpenCore] Feature 'auth' requires 'players' to be enabled`)
-  }
 }
+
+/**
+ * @deprecated Use validateRuntimeOptions instead
+ */
+export const validateRuntimeContextOrThrow = validateRuntimeOptions

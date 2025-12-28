@@ -10,7 +10,7 @@ import {
   setRuntimeContext,
   type RuntimeContext,
   type ServerRuntimeOptions,
-  validateRuntimeContextOrThrow,
+  validateRuntimeOptions,
 } from './runtime'
 import {
   registerDefaultBootstrapValidators,
@@ -46,6 +46,17 @@ function checkProviders(ctx: RuntimeContext): void {
 async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
   if (ctx.features.commands.enabled) {
     await import('./controllers/command.controller')
+    if (ctx.mode === 'RESOURCE') {
+      await import('./controllers/remote-command-execution.controller')
+    }
+  }
+
+  if (
+    ctx.features.commands.enabled &&
+    ctx.features.commands.export &&
+    ctx.features.exports.enabled
+  ) {
+    await import('./controllers/command-export.controller')
   }
 
   if (ctx.features.chat.enabled && ctx.features.chat.export && ctx.features.exports.enabled) {
@@ -87,7 +98,7 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
 export async function initServer(options: ServerRuntimeOptions) {
-  validateRuntimeContextOrThrow(options)
+  validateRuntimeOptions(options)
   setRuntimeContext(options)
 
   const ctx: RuntimeContext = options
@@ -105,6 +116,92 @@ export async function initServer(options: ServerRuntimeOptions) {
   loggers.bootstrap.debug('System processors registered')
 
   checkProviders(ctx)
+
+  // In RESOURCE mode, verify CORE exports are available before loading controllers
+  if (ctx.mode === 'RESOURCE') {
+    const needsCoreExports =
+      ctx.features.players.provider === 'core' ||
+      ctx.features.commands.provider === 'core' ||
+      ctx.features.principal.provider === 'core' ||
+      ctx.features.auth.provider === 'core'
+
+    if (needsCoreExports) {
+      const { coreResourceName } = ctx
+
+      loggers.bootstrap.debug(`Verifying CORE exports availability`, {
+        coreResourceName,
+        globalExportsKeys: Object.keys((globalThis as any).exports || {}),
+      })
+
+      // Build list of required exports
+      const requiredExports: string[] = []
+      if (ctx.features.commands.provider === 'core') {
+        requiredExports.push('registerCommand', 'executeCommand', 'getAllCommands')
+      }
+      if (ctx.features.players.provider === 'core') {
+        // Add any player-related exports if needed
+      }
+
+      loggers.bootstrap.debug(`Checking CORE exports`, {
+        coreResourceName,
+        requiredExports,
+      })
+
+      // Access exports directly using FiveM's global exports object
+      const globalExports = (globalThis as any).exports
+      if (!globalExports) {
+        throw new Error(
+          `[OpenCore] FiveM 'exports' global not found. This should never happen in a FiveM environment.`,
+        )
+      }
+
+      const coreExports = globalExports[coreResourceName]
+
+      // Check each required export directly (can't use Object.keys on FiveM exports proxy)
+      const missingExports: string[] = []
+      for (const exportName of requiredExports) {
+        try {
+          const exportValue = coreExports?.[exportName]
+          if (typeof exportValue !== 'function') {
+            missingExports.push(exportName)
+            loggers.bootstrap.warn(`Export '${exportName}' is not a function`, {
+              exportName,
+              type: typeof exportValue,
+              value: exportValue,
+            })
+          }
+        } catch (error) {
+          missingExports.push(exportName)
+          loggers.bootstrap.warn(`Failed to access export '${exportName}'`, {
+            exportName,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+      }
+
+      if (missingExports.length > 0) {
+        const errorMsg =
+          `CORE resource '${coreResourceName}' is missing ${missingExports.length} required exports: ${missingExports.join(', ')}\n` +
+          `\n` +
+          `This usually means:\n` +
+          `  1. The CORE resource failed to initialize properly\n` +
+          `  2. The CORE resource doesn't have the 'exports' feature enabled\n` +
+          `  3. The CORE resource doesn't have the required features enabled (commands: ${ctx.features.commands.provider === 'core'})\n` +
+          `\n` +
+          `Verify in '${coreResourceName}/src/server/server.ts':\n` +
+          `  - mode: 'CORE'\n` +
+          `  - features.exports.enabled: true\n` +
+          `  - features.commands.enabled: true (if using commands)`
+        loggers.bootstrap.fatal(errorMsg)
+        throw new Error(`[OpenCore] ${errorMsg}`)
+      }
+
+      loggers.bootstrap.info(`CORE exports validated successfully`, {
+        coreResourceName,
+        validatedExports: requiredExports,
+      })
+    }
+  }
 
   await loadFrameworkControllers(ctx)
 

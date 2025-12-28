@@ -6,6 +6,6 @@ export class FiveMExports extends IExports {
   }
 
   getResource<T = any>(resourceName: string): T | undefined {
-    return exports?.[resourceName] as T | undefined
+    return (globalThis as any).exports?.[resourceName] as T | undefined
   }
 }
