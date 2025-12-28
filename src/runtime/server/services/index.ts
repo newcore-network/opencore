@@ -1,5 +1,4 @@
 // Services
-export { CommandService } from './core/command.service'
 export { HttpService, type HttpOptions } from './http/http.service'
 export { AccessControlService } from './access-control.service'
 export { ChatService } from './chat.service'
@@ -12,6 +11,7 @@ export * from '../database'
 // Contract Services
 export * from './ports/player-directory.port'
 export * from './ports/player-session-lifecycle.port'
+export * from './ports/command-execution.port'
 
 // Types & Interfaces
 export type * from './types/linked-id'

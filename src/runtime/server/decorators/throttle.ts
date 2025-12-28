@@ -3,8 +3,9 @@ import { RateLimiterService } from '../services/rate-limiter.service'
 import type { Server } from '../../..'
 import type { SecurityAction } from '../types/security.types'
 import { SecurityError } from '../../../kernel/utils/error/security.error'
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 
-interface ThrottleOptions {
+export interface ThrottleOptions {
   /**
    * limit of calls per windowMs
    */
@@ -75,6 +76,9 @@ export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: nu
     } else {
       opts = { onExceed: 'LOG', ...optionsOrLimit }
     }
+
+    // Store metadata for remote transmission
+    Reflect.defineMetadata(METADATA_KEYS.THROTTLE, opts, target, propertyKey)
 
     descriptor.value = async function (...args: any[]) {
       const player = args[0] as Server.Player

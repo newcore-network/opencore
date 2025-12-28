@@ -7,4 +7,6 @@ export const METADATA_KEYS = {
   FIVEM_EVENT: 'core:meta:fivem_event',
   EXPORT: 'core:meta:export',
   PUBLIC: 'core:meta:public',
+  THROTTLE: 'core:throttle',
+  REQUIRES_STATE: 'core:requires_state',
 }

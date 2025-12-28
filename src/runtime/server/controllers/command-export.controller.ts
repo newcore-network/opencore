@@ -1,10 +1,14 @@
 import { Controller, Export } from '../decorators'
 import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import type { CommandRegistrationDto } from '../types/core-exports'
+import type { CommandRegistrationDto, SecurityMetadata } from '../types/core-exports'
 import { AppError } from '../../../kernel/utils'
+import { SecurityError } from '../../../kernel/utils/error/security.error'
 import { loggers } from '../../../kernel/shared/logger'
 import { injectable } from 'tsyringe'
+import { AccessControlService } from '../services/access-control.service'
+import { RateLimiterService } from '../services/rate-limiter.service'
+import { Player } from '../entities'
 
 /**
  * Command entry for resource-owned commands.
@@ -30,6 +34,8 @@ export class CommandExportController {
   constructor(
     private commandService: CommandExecutionPort,
     private playerDirectory: PlayerDirectoryPort,
+    private accessControl: AccessControlService,
+    private rateLimiter: RateLimiterService,
   ) {}
 
   /**
@@ -85,6 +91,9 @@ export class CommandExportController {
     const remoteEntry = this.remoteCommands.get(commandKey)
 
     if (remoteEntry) {
+      // Validate security BEFORE delegating to resource
+      await this.validateSecurity(player, commandName, remoteEntry.metadata.security)
+
       // Delegate to resource via net event
       const eventName = `opencore:command:execute:${remoteEntry.resourceName}`
       emitNet(eventName, clientID, commandName, args)
@@ -118,5 +127,76 @@ export class CommandExportController {
     )
 
     return [...localCommands, ...remoteCommandsInfo]
+  }
+
+  /**
+   * Validates security decorators before delegating to RESOURCE.
+   *
+   * @remarks
+   * Validation order: @Guard → @Throttle → @RequiresState
+   * Throws on first failure to prevent execution.
+   *
+   * @param player - Player executing the command
+   * @param commandName - Command name (for rate limit key)
+   * @param security - Security metadata from command decorators
+   *
+   * @throws AppError - If @Guard or @RequiresState validation fails
+   * @throws SecurityError - If @Throttle rate limit is exceeded
+   */
+  private async validateSecurity(
+    player: Player,
+    commandName: string,
+    security?: SecurityMetadata,
+  ): Promise<void> {
+    if (!security) return
+
+    // 1. Validate @Guard (rank/permission)
+    if (security.guard) {
+      await this.accessControl.enforce(player, security.guard)
+    }
+
+    // 2. Validate @Throttle (rate limiting)
+    if (security.throttle) {
+      const { limit, windowMs, onExceed, message } = security.throttle
+      const rateLimitKey = `${player.clientID}:remote:${commandName}`
+
+      const allowed = this.rateLimiter.checkLimit(rateLimitKey, limit, windowMs)
+      if (!allowed) {
+        const errorMessage = message || `Rate limit exceeded for command: ${commandName}`
+        if (onExceed === 'KICK') {
+          DropPlayer(player.clientID.toString(), errorMessage)
+        }
+        throw new SecurityError(onExceed || 'LOG', errorMessage, { clientID: player.clientID })
+      }
+    }
+
+    // 3. Validate @RequiresState (player state)
+    if (security.requiresState) {
+      const { has, missing, errorMessage } = security.requiresState
+
+      if (has) {
+        for (const state of has) {
+          if (!player.hasState(state)) {
+            throw new AppError(
+              'GAME:INVALID_STATE',
+              errorMessage || `Command requires state: ${state}`,
+              'core',
+            )
+          }
+        }
+      }
+
+      if (missing) {
+        for (const state of missing) {
+          if (player.hasState(state)) {
+            throw new AppError(
+              'GAME:INVALID_STATE',
+              errorMessage || `Command cannot be used in state: ${state}`,
+              'core',
+            )
+          }
+        }
+      }
+    }
   }
 }

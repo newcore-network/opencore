@@ -3,6 +3,7 @@ import type { ClassConstructor } from '../../../kernel/di/class-constructor'
 import type z from 'zod'
 import { Player } from '../entities/player'
 import { getParameterNames } from '../helpers/function-helper'
+import type { SecurityMetadata } from '../types/core-exports'
 
 export interface CommandConfig {
   /**
@@ -35,6 +36,8 @@ export interface CommandMetadata extends CommandConfig {
   paramNames: string[]
   expectsPlayer: boolean
   isPublic?: boolean
+  /** Security metadata for remote validation */
+  security?: SecurityMetadata
 }
 
 type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)

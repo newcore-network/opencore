@@ -43,18 +43,25 @@ export class RemoteCommandService extends CommandExecutionPort {
     // Store handler locally
     this.handlers.set(metadata.command.toLowerCase(), handler)
 
-    // Register metadata with CORE
+    // Register metadata with CORE (including security)
     this.core.registerCommand({
       command: metadata.command,
       description: metadata.description,
       usage: metadata.usage,
       isPublic: metadata.isPublic ?? false,
       resourceName: GetCurrentResourceName(),
+      security: metadata.security, // Transmit security metadata
     })
 
     const publicFlag = metadata.isPublic ? ' [Public]' : ''
+    const securityFlags = []
+    if (metadata.security?.guard) securityFlags.push('Guard')
+    if (metadata.security?.throttle) securityFlags.push('Throttle')
+    if (metadata.security?.requiresState) securityFlags.push('RequiresState')
+    const securityInfo = securityFlags.length > 0 ? ` (${securityFlags.join(', ')})` : ''
+
     loggers.command.debug(
-      `Registered remote command: /${metadata.command}${publicFlag} (delegated to CORE)`,
+      `Registered remote command: /${metadata.command}${publicFlag}${securityInfo} (delegated to CORE)`,
     )
   }
 

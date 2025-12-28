@@ -1,4 +1,25 @@
 import type { CommandInfo } from '../services/ports/command-execution.port'
+import type { GuardOptions } from '../decorators/guard'
+import type { ThrottleOptions } from '../decorators/throttle'
+import type { StateRequirement } from '../decorators/requiresState'
+
+/**
+ * Security metadata collected from decorators for remote validation.
+ *
+ * @remarks
+ * Transmitted from RESOURCE to CORE during command registration.
+ * CORE validates these constraints before delegating execution back to RESOURCE.
+ */
+export interface SecurityMetadata {
+  /** @Guard decorator options (rank/permission requirements) */
+  guard?: GuardOptions
+
+  /** @Throttle decorator options (rate limiting configuration) */
+  throttle?: ThrottleOptions
+
+  /** @RequiresState decorator options (player state validation) */
+  requiresState?: StateRequirement
+}
 
 /**
  * Metadata sent when a RESOURCE registers a command with CORE.
@@ -14,6 +35,8 @@ export interface CommandRegistrationDto {
   isPublic: boolean
   /** Resource name that owns this command */
   resourceName: string
+  /** Security metadata for CORE validation (optional) */
+  security?: SecurityMetadata
 }
 
 /**

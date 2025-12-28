@@ -45,12 +45,6 @@ Most projects will import the `Server`/`Client` namespaces:
 import { Server } from '@open-core/framework'
 ```
 
-Or directly:
-
-```ts
-import { Server } from '@open-core/framework/server'
-```
-
 ## Architecture
 
 OpenCore follows a Ports & Adapters (Hexagonal) architecture.

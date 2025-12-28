@@ -1,5 +1,6 @@
 import { AppError } from '../../../kernel/utils'
 import type { Server } from '../../..'
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
  * Configuration options for state validation requirements.
@@ -69,6 +70,9 @@ export interface StateRequirement {
 export function RequiresState(req: StateRequirement) {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
+
+    // Store metadata for remote transmission
+    Reflect.defineMetadata(METADATA_KEYS.REQUIRES_STATE, req, target, propertyKey)
 
     descriptor.value = async function (...args: any[]) {
       const player = args[0] as Server.Player
