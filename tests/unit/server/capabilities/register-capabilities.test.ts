@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { di } from '../../../../src/kernel/di/container'
-import { registerServerCapabilities } from '../../../../src/adapters/register-capabilities'
+import { describe, expect, it } from 'vitest'
 import { IEngineEvents, IExports, INetTransport, IResourceInfo } from '../../../../src/adapters'
+import { registerServerCapabilities } from '../../../../src/adapters/register-capabilities'
+import { di } from '../../../../src/kernel/di/container'
 
 describe('registerServerCapabilities', () => {
   it('registers and resolves capabilities', async () => {

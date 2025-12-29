@@ -6,11 +6,9 @@
  * These are low-level events from the RAGE engine. The arguments are
  * passed as arrays from the native layer.
  */
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Event Names (string literals for type safety)
 // ─────────────────────────────────────────────────────────────────────────────
-
 export type GameEventName =
   // Damage Events
   | 'CEventNetworkEntityDamage'

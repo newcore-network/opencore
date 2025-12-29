@@ -1,6 +1,6 @@
-import { METADATA_KEYS } from '../system/metadata-server.keys'
-import type { z } from 'zod'
+import { z } from 'zod'
 import type { Player } from '../entities/player'
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 export interface NetEventOptions {
   /**
@@ -29,10 +29,10 @@ type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: T
  * - First parameter must be `Player` (injected from the caller).
  *
  * Validation:
- * - If `options.schema` is provided:
+ * - If schema is provided:
  *   - `z.tuple([...])` validates all positional args.
  *   - otherwise: expects exactly 1 arg and validates `args[0]` (DTO payload pattern).
- * - If `options.schema` is omitted, only primitive args can be auto-validated from runtime param types
+ * - If schema is omitted, only primitive args can be auto-validated from runtime param types
  *   (`string|number|boolean|any[]`). Complex payloads should use an explicit schema.
  *
  * Authentication:
@@ -40,23 +40,43 @@ type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: T
  * - Use {@link Public} to explicitly mark a handler as unauthenticated.
  *
  * @param eventName - Network event name.
- * @param options - Optional config.
- * @param options.schema - Zod schema for payload validation.
+ * @param schemaOrOptions - Zod schema directly, or options object with schema property.
  *
  * @example
  * ```ts
+ * import { z, Infer } from '@open-core/framework'
+ *
+ * const PayloadSchema = z.object({ message: z.string() })
+ *
  * @Server.Controller()
  * export class ExampleController {
+ *   // Simple handler (no schema)
  *   @Server.OnNet('example:ping')
- *   ping(player: Player, message: string) {
- *     // ...
- *   }
+ *   ping(player: Player, message: string) { }
+ *
+ *   // With schema directly (recommended)
+ *   @Server.OnNet('example:data', PayloadSchema)
+ *   handleData(player: Player, data: Infer<typeof PayloadSchema>) { }
+ *
+ *   // With options object (legacy)
+ *   @Server.OnNet('example:legacy', { schema: PayloadSchema })
+ *   handleLegacy(player: Player, data: Infer<typeof PayloadSchema>) { }
  * }
  * ```
  */
-export function OnNet<TArgs extends any[]>(
+// Overload: Schema as second argument (recommended)
+export function OnNet<_TArgs extends any[]>(eventName: string, schema: z.ZodType): MethodDecorator
+
+// Overload: Options object (legacy, for backwards compatibility)
+export function OnNet<_TArgs extends any[]>(
   eventName: string,
   options?: Pick<NetEventOptions, 'schema'>,
+): MethodDecorator
+
+// Implementation
+export function OnNet<TArgs extends any[]>(
+  eventName: string,
+  schemaOrOptions?: z.ZodType | Pick<NetEventOptions, 'schema'>,
 ) {
   return <H extends ServerNetHandler<TArgs>>(
     target: any,
@@ -64,7 +84,11 @@ export function OnNet<TArgs extends any[]>(
     _descriptor: TypedPropertyDescriptor<H>,
   ) => {
     const paramTypes = Reflect.getMetadata('design:paramtypes', target, propertyKey)
-    const metadata: NetEventOptions = { eventName, schema: options?.schema, paramTypes }
+
+    // Detect if second arg is a Zod schema or an options object
+    const schema = schemaOrOptions instanceof z.ZodType ? schemaOrOptions : schemaOrOptions?.schema
+
+    const metadata: NetEventOptions = { eventName, schema, paramTypes }
     Reflect.defineMetadata(METADATA_KEYS.NET_EVENT, metadata, target, propertyKey)
   }
 }

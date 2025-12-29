@@ -1,19 +1,20 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
-import { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import { Player } from '../../../../src/runtime/server/entities/player'
-import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
 import { AppError } from '../../../../src/kernel/utils'
-
-// Mock emitNet global
-global.emitNet = vi.fn()
+import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
+import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
+import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
+import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
+import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
 
 describe('CommandExportController', () => {
   let controller: CommandExportController
   let mockCommandService: CommandExecutionPort
   let mockPlayerDirectory: PlayerDirectoryPort
+  let mockEngineEvents: IEngineEvents
+  let mockAccessControl: any
+  let mockRateLimiter: any
 
   beforeEach(() => {
     // Create mock services
@@ -28,7 +29,28 @@ describe('CommandExportController', () => {
       getAll: vi.fn(() => []),
     } as any
 
-    controller = new CommandExportController(mockCommandService, mockPlayerDirectory)
+    // Mock engine events adapter
+    mockEngineEvents = {
+      on: vi.fn(),
+      emit: vi.fn(),
+    } as any
+
+    // Mock security services (default: allow everything)
+    mockAccessControl = {
+      enforce: vi.fn().mockResolvedValue(undefined),
+    }
+
+    mockRateLimiter = {
+      checkLimit: vi.fn().mockReturnValue(true),
+    }
+
+    controller = new CommandExportController(
+      mockCommandService,
+      mockPlayerDirectory,
+      mockAccessControl,
+      mockRateLimiter,
+      mockEngineEvents,
+    )
 
     // Clear mocks
     vi.clearAllMocks()
@@ -112,7 +134,7 @@ describe('CommandExportController', () => {
 
   describe('executeCommand', () => {
     it('should execute local command if not remote', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -122,7 +144,7 @@ describe('CommandExportController', () => {
     })
 
     it('should delegate to resource via net event for remote command', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       // Register a remote command
@@ -135,8 +157,8 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(1, 'remotecmd', ['arg1', 'arg2'])
 
-      // Should emit event to resource
-      expect(global.emitNet).toHaveBeenCalledWith(
+      // Should emit event to resource via adapter
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:my-resource',
         1,
         'remotecmd',
@@ -148,7 +170,7 @@ describe('CommandExportController', () => {
     })
 
     it('should handle case-insensitive remote command lookup', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       // Register with uppercase
@@ -162,7 +184,7 @@ describe('CommandExportController', () => {
       // Execute with lowercase
       await controller.executeCommand(1, 'remote', [])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:my-resource',
         1,
         'remote',
@@ -174,13 +196,11 @@ describe('CommandExportController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(undefined)
 
       await expect(controller.executeCommand(999, 'test', [])).rejects.toThrow(AppError)
-      await expect(controller.executeCommand(999, 'test', [])).rejects.toThrow(
-        /player not found/i,
-      )
+      await expect(controller.executeCommand(999, 'test', [])).rejects.toThrow(/player not found/i)
     })
 
     it('should pass correct clientID to emitNet', async () => {
-      const fakePlayer = new Player({ clientID: 42, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 42 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -192,7 +212,7 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(42, 'test', [])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         expect.any(String),
         42, // clientID
         'test',
@@ -201,7 +221,7 @@ describe('CommandExportController', () => {
     })
 
     it('should handle empty args array', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -213,7 +233,7 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(1, 'noargs', [])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:test-resource',
         1,
         'noargs',
@@ -322,7 +342,7 @@ describe('CommandExportController', () => {
 
   describe('remote command routing', () => {
     it('should route commands to correct resource', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto1: CommandRegistrationDto = {
@@ -341,7 +361,7 @@ describe('CommandExportController', () => {
       controller.registerCommand(dto2)
 
       await controller.executeCommand(1, 'cmd1', [])
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:resource-a',
         expect.any(Number),
         'cmd1',
@@ -351,7 +371,7 @@ describe('CommandExportController', () => {
       vi.clearAllMocks()
 
       await controller.executeCommand(1, 'cmd2', [])
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:resource-b',
         expect.any(Number),
         'cmd2',
@@ -361,11 +381,8 @@ describe('CommandExportController', () => {
   })
 
   describe('security validation', () => {
-    let mockAccessControl: any
-    let mockRateLimiter: any
-
     beforeEach(() => {
-      // Create new mocks for security services
+      // Reset security mocks to allow all by default
       mockAccessControl = {
         enforce: vi.fn().mockResolvedValue(undefined),
       }
@@ -374,19 +391,20 @@ describe('CommandExportController', () => {
         checkLimit: vi.fn().mockReturnValue(true),
       }
 
-      // Create controller with security services
-      controller = new (CommandExportController as any)(
+      // Recreate controller with fresh mocks
+      controller = new CommandExportController(
         mockCommandService,
         mockPlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockEngineEvents,
       )
 
       vi.clearAllMocks()
     })
 
     it('should validate @Guard before delegating', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -409,11 +427,11 @@ describe('CommandExportController', () => {
       expect(mockAccessControl.enforce).toHaveBeenCalledWith(fakePlayer, { rank: 5 })
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should validate @Throttle before delegating', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -436,11 +454,11 @@ describe('CommandExportController', () => {
       expect(mockRateLimiter.checkLimit).toHaveBeenCalledWith('1:remote:test', 5, 1000)
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should validate @RequiresState before delegating', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       fakePlayer.hasState = vi.fn().mockReturnValue(true) // Player is dead
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -463,11 +481,11 @@ describe('CommandExportController', () => {
       expect(fakePlayer.hasState).toHaveBeenCalledWith('dead')
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should validate in order: guard → throttle → requiresState', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       fakePlayer.hasState = vi.fn().mockReturnValue(false)
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -492,7 +510,7 @@ describe('CommandExportController', () => {
         callOrder.push('throttle')
         return true
       })
-      fakePlayer.hasState = vi.fn().mockImplementation((state: string) => {
+      fakePlayer.hasState = vi.fn().mockImplementation((_state: string) => {
         callOrder.push('requiresState')
         return true
       })
@@ -503,11 +521,11 @@ describe('CommandExportController', () => {
       expect(callOrder).toEqual(['guard', 'throttle', 'requiresState'])
 
       // Should delegate after all validations pass
-      expect(global.emitNet).toHaveBeenCalled()
+      expect(mockEngineEvents.emit).toHaveBeenCalled()
     })
 
     it('should skip validation if no security metadata', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -526,11 +544,11 @@ describe('CommandExportController', () => {
       expect(mockRateLimiter.checkLimit).not.toHaveBeenCalled()
 
       // Should delegate
-      expect(global.emitNet).toHaveBeenCalled()
+      expect(mockEngineEvents.emit).toHaveBeenCalled()
     })
 
     it('should stop validation chain on first failure', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       fakePlayer.hasState = vi.fn()
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -561,7 +579,7 @@ describe('CommandExportController', () => {
     })
 
     it('should allow execution after passing all validations', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       fakePlayer.hasState = vi.fn().mockReturnValue(true)
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -586,7 +604,7 @@ describe('CommandExportController', () => {
       expect(fakePlayer.hasState).toHaveBeenCalled()
 
       // Should delegate to resource
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:test-resource',
         1,
         'test',

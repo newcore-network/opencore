@@ -1,14 +1,20 @@
-import { Controller, Export } from '../decorators'
-import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import type { CommandRegistrationDto, SecurityMetadata } from '../types/core-exports'
+import { inject, injectable } from 'tsyringe'
+import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
+import { loggers } from '../../../kernel/shared/logger'
 import { AppError } from '../../../kernel/utils'
 import { SecurityError } from '../../../kernel/utils/error/security.error'
-import { loggers } from '../../../kernel/shared/logger'
-import { injectable } from 'tsyringe'
-import { AccessControlService } from '../services/access-control.service'
-import { RateLimiterService } from '../services/rate-limiter.service'
-import { Player } from '../entities'
+import { Controller, Export, Public } from '../decorators'
+import { OnNet } from '../decorators/onNet'
+import type { Player } from '../entities'
+import type { CommandExecutionPort, CommandInfo } from '../services/ports/command-execution.port'
+import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import type { PrincipalPort } from '../services/ports/principal.port'
+import type { RateLimiterService } from '../services/rate-limiter.service'
+import type {
+  CommandRegistrationDto,
+  CoreCommandsExports,
+  SecurityMetadata,
+} from '../types/core-exports'
 
 /**
  * Command entry for resource-owned commands.
@@ -28,15 +34,77 @@ interface RemoteCommandEntry {
  */
 @injectable()
 @Controller()
-export class CommandExportController {
+export class CommandExportController implements CoreCommandsExports {
   private remoteCommands = new Map<string, RemoteCommandEntry>()
 
   constructor(
     private commandService: CommandExecutionPort,
     private playerDirectory: PlayerDirectoryPort,
-    private accessControl: AccessControlService,
+    private principalPort: PrincipalPort,
     private rateLimiter: RateLimiterService,
+    @inject(IEngineEvents as any) private engineEvents: IEngineEvents,
   ) {}
+
+  // ═══════════════════════════════════════════════════════════════
+  // Network Event Handler (receives commands from clients)
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Receives command execution requests from clients.
+   *
+   * @remarks
+   * This is the entry point for all command execution in CORE mode.
+   * Handles both local commands (registered in CORE) and remote commands
+   * (registered by RESOURCE mode instances).
+   */
+  @Public()
+  @OnNet('core:execute-command')
+  async onCommandReceived(player: Player, command: string, args: string[]) {
+    try {
+      if (command.startsWith('/')) command = command.slice(1)
+
+      // Basic input validation
+      if (args.length > 10 || !/^[a-zA-Z0-9:_-]+$/.test(command)) {
+        loggers.command.warn(`Rejected suspicious command: ${command}`, {
+          playerId: player.clientID,
+          playerName: player.name,
+        })
+        return
+      }
+
+      loggers.command.trace(`Received: /${command}`, {
+        playerId: player.clientID,
+        playerName: player.name,
+      })
+
+      // Use unified execution that handles both local and remote commands
+      await this.executeCommand(player.clientID, command, args)
+    } catch (error) {
+      if (error instanceof AppError) {
+        if (error.code === 'GAME:BAD_REQUEST' || error.code === 'COMMAND:NOT_FOUND') {
+          player.send(error.message, 'error')
+        } else {
+          player.send('An error occurred while executing the command', 'error')
+        }
+
+        loggers.command.error(
+          `Execution failed: /${command}`,
+          { playerId: player.clientID },
+          error as Error,
+        )
+      } else if (error instanceof SecurityError) {
+        player.send(error.message, 'error')
+        loggers.command.warn(`Security error: /${command}`, {
+          playerId: player.clientID,
+          error: error.message,
+        })
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Command Registration (for RESOURCE mode)
+  // ═══════════════════════════════════════════════════════════════
 
   /**
    * Registers a command from a RESOURCE with CORE.
@@ -94,9 +162,9 @@ export class CommandExportController {
       // Validate security BEFORE delegating to resource
       await this.validateSecurity(player, commandName, remoteEntry.metadata.security)
 
-      // Delegate to resource via net event
+      // Delegate to resource via local event (server-to-server, not network)
       const eventName = `opencore:command:execute:${remoteEntry.resourceName}`
-      emitNet(eventName, clientID, commandName, args)
+      this.engineEvents.emit(eventName, clientID, commandName, args)
       loggers.command.debug(`Delegated remote command execution to ${remoteEntry.resourceName}`, {
         command: commandName,
         clientID,
@@ -152,7 +220,7 @@ export class CommandExportController {
 
     // 1. Validate @Guard (rank/permission)
     if (security.guard) {
-      await this.accessControl.enforce(player, security.guard)
+      await this.principalPort.enforce(player, security.guard)
     }
 
     // 2. Validate @Throttle (rate limiting)

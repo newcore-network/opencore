@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe'
-import type { Player } from '../../entities/player'
 import {
-  NetEventSecurityObserverContract,
   type NetEventInvalidPayloadContext,
+  NetEventSecurityObserverContract,
 } from '../../contracts/security/net-event-security-observer.contract'
+import type { Player } from '../../entities/player'
 
 /**
  * Default net-event security observer.

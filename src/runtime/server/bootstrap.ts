@@ -1,23 +1,23 @@
+import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { di } from '../../kernel/di/container'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
-import { registerSystemServer } from './system/processors.register'
-import { registerServicesServer } from './services/services.register'
 import { loggers } from '../../kernel/shared/logger'
-import { AuthProviderContract } from './contracts/auth-provider.contract'
-import { getServerControllerRegistry } from './decorators/controller'
-import {
-  getFrameworkModeScope,
-  setRuntimeContext,
-  type RuntimeContext,
-  type ServerRuntimeOptions,
-  validateRuntimeOptions,
-} from './runtime'
 import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
-import { registerServerCapabilities } from '../../adapters/register-capabilities'
+import { AuthProviderContract } from './contracts/auth-provider.contract'
 import { PrincipalProviderContract } from './contracts/security/principal-provider.contract'
+import { getServerControllerRegistry } from './decorators/controller'
+import {
+  getFrameworkModeScope,
+  type RuntimeContext,
+  type ServerRuntimeOptions,
+  setRuntimeContext,
+  validateRuntimeOptions,
+} from './runtime'
+import { registerServicesServer } from './services/services.register'
+import { registerSystemServer } from './system/processors.register'
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
@@ -45,18 +45,14 @@ function checkProviders(ctx: RuntimeContext): void {
 
 async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
   if (ctx.features.commands.enabled) {
-    await import('./controllers/command.controller')
     if (ctx.mode === 'RESOURCE') {
+      // RESOURCE mode: only load the controller that receives delegated commands from CORE
       await import('./controllers/remote-command-execution.controller')
+    } else {
+      // CORE/STANDALONE mode: load the unified command controller
+      // This handles both network events and exports in a single controller
+      await import('./controllers/command-export.controller')
     }
-  }
-
-  if (
-    ctx.features.commands.enabled &&
-    ctx.features.commands.export &&
-    ctx.features.exports.enabled
-  ) {
-    await import('./controllers/command-export.controller')
   }
 
   if (ctx.features.chat.enabled && ctx.features.chat.export && ctx.features.exports.enabled) {
@@ -139,7 +135,35 @@ export async function initServer(options: ServerRuntimeOptions) {
         requiredExports.push('registerCommand', 'executeCommand', 'getAllCommands')
       }
       if (ctx.features.players.provider === 'core') {
-        // Add any player-related exports if needed
+        requiredExports.push(
+          'getPlayerId',
+          'getPlayerData',
+          'getAllPlayersData',
+          'getPlayerByAccountId',
+          'getPlayerCount',
+          'isPlayerOnline',
+          'getPlayerMeta',
+          'setPlayerMeta',
+          'getPlayerStates',
+          'hasPlayerState',
+          'addPlayerState',
+          'removePlayerState',
+        )
+      }
+      if (ctx.features.principal.provider === 'core') {
+        requiredExports.push(
+          'getPrincipal',
+          'getPrincipalByAccountId',
+          'refreshPrincipal',
+          'hasPermission',
+          'hasRank',
+          'hasAnyPermission',
+          'hasAllPermissions',
+          'getPermissions',
+          'getRank',
+          'getPrincipalName',
+          'getPrincipalMeta',
+        )
       }
 
       loggers.bootstrap.debug(`Checking CORE exports`, {
@@ -195,11 +219,6 @@ export async function initServer(options: ServerRuntimeOptions) {
         loggers.bootstrap.fatal(errorMsg)
         throw new Error(`[OpenCore] ${errorMsg}`)
       }
-
-      loggers.bootstrap.info(`CORE exports validated successfully`, {
-        coreResourceName,
-        validatedExports: requiredExports,
-      })
     }
   }
 
@@ -212,5 +231,38 @@ export async function initServer(options: ServerRuntimeOptions) {
 
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
+
+  // Initialize DevMode if enabled
+  if (ctx.devMode?.enabled) {
+    await initDevMode(ctx.devMode)
+  }
+
   loggers.bootstrap.info('OpenCore Server initialized successfully')
+}
+
+/**
+ * Initializes the DevMode subsystem.
+ * This is loaded dynamically to avoid bundling dev tools in production.
+ */
+async function initDevMode(config: NonNullable<RuntimeContext['devMode']>): Promise<void> {
+  const { DevModeService } = await import('./devmode/dev-mode.service')
+  const { EventInterceptorService } = await import('./devmode/event-interceptor.service')
+  const { StateInspectorService } = await import('./devmode/state-inspector.service')
+  const { PlayerSimulatorService } = await import('./devmode/player-simulator.service')
+
+  // Register DevMode services
+  di.registerSingleton(EventInterceptorService, EventInterceptorService)
+  di.registerSingleton(StateInspectorService, StateInspectorService)
+  di.registerSingleton(PlayerSimulatorService, PlayerSimulatorService)
+  di.registerSingleton(DevModeService, DevModeService)
+
+  // Enable DevMode
+  const devModeService = di.resolve(DevModeService)
+  await devModeService.enable({
+    enabled: true,
+    hotReload: config.hotReload,
+    bridge: config.bridge,
+    interceptor: config.interceptor,
+    simulator: config.simulator,
+  })
 }

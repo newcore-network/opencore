@@ -1,10 +1,9 @@
 import { Bench } from 'tinybench'
-import { container } from 'tsyringe'
+import { container, injectable } from 'tsyringe'
+import type { DecoratorProcessor } from '../../src/kernel/di/decorator-processor'
 import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
-import { DecoratorProcessor } from '../../src/kernel/di/decorator-processor'
 import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
 import { resetContainer } from '../../tests/helpers/di.helper'
-import { injectable } from 'tsyringe'
 
 class MockProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.COMMAND

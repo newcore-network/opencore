@@ -1,5 +1,5 @@
 import { Bind } from '../decorators'
-import { createFluentConfigurator, FluentConfigurator } from './config.base'
+import { createFluentConfigurator, type FluentConfigurator } from './config.base'
 
 interface ApiConfigState {
   baseUrl: string

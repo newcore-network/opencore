@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { METADATA_KEYS } from '../metadata-client.keys'
 
 @injectable()

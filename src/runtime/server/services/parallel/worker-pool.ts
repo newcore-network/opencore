@@ -6,8 +6,7 @@
  * Can be extended to support native workers when available.
  */
 
-import { v4 as uuid } from 'uuid'
-import type { WorkerPoolConfig, WorkerInfo, WorkerMessage, WorkerResponse } from './types'
+import type { WorkerInfo, WorkerMessage, WorkerPoolConfig, WorkerResponse } from './types'
 
 const DEFAULT_CONFIG: WorkerPoolConfig = {
   minWorkers: 0,

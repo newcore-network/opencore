@@ -1,8 +1,8 @@
-import { injectable, inject } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { METADATA_KEYS } from '../metadata-server.keys'
-import { loggers } from '../../../../kernel/shared/logger'
+import { inject, injectable } from 'tsyringe'
 import { ITick } from '../../../../adapters/contracts/ITick'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import { loggers } from '../../../../kernel/shared/logger'
+import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()
 export class TickProcessor implements DecoratorProcessor {

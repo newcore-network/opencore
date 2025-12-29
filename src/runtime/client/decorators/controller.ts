@@ -41,7 +41,7 @@ export function getClientControllerRegistry(resourceName?: string): ClassConstru
  * ```
  */
 export function Controller() {
-  return function (target: ClassConstructor) {
+  return (target: ClassConstructor) => {
     injectable()(target)
     Reflect.defineMetadata(METADATA_KEYS.CONTROLLER, { type: 'client' }, target)
     const key = getCurrentResourceNameSafe()

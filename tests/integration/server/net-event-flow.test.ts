@@ -1,15 +1,15 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
-import { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
-import { SecurityHandlerContract } from '../../../src/runtime/server/contracts/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import type { NetEventSecurityObserverContract } from '../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import type { SecurityHandlerContract } from '../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../src/runtime/server/decorators/onNet'
 import { Public } from '../../../src/runtime/server/decorators/public'
+import type { Player } from '../../../src/runtime/server/entities'
+import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
 import { METADATA_KEYS } from '../../../src/runtime/server/system/metadata-server.keys'
-import { Player } from '../../../src/runtime/server/entities'
+import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 
 /**
  * Creates a mock Player instance with configurable session state.
@@ -96,7 +96,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
         handlerCalled = false
 
         @OnNet('auth:login', { schema: loginSchema })
-        handleLogin(player: Player, data: { username: string; age: number }) {
+        handleLogin(_player: Player, _data: { username: string; age: number }) {
           this.handlerCalled = true
         }
       }
@@ -148,7 +148,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
         receivedData: any = null
 
         @OnNet('auth:login', { schema: loginSchema })
-        handleLogin(player: Player, data: { username: string; age: number }) {
+        handleLogin(_player: Player, data: { username: string; age: number }) {
           this.handlerCalled = true
           this.receivedData = data
         }
@@ -183,7 +183,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
         handlerCalled = false
 
         @OnNet('data:submit', { schema: dataSchema })
-        handleSubmit(player: Player, data: { value: string }) {
+        handleSubmit(_player: Player, _data: { value: string }) {
           this.handlerCalled = true
         }
       }
@@ -226,7 +226,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
         @Public()
         @OnNet('player:action')
-        handleAction(player: Player) {
+        handleAction(_player: Player) {
           this.handlerCalled = true
         }
       }
@@ -265,7 +265,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
         @Public()
         @OnNet('player:action')
-        handleAction(player: Player) {
+        handleAction(_player: Player) {
           this.handlerCalled = true
         }
       }
@@ -300,7 +300,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
         // No @Public() decorator - requires authentication by default
         @OnNet('secure:action')
-        handleSecureAction(player: Player) {
+        handleSecureAction(_player: Player) {
           this.handlerCalled = true
         }
       }
@@ -339,7 +339,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
         handlerCalled = false
 
         @OnNet('secure:action')
-        handleSecureAction(player: Player) {
+        handleSecureAction(_player: Player) {
           this.handlerCalled = true
         }
       }
@@ -377,7 +377,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
         @Public()
         @OnNet('public:info')
-        handlePublicInfo(player: Player) {
+        handlePublicInfo(_player: Player) {
           this.handlerCalled = true
         }
       }
@@ -419,7 +419,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
       class TestController {
         @OnNet('track:event', { schema })
-        handleEvent(player: Player, data: { id: number }) {}
+        handleEvent(_player: Player, _data: { id: number }) {}
       }
 
       const instance = new TestController()
@@ -461,7 +461,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
         receivedArgs: any[] = []
 
         @OnNet('tuple:event', { schema: tupleSchema })
-        handleTuple(player: Player, name: string, count: number, active: boolean) {
+        handleTuple(_player: Player, name: string, count: number, active: boolean) {
           this.receivedArgs = [name, count, active]
         }
       }
@@ -508,7 +508,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
           @Public()
           @OnNet('node:only')
-          handle(player: Player) {
+          handle(_player: Player) {
             this.called = true
           }
         }

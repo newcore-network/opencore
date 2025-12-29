@@ -1,5 +1,5 @@
 import { Bench } from 'tinybench'
-import { container, injectable, DependencyContainer } from 'tsyringe'
+import { container, DependencyContainer, injectable } from 'tsyringe'
 
 @injectable()
 class ServiceA {

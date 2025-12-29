@@ -54,13 +54,12 @@
  * ```
  */
 
-// Types
-export type {
-  OrderDirection,
-  FindOptions,
-  FindManyResult,
-  WhereCondition,
-} from './repository.types'
-
 // Contract
 export { Repository } from './repository.contract'
+// Types
+export type {
+  FindManyResult,
+  FindOptions,
+  OrderDirection,
+  WhereCondition,
+} from './repository.types'

@@ -1,9 +1,9 @@
 import { container } from 'tsyringe'
-import { RateLimiterService } from '../services/rate-limiter.service'
 import type { Server } from '../../..'
-import type { SecurityAction } from '../types/security.types'
 import { SecurityError } from '../../../kernel/utils/error/security.error'
+import { RateLimiterService } from '../services/rate-limiter.service'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
+import type { SecurityAction } from '../types/security.types'
 
 export interface ThrottleOptions {
   /**
@@ -61,7 +61,7 @@ export interface ThrottleOptions {
  * ```
  */
 export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: number) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
     if (!descriptor) {
       // In benchmarks or edge cases, skip method wrapping
       // This should NOT happen in production code with proper TypeScript compilation

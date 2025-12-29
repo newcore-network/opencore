@@ -48,10 +48,10 @@
 
 import type { DatabaseContract } from '../../database/database.contract'
 import type {
-  FindOptions,
   FindManyResult,
-  WhereCondition,
+  FindOptions,
   OrderDirection,
+  WhereCondition,
 } from './repository.types'
 
 /**
@@ -338,7 +338,6 @@ export abstract class Repository<TEntity, TId = number> {
       if (value === null) {
         conditions.push(`${key} IS NULL`)
       } else if (value === undefined) {
-        continue // Skip undefined values
       } else {
         conditions.push(`${key} = ?`)
         params.push(value)

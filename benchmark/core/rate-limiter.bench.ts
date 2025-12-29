@@ -46,7 +46,7 @@ export async function runRateLimiterBenchmark(): Promise<Bench> {
     const key = 'player:1:command'
     const now = Date.now()
     const oldTimestamps = Array.from({ length: 5 }, (_, i) => now - 2000 - i * 100)
-    // @ts-ignore - private access for benchmark
+    // @ts-expect-error - private access for benchmark
     service.hits.set(key, oldTimestamps)
 
     service.checkLimit(key, 10, 1000)

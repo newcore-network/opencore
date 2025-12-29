@@ -1,4 +1,4 @@
-import { LogDomainLabels, LogLevel, LogLevelLabels, type LogEntry } from '../logger.types'
+import { LogDomainLabels, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
 import type { LogTransport } from './transport.interface'
 
 /**
@@ -114,7 +114,6 @@ export class BufferedTransport implements LogTransport {
         return this.exportJson()
       case 'csv':
         return this.exportCsv()
-      case 'text':
       default:
         return this.exportText()
     }

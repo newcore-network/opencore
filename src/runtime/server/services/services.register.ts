@@ -1,18 +1,19 @@
 import { di } from '../../../kernel/di/container'
 import { DatabaseService } from '../database'
+import type { RuntimeContext } from '../runtime'
 import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
-import { HttpService } from './http/http.service'
 import { PlayerService } from './core/player.service'
+import { LocalPrincipalService } from './core/principal.service'
+import { HttpService } from './http/http.service'
 import { PlayerPersistenceService } from './persistence.service'
-import { PlayerDirectoryPort } from './ports/player-directory.port'
-import { RemotePlayerService } from './remote/remote-player.service'
-import { RemotePrincipalProvider } from './remote/remote-principal.provider'
-import type { RuntimeContext } from '../runtime'
-import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
-import { PrincipalProviderContract } from '../contracts'
 import { CommandExecutionPort } from './ports/command-execution.port'
+import { PlayerDirectoryPort } from './ports/player-directory.port'
+import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
+import { PrincipalPort } from './ports/principal.port'
 import { RemoteCommandService } from './remote/remote-command.service'
+import { RemotePlayerService } from './remote/remote-player.service'
+import { RemotePrincipalService } from './remote/remote-principal.service'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -57,13 +58,26 @@ export function registerServicesServer(ctx: RuntimeContext) {
     }
   }
 
+  if (mode === 'RESOURCE' && features.players.enabled) {
+    di.register(PlayerSessionLifecyclePort as any, {
+      useFactory: () => {
+        throw new Error('[OpenCore] PlayerSessionLifecyclePort is not available in RESOURCE mode')
+      },
+    })
+  }
+
   if (features.sessionLifecycle.enabled && mode !== 'RESOURCE') {
     di.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
   }
 
   if (features.principal.enabled) {
-    if (features.principal.provider === 'core' && mode === 'RESOURCE') {
-      di.registerSingleton(PrincipalProviderContract as any, RemotePrincipalProvider)
+    if (features.principal.provider === 'local' || mode === 'CORE' || mode === 'STANDALONE') {
+      // CORE/STANDALONE: Local principal service wraps user's PrincipalProviderContract
+      di.registerSingleton(LocalPrincipalService)
+      di.register(PrincipalPort as any, { useToken: LocalPrincipalService })
+    } else {
+      // RESOURCE: Remote principal service delegates to CORE
+      di.registerSingleton(PrincipalPort as any, RemotePrincipalService)
     }
   }
 

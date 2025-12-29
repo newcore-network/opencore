@@ -1,6 +1,6 @@
 import 'reflect-metadata'
-import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Bind } from '../../../../src/runtime/server/decorators/bind'
 
 describe('@Bind decorator', () => {

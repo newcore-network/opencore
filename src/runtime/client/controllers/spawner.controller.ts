@@ -1,6 +1,6 @@
-import { Vector3 } from '../../../kernel/utils'
+import type { Vector3 } from '../../../kernel/utils'
 import { Controller, OnNet } from '../decorators'
-import { SpawnService } from '../services'
+import type { SpawnService } from '../services'
 
 @Controller()
 export class SpawnerController {

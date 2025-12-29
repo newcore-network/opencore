@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { TickProcessor } from '../../src/runtime/server/system/processors/tick.processor'
 import { resetContainer } from '../../tests/helpers/di.helper'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { TickProcessor } from '../../src/runtime/server/system/processors/tick.processor'
-import { TickSimulator, createTestTickSimulator } from '../utils/tick-simulator'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { createTestTickSimulator, TickSimulator } from '../utils/tick-simulator'
 
 const registeredTicks: Array<() => void | Promise<void>> = []
 let tickExecutionCount = 0

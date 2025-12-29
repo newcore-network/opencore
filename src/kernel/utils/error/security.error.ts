@@ -1,4 +1,4 @@
-import { type SecurityAction } from '../../../runtime/server/types/security.types'
+import type { SecurityAction } from '../../../runtime/server/types/security.types'
 import { AppError } from './app.error'
 
 export class SecurityError extends AppError {

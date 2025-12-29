@@ -1,7 +1,41 @@
-import type { CommandInfo } from '../services/ports/command-execution.port'
+import type { Principal } from '../contracts/security/permission.types'
 import type { GuardOptions } from '../decorators/guard'
-import type { ThrottleOptions } from '../decorators/throttle'
 import type { StateRequirement } from '../decorators/requiresState'
+import type { ThrottleOptions } from '../decorators/throttle'
+import type { CommandInfo } from '../services/ports/command-execution.port'
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Player Serialization Types
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Serialized player data for cross-resource transfer.
+ *
+ * @remarks
+ * This DTO contains all session data that can be transferred from CORE to RESOURCE.
+ * Used by PlayerDirectory exports to provide real player data to remote resources.
+ */
+export interface SerializedPlayerData {
+  /** FiveM server client ID (source) */
+  clientID: number
+
+  /** Persistent account ID (undefined if not authenticated) */
+  accountID?: string
+
+  /** Platform identifiers (license, steam, discord, etc.) */
+  identifiers?: {
+    license?: string
+    steam?: string
+    discord?: string
+    [key: string]: string | undefined
+  }
+
+  /** Session metadata (transient key-value storage) */
+  meta: Record<string, unknown>
+
+  /** Active state flags (dead, cuffed, etc.) */
+  states: string[]
+}
 
 /**
  * Security metadata collected from decorators for remote validation.
@@ -52,37 +86,120 @@ export interface CommandRegistrationDto {
  * core.registerCommand({ ... })
  * ```
  */
-export interface CoreExports {
+export interface CorePrincipalExports {
   // ═══════════════════════════════════════════════════════════════
-  // Player Exports
+  // Principal/Permission Exports
   // ═══════════════════════════════════════════════════════════════
 
   /**
-   * Gets persistent account ID for a client.
+   * Gets the full Principal object for a player.
    *
-   * @param clientID - FiveM client/server ID
-   * @returns Account ID or undefined if not linked
+   * @param source - FiveM client/server ID
+   * @returns Principal data or null if not authenticated
    */
-  getPlayerId(clientID: number): string | undefined
+  getPrincipal(source: number): Promise<Principal | null>
 
   /**
-   * Retrieves session metadata for a player.
+   * Gets Principal by account ID (works for offline players too).
    *
-   * @param clientID - FiveM client/server ID
-   * @param key - Metadata key
-   * @returns Stored value or undefined
+   * @param accountId - Database account identifier
+   * @returns Principal data or null
    */
-  getPlayerMeta(clientID: number, key: string): Promise<any>
+  getPrincipalByAccountId(accountId: string): Promise<Principal | null>
 
   /**
-   * Stores session metadata for a player.
+   * Forces a refresh of the player's permissions from persistence.
    *
-   * @param clientID - FiveM client/server ID
-   * @param key - Metadata key
-   * @param value - Value to store
+   * @param source - FiveM client/server ID
    */
-  setPlayerMeta(clientID: number, key: string, value: unknown): void
+  refreshPrincipal(source: number): Promise<void>
 
+  /**
+   * Checks if player has a specific permission.
+   *
+   * @param source - FiveM client/server ID
+   * @param permission - Permission string to check
+   * @returns True if player has permission (or wildcard '*')
+   */
+  hasPermission(source: number, permission: string): Promise<boolean>
+
+  /**
+   * Checks if player has at least the required rank.
+   *
+   * @param source - FiveM client/server ID
+   * @param requiredRank - Minimum rank value
+   * @returns True if playerRank >= requiredRank
+   */
+  hasRank(source: number, requiredRank: number): Promise<boolean>
+
+  /**
+   * Checks if player has ANY of the specified permissions.
+   *
+   * @param source - FiveM client/server ID
+   * @param permissions - Array of permissions to check
+   * @returns True if player has at least one permission
+   */
+  hasAnyPermission(source: number, permissions: string[]): Promise<boolean>
+
+  /**
+   * Checks if player has ALL of the specified permissions.
+   *
+   * @param source - FiveM client/server ID
+   * @param permissions - Array of permissions to check
+   * @returns True if player has all permissions
+   */
+  hasAllPermissions(source: number, permissions: string[]): Promise<boolean>
+
+  /**
+   * Gets all permissions for a player.
+   *
+   * @param source - FiveM client/server ID
+   * @returns Array of permission strings
+   */
+  getPermissions(source: number): Promise<string[]>
+
+  /**
+   * Gets the rank value for a player.
+   *
+   * @param source - FiveM client/server ID
+   * @returns Rank number or null if not set
+   */
+  getRank(source: number): Promise<number | null>
+
+  /**
+   * Gets the principal name/role name for a player.
+   *
+   * @param source - FiveM client/server ID
+   * @returns Role name or null
+   */
+  getPrincipalName(source: number): Promise<string | null>
+
+  /**
+   * Gets principal metadata for a player.
+   *
+   * @param source - FiveM client/server ID
+   * @param key - Metadata key
+   * @returns Metadata value or null
+   */
+  getPrincipalMeta(source: number, key: string): Promise<unknown>
+
+  /**
+   * Enforces access control requirements, throwing on failure.
+   *
+   * @remarks
+   * Used by RESOURCE mode to delegate security validation to CORE.
+   * Validates rank and/or permission requirements and throws if player
+   * doesn't meet the criteria.
+   *
+   * @param source - FiveM client/server ID
+   * @param requirements - Guard options containing rank and/or permission requirements
+   *
+   * @throws AppError - AUTH:UNAUTHORIZED, GAME:NO_RANK_IN_PRINCIPAL, or AUTH:PERMISSION_DENIED
+   */
+  enforce(source: number, requirements: GuardOptions): Promise<void>
+}
+
+export interface CoreCommandsExports {
   // ═══════════════════════════════════════════════════════════════
   // Command Exports
   // ═══════════════════════════════════════════════════════════════
@@ -113,4 +230,109 @@ export interface CoreExports {
    * @returns Array of command metadata
    */
   getAllCommands(): CommandInfo[]
+}
+
+export interface CorePlayerExports {
+  // ═══════════════════════════════════════════════════════════════
+  // Player Exports
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Gets persistent account ID for a client.
+   *
+   * @param clientID - FiveM client/server ID
+   * @returns Account ID or undefined if not linked
+   */
+  getPlayerId(clientID: number): string | undefined
+
+  /**
+   * Retrieves session metadata for a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param key - Metadata key
+   * @returns Stored value or undefined
+   */
+  getPlayerMeta(clientID: number, key: string): Promise<any>
+
+  /**
+   * Stores session metadata for a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param key - Metadata key
+   * @param value - Value to store
+   */
+  setPlayerMeta(clientID: number, key: string, value: unknown): void
+
+  /**
+   * Gets complete serialized player data.
+   *
+   * @param clientID - FiveM client/server ID
+   * @returns Serialized player data or null if not found
+   */
+  getPlayerData(clientID: number): SerializedPlayerData | null
+
+  getManyData(clientIds: number[]): SerializedPlayerData[]
+
+  /**
+   * Gets serialized data for all connected players.
+   *
+   * @returns Array of serialized player data
+   */
+  getAllPlayersData(): SerializedPlayerData[]
+
+  /**
+   * Finds a player by their persistent account ID.
+   *
+   * @param accountId - Database account identifier
+   * @returns Serialized player data or null if not online
+   */
+  getPlayerByAccountId(accountId: string): SerializedPlayerData | null
+
+  /**
+   * Gets the current player count.
+   *
+   * @returns Number of connected players
+   */
+  getPlayerCount(): number
+
+  /**
+   * Checks if a player with given account ID is online.
+   *
+   * @param accountId - Database account identifier
+   * @returns True if player is connected
+   */
+  isPlayerOnline(accountId: string): boolean
+
+  /**
+   * Gets all active state flags for a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @returns Array of active state strings
+   */
+  getPlayerStates(clientID: number): string[]
+
+  /**
+   * Checks if player has a specific state.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param state - State identifier to check
+   * @returns True if state is active
+   */
+  hasPlayerState(clientID: number, state: string): boolean
+
+  /**
+   * Adds a state flag to a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param state - State identifier to add
+   */
+  addPlayerState(clientID: number, state: string): void
+
+  /**
+   * Removes a state flag from a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param state - State identifier to remove
+   */
+  removePlayerState(clientID: number, state: string): void
 }

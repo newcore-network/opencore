@@ -1,7 +1,7 @@
-import { injectable, injectAll, container } from 'tsyringe'
-import { DecoratorProcessor } from './decorator-processor'
-import { ClassConstructor } from './class-constructor'
+import { container, injectAll, injectable } from 'tsyringe'
 import { loggers } from '../shared/logger'
+import type { ClassConstructor } from './class-constructor'
+import type { DecoratorProcessor } from './decorator-processor'
 
 @injectable()
 export class MetadataScanner {

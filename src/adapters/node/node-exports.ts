@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { IExports } from '../contracts/IExports'
+import type { IExports } from '../contracts/IExports'
 
 /**
  * Node.js implementation of IExports using in-memory registry.

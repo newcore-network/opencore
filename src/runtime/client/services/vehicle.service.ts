@@ -172,7 +172,7 @@ export class VehicleService {
    * Set vehicle fuel level.
    *
    * @param vehicle - Vehicle handle
-   * @param level - Fuel level (0.0-1.0)
+   * @param level - Fuel level (0.0-100.0)
    */
   setFuel(vehicle: number, level: number): void {
     if (!DoesEntityExist(vehicle)) return

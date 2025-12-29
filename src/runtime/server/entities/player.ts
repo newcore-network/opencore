@@ -1,7 +1,22 @@
-import { type IPlayerInfo } from '../../../adapters'
+import type { IPlayerInfo } from '../../../adapters'
+import type { IEntityServer } from '../../../adapters/contracts/IEntityServer'
+import type { INetTransport } from '../../../adapters/contracts/INetTransport'
+import type { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
 import type { Vector3 } from '../../../kernel/utils'
 import type { LinkedID } from '../services/types/linked-id'
 import type { PlayerSession } from '../services/types/player-session.object'
+import type { SerializedPlayerData } from '../types/core-exports'
+
+/**
+ * Adapter bundle for player operations.
+ * Passed to Player instances by PlayerDirectory.
+ */
+export interface PlayerAdapters {
+  playerInfo: IPlayerInfo
+  playerServer: IPlayerServer
+  entityServer: IEntityServer
+  netTransport: INetTransport
+}
 
 /**
  * Core-level representation of a connected player on the server.
@@ -15,17 +30,21 @@ import type { PlayerSession } from '../services/types/player-session.object'
  */
 export class Player {
   private states = new Set<string>()
+  private position: Vector3 | undefined
 
   /**
    * Creates a new Player entity instance.
    * This is typically instantiated by the `PlayerService` upon connection.
    *
    * @param session - The internal session data structure holding ID and metadata.
+   * @param adapters - Platform adapters for player operations.
    */
   constructor(
     private readonly session: PlayerSession,
-    private readonly playerInfo: IPlayerInfo,
-  ) {}
+    private readonly adapters: PlayerAdapters,
+  ) {
+    this.position = adapters.playerInfo.getPlayerPosition(session.clientID)
+  }
 
   /**
    * The numeric FiveM Server ID (Source) of the player.
@@ -55,7 +74,13 @@ export class Player {
    * The display name of the player (Steam name or FiveM username).
    */
   get name(): string {
-    return this.playerInfo.getPlayerName(this.clientID) ?? `Player#${this.clientID}`
+    return this.adapters.playerInfo.getPlayerName(this.clientID) ?? `Player#${this.clientID}`
+  }
+
+  getPosition(): Vector3 | undefined {
+    // re-set last position
+    this.position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
+    return this.position
   }
 
   /**
@@ -64,13 +89,7 @@ export class Player {
    * @returns An array of identifier strings (e.g., `['steam:11000...', 'license:2332...']`).
    */
   getIdentifiers() {
-    const ids: string[] = []
-    for (let i = 0; ; i++) {
-      const id = GetPlayerIdentifier(this.clientIDStr, i)
-      if (!id) break
-      ids.push(id)
-    }
-    return ids
+    return this.adapters.playerServer.getIdentifiers(this.clientIDStr)
   }
 
   /**
@@ -81,12 +100,12 @@ export class Player {
    * @param args - Data to send to the client.
    */
   emit(eventName: string, ...args: any[]) {
-    emitNet(eventName, this.clientID, ...args)
+    this.adapters.netTransport.emitNet(eventName, this.clientID, ...args)
   }
 
   /** used to send a private message to the player */
   send(message: string, type: 'chat' | 'error' | 'success' | 'warning' = 'chat') {
-    emitNet('core:chat:send', this.clientID, message, type)
+    this.adapters.netTransport.emitNet('core:chat:send', this.clientID, message, type)
   }
 
   /**
@@ -98,8 +117,9 @@ export class Player {
    * @param vector - The target coordinates (x, y, z).
    */
   teleport(vector: Vector3) {
-    SetEntityCoords(
-      GetPlayerPed(this.clientIDStr),
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    this.adapters.entityServer.setCoords(
+      ped,
       vector.x,
       vector.y,
       vector.z,
@@ -132,7 +152,7 @@ export class Player {
    * @param reason - The message displayed to the player upon disconnection.
    */
   kick(reason = 'Kicked from server') {
-    DropPlayer(this.clientID.toString(), reason)
+    this.adapters.playerServer.drop(this.clientIDStr, reason)
   }
 
   /**
@@ -142,7 +162,7 @@ export class Player {
    * @param bucket - The bucket ID (0 is the default shared world).
    */
   setRoutingBucket(bucket: number) {
-    SetPlayerRoutingBucket(this.clientID.toString(), bucket)
+    this.adapters.playerServer.setRoutingBucket(this.clientIDStr, bucket)
   }
 
   /**
@@ -250,5 +270,80 @@ export class Player {
    */
   getStates(): string[] {
     return Array.from(this.states)
+  }
+
+  /**
+   * Gets the current health of the player's ped.
+   *
+   * @returns Current health value (0-200, where 100 is dead).
+   */
+  getHealth(): number {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    return this.adapters.entityServer.getHealth(ped)
+  }
+
+  /**
+   * Sets the health of the player's ped.
+   *
+   * @param health - Health value to set (0-200).
+   */
+  setHealth(health: number): void {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    this.adapters.entityServer.setHealth(ped, health)
+  }
+
+  /**
+   * Gets the current armor of the player's ped.
+   *
+   * @returns Current armor value (0-100).
+   */
+  getArmor(): number {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    return this.adapters.entityServer.getArmor(ped)
+  }
+
+  /**
+   * Sets the armor of the player's ped.
+   *
+   * @param armor - Armor value to set (0-100).
+   */
+  setArmor(armor: number): void {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    this.adapters.entityServer.setArmor(ped, armor)
+  }
+
+  /**
+   * Kills the player by setting health to 0.
+   */
+  kill(): void {
+    this.setHealth(0)
+  }
+
+  /**
+   * Checks if the player is alive.
+   *
+   * @returns `true` if health is above 100 (dead threshold), `false` otherwise.
+   */
+  isAlive(): boolean {
+    return this.getHealth() > 100
+  }
+
+  /**
+   * Serializes the player data for cross-resource transfer.
+   *
+   * @remarks
+   * Creates a plain object representation of the player session that can be
+   * safely transferred between resources via FiveM exports.
+   *
+   * @returns Serialized player data DTO
+   */
+  serialize(): SerializedPlayerData {
+    return {
+      clientID: this.clientID,
+      accountID: this.accountID,
+      identifiers: this.session.identifiers,
+      meta: { ...this.session.meta },
+      states: this.getStates(),
+    }
   }
 }

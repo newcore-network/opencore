@@ -1,4 +1,4 @@
-import { type ErrorOrigin } from './types/common.error-codes'
+import type { ErrorOrigin } from './types/common.error-codes'
 import type { FrameworkErrorCode } from './types/framework.error-codes'
 
 export class AppError extends Error {

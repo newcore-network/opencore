@@ -1,7 +1,7 @@
-import { AppError, isAppError } from '../../kernel/utils'
-import type { CommandMetadata } from './decorators/command'
 import { loggers } from '../../kernel/shared/logger'
-import { type ErrorOrigin } from '../../kernel/utils/error/types/common.error-codes'
+import { AppError, isAppError } from '../../kernel/utils'
+import type { ErrorOrigin } from '../../kernel/utils/error/types/common.error-codes'
+import type { CommandMetadata } from './decorators/command'
 
 function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   if (isAppError(error)) {

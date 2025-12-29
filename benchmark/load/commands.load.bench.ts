@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { resetCitizenFxMocks, registeredCommands } from '../../tests/mocks/citizenfx'
-import { CommandService } from '../../src/runtime/server/services/command.service'
-import { PlayerFactory } from '../utils/player-factory'
-import { getAllScenarios } from '../utils/load-scenarios'
-import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 import { Player } from '../../src/runtime/server/entities/player'
+import { CommandService } from '../../src/runtime/server/services/command.service'
+import { registeredCommands, resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
+import { getAllScenarios } from '../utils/load-scenarios'
+import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { PlayerFactory } from '../utils/player-factory'
 
 class TestController {
   private callCount = 0

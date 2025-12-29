@@ -1,8 +1,8 @@
 import { Bench } from 'tinybench'
-import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
-import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
 import type { Player } from '../../src/runtime/server/entities/player'
+import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
 import type { Principal } from '../../src/runtime/server/templates/security/permission.types'
+import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
 import { PlayerFactory } from '../utils/player-factory'
 
 class MockPrincipalProvider extends PrincipalProviderContract {

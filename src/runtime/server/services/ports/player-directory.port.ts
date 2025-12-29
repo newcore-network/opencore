@@ -1,10 +1,10 @@
 import type { Player } from '../../entities'
 
 /**
- * Core port that provides read-only access to active player sessions.
+ * Core port that provides access to active player sessions.
  *
  * @remarks
- * This port defines a framework-owned boundary for querying player-related data
+ * This port defines a framework-owned boundary for querying and managing player-related data
  * regardless of the current runtime mode (CORE, RESOURCE, etc.).
  *
  * Implementations of this port are responsible for resolving player information
@@ -12,6 +12,10 @@ import type { Player } from '../../entities'
  *
  * Consumers should treat returned {@link Player} instances as runtime representations
  * of connected clients, not as persistent domain models.
+ *
+ * **Mode Differences:**
+ * - **CORE/STANDALONE**: Data is local and authoritative
+ * - **RESOURCE**: Data is fetched from CORE via exports
  */
 export abstract class PlayerDirectoryPort {
   /**
@@ -21,6 +25,13 @@ export abstract class PlayerDirectoryPort {
    * @returns The corresponding {@link Player} instance, or `undefined` if the player is not connected.
    */
   abstract getByClient(clientID: number): Player | undefined
+
+  /**
+   * Returns a group of {@link Player} associated with a given fivem clients ids
+   *
+   * @param clientIds The fivem server client ID (`source`)
+   */
+  abstract getMany(clientIds: number[]): Player[]
 
   /**
    * Returns all currently connected players.
@@ -67,4 +78,43 @@ export abstract class PlayerDirectoryPort {
    * @param value - The value to associate with the given key.
    */
   abstract setMeta(clientID: number, key: string, value: unknown): void
+
+  // ═══════════════════════════════════════════════════════════════
+  // Extended Query Methods (optional implementation)
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Returns the {@link Player} associated with a persistent account ID.
+   *
+   * @remarks
+   * Searches all connected players for one with the matching accountID.
+   * Returns `undefined` if no player with that account is currently online.
+   *
+   * @param accountId - The persistent account identifier.
+   * @returns The corresponding {@link Player} instance, or `undefined` if not online.
+   */
+  getByAccountId?(accountId: string): Player | undefined
+
+  /**
+   * Returns the current number of connected players.
+   *
+   * @remarks
+   * More efficient than `getAll().length` for implementations that
+   * can provide a count without fetching all player data.
+   *
+   * @returns The number of currently connected players.
+   */
+  getPlayerCount?(): number
+
+  /**
+   * Checks if a player with the given account ID is currently online.
+   *
+   * @remarks
+   * More efficient than `getByAccountId() !== undefined` for implementations
+   * that can check presence without fetching full player data.
+   *
+   * @param accountId - The persistent account identifier.
+   * @returns `true` if the player is online, `false` otherwise.
+   */
+  isOnline?(accountId: string): boolean
 }

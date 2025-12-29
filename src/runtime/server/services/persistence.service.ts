@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
 import { di } from '../../../kernel/di/container'
-import type { Player } from '../entities/player'
 import { loggers } from '../../../kernel/shared/logger'
 import { PlayerPersistenceContract } from '../contracts'
+import type { Player } from '../entities/player'
 
 /**
  * Internal service that orchestrates player data persistence.
@@ -125,7 +125,7 @@ export class PlayerPersistenceService {
     if (!this.provider) return
 
     const savePromises = players.map((player) =>
-      this.provider!.onSessionSave(player).catch((error) => {
+      this.provider?.onSessionSave(player).catch((error) => {
         loggers.session.error(
           'Failed to save player data during bulk save',
           { clientId: player.clientID },
@@ -147,7 +147,7 @@ export class PlayerPersistenceService {
     const intervalMs = this.provider.config.autoSaveIntervalMs
     const interval = setInterval(async () => {
       try {
-        await this.provider!.onAutoSave(player)
+        await this.provider?.onAutoSave(player)
         loggers.session.debug('Player auto-save completed', { clientId: player.clientID })
       } catch (error) {
         loggers.session.error('Auto-save failed', { clientId: player.clientID }, error as Error)

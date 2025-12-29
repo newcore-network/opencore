@@ -1,6 +1,6 @@
+import { EventEmitter } from 'node:events'
 import { injectable } from 'tsyringe'
-import { EventEmitter } from 'events'
-import { IEngineEvents } from '../contracts/IEngineEvents'
+import type { IEngineEvents } from '../contracts/IEngineEvents'
 
 /**
  * Node.js implementation of IEngineEvents using EventEmitter.

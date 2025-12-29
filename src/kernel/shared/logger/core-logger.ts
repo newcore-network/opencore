@@ -1,6 +1,32 @@
-import { LogDomain, LogLevel } from './logger.types'
+import { getLogLevel, isClientEnvironment } from './logger.env'
 import { LoggerService } from './logger.service'
+import { LogDomain } from './logger.types'
 import { ConsoleTransport } from './transports/console.transport'
+import { SimpleConsoleTransport } from './transports/simple-console.transport'
+import type { LogTransport } from './transports/transport.interface'
+
+/**
+ * Creates the appropriate transport based on the runtime environment.
+ * - Client: SimpleConsoleTransport (no ANSI colors)
+ * - Server: ConsoleTransport (with ANSI colors)
+ */
+function createTransport(): LogTransport {
+  const logLevel = getLogLevel()
+
+  if (isClientEnvironment()) {
+    return new SimpleConsoleTransport({
+      minLevel: logLevel,
+      timestamps: true,
+      showContext: false,
+    })
+  }
+
+  return new ConsoleTransport({
+    minLevel: logLevel,
+    colors: true,
+    timestamps: true,
+  })
+}
 
 /**
  * Singleton logger instance for internal OpenCore framework use.
@@ -9,19 +35,26 @@ import { ConsoleTransport } from './transports/console.transport'
  * be used by OpenCore internals. Resource developers should inject LoggerService
  * via DI instead.
  *
+ * Configuration:
+ * - Set `logLevel` in opencore.config.ts to control log verbosity
+ * - Values: TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+ * - Default: INFO
+ *
+ * @example
+ * ```typescript
+ * // opencore.config.ts
+ * export default {
+ *   logLevel: 'DEBUG',
+ * }
+ * ```
+ *
  * @internal
  */
 export const coreLogger = new LoggerService({
-  minLevel: LogLevel.DEBUG,
+  minLevel: getLogLevel(),
   defaultDomain: LogDomain.FRAMEWORK,
   defaultSource: 'Core',
-  transports: [
-    new ConsoleTransport({
-      minLevel: LogLevel.DEBUG,
-      colors: true,
-      timestamps: true,
-    }),
-  ],
+  transports: [createTransport()],
 })
 
 // Pre-configured child loggers for common framework components

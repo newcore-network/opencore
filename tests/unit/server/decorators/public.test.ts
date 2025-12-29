@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { Public } from '../../../../src/runtime/server/decorators/public'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 

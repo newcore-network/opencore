@@ -7,7 +7,7 @@ import type {
   TransactionSharedParams,
 } from '../../runtime/server/database/types'
 
-interface NewCoreDBExports {
+interface OpenCoreDBExports {
   query_async: <T = any>(query: string, params?: any[]) => Promise<T[]>
   single_async: <T = any>(query: string, params?: any[]) => Promise<T | null>
   scalar_async: <T = any>(query: string, params?: any[]) => Promise<T | null>
@@ -20,20 +20,20 @@ interface NewCoreDBExports {
 }
 
 function getDbResourceName(): string {
-  const name = GetConvar('newcore_db_resource', '').trim()
+  const name = GetConvar('opencore_db_resource', '').trim()
   if (!name) {
-    throw new Error('[NewCore] newcore_db_resource is required when newcore_db_adapter=resource')
+    throw new Error('[OpenCore] opencore_db_resource is required when opencore_db_adapter=resource')
   }
   return name
 }
 
-function getDbExports(): NewCoreDBExports {
+function getDbExports(): OpenCoreDBExports {
   const resourceName = getDbResourceName()
-  const db = (exports as any)[resourceName] as NewCoreDBExports | undefined
+  const db = (exports as any)[resourceName] as OpenCoreDBExports | undefined
 
   if (!db) {
     throw new Error(
-      `[NewCore] Database resource '${resourceName}' is not available. Start it before this resource.`,
+      `[OpenCore] Database resource '${resourceName}' is not available. Start it before this resource.`,
     )
   }
 
@@ -60,7 +60,7 @@ function normalizeQueries(queries: TransactionInput): TransactionQuery[] | strin
 }
 
 export class ResourceDatabaseAdapter extends DatabaseContract {
-  private db: NewCoreDBExports
+  private db: OpenCoreDBExports
 
   constructor() {
     super()

@@ -6,7 +6,7 @@ const factories = new Map<string, DatabaseAdapterFactoryFn>()
 
 export function registerDatabaseAdapterFactory(name: string, factory: DatabaseAdapterFactoryFn) {
   if (factories.has(name)) {
-    throw new Error(`[NewCore] Database adapter factory '${name}' is already registered`)
+    throw new Error(`[OpenCore] Database adapter factory '${name}' is already registered`)
   }
   factories.set(name, factory)
 }

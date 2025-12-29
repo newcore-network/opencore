@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { METADATA_KEYS } from '../metadata-client.keys'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { coreLogger, LogDomain } from '../../../../kernel/shared/logger'
+import { METADATA_KEYS } from '../metadata-client.keys'
 
 const clientTick = coreLogger.child('Tick', LogDomain.CLIENT)
 

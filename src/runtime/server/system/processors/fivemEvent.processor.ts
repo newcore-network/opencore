@@ -1,9 +1,9 @@
 import { inject, injectable } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { METADATA_KEYS } from '../metadata-server.keys'
+import { IEngineEvents } from '../../../../adapters/contracts/IEngineEvents'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { loggers } from '../../../../kernel/shared/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
-import { IEngineEvents } from '../../../../adapters/contracts/IEngineEvents'
+import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()
 export class FiveMEventProcessor implements DecoratorProcessor {

@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
+import type { PlayerAppearance } from '../../../kernel/shared'
 import { loggers } from '../../../kernel/shared'
-import { Vector3 } from '../../../kernel/utils'
-import { AppearanceService } from './appearance.service'
-import { PlayerAppearance } from '../interfaces/appearance.interface'
+import type { Vector3 } from '../../../kernel/utils'
+import type { AppearanceService } from './appearance.service'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -127,11 +127,6 @@ export class SpawnService {
     }
 
     FreezeEntityPosition(ped, false)
-
-    loggers.spawn.debug('Teleported', {
-      position: { x: position.x, y: position.y, z: position.z },
-      heading,
-    })
   }
 
   /**
@@ -216,8 +211,6 @@ export class SpawnService {
     if (ped !== 0) {
       SetPedDefaultComponentVariation(ped)
     }
-
-    loggers.spawn.debug('Player model set', { model, modelHash })
   }
 
   private async ensurePed(): Promise<number> {
@@ -265,8 +258,6 @@ export class SpawnService {
     SetEntityVisible(ped, true, false)
     SetEntityCollision(ped, true, true)
     SetEntityInvincible(ped, false)
-
-    loggers.spawn.debug('Ped prepared for gameplay', { ped })
   }
 
   private async placePed(ped: number, position: Vector3, heading: number): Promise<void> {
@@ -286,7 +277,9 @@ export class SpawnService {
       return
     }
 
-    if (!this.appearanceService.validateAppearance(appearance)) {
+    const validation = this.appearanceService.validateAppearance(appearance)
+    if (!validation.valid) {
+      loggers.spawn.warn('Invalid appearance data', { errors: validation.errors })
       SetPedDefaultComponentVariation(ped)
       return
     }

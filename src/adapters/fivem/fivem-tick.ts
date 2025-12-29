@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { ITick } from '../contracts/ITick'
+import type { ITick } from '../contracts/ITick'
 
 /**
  * FiveM implementation of ITick using native setTick

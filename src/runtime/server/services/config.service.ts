@@ -55,7 +55,7 @@ export class ConfigService {
   getNumber(key: string, defaultValue: number): number {
     const value = GetConvar(this.PREFIX + key, String(defaultValue))
     const parsed = Number(value)
-    return isNaN(parsed) ? defaultValue : parsed
+    return Number.isNaN(parsed) ? defaultValue : parsed
   }
 
   /**

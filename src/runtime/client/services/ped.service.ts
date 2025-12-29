@@ -306,7 +306,7 @@ export class PedService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [handle, _] = FindFirstPed(0)
-    let ped = handle
+    const ped = handle
 
     do {
       if (!DoesEntityExist(ped)) continue
@@ -314,7 +314,7 @@ export class PedService {
 
       const [ex, ey, ez] = GetEntityCoords(ped, true)
       const dist = Math.sqrt(
-        Math.pow(ex - position.x, 2) + Math.pow(ey - position.y, 2) + Math.pow(ez - position.z, 2),
+        (ex - position.x) ** 2 + (ey - position.y) ** 2 + (ez - position.z) ** 2,
       )
 
       if (dist <= radius) {

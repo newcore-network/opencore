@@ -1,7 +1,8 @@
 import { injectable } from 'tsyringe'
-import { DatabaseContract } from './database.contract'
+import { OxMySQLAdapter } from '../../../adapters/database/oxmysql.adapter'
 import { ResourceDatabaseAdapter } from '../../../adapters/database/resource.adapter'
 import { registerDatabaseAdapterFactory, resolveDatabaseAdapterFactory } from './adapter.registry'
+import { DatabaseContract } from './database.contract'
 import type {
   DatabaseConfig,
   ExecuteResult,
@@ -9,7 +10,6 @@ import type {
   TransactionInput,
   TransactionSharedParams,
 } from './types'
-import { OxMySQLAdapter } from '../../../adapters/database/oxmysql.adapter'
 
 let defaultFactoriesRegistered = false
 
@@ -23,7 +23,6 @@ function registerDefaultDatabaseFactories(): void {
 @injectable()
 export class DatabaseService extends DatabaseContract {
   private adapter: DatabaseContract | null = null
-  private config: DatabaseConfig = {}
   private isInitialized = false
 
   /**
@@ -34,23 +33,22 @@ export class DatabaseService extends DatabaseContract {
   initialize(config: DatabaseConfig = {}): void {
     if (this.isInitialized) return
 
-    this.config = config
-
     registerDefaultDatabaseFactories()
 
     if (!this.adapter) {
-      const adapterName = config.adapter?.trim() || GetConvar('newcore_db_adapter', '').trim() || ''
+      const adapterName =
+        config.adapter?.trim() || globalThis.GetConvar?.('opencore_db_adapter', '') || ''
 
       if (!adapterName) {
         throw new Error(
-          "[NewCore] Database adapter is not configured. Set 'newcore_db_adapter' (recommended: 'resource') or call initDatabase({ adapter: 'resource' }).",
+          "[OpenCore] Database adapter is not configured. Set 'opencore_db_adapter' (recommended: 'resource') or call initDatabase({ adapter: 'resource' }).",
         )
       }
 
       const factory = resolveDatabaseAdapterFactory(adapterName)
       if (!factory) {
         throw new Error(
-          `[NewCore] Unknown database adapter '${adapterName}'. Register it via registerDatabaseAdapterFactory('${adapterName}', factory).`,
+          `[OpenCore] Unknown database adapter '${adapterName}'. Register it via registerDatabaseAdapterFactory('${adapterName}', factory).`,
         )
       }
 
@@ -88,61 +86,57 @@ export class DatabaseService extends DatabaseContract {
    * Get the current adapter
    */
   getAdapter(): DatabaseContract {
-    this.ensureInitialized()
-    return this.adapter!
+    return this.getInitializedAdapter()
   }
 
   /**
-   * Ensure the service is initialized before operations
+   * Ensure the service is initialized and return the adapter
    */
-  private ensureInitialized(): void {
+  private getInitializedAdapter(): DatabaseContract {
     if (!this.isInitialized) {
       this.initialize()
     }
 
     if (!this.adapter) {
-      throw new Error('[NewCore] Database adapter not initialized')
+      throw new Error('[OpenCore] Database adapter not initialized')
     }
+
+    return this.adapter
   }
 
   /**
    * Execute a query and return all matching rows
    */
   async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
-    this.ensureInitialized()
-    return this.adapter!.query<T>(sql, params)
+    return this.getInitializedAdapter().query<T>(sql, params)
   }
 
   /**
    * Execute a query and return a single row
    */
   async single<T = any>(sql: string, params?: any[]): Promise<T | null> {
-    this.ensureInitialized()
-    return this.adapter!.single<T>(sql, params)
+    return this.getInitializedAdapter().single<T>(sql, params)
   }
 
   /**
    * Execute a query and return a single scalar value
    */
   async scalar<T = any>(sql: string, params?: any[]): Promise<T | null> {
-    this.ensureInitialized()
-    return this.adapter!.scalar<T>(sql, params)
+    return this.getInitializedAdapter().scalar<T>(sql, params)
   }
 
   /**
    * Execute an UPDATE or DELETE statement
    */
   async execute(sql: string, params?: any[]): Promise<ExecuteResult> {
-    this.ensureInitialized()
-    return this.adapter!.execute(sql, params)
+    return this.getInitializedAdapter().execute(sql, params)
   }
 
   /**
    * Execute an INSERT statement
    */
   async insert(sql: string, params?: any[]): Promise<InsertResult> {
-    this.ensureInitialized()
-    return this.adapter!.insert(sql, params)
+    return this.getInitializedAdapter().insert(sql, params)
   }
 
   /**
@@ -152,8 +146,7 @@ export class DatabaseService extends DatabaseContract {
     queries: TransactionInput,
     sharedParams?: TransactionSharedParams,
   ): Promise<boolean> {
-    this.ensureInitialized()
-    return this.adapter!.transaction(queries, sharedParams)
+    return this.getInitializedAdapter().transaction(queries, sharedParams)
   }
 }
 

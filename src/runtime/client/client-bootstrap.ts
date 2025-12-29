@@ -1,4 +1,6 @@
+import { registerClientCapabilities } from '../../adapters/register-client-capabilities'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
+import { loggers } from '../../kernel/shared/logger'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -17,6 +19,7 @@ import {
   SpawnService,
   StreamingService,
   TextUIService,
+  VehicleClientService,
   VehicleService,
 } from './services'
 import { registerSystemClient } from './system/processors.register'
@@ -34,18 +37,19 @@ const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService] as const
 /**
  * All client services that should be available in the DI container
  */
-const ALL_CLIENT_SERVICES = [
-  SpawnService,
-  NuiBridge,
-  NotificationService,
-  TextUIService,
-  ProgressService,
-  MarkerService,
-  BlipService,
-  VehicleService,
-  PedService,
-  StreamingService,
-] as const
+// const ALL_CLIENT_SERVICES = [
+//   SpawnService,
+//   NuiBridge,
+//   NotificationService,
+//   TextUIService,
+//   ProgressService,
+//   MarkerService,
+//   BlipService,
+//   VehicleClientService,
+//   VehicleService,
+//   PedService,
+//   StreamingService,
+// ] as const
 
 /**
  * Get current resource name safely
@@ -75,6 +79,7 @@ function registerServices() {
   di.registerSingleton(ProgressService, ProgressService)
   di.registerSingleton(MarkerService, MarkerService)
   di.registerSingleton(BlipService, BlipService)
+  di.registerSingleton(VehicleClientService, VehicleClientService)
   di.registerSingleton(VehicleService, VehicleService)
   di.registerSingleton(PedService, PedService)
   di.registerSingleton(StreamingService, StreamingService)
@@ -98,6 +103,9 @@ async function bootstrapServices(mode: ClientMode) {
         await (instance as any).init()
       }
     }
+
+    // Instantiate VehicleClientService to register its event handlers
+    di.resolve(VehicleClientService)
   }
 }
 
@@ -122,7 +130,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     if (mode === 'RESOURCE' || mode === 'STANDALONE') {
       const scanner = di.resolve(MetadataScanner)
       scanner.scan(getClientControllerRegistry(resourceName))
-      console.log(`[OpenCore Client] Resource "${resourceName}" controllers registered`)
+      loggers.bootstrap.info(`Resource "${resourceName}" controllers registered`)
       return
     }
 
@@ -138,6 +146,9 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     resourceName,
     isInitialized: true,
   })
+
+  // Register client-side adapters (IPedAppearanceClient, IHasher)
+  await registerClientCapabilities()
 
   // Register all services in DI (available in all modes)
   registerServices()
@@ -155,11 +166,13 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   // These controllers listen to global events and should only be registered once
   if (mode === 'CORE') {
     await import('./controllers/spawner.controller')
+    await import('./controllers/appearance.controller')
+    await import('./controllers/player-sync.controller')
   }
 
   // Scan and register controllers
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(getClientControllerRegistry(resourceName))
 
-  console.log(`[OpenCore Client] Initialized in ${mode} mode (resource: ${resourceName})`)
+  loggers.bootstrap.info(`Client initialized in ${mode} mode`, { resourceName })
 }

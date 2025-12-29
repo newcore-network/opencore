@@ -1,9 +1,9 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ExportProcessor } from '../../../../../src/runtime/server/system/processors/export.processor'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { IExports } from '../../../../../src/adapters'
 import { Export } from '../../../../../src/runtime/server/decorators/export'
 import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
-import { IExports } from '../../../../../src/adapters'
+import { ExportProcessor } from '../../../../../src/runtime/server/system/processors/export.processor'
 
 /**
  * Mock implementation of IExports for testing.
@@ -71,7 +71,7 @@ describe('ExportProcessor', () => {
     expect(handler).toBeDefined()
 
     // Call the handler and verify it works
-    const result = handler!(5, 3)
+    const result = handler?.(5, 3)
     expect(result).toBe(8)
   })
 
@@ -93,7 +93,7 @@ describe('ExportProcessor', () => {
     const handler = mockExports.registeredExports.get('multiply')
     expect(handler).toBeDefined()
 
-    const result = handler!(5)
+    const result = handler?.(5)
     expect(result).toBe(50)
   })
 
@@ -117,7 +117,7 @@ describe('ExportProcessor', () => {
     const handler = mockExports.registeredExports.get('asyncFetch')
     expect(handler).toBeDefined()
 
-    const result = await handler!()
+    const result = await handler?.()
     expect(result).toBe('async-data')
   })
 
@@ -149,7 +149,7 @@ describe('ExportProcessor', () => {
       }
 
       @Export('deleteUser')
-      deleteUser(id: string) {
+      deleteUser(_id: string) {
         return true
       }
     }

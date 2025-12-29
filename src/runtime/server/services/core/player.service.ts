@@ -1,10 +1,14 @@
 import { inject, injectable } from 'tsyringe'
-import { Player } from '../../entities'
-import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { IPlayerInfo } from '../../../../adapters'
-import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
-import { LinkedID } from '../types/linked-id'
-import { PlayerSession } from '../types/player-session.object'
+import { IEntityServer } from '../../../../adapters/contracts/IEntityServer'
+import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
+import { loggers } from '../../../../kernel/shared/logger'
+import { Player, type PlayerAdapters } from '../../entities'
+import type { PlayerDirectoryPort } from '../ports/player-directory.port'
+import type { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
+import type { LinkedID } from '../types/linked-id'
+import type { PlayerSession } from '../types/player-session.object'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.
@@ -22,7 +26,24 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    */
   private playersByClient = new Map<number, Player>()
 
-  constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {}
+  /**
+   * Cached adapters bundle for Player instances
+   */
+  private readonly playerAdapters: PlayerAdapters
+
+  constructor(
+    @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
+    @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
+    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+  ) {
+    this.playerAdapters = {
+      playerInfo: this.playerInfo,
+      playerServer: this.playerServer,
+      entityServer: this.entityServer,
+      netTransport: this.netTransport,
+    }
+  }
 
   /**
    * Initializes a new player session for a connecting client.
@@ -35,23 +56,18 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns The newly created `Player` instance.
    */
   bind(clientID: number, identifiers?: PlayerSession['identifiers']): Player {
-    console.log('[DEBUG][PlayerService instance]', this)
     const session: PlayerSession = {
       clientID,
       identifiers,
       meta: {},
     }
-    console.log('DEBUG;' + clientID + ' and type of' + typeof clientID)
 
-    const player = new Player(session, this.playerInfo)
+    const player = new Player(session, this.playerAdapters)
     this.playersByClient.set(clientID, player)
-    console.log(
-      'DEBUG; map entries after bind:',
-      Array.from(this.playersByClient.entries()).map(([id, player]) => ({
-        clientID: id,
-        player: player,
-      })),
-    )
+    loggers.session.debug('Player session bound', {
+      clientID,
+      totalPlayers: this.playersByClient.size,
+    })
     return player
   }
 
@@ -79,8 +95,11 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @param clientID - The FiveM server ID of the player disconnecting.
    */
   unbind(clientID: number) {
-    console.log(`DEBUG; UNBINED PLAYER ${clientID}`)
     this.playersByClient.delete(clientID)
+    loggers.session.debug('Player session unbound', {
+      clientID,
+      totalPlayers: this.playersByClient.size,
+    })
   }
 
   /**
@@ -91,6 +110,15 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    */
   getByClient(clientID: number): Player | undefined {
     return this.playersByClient.get(clientID)
+  }
+
+  getMany(clientIds: number[]): Player[] {
+    const result: Player[] = []
+    for (const id of clientIds) {
+      const player = this.playersByClient.get(id)
+      if (player) result.push(player)
+    }
+    return result
   }
 
   /**
@@ -139,5 +167,48 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    */
   getAll(): Player[] {
     return Array.from(this.playersByClient.values())
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Extended Query Methods
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Retrieves a Player by their persistent account ID.
+   *
+   * @param accountId - The unique account identifier to search for.
+   * @returns The Player if found, or `undefined` if not online.
+   */
+  getByAccountId(accountId: string): Player | undefined {
+    for (const player of this.playersByClient.values()) {
+      if (player.accountID === accountId) {
+        return player
+      }
+    }
+    return undefined
+  }
+
+  /**
+   * Returns the current number of connected players.
+   *
+   * @returns Player count.
+   */
+  getPlayerCount(): number {
+    return this.playersByClient.size
+  }
+
+  /**
+   * Checks if a player with the given account ID is currently online.
+   *
+   * @param accountId - The account identifier to check.
+   * @returns `true` if online, `false` otherwise.
+   */
+  isOnline(accountId: string): boolean {
+    for (const player of this.playersByClient.values()) {
+      if (player.accountID === accountId) {
+        return true
+      }
+    }
+    return false
   }
 }

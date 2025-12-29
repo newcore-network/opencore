@@ -2,9 +2,9 @@ import { loggers } from '../../../kernel/shared'
 import { emitFrameworkEvent } from '../bus/core-event-bus'
 import { Controller } from '../decorators'
 import { OnFiveMEvent } from '../decorators/onFiveMEvent'
-import { PlayerDirectoryPort } from '../services'
-import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
-import { PlayerPersistenceService } from '../services/persistence.service'
+import type { PlayerDirectoryPort } from '../services'
+import type { PlayerPersistenceService } from '../services/persistence.service'
+import type { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
 
 @Controller()
 export class SessionController {
@@ -17,7 +17,6 @@ export class SessionController {
   @OnFiveMEvent('playerJoining')
   public async onPlayerJoining(): Promise<void> {
     const clientId = Number(source)
-    console.log('DEBUG;' + clientId + ' and type of' + typeof clientId)
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
     const player = this.playerSessionLifecycle.bind(clientId, { license })
 

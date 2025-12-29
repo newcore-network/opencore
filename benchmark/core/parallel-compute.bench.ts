@@ -1,13 +1,13 @@
 import 'reflect-metadata'
 import { Bench } from 'tinybench'
 import {
-  ParallelComputeService,
   defineTask,
   filterByDistance,
-  sortByDistance,
   findClosest,
   initParallelCompute,
+  ParallelComputeService,
   shutdownParallelCompute,
+  sortByDistance,
   type Vector3Like,
 } from '../../src/runtime/server/services/parallel'
 

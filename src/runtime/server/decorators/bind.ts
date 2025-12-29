@@ -22,7 +22,7 @@ export type BindingScope = 'singleton' | 'transient'
  * ```
  */
 export function Bind(scope: BindingScope = 'singleton') {
-  return function (target: any) {
+  return (target: any) => {
     injectable()(target)
 
     if (scope === 'singleton') {
