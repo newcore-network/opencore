@@ -1,5 +1,6 @@
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { loggers } from '../../kernel/shared/logger'
+import { registerClientCapabilities } from '../../adapters/register-client-capabilities'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -36,19 +37,19 @@ const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService] as const
 /**
  * All client services that should be available in the DI container
  */
-const ALL_CLIENT_SERVICES = [
-  SpawnService,
-  NuiBridge,
-  NotificationService,
-  TextUIService,
-  ProgressService,
-  MarkerService,
-  BlipService,
-  VehicleClientService,
-  VehicleService,
-  PedService,
-  StreamingService,
-] as const
+// const ALL_CLIENT_SERVICES = [
+//   SpawnService,
+//   NuiBridge,
+//   NotificationService,
+//   TextUIService,
+//   ProgressService,
+//   MarkerService,
+//   BlipService,
+//   VehicleClientService,
+//   VehicleService,
+//   PedService,
+//   StreamingService,
+// ] as const
 
 /**
  * Get current resource name safely
@@ -146,6 +147,9 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     isInitialized: true,
   })
 
+  // Register client-side adapters (IPedAppearanceClient, IHasher)
+  await registerClientCapabilities()
+
   // Register all services in DI (available in all modes)
   registerServices()
 
@@ -162,6 +166,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   // These controllers listen to global events and should only be registered once
   if (mode === 'CORE') {
     await import('./controllers/spawner.controller')
+    await import('./controllers/appearance.controller')
   }
 
   // Scan and register controllers

@@ -17,7 +17,6 @@ export class SessionController {
   @OnFiveMEvent('playerJoining')
   public async onPlayerJoining(): Promise<void> {
     const clientId = Number(source)
-    console.log('DEBUG;' + clientId + ' and type of' + typeof clientId)
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
     const player = this.playerSessionLifecycle.bind(clientId, { license })
 
