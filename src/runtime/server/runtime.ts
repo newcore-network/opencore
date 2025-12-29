@@ -489,7 +489,13 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
   const principalExport = mode === 'CORE'
 
   return {
-    players: { enabled: true, provider: playersProvider, export: playersExport, scope, required: false },
+    players: {
+      enabled: true,
+      provider: playersProvider,
+      export: playersExport,
+      scope,
+      required: false,
+    },
     netEvents: {
       enabled: true,
       provider: netEventsProvider,

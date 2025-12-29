@@ -12,7 +12,6 @@ import { RemotePlayerService } from './remote/remote-player.service'
 import { RemotePrincipalService } from './remote/remote-principal.service'
 import type { RuntimeContext } from '../runtime'
 import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
-import { PrincipalProviderContract } from '../contracts'
 import { CommandExecutionPort } from './ports/command-execution.port'
 import { RemoteCommandService } from './remote/remote-command.service'
 
@@ -57,6 +56,14 @@ export function registerServicesServer(ctx: RuntimeContext) {
     } else {
       di.registerSingleton(PlayerDirectoryPort as any, RemotePlayerService)
     }
+  }
+
+  if (mode === 'RESOURCE' && features.players.enabled) {
+    di.register(PlayerSessionLifecyclePort as any, {
+      useFactory: () => {
+        throw new Error('[OpenCore] PlayerSessionLifecyclePort is not available in RESOURCE mode')
+      },
+    })
   }
 
   if (features.sessionLifecycle.enabled && mode !== 'RESOURCE') {
