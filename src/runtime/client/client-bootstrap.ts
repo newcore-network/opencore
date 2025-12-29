@@ -167,6 +167,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   if (mode === 'CORE') {
     await import('./controllers/spawner.controller')
     await import('./controllers/appearance.controller')
+    await import('./controllers/player-sync.controller')
   }
 
   // Scan and register controllers

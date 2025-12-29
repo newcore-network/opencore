@@ -273,6 +273,62 @@ export class Player {
   }
 
   /**
+   * Gets the current health of the player's ped.
+   *
+   * @returns Current health value (0-200, where 100 is dead).
+   */
+  getHealth(): number {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    return this.adapters.entityServer.getHealth(ped)
+  }
+
+  /**
+   * Sets the health of the player's ped.
+   *
+   * @param health - Health value to set (0-200).
+   */
+  setHealth(health: number): void {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    this.adapters.entityServer.setHealth(ped, health)
+  }
+
+  /**
+   * Gets the current armor of the player's ped.
+   *
+   * @returns Current armor value (0-100).
+   */
+  getArmor(): number {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    return this.adapters.entityServer.getArmor(ped)
+  }
+
+  /**
+   * Sets the armor of the player's ped.
+   *
+   * @param armor - Armor value to set (0-100).
+   */
+  setArmor(armor: number): void {
+    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    this.adapters.entityServer.setArmor(ped, armor)
+  }
+
+  /**
+   * Kills the player by setting health to 0.
+   */
+  kill(): void {
+    this.setHealth(0)
+  }
+
+  /**
+   * Checks if the player is alive.
+   *
+   * @returns `true` if health is above 100 (dead threshold), `false` otherwise.
+   */
+  isAlive(): boolean {
+    return this.getHealth() > 100
+  }
+
+  /**
    * Serializes the player data for cross-resource transfer.
    *
    * @remarks

@@ -72,6 +72,26 @@ export abstract class IEntityServer {
    * Gets the state bag interface for an entity.
    */
   abstract getStateBag(handle: number): EntityStateBag
+
+  /**
+   * Gets entity health from state bag.
+   */
+  abstract getHealth(handle: number): number
+
+  /**
+   * Sets entity health via state bag (synced to client).
+   */
+  abstract setHealth(handle: number, health: number): void
+
+  /**
+   * Gets entity armor from state bag.
+   */
+  abstract getArmor(handle: number): number
+
+  /**
+   * Sets entity armor via state bag (synced to client).
+   */
+  abstract setArmor(handle: number, armor: number): void
 }
 
 /**

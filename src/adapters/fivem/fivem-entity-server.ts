@@ -68,4 +68,24 @@ export class FiveMEntityServer extends IEntityServer {
       },
     }
   }
+
+  getHealth(handle: number): number {
+    const stateBag = Entity(handle).state
+    return (stateBag.health as number) ?? 200
+  }
+
+  setHealth(handle: number, health: number): void {
+    const stateBag = Entity(handle).state
+    stateBag.set('health', health, true)
+  }
+
+  getArmor(handle: number): number {
+    const stateBag = Entity(handle).state
+    return (stateBag.armor as number) ?? 0
+  }
+
+  setArmor(handle: number, armor: number): void {
+    const stateBag = Entity(handle).state
+    stateBag.set('armor', armor, true)
+  }
 }

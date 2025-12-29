@@ -80,6 +80,20 @@ export class NodeEntityServer extends IEntityServer {
     }
   }
 
+  // TODO
+  getHealth(handle: number): number {
+    throw new Error('Method not implemented.')
+  }
+  setHealth(handle: number, health: number): void {
+    throw new Error('Method not implemented.')
+  }
+  getArmor(handle: number): number {
+    throw new Error('Method not implemented.')
+  }
+  setArmor(handle: number, armor: number): void {
+    throw new Error('Method not implemented.')
+  }
+
   // Test helper: Create a mock entity
   _createMockEntity(handle: number, model: number, coords: Vector3, heading = 0): void {
     this.entities.set(handle, { coords, heading, model, bucket: 0 })
