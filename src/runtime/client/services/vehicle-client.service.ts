@@ -78,7 +78,6 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:delete', networkId)
 
       setTimeout(() => {
-        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve(false)
       }, 5000)
@@ -105,7 +104,6 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:repair', networkId)
 
       setTimeout(() => {
-        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve(false)
       }, 5000)
@@ -236,7 +234,6 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:getData', networkId)
 
       setTimeout(() => {
-        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve(null)
       }, 5000)
@@ -260,7 +257,6 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:getPlayerVehicles')
 
       setTimeout(() => {
-        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve([])
       }, 5000)

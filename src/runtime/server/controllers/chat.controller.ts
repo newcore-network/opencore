@@ -36,8 +36,9 @@ export class ChatController {
     author: string = 'Private',
     color?: RGB,
   ) {
-    this.playerDirectory.getMany(targets).map((p) => {
-      this.chatService.sendPrivate(p, message, author, color)
-    })
+    const players = this.playerDirectory.getMany(targets)
+    for (let i = 0; i < players.length; i++) {
+      this.chatService.sendPrivate(players[i], message, author, color)
+    }
   }
 }

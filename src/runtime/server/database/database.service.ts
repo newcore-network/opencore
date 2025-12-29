@@ -33,13 +33,11 @@ export class DatabaseService extends DatabaseContract {
   initialize(config: DatabaseConfig = {}): void {
     if (this.isInitialized) return
 
-    this.config = config
-
     registerDefaultDatabaseFactories()
 
     if (!this.adapter) {
       const adapterName =
-        config.adapter?.trim() || GetConvar('opencore_db_adapter', '').trim() || ''
+        config.adapter?.trim() || globalThis.GetConvar?.('opencore_db_adapter', '') || ''
 
       if (!adapterName) {
         throw new Error(
@@ -88,14 +86,13 @@ export class DatabaseService extends DatabaseContract {
    * Get the current adapter
    */
   getAdapter(): DatabaseContract {
-    this.ensureInitialized()
-    return this.adapter!
+    return this.getInitializedAdapter()
   }
 
   /**
-   * Ensure the service is initialized before operations
+   * Ensure the service is initialized and return the adapter
    */
-  private ensureInitialized(): void {
+  private getInitializedAdapter(): DatabaseContract {
     if (!this.isInitialized) {
       this.initialize()
     }
@@ -103,46 +100,43 @@ export class DatabaseService extends DatabaseContract {
     if (!this.adapter) {
       throw new Error('[OpenCore] Database adapter not initialized')
     }
+
+    return this.adapter
   }
 
   /**
    * Execute a query and return all matching rows
    */
   async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
-    this.ensureInitialized()
-    return this.adapter?.query<T>(sql, params)
+    return this.getInitializedAdapter().query<T>(sql, params)
   }
 
   /**
    * Execute a query and return a single row
    */
   async single<T = any>(sql: string, params?: any[]): Promise<T | null> {
-    this.ensureInitialized()
-    return this.adapter?.single<T>(sql, params)
+    return this.getInitializedAdapter().single<T>(sql, params)
   }
 
   /**
    * Execute a query and return a single scalar value
    */
   async scalar<T = any>(sql: string, params?: any[]): Promise<T | null> {
-    this.ensureInitialized()
-    return this.adapter?.scalar<T>(sql, params)
+    return this.getInitializedAdapter().scalar<T>(sql, params)
   }
 
   /**
    * Execute an UPDATE or DELETE statement
    */
   async execute(sql: string, params?: any[]): Promise<ExecuteResult> {
-    this.ensureInitialized()
-    return this.adapter?.execute(sql, params)
+    return this.getInitializedAdapter().execute(sql, params)
   }
 
   /**
    * Execute an INSERT statement
    */
   async insert(sql: string, params?: any[]): Promise<InsertResult> {
-    this.ensureInitialized()
-    return this.adapter?.insert(sql, params)
+    return this.getInitializedAdapter().insert(sql, params)
   }
 
   /**
@@ -152,8 +146,7 @@ export class DatabaseService extends DatabaseContract {
     queries: TransactionInput,
     sharedParams?: TransactionSharedParams,
   ): Promise<boolean> {
-    this.ensureInitialized()
-    return this.adapter?.transaction(queries, sharedParams)
+    return this.getInitializedAdapter().transaction(queries, sharedParams)
   }
 }
 
