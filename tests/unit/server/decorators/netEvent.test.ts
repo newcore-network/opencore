@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { OnNet, type NetEventOptions } from '../../../../src/runtime/server/decorators/onNet'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 import { Player } from '../../../../src/runtime/server'
+import { createTestPlayer } from '../../../helpers'
 
 describe('@OnNet decorator', () => {
   describe('basic metadata registration', () => {
@@ -242,7 +243,7 @@ describe('@OnNet decorator', () => {
       }
 
       const instance = new PreservationController()
-      const fakePlayer = new Player({ clientID: Number(Math.random() * 50), meta: {} })
+      const fakePlayer = createTestPlayer()
       const result = instance.calculate(fakePlayer, 5, 3)
 
       expect(result).toBe(8)

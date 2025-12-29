@@ -8,6 +8,7 @@ import { Player } from '../../../src/runtime/server/entities/player'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
 import { AccessControlService } from '../../../src/runtime/server/services/access-control.service'
 import { RateLimiterService } from '../../../src/runtime/server/services/rate-limiter.service'
+import { createTestPlayer, createAuthenticatedPlayer, mockPlayerInfo } from '../../helpers'
 
 // Mock globals
 global.emitNet = vi.fn()
@@ -32,7 +33,7 @@ describe('Command Ports Integration', () => {
 
       playerDirectory = {
         getByClient: vi.fn((clientID) => {
-          return new Player({ clientID, accountID: 'test-account', meta: {} } as any, {} as any)
+          return new Player({ clientID, accountID: 'test-account', meta: {} }, mockPlayerInfo)
         }),
         getAll: vi.fn(() => []),
       } as any
@@ -171,7 +172,7 @@ describe('Command Ports Integration', () => {
       const coreCommandService = new CommandService()
       const corePlayerDirectory: PlayerDirectoryPort = {
         getByClient: vi.fn((clientID) => {
-          return new Player({ clientID, accountID: 'test-account', meta: {} } as any, {} as any)
+          return new Player({ clientID, accountID: 'test-account', meta: {} }, mockPlayerInfo)
         }),
         getAll: vi.fn(() => []),
       } as any
@@ -265,8 +266,8 @@ describe('Command Ports Integration', () => {
       corePlayerDirectory = {
         getByClient: vi.fn((clientID) => {
           const player = new Player(
-            { clientID, accountID: 'test-account', meta: {} } as any,
-            {} as any,
+            { clientID, accountID: 'test-account', meta: {} },
+            mockPlayerInfo,
           )
           player.hasState = vi.fn().mockReturnValue(false)
           return player
@@ -350,8 +351,8 @@ describe('Command Ports Integration', () => {
     it('should enforce @RequiresState for remote commands', async () => {
       // Setup player with 'dead' state
       const deadPlayer = new Player(
-        { clientID: 1, accountID: 'test-account', meta: {} } as any,
-        {} as any,
+        { clientID: 1, accountID: 'test-account', meta: {} },
+        mockPlayerInfo,
       )
       deadPlayer.hasState = vi.fn((state: string) => state === 'dead')
       ;(corePlayerDirectory.getByClient as any).mockReturnValue(deadPlayer)
@@ -381,8 +382,8 @@ describe('Command Ports Integration', () => {
     it('should allow execution after passing all validations', async () => {
       // Setup player with 'on_duty' state
       const onDutyPlayer = new Player(
-        { clientID: 1, accountID: 'test-account', meta: {} } as any,
-        {} as any,
+        { clientID: 1, accountID: 'test-account', meta: {} },
+        mockPlayerInfo,
       )
       onDutyPlayer.hasState = vi.fn((state: string) => state === 'on_duty')
       ;(corePlayerDirectory.getByClient as any).mockReturnValue(onDutyPlayer)

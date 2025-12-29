@@ -4,6 +4,7 @@ import { CommandService } from '../../../../src/runtime/server/services/core/com
 import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
 import { Player } from '../../../../src/runtime/server'
 import { AppError } from '../../../../src/kernel/utils'
+import { createTestPlayer, createAuthenticatedPlayer } from '../../../helpers'
 
 describe('CommandService.execute', () => {
   it('should allow handler() when expectsPlayer=false and args are empty', async () => {
@@ -25,7 +26,7 @@ describe('CommandService.execute', () => {
 
     service.register(meta, handler)
 
-    const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+    const fakePlayer = createTestPlayer({ clientID: 1 })
 
     const result = await service.execute(fakePlayer, 'ping', [])
     expect(result).toBe('ok')
@@ -52,7 +53,7 @@ describe('CommandService.execute', () => {
 
     service.register(meta, handler)
 
-    const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+    const fakePlayer = createTestPlayer({ clientID: 1 })
 
     await expect(service.execute(fakePlayer, 'ping', ['1'])).rejects.toBeInstanceOf(AppError)
     expect(handler).not.toHaveBeenCalled()
@@ -77,7 +78,7 @@ describe('CommandService.execute', () => {
 
     service.register(meta, handler)
 
-    const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+    const fakePlayer = createTestPlayer({ clientID: 1 })
 
     const result = await service.execute(fakePlayer, 'whoami', [])
     expect(result).toBe('ok')
@@ -104,7 +105,7 @@ describe('CommandService.execute', () => {
 
     service.register(meta, handler)
 
-    const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+    const fakePlayer = createTestPlayer({ clientID: 1 })
 
     const result = await service.execute(fakePlayer, 'add', ['10', '5'])
     expect(result).toBe('ok')
@@ -135,7 +136,7 @@ describe('CommandService - Authentication', () => {
     service.register(meta, handler)
 
     // Create player without accountID (unauthenticated)
-    const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+    const fakePlayer = createTestPlayer({ clientID: 1 })
     fakePlayer.emit = vi.fn()
     fakePlayer.send = vi.fn()
 
@@ -174,10 +175,7 @@ describe('CommandService - Authentication', () => {
     service.register(meta, handler)
 
     // Create player with accountID (authenticated)
-    const fakePlayer = new Player(
-      { clientID: 1, accountID: 'account-123', meta: {} } as any,
-      {} as any,
-    )
+    const fakePlayer = createAuthenticatedPlayer('account-123', { clientID: 1 })
 
     const result = await service.execute(fakePlayer, 'spawn', ['car'])
 
@@ -206,7 +204,7 @@ describe('CommandService - Authentication', () => {
     service.register(meta, handler)
 
     // Create player without accountID (unauthenticated)
-    const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+    const fakePlayer = createTestPlayer({ clientID: 1 })
     fakePlayer.emit = vi.fn()
     fakePlayer.send = vi.fn()
 
@@ -241,10 +239,7 @@ describe('CommandService - Authentication', () => {
     service.register(meta, handler)
 
     // Create player with accountID (authenticated)
-    const fakePlayer = new Player(
-      { clientID: 1, accountID: 'account-456', meta: {} } as any,
-      {} as any,
-    )
+    const fakePlayer = createAuthenticatedPlayer('account-456', { clientID: 1 })
 
     const result = await service.execute(fakePlayer, 'ping', [])
 

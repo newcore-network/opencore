@@ -16,6 +16,7 @@ import type { SerializedPlayerData } from '../types/core-exports'
  */
 export class Player {
   private states = new Set<string>()
+  private position: Vector3 | undefined
 
   /**
    * Creates a new Player entity instance.
@@ -26,7 +27,9 @@ export class Player {
   constructor(
     private readonly session: PlayerSession,
     private readonly playerInfo: IPlayerInfo,
-  ) {}
+  ) {
+    this.position = playerInfo.getPlayerPosition(session.clientID)
+  }
 
   /**
    * The numeric FiveM Server ID (Source) of the player.
@@ -57,6 +60,12 @@ export class Player {
    */
   get name(): string {
     return this.playerInfo.getPlayerName(this.clientID) ?? `Player#${this.clientID}`
+  }
+
+  getPosition(): Vector3 | undefined {
+    // re-set last position
+    this.position = this.playerInfo.getPlayerPosition(this.clientID)
+    return this.position
   }
 
   /**

@@ -6,6 +6,8 @@ export { PlayerPersistenceService } from './persistence.service'
 export * from './parallel'
 export { ConfigService } from './config.service'
 export * from '../database'
+export * from './vehicle.service'
+export * from './vehicle-modification.service'
 
 // Contract Services (Ports)
 export * from './ports/player-directory.port'

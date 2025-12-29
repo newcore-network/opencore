@@ -5,6 +5,7 @@ import { Command, type CommandMetadata } from '../../../../src/runtime/server/de
 import { Public } from '../../../../src/runtime/server/decorators/public'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 import { Player } from '../../../../src/runtime/server/entities/player'
+import { createTestPlayer } from '../../../helpers'
 
 describe('@Command decorator', () => {
   describe('string argument (simple usage)', () => {
@@ -222,7 +223,7 @@ describe('@Command decorator', () => {
       }
 
       const instance = new MathController()
-      const fakePlayer = new Player({ clientID: Number(Math.random() * 50), meta: {} })
+      const fakePlayer = createTestPlayer()
       expect(instance.add(fakePlayer, 5, 3)).toBe(8)
     })
 
@@ -250,7 +251,7 @@ describe('@Command decorator', () => {
       }
 
       const instance = new ContextController()
-      const fakePlayer = new Player({ clientID: Number(Math.random() * 50), meta: {} })
+      const fakePlayer = createTestPlayer()
       expect(instance.formatResult(fakePlayer, 'test')).toBe('Result: test')
     })
   })

@@ -4,6 +4,7 @@ import { RemoteCommandExecutionController } from '../../../../src/runtime/server
 import { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
 import { Player } from '../../../../src/runtime/server/entities/player'
+import { createTestPlayer } from '../../../helpers'
 
 // Mock GetCurrentResourceName
 global.GetCurrentResourceName = vi.fn(() => 'test-resource')
@@ -34,10 +35,7 @@ describe('RemoteCommandExecutionController', () => {
 
   describe('handleCommandExecution', () => {
     it('should execute command with player and args', async () => {
-      const fakePlayer = new Player(
-        { clientID: 1, accountID: 'test-account', meta: {} } as any,
-        {} as any,
-      )
+      const fakePlayer = createTestPlayer({ clientID: 1, accountID: 'test-account' })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -50,7 +48,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should handle command without arguments', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -62,7 +60,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should handle command with multiple arguments', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -90,7 +88,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should handle execution errors gracefully', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       // Simulate error during execution
@@ -108,7 +106,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should handle async command execution', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       let executed = false
@@ -125,10 +123,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should pass correct player object to command service', async () => {
-      const fakePlayer = new Player(
-        { clientID: 42, accountID: 'player-123', meta: {} } as any,
-        {} as any,
-      )
+      const fakePlayer = createTestPlayer({ clientID: 42, accountID: 'player-123' })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -148,7 +143,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should preserve argument order', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -161,7 +156,7 @@ describe('RemoteCommandExecutionController', () => {
     })
 
     it('should handle commands with special characters in name', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -176,7 +171,7 @@ describe('RemoteCommandExecutionController', () => {
 
     it('should work with unauthenticated player (service handles auth)', async () => {
       // Player without accountID
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 

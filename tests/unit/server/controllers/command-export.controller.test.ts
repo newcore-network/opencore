@@ -6,6 +6,7 @@ import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/por
 import { Player } from '../../../../src/runtime/server/entities/player'
 import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
 import { AppError } from '../../../../src/kernel/utils'
+import { createTestPlayer, createAuthenticatedPlayer } from '../../../helpers'
 
 // Mock emitNet global
 global.emitNet = vi.fn()
@@ -112,7 +113,7 @@ describe('CommandExportController', () => {
 
   describe('executeCommand', () => {
     it('should execute local command if not remote', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
@@ -122,7 +123,7 @@ describe('CommandExportController', () => {
     })
 
     it('should delegate to resource via net event for remote command', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       // Register a remote command
@@ -148,7 +149,7 @@ describe('CommandExportController', () => {
     })
 
     it('should handle case-insensitive remote command lookup', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       // Register with uppercase
@@ -180,7 +181,7 @@ describe('CommandExportController', () => {
     })
 
     it('should pass correct clientID to emitNet', async () => {
-      const fakePlayer = new Player({ clientID: 42, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 42 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -201,7 +202,7 @@ describe('CommandExportController', () => {
     })
 
     it('should handle empty args array', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -322,7 +323,7 @@ describe('CommandExportController', () => {
 
   describe('remote command routing', () => {
     it('should route commands to correct resource', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto1: CommandRegistrationDto = {
@@ -386,7 +387,7 @@ describe('CommandExportController', () => {
     })
 
     it('should validate @Guard before delegating', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -413,7 +414,7 @@ describe('CommandExportController', () => {
     })
 
     it('should validate @Throttle before delegating', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -440,7 +441,7 @@ describe('CommandExportController', () => {
     })
 
     it('should validate @RequiresState before delegating', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       fakePlayer.hasState = vi.fn().mockReturnValue(true) // Player is dead
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -467,7 +468,7 @@ describe('CommandExportController', () => {
     })
 
     it('should validate in order: guard → throttle → requiresState', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       fakePlayer.hasState = vi.fn().mockReturnValue(false)
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -507,7 +508,7 @@ describe('CommandExportController', () => {
     })
 
     it('should skip validation if no security metadata', async () => {
-      const fakePlayer = new Player({ clientID: 1, meta: {} } as any, {} as any)
+      const fakePlayer = createTestPlayer({ clientID: 1 })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
       const dto: CommandRegistrationDto = {
@@ -530,7 +531,7 @@ describe('CommandExportController', () => {
     })
 
     it('should stop validation chain on first failure', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       fakePlayer.hasState = vi.fn()
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 
@@ -561,7 +562,7 @@ describe('CommandExportController', () => {
     })
 
     it('should allow execution after passing all validations', async () => {
-      const fakePlayer = new Player({ clientID: 1, accountID: 'test', meta: {} } as any, {} as any)
+      const fakePlayer = createAuthenticatedPlayer('test', { clientID: 1 })
       fakePlayer.hasState = vi.fn().mockReturnValue(true)
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
 

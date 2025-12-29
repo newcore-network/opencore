@@ -45,18 +45,14 @@ function checkProviders(ctx: RuntimeContext): void {
 
 async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
   if (ctx.features.commands.enabled) {
-    await import('./controllers/command.controller')
     if (ctx.mode === 'RESOURCE') {
+      // RESOURCE mode: only load the controller that receives delegated commands from CORE
       await import('./controllers/remote-command-execution.controller')
+    } else {
+      // CORE/STANDALONE mode: load the unified command controller
+      // This handles both network events and exports in a single controller
+      await import('./controllers/command-export.controller')
     }
-  }
-
-  if (
-    ctx.features.commands.enabled &&
-    ctx.features.commands.export &&
-    ctx.features.exports.enabled
-  ) {
-    await import('./controllers/command-export.controller')
   }
 
   if (ctx.features.chat.enabled && ctx.features.chat.export && ctx.features.exports.enabled) {
