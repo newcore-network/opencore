@@ -331,11 +331,40 @@ export interface ResourceGrants {
   auth?: boolean
 }
 
+export interface DevModeConfig {
+  /** Enable dev mode */
+  enabled: boolean
+  /** Hot reload configuration */
+  hotReload?: {
+    enabled: boolean
+    port: number
+    allowedResources?: string[]
+  }
+  /** CLI bridge configuration */
+  bridge?: {
+    url: string
+    autoConnect: boolean
+  }
+  /** Event interceptor configuration */
+  interceptor?: {
+    enabled: boolean
+    recordHistory: boolean
+    maxHistorySize: number
+  }
+  /** Player simulator configuration */
+  simulator?: {
+    enabled: boolean
+    autoConnectPlayers: number
+  }
+}
+
 export interface ServerRuntimeOptions {
   mode: FrameworkMode
   features: FrameworkFeatures
   coreResourceName: string
   resourceGrants?: ResourceGrants
+  /** Development mode configuration (disabled in production) */
+  devMode?: DevModeConfig
 }
 
 export type RuntimeContext = ServerRuntimeOptions

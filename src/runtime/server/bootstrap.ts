@@ -231,5 +231,38 @@ export async function initServer(options: ServerRuntimeOptions) {
 
   const scanner = di.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
+
+  // Initialize DevMode if enabled
+  if (ctx.devMode?.enabled) {
+    await initDevMode(ctx.devMode)
+  }
+
   loggers.bootstrap.info('OpenCore Server initialized successfully')
+}
+
+/**
+ * Initializes the DevMode subsystem.
+ * This is loaded dynamically to avoid bundling dev tools in production.
+ */
+async function initDevMode(config: NonNullable<RuntimeContext['devMode']>): Promise<void> {
+  const { DevModeService } = await import('./devmode/dev-mode.service')
+  const { EventInterceptorService } = await import('./devmode/event-interceptor.service')
+  const { StateInspectorService } = await import('./devmode/state-inspector.service')
+  const { PlayerSimulatorService } = await import('./devmode/player-simulator.service')
+
+  // Register DevMode services
+  di.registerSingleton(EventInterceptorService, EventInterceptorService)
+  di.registerSingleton(StateInspectorService, StateInspectorService)
+  di.registerSingleton(PlayerSimulatorService, PlayerSimulatorService)
+  di.registerSingleton(DevModeService, DevModeService)
+
+  // Enable DevMode
+  const devModeService = di.resolve(DevModeService)
+  await devModeService.enable({
+    enabled: true,
+    hotReload: config.hotReload,
+    bridge: config.bridge,
+    interceptor: config.interceptor,
+    simulator: config.simulator,
+  })
 }

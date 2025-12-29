@@ -6,6 +6,8 @@ export * from './configs'
 export * from './contracts/index'
 export { init } from './core'
 export * from './decorators'
+// DevMode (development tools)
+export * from './devmode'
 // Entities
 export * from './entities'
 export * from './runtime'
