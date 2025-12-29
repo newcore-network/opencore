@@ -27,6 +27,13 @@ export abstract class PlayerDirectoryPort {
   abstract getByClient(clientID: number): Player | undefined
 
   /**
+   * Returns a group of {@link Player} associated with a given fivem clients ids
+   *
+   * @param clientIds The fivem server client ID (`source`)
+   */
+  abstract getMany(clientIds: number[]): Player[]
+
+  /**
    * Returns all currently connected players.
    *
    * @returns An array of {@link Player} instances representing all active clients.

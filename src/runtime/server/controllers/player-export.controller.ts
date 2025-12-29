@@ -1,7 +1,7 @@
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import type { SerializedPlayerData } from '../types/core-exports'
+import type { CorePlayerExports, SerializedPlayerData } from '../types/core-exports'
 
 /**
  * Exports player directory functionality for RESOURCE mode access.
@@ -14,7 +14,7 @@ import type { SerializedPlayerData } from '../types/core-exports'
  * - Manage player state flags
  */
 @Controller()
-export class PlayerExportController {
+export class PlayerExportController implements CorePlayerExports {
   constructor(private playerService: PlayerDirectoryPort) {}
 
   // ═══════════════════════════════════════════════════════════════
@@ -30,6 +30,11 @@ export class PlayerExportController {
   getPlayerData(clientID: number): SerializedPlayerData | null {
     const player = this.playerService.getByClient(clientID)
     return player?.serialize() ?? null
+  }
+
+  @Export()
+  getManyData(clientIds: number[]): SerializedPlayerData[] {
+    return this.playerService.getMany(clientIds).map((p) => p.serialize())
   }
 
   @Export()

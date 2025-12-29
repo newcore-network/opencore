@@ -3,7 +3,7 @@ import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { IPlayerInfo, IExports } from '../../../../adapters'
-import type { CoreExports, SerializedPlayerData } from '../../types/core-exports'
+import type { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
 import { loggers } from '../../../../kernel/shared/logger'
 
 /**
@@ -26,9 +26,9 @@ export class RemotePlayerService extends PlayerDirectoryPort {
   /**
    * Gets typed access to CORE resource exports.
    */
-  private get core(): CoreExports {
+  private get core(): CorePlayerExports {
     const { coreResourceName } = getRuntimeContext()
-    const coreExports = this.exportsService.getResource<CoreExports>(coreResourceName)
+    const coreExports = this.exportsService.getResource<CorePlayerExports>(coreResourceName)
 
     if (!coreExports) {
       throw new Error(
@@ -81,6 +81,18 @@ export class RemotePlayerService extends PlayerDirectoryPort {
       })
       // Fallback to basic player
       return new Player({ clientID, meta: {} }, this.playerInfo)
+    }
+  }
+
+  getMany(clientIds: number[]): Player[] {
+    try {
+      const many = this.core.getManyData(clientIds)
+
+      return many.map((data) => this.createPlayerFromData(data))
+    } catch (error) {
+      if (error instanceof Error) loggers.exports.error(error.message, undefined, error)
+      else loggers.exports.error('unknown error', undefined)
+      return []
     }
   }
 

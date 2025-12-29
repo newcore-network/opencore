@@ -92,6 +92,15 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
     return this.playersByClient.get(clientID)
   }
 
+  getMany(clientIds: number[]): Player[] {
+    const result: Player[] = []
+    for (const id of clientIds) {
+      const player = this.playersByClient.get(id)
+      if (player) result.push(player)
+    }
+    return result
+  }
+
   /**
    * Helper to retrieve the authenticated Account ID for a given client.
    *

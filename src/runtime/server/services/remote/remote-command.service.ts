@@ -2,7 +2,7 @@ import { injectable, inject } from 'tsyringe'
 import { CommandMetadata } from '../../decorators/command'
 import { getRuntimeContext } from '../../runtime'
 import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
-import type { CoreExports } from '../../types/core-exports'
+import type { CoreCommandsExports } from '../../types/core-exports'
 import { Player } from '../../entities'
 import { loggers } from '../../../../kernel/shared/logger'
 import { IExports } from '../../../../adapters/contracts/IExports'
@@ -32,9 +32,9 @@ export class RemoteCommandService extends CommandExecutionPort {
   /**
    * Gets typed access to CORE resource exports.
    */
-  private get core(): CoreExports {
+  private get core(): CoreCommandsExports {
     const { coreResourceName } = getRuntimeContext()
-    const coreExports = this.exportsService.getResource<CoreExports>(coreResourceName)
+    const coreExports = this.exportsService.getResource<CoreCommandsExports>(coreResourceName)
 
     if (!coreExports) {
       throw new Error(

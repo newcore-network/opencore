@@ -86,139 +86,7 @@ export interface CommandRegistrationDto {
  * core.registerCommand({ ... })
  * ```
  */
-export interface CoreExports {
-  // ═══════════════════════════════════════════════════════════════
-  // Player Exports
-  // ═══════════════════════════════════════════════════════════════
-
-  /**
-   * Gets persistent account ID for a client.
-   *
-   * @param clientID - FiveM client/server ID
-   * @returns Account ID or undefined if not linked
-   */
-  getPlayerId(clientID: number): string | undefined
-
-  /**
-   * Retrieves session metadata for a player.
-   *
-   * @param clientID - FiveM client/server ID
-   * @param key - Metadata key
-   * @returns Stored value or undefined
-   */
-  getPlayerMeta(clientID: number, key: string): Promise<any>
-
-  /**
-   * Stores session metadata for a player.
-   *
-   * @param clientID - FiveM client/server ID
-   * @param key - Metadata key
-   * @param value - Value to store
-   */
-  setPlayerMeta(clientID: number, key: string, value: unknown): void
-
-  /**
-   * Gets complete serialized player data.
-   *
-   * @param clientID - FiveM client/server ID
-   * @returns Serialized player data or null if not found
-   */
-  getPlayerData(clientID: number): SerializedPlayerData | null
-
-  /**
-   * Gets serialized data for all connected players.
-   *
-   * @returns Array of serialized player data
-   */
-  getAllPlayersData(): SerializedPlayerData[]
-
-  /**
-   * Finds a player by their persistent account ID.
-   *
-   * @param accountId - Database account identifier
-   * @returns Serialized player data or null if not online
-   */
-  getPlayerByAccountId(accountId: string): SerializedPlayerData | null
-
-  /**
-   * Gets the current player count.
-   *
-   * @returns Number of connected players
-   */
-  getPlayerCount(): number
-
-  /**
-   * Checks if a player with given account ID is online.
-   *
-   * @param accountId - Database account identifier
-   * @returns True if player is connected
-   */
-  isPlayerOnline(accountId: string): boolean
-
-  /**
-   * Gets all active state flags for a player.
-   *
-   * @param clientID - FiveM client/server ID
-   * @returns Array of active state strings
-   */
-  getPlayerStates(clientID: number): string[]
-
-  /**
-   * Checks if player has a specific state.
-   *
-   * @param clientID - FiveM client/server ID
-   * @param state - State identifier to check
-   * @returns True if state is active
-   */
-  hasPlayerState(clientID: number, state: string): boolean
-
-  /**
-   * Adds a state flag to a player.
-   *
-   * @param clientID - FiveM client/server ID
-   * @param state - State identifier to add
-   */
-  addPlayerState(clientID: number, state: string): void
-
-  /**
-   * Removes a state flag from a player.
-   *
-   * @param clientID - FiveM client/server ID
-   * @param state - State identifier to remove
-   */
-  removePlayerState(clientID: number, state: string): void
-
-  // ═══════════════════════════════════════════════════════════════
-  // Command Exports
-  // ═══════════════════════════════════════════════════════════════
-
-  /**
-   * Registers a command from a RESOURCE with CORE.
-   *
-   * @remarks
-   * CORE maintains command registry and routes execution back to the owning resource.
-   * Handlers remain in the RESOURCE and are invoked via event when command executes.
-   *
-   * @param metadata - Command registration metadata
-   */
-  registerCommand(metadata: CommandRegistrationDto): void
-
-  /**
-   * Executes a registered command (called by RESOURCE when delegating).
-   *
-   * @param clientID - Player client ID
-   * @param commandName - Command name (without leading slash)
-   * @param args - Raw argument strings
-   */
-  executeCommand(clientID: number, commandName: string, args: string[]): Promise<void>
-
-  /**
-   * Returns all registered commands (local + remote).
-   *
-   * @returns Array of command metadata
-   */
-  getAllCommands(): CommandInfo[]
-
+export interface CorePrincipalExports {
   // ═══════════════════════════════════════════════════════════════
   // Principal/Permission Exports
   // ═══════════════════════════════════════════════════════════════
@@ -329,4 +197,142 @@ export interface CoreExports {
    * @throws AppError - AUTH:UNAUTHORIZED, GAME:NO_RANK_IN_PRINCIPAL, or AUTH:PERMISSION_DENIED
    */
   enforce(source: number, requirements: GuardOptions): Promise<void>
+}
+
+export interface CoreCommandsExports {
+  // ═══════════════════════════════════════════════════════════════
+  // Command Exports
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Registers a command from a RESOURCE with CORE.
+   *
+   * @remarks
+   * CORE maintains command registry and routes execution back to the owning resource.
+   * Handlers remain in the RESOURCE and are invoked via event when command executes.
+   *
+   * @param metadata - Command registration metadata
+   */
+  registerCommand(metadata: CommandRegistrationDto): void
+
+  /**
+   * Executes a registered command (called by RESOURCE when delegating).
+   *
+   * @param clientID - Player client ID
+   * @param commandName - Command name (without leading slash)
+   * @param args - Raw argument strings
+   */
+  executeCommand(clientID: number, commandName: string, args: string[]): Promise<void>
+
+  /**
+   * Returns all registered commands (local + remote).
+   *
+   * @returns Array of command metadata
+   */
+  getAllCommands(): CommandInfo[]
+}
+
+export interface CorePlayerExports {
+  // ═══════════════════════════════════════════════════════════════
+  // Player Exports
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Gets persistent account ID for a client.
+   *
+   * @param clientID - FiveM client/server ID
+   * @returns Account ID or undefined if not linked
+   */
+  getPlayerId(clientID: number): string | undefined
+
+  /**
+   * Retrieves session metadata for a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param key - Metadata key
+   * @returns Stored value or undefined
+   */
+  getPlayerMeta(clientID: number, key: string): Promise<any>
+
+  /**
+   * Stores session metadata for a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param key - Metadata key
+   * @param value - Value to store
+   */
+  setPlayerMeta(clientID: number, key: string, value: unknown): void
+
+  /**
+   * Gets complete serialized player data.
+   *
+   * @param clientID - FiveM client/server ID
+   * @returns Serialized player data or null if not found
+   */
+  getPlayerData(clientID: number): SerializedPlayerData | null
+
+  getManyData(clientIds: number[]): SerializedPlayerData[]
+
+  /**
+   * Gets serialized data for all connected players.
+   *
+   * @returns Array of serialized player data
+   */
+  getAllPlayersData(): SerializedPlayerData[]
+
+  /**
+   * Finds a player by their persistent account ID.
+   *
+   * @param accountId - Database account identifier
+   * @returns Serialized player data or null if not online
+   */
+  getPlayerByAccountId(accountId: string): SerializedPlayerData | null
+
+  /**
+   * Gets the current player count.
+   *
+   * @returns Number of connected players
+   */
+  getPlayerCount(): number
+
+  /**
+   * Checks if a player with given account ID is online.
+   *
+   * @param accountId - Database account identifier
+   * @returns True if player is connected
+   */
+  isPlayerOnline(accountId: string): boolean
+
+  /**
+   * Gets all active state flags for a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @returns Array of active state strings
+   */
+  getPlayerStates(clientID: number): string[]
+
+  /**
+   * Checks if player has a specific state.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param state - State identifier to check
+   * @returns True if state is active
+   */
+  hasPlayerState(clientID: number, state: string): boolean
+
+  /**
+   * Adds a state flag to a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param state - State identifier to add
+   */
+  addPlayerState(clientID: number, state: string): void
+
+  /**
+   * Removes a state flag from a player.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param state - State identifier to remove
+   */
+  removePlayerState(clientID: number, state: string): void
 }

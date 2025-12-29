@@ -8,7 +8,7 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
-    private readonly playerService: PlayerDirectoryPort,
+    private readonly playerDirectory: PlayerDirectoryPort,
   ) {}
 
   @Export()
@@ -22,12 +22,22 @@ export class ChatController {
 
   @Export()
   coreSendPrivate(targetId: number, message: string, author: string = 'Private') {
-    const player = this.playerService.getByClient(targetId)
+    const player = this.playerDirectory.getByClient(targetId)
     if (!player) {
       throw new Error(`Player with client ID ${targetId} not found`)
     }
     this.chatService.sendPrivate(player, message, author)
   }
 
-  // TODO: add send by group of players
+  @Export()
+  coreSendToGroupOfPlayers(
+    targets: number[],
+    message: string,
+    author: string = 'Private',
+    color?: RGB,
+  ) {
+    this.playerDirectory.getMany(targets).map((p) => {
+      this.chatService.sendPrivate(p, message, author, color)
+    })
+  }
 }
