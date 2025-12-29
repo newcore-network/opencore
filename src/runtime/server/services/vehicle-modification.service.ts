@@ -59,7 +59,6 @@ export class VehicleModificationService {
     }
 
     const validatedMods = this.validateMods(mods)
-    vehicle.applyMods(validatedMods)
 
     coreLogger.debug('Vehicle modifications applied', {
       networkId,
@@ -211,8 +210,6 @@ export class VehicleModificationService {
       xenon: false,
       windowTint: 0,
     }
-
-    vehicle.applyMods(defaultMods)
 
     coreLogger.info('Vehicle modifications reset', { networkId, requestedBy })
 

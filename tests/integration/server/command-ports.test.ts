@@ -6,13 +6,8 @@ import { CommandExecutionPort } from '../../../src/runtime/server/services/ports
 import { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
 import { Player } from '../../../src/runtime/server/entities/player'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
-import { AccessControlService } from '../../../src/runtime/server/services/access-control.service'
-import { RateLimiterService } from '../../../src/runtime/server/services/rate-limiter.service'
-import { createTestPlayer, createAuthenticatedPlayer, mockPlayerInfo } from '../../helpers'
-
-// Mock globals
-global.emitNet = vi.fn()
-global.GetCurrentResourceName = vi.fn(() => 'test-resource')
+import { IEngineEvents } from '../../../src/adapters/contracts/IEngineEvents'
+import { createTestPlayer, createAuthenticatedPlayer, createMockPlayerAdapters } from '../../helpers'
 
 // Mock getRuntimeContext
 vi.mock('../../../src/runtime/server/runtime', () => ({
@@ -27,13 +22,14 @@ describe('Command Ports Integration', () => {
     let commandService: CommandService
     let playerDirectory: PlayerDirectoryPort
     let exportController: CommandExportController
+    let mockEngineEvents: IEngineEvents
 
     beforeEach(() => {
       commandService = new CommandService()
 
       playerDirectory = {
         getByClient: vi.fn((clientID) => {
-          return new Player({ clientID, accountID: 'test-account', meta: {} }, mockPlayerInfo)
+          return new Player({ clientID, accountID: 'test-account', meta: {} }, createMockPlayerAdapters())
         }),
         getAll: vi.fn(() => []),
       } as any
@@ -47,11 +43,18 @@ describe('Command Ports Integration', () => {
         checkLimit: vi.fn().mockReturnValue(true),
       } as any
 
+      // Mock engine events adapter
+      mockEngineEvents = {
+        on: vi.fn(),
+        emit: vi.fn(),
+      } as any
+
       exportController = new CommandExportController(
         commandService,
         playerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockEngineEvents,
       )
 
       vi.clearAllMocks()
@@ -75,7 +78,7 @@ describe('Command Ports Integration', () => {
       await exportController.executeCommand(1, 'heal', [])
 
       expect(handler).toHaveBeenCalled()
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should delegate remote command to resource', async () => {
@@ -89,7 +92,7 @@ describe('Command Ports Integration', () => {
 
       await exportController.executeCommand(1, 'remote-heal', ['arg'])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:medical-resource',
         1,
         'remote-heal',
@@ -143,7 +146,7 @@ describe('Command Ports Integration', () => {
 
       // Execute police command
       await exportController.executeCommand(1, 'police-arrest', [])
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:police-resource',
         expect.any(Number),
         'police-arrest',
@@ -154,7 +157,7 @@ describe('Command Ports Integration', () => {
 
       // Execute medical command
       await exportController.executeCommand(1, 'medical-revive', [])
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:medical-resource',
         expect.any(Number),
         'medical-revive',
@@ -172,7 +175,7 @@ describe('Command Ports Integration', () => {
       const coreCommandService = new CommandService()
       const corePlayerDirectory: PlayerDirectoryPort = {
         getByClient: vi.fn((clientID) => {
-          return new Player({ clientID, accountID: 'test-account', meta: {} }, mockPlayerInfo)
+          return new Player({ clientID, accountID: 'test-account', meta: {} }, createMockPlayerAdapters())
         }),
         getAll: vi.fn(() => []),
       } as any
@@ -186,11 +189,18 @@ describe('Command Ports Integration', () => {
         checkLimit: vi.fn().mockReturnValue(true),
       } as any
 
+      // Mock engine events adapter
+      const mockEngineEvents: IEngineEvents = {
+        on: vi.fn(),
+        emit: vi.fn(),
+      } as any
+
       const coreExportController = new CommandExportController(
         coreCommandService,
         corePlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockEngineEvents,
       )
 
       // RESOURCE registers a command via export
@@ -208,8 +218,8 @@ describe('Command Ports Integration', () => {
       // Simulate player executing command (CORE delegates to RESOURCE)
       await coreExportController.executeCommand(1, 'resource-cmd', ['arg1'])
 
-      // Verify CORE emitted event to resource
-      expect(global.emitNet).toHaveBeenCalledWith(
+      // Verify CORE emitted local event to resource (not network event)
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:test-resource',
         1,
         'resource-cmd',
@@ -260,6 +270,7 @@ describe('Command Ports Integration', () => {
     let coreExportController: any
     let mockAccessControl: any
     let mockRateLimiter: any
+    let mockEngineEvents: IEngineEvents
 
     beforeEach(() => {
       coreCommandService = new CommandService()
@@ -267,7 +278,7 @@ describe('Command Ports Integration', () => {
         getByClient: vi.fn((clientID) => {
           const player = new Player(
             { clientID, accountID: 'test-account', meta: {} },
-            mockPlayerInfo,
+            createMockPlayerAdapters(),
           )
           player.hasState = vi.fn().mockReturnValue(false)
           return player
@@ -284,12 +295,19 @@ describe('Command Ports Integration', () => {
         checkLimit: vi.fn().mockReturnValue(true),
       }
 
+      // Mock engine events adapter
+      mockEngineEvents = {
+        on: vi.fn(),
+        emit: vi.fn(),
+      } as any
+
       // Create controller with security services
       coreExportController = new CommandExportController(
         coreCommandService,
         corePlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockEngineEvents,
       )
 
       vi.clearAllMocks()
@@ -318,7 +336,7 @@ describe('Command Ports Integration', () => {
       expect(mockAccessControl.enforce).toHaveBeenCalled()
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should enforce @Throttle for remote commands', async () => {
@@ -352,7 +370,7 @@ describe('Command Ports Integration', () => {
       // Setup player with 'dead' state
       const deadPlayer = new Player(
         { clientID: 1, accountID: 'test-account', meta: {} },
-        mockPlayerInfo,
+        createMockPlayerAdapters(),
       )
       deadPlayer.hasState = vi.fn((state: string) => state === 'dead')
       ;(corePlayerDirectory.getByClient as any).mockReturnValue(deadPlayer)
@@ -376,14 +394,14 @@ describe('Command Ports Integration', () => {
       expect(deadPlayer.hasState).toHaveBeenCalledWith('dead')
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should allow execution after passing all validations', async () => {
       // Setup player with 'on_duty' state
       const onDutyPlayer = new Player(
         { clientID: 1, accountID: 'test-account', meta: {} },
-        mockPlayerInfo,
+        createMockPlayerAdapters(),
       )
       onDutyPlayer.hasState = vi.fn((state: string) => state === 'on_duty')
       ;(corePlayerDirectory.getByClient as any).mockReturnValue(onDutyPlayer)
@@ -408,8 +426,8 @@ describe('Command Ports Integration', () => {
       expect(mockRateLimiter.checkLimit).toHaveBeenCalled()
       expect(onDutyPlayer.hasState).toHaveBeenCalledWith('on_duty')
 
-      // Should delegate to resource
-      expect(global.emitNet).toHaveBeenCalledWith(
+      // Should delegate to resource via local event
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:police-resource',
         1,
         'arrest',

@@ -10,6 +10,10 @@ export * from './contracts/IExports'
 export * from './contracts/IResourceInfo'
 export * from './contracts/ITick'
 export * from './contracts/IPlayerInfo'
+export * from './contracts/IEntityServer'
+export * from './contracts/IVehicleServer'
+export * from './contracts/IPlayerServer'
+export * from './contracts/IHasher'
 
 // Database adapters
 export { OxMySQLAdapter } from './database/oxmysql.adapter'

@@ -18,6 +18,7 @@ import {
   SpawnService,
   StreamingService,
   TextUIService,
+  VehicleClientService,
   VehicleService,
 } from './services'
 import { registerSystemClient } from './system/processors.register'
@@ -43,6 +44,7 @@ const ALL_CLIENT_SERVICES = [
   ProgressService,
   MarkerService,
   BlipService,
+  VehicleClientService,
   VehicleService,
   PedService,
   StreamingService,
@@ -76,6 +78,7 @@ function registerServices() {
   di.registerSingleton(ProgressService, ProgressService)
   di.registerSingleton(MarkerService, MarkerService)
   di.registerSingleton(BlipService, BlipService)
+  di.registerSingleton(VehicleClientService, VehicleClientService)
   di.registerSingleton(VehicleService, VehicleService)
   di.registerSingleton(PedService, PedService)
   di.registerSingleton(StreamingService, StreamingService)
@@ -99,6 +102,9 @@ async function bootstrapServices(mode: ClientMode) {
         await (instance as any).init()
       }
     }
+
+    // Instantiate VehicleClientService to register its event handlers
+    di.resolve(VehicleClientService)
   }
 }
 

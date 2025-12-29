@@ -1,3 +1,4 @@
+import { inject, injectable } from 'tsyringe'
 import { Controller, Export, Public } from '../decorators'
 import { OnNet } from '../decorators/onNet'
 import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
@@ -11,9 +12,9 @@ import type {
 import { AppError } from '../../../kernel/utils'
 import { SecurityError } from '../../../kernel/utils/error/security.error'
 import { loggers } from '../../../kernel/shared/logger'
-import { injectable } from 'tsyringe'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import { Player } from '../entities'
+import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 
 /**
  * Command entry for resource-owned commands.
@@ -41,6 +42,7 @@ export class CommandExportController implements CoreCommandsExports {
     private playerDirectory: PlayerDirectoryPort,
     private principalPort: PrincipalPort,
     private rateLimiter: RateLimiterService,
+    @inject(IEngineEvents as any) private engineEvents: IEngineEvents,
   ) {}
 
   // ═══════════════════════════════════════════════════════════════
@@ -160,9 +162,9 @@ export class CommandExportController implements CoreCommandsExports {
       // Validate security BEFORE delegating to resource
       await this.validateSecurity(player, commandName, remoteEntry.metadata.security)
 
-      // Delegate to resource via net event
+      // Delegate to resource via local event (server-to-server, not network)
       const eventName = `opencore:command:execute:${remoteEntry.resourceName}`
-      emitNet(eventName, clientID, commandName, args)
+      this.engineEvents.emit(eventName, clientID, commandName, args)
       loggers.command.debug(`Delegated remote command execution to ${remoteEntry.resourceName}`, {
         command: commandName,
         clientID,

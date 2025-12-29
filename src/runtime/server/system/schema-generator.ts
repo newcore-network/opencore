@@ -5,7 +5,9 @@ import { AppError } from '../../../kernel/utils'
 function typeToZodSchema(type: any): z.ZodType | undefined {
   switch (type) {
     case String:
-      return z.coerce.string()
+      // Use string().min(1) to reject empty/undefined values
+      // Command args are already strings, no coercion needed
+      return z.string().min(1)
     case Number:
       return z.coerce.number()
     case Boolean:

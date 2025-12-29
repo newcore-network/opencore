@@ -1,8 +1,11 @@
 import { inject, injectable } from 'tsyringe'
-import { Player } from '../../entities'
+import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { IPlayerInfo, IExports } from '../../../../adapters'
+import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
+import { IEntityServer } from '../../../../adapters/contracts/IEntityServer'
+import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import type { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
 import { loggers } from '../../../../kernel/shared/logger'
 
@@ -16,11 +19,25 @@ import { loggers } from '../../../../kernel/shared/logger'
  */
 @injectable()
 export class RemotePlayerService extends PlayerDirectoryPort {
+  /**
+   * Cached adapters bundle for Player instances
+   */
+  private readonly playerAdapters: PlayerAdapters
+
   constructor(
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IExports as any) private readonly exportsService: IExports,
+    @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
+    @inject(INetTransport as any) private readonly netTransport: INetTransport,
   ) {
     super()
+    this.playerAdapters = {
+      playerInfo: this.playerInfo,
+      playerServer: this.playerServer,
+      entityServer: this.entityServer,
+      netTransport: this.netTransport,
+    }
   }
 
   /**
@@ -55,7 +72,7 @@ export class RemotePlayerService extends PlayerDirectoryPort {
         identifiers: data.identifiers,
         meta: data.meta,
       },
-      this.playerInfo,
+      this.playerAdapters,
     )
 
     // Restore state flags
@@ -80,7 +97,7 @@ export class RemotePlayerService extends PlayerDirectoryPort {
         error: error instanceof Error ? error.message : String(error),
       })
       // Fallback to basic player
-      return new Player({ clientID, meta: {} }, this.playerInfo)
+      return new Player({ clientID, meta: {} }, this.playerAdapters)
     }
   }
 
@@ -107,14 +124,8 @@ export class RemotePlayerService extends PlayerDirectoryPort {
       loggers.session.warn(`Failed to get all players from CORE, using fallback`, {
         error: error instanceof Error ? error.message : String(error),
       })
-      // Fallback to FiveM natives
-      const players: Player[] = []
-      const numPlayers = GetNumPlayerIndices()
-      for (let i = 0; i < numPlayers; i++) {
-        const src = parseInt(GetPlayerFromIndex(i))
-        players.push(new Player({ clientID: src, meta: {} }, this.playerInfo))
-      }
-      return players
+      // In RESOURCE mode fallback, return empty - we can't enumerate without CORE
+      return []
     }
   }
 
@@ -154,7 +165,8 @@ export class RemotePlayerService extends PlayerDirectoryPort {
     try {
       return this.core.getPlayerCount()
     } catch {
-      return GetNumPlayerIndices()
+      // In RESOURCE mode, we can't enumerate without CORE
+      return 0
     }
   }
 

@@ -92,8 +92,6 @@ export class VehicleController {
       return false
     }
 
-    vehicle.repair()
-
     emitNet('opencore:vehicle:repairResult', source, { networkId, success: true })
     emitNet('opencore:vehicle:repaired', -1, networkId)
 

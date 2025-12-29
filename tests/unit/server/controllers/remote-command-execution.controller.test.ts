@@ -3,18 +3,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
 import { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import { Player } from '../../../../src/runtime/server/entities/player'
+import { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
+import { IResourceInfo } from '../../../../src/adapters/contracts/IResourceInfo'
 import { createTestPlayer } from '../../../helpers'
 
-// Mock GetCurrentResourceName
-global.GetCurrentResourceName = vi.fn(() => 'test-resource')
-
 describe('RemoteCommandExecutionController', () => {
-  let controller: RemoteCommandExecutionController
   let mockCommandService: CommandExecutionPort
   let mockPlayerDirectory: PlayerDirectoryPort
+  let mockEngineEvents: IEngineEvents
+  let mockResourceInfo: IResourceInfo
+  let capturedEventHandler: ((clientID: number, commandName: string, args: string[]) => void) | null
 
   beforeEach(() => {
+    capturedEventHandler = null
+
     // Create mock services
     mockCommandService = {
       register: vi.fn(),
@@ -27,23 +29,53 @@ describe('RemoteCommandExecutionController', () => {
       getAll: vi.fn(() => []),
     } as any
 
-    controller = new RemoteCommandExecutionController(mockCommandService, mockPlayerDirectory)
+    // Create mock adapters
+    mockEngineEvents = {
+      on: vi.fn((eventName: string, handler: any) => {
+        capturedEventHandler = handler
+      }),
+      emit: vi.fn(),
+    } as any
 
-    // Clear mocks
+    mockResourceInfo = {
+      getCurrentResourceName: vi.fn(() => 'test-resource'),
+    } as any
+
+    // Clear mocks before creating controller (constructor registers handler)
     vi.clearAllMocks()
+
+    // Create controller - this will register the event handler
+    new RemoteCommandExecutionController(
+      mockCommandService,
+      mockPlayerDirectory,
+      mockEngineEvents,
+      mockResourceInfo,
+    )
   })
 
-  describe('handleCommandExecution', () => {
+  describe('event registration', () => {
+    it('should register event handler with correct event name', () => {
+      expect(mockEngineEvents.on).toHaveBeenCalledWith(
+        'opencore:command:execute:test-resource',
+        expect.any(Function),
+      )
+    })
+
+    it('should use resource name from IResourceInfo', () => {
+      expect(mockResourceInfo.getCurrentResourceName).toHaveBeenCalled()
+    })
+  })
+
+  describe('handleCommandExecution (via event handler)', () => {
     it('should execute command with player and args', async () => {
       const fakePlayer = createTestPlayer({ clientID: 1, accountID: 'test-account' })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      // Set global.source to simulate FiveM event source
-      global.source = 1
+      // Simulate event from CORE
+      await capturedEventHandler!(1, 'heal', ['self'])
 
-      await controller.handleCommandExecution(fakePlayer, 'heal', ['self'])
-
+      expect(mockPlayerDirectory.getByClient).toHaveBeenCalledWith(1)
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'heal', ['self'])
     })
 
@@ -52,9 +84,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      global.source = 1
-
-      await controller.handleCommandExecution(fakePlayer, 'ping', [])
+      await capturedEventHandler!(1, 'ping', [])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'ping', [])
     })
@@ -64,9 +94,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      global.source = 1
-
-      await controller.handleCommandExecution(fakePlayer, 'teleport', ['100', '200', '300'])
+      await capturedEventHandler!(1, 'teleport', ['100', '200', '300'])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'teleport', [
         '100',
@@ -79,9 +107,7 @@ describe('RemoteCommandExecutionController', () => {
       // Player is null (not found in directory)
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(undefined)
 
-      global.source = 1
-
-      await controller.handleCommandExecution(null as any, 'test', [])
+      await capturedEventHandler!(999, 'test', [])
 
       // Should not call execute
       expect(mockCommandService.execute).not.toHaveBeenCalled()
@@ -95,12 +121,8 @@ describe('RemoteCommandExecutionController', () => {
       const error = new Error('Command execution failed')
       ;(mockCommandService.execute as any).mockRejectedValue(error)
 
-      global.source = 1
-
       // Should not throw, just log the error
-      await expect(
-        controller.handleCommandExecution(fakePlayer, 'failcmd', []),
-      ).resolves.toBeUndefined()
+      await expect(capturedEventHandler!(1, 'failcmd', [])).resolves.toBeUndefined()
 
       expect(mockCommandService.execute).toHaveBeenCalled()
     })
@@ -115,23 +137,21 @@ describe('RemoteCommandExecutionController', () => {
         executed = true
       })
 
-      global.source = 1
-
-      await controller.handleCommandExecution(fakePlayer, 'asynccmd', [])
+      await capturedEventHandler!(1, 'asynccmd', [])
 
       expect(executed).toBe(true)
     })
 
-    it('should pass correct player object to command service', async () => {
+    it('should look up player by clientID and pass to command service', async () => {
       const fakePlayer = createTestPlayer({ clientID: 42, accountID: 'player-123' })
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      global.source = 42
+      await capturedEventHandler!(42, 'test', ['arg'])
 
-      await controller.handleCommandExecution(fakePlayer, 'test', ['arg'])
-
-      // Verify the exact player object was passed
+      // Verify player was looked up by clientID
+      expect(mockPlayerDirectory.getByClient).toHaveBeenCalledWith(42)
+      // Verify the resolved player object was passed
       expect(mockCommandService.execute).toHaveBeenCalledWith(
         expect.objectContaining({
           clientID: 42,
@@ -147,10 +167,8 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      global.source = 1
-
       const args = ['arg1', 'arg2', 'arg3', 'arg4']
-      await controller.handleCommandExecution(fakePlayer, 'test', args)
+      await capturedEventHandler!(1, 'test', args)
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'test', args)
     })
@@ -160,9 +178,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      global.source = 1
-
-      await controller.handleCommandExecution(fakePlayer, 'admin:ban', ['player123'])
+      await capturedEventHandler!(1, 'admin:ban', ['player123'])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'admin:ban', [
         'player123',
@@ -175,14 +191,10 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      global.source = 1
-
       // Controller should still pass to service (service enforces auth)
-      await controller.handleCommandExecution(fakePlayer, 'test', [])
+      await capturedEventHandler!(1, 'test', [])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'test', [])
     })
   })
-
-  // Event listener metadata is tested via integration tests
 })

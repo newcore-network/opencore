@@ -1,4 +1,6 @@
 import type { Vector3 } from '../../../kernel/utils'
+import type { IEntityServer } from '../../../adapters/contracts/IEntityServer'
+import type { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
 import type {
   VehicleOwnership,
   VehicleMods,
@@ -7,18 +9,31 @@ import type {
 } from '../types/vehicle.types'
 
 /**
+ * Adapter bundle for vehicle operations.
+ * Passed to Vehicle instances by VehicleService.
+ */
+export interface VehicleAdapters {
+  entityServer: IEntityServer
+  vehicleServer: IVehicleServer
+}
+
+/**
  * Server-side representation of a vehicle entity.
  *
- * This class wraps FiveM vehicle natives and manages vehicle state.
+ * This class wraps FiveM server-side vehicle natives and manages vehicle state.
  * All vehicle creation and modification should go through this entity
  * to ensure proper synchronization and security.
  *
  * ⚠️ **Design Note:** Vehicles are created server-side using CreateVehicleServerSetter
  * to prevent client-side spawning abuse. Network IDs are used for cross-client references.
+ *
+ * ⚠️ **Important:** Visual modifications (mods, repairs, fuel) are stored in state bags
+ * and must be applied client-side. The server only stores the desired state.
  */
 export class Vehicle {
   private readonly _networkId: number
   private readonly _handle: number
+  private readonly _adapters: VehicleAdapters
   private _ownership: VehicleOwnership
   private _mods: VehicleMods = {}
   private _metadata: VehicleMetadata = {}
@@ -32,6 +47,7 @@ export class Vehicle {
    * @param handle - The server-side entity handle
    * @param networkId - The network ID for cross-client reference
    * @param ownership - Ownership information
+   * @param adapters - Platform adapters for entity/vehicle operations
    * @param persistent - Whether the vehicle should persist
    * @param routingBucket - The routing bucket the vehicle belongs to
    */
@@ -39,17 +55,19 @@ export class Vehicle {
     handle: number,
     networkId: number,
     ownership: VehicleOwnership,
+    adapters: VehicleAdapters,
     persistent: boolean = false,
     routingBucket: number = 0,
   ) {
     this._handle = handle
     this._networkId = networkId
     this._ownership = ownership
+    this._adapters = adapters
     this._persistent = persistent
     this._routingBucket = routingBucket
 
     if (persistent) {
-      SetEntityOrphanMode(handle, 2)
+      this._adapters.entityServer.setOrphanMode(handle, 2)
     }
 
     this._metadata.createdAt = Date.now()
@@ -84,24 +102,23 @@ export class Vehicle {
   }
 
   get exists(): boolean {
-    return DoesEntityExist(this._handle)
+    return this._adapters.entityServer.doesExist(this._handle)
   }
 
   get model(): number {
-    return GetEntityModel(this._handle)
+    return this._adapters.entityServer.getModel(this._handle)
   }
 
   get position(): Vector3 {
-    const coords = GetEntityCoords(this._handle)
-    return { x: coords[0], y: coords[1], z: coords[2] }
+    return this._adapters.entityServer.getCoords(this._handle)
   }
 
   get heading(): number {
-    return GetEntityHeading(this._handle)
+    return this._adapters.entityServer.getHeading(this._handle)
   }
 
   get plate(): string {
-    return GetVehicleNumberPlateText(this._handle)
+    return this._adapters.vehicleServer.getNumberPlateText(this._handle)
   }
 
   /**
@@ -115,91 +132,21 @@ export class Vehicle {
   }
 
   /**
-   * Applies modifications to the vehicle.
+   * Stores modifications in state bag for client-side application.
    *
-   * @param mods - Modifications to apply
+   * @remarks
+   * Mods are stored server-side and synced via state bags.
+   * The client must read and apply these modifications locally.
+   *
+   * @param mods - Modifications to store
    */
-  applyMods(mods: Partial<VehicleMods>): void {
+  setMods(mods: Partial<VehicleMods>): void {
     if (!this.exists) return
 
     this._mods = { ...this._mods, ...mods }
     this._metadata.modifiedAt = Date.now()
 
-    SetVehicleModKit(this._handle, 0)
-
-    if (mods.spoiler !== undefined) SetVehicleMod(this._handle, 0, mods.spoiler, false)
-    if (mods.frontBumper !== undefined) SetVehicleMod(this._handle, 1, mods.frontBumper, false)
-    if (mods.rearBumper !== undefined) SetVehicleMod(this._handle, 2, mods.rearBumper, false)
-    if (mods.sideSkirt !== undefined) SetVehicleMod(this._handle, 3, mods.sideSkirt, false)
-    if (mods.exhaust !== undefined) SetVehicleMod(this._handle, 4, mods.exhaust, false)
-    if (mods.frame !== undefined) SetVehicleMod(this._handle, 5, mods.frame, false)
-    if (mods.grille !== undefined) SetVehicleMod(this._handle, 6, mods.grille, false)
-    if (mods.hood !== undefined) SetVehicleMod(this._handle, 7, mods.hood, false)
-    if (mods.fender !== undefined) SetVehicleMod(this._handle, 8, mods.fender, false)
-    if (mods.rightFender !== undefined) SetVehicleMod(this._handle, 9, mods.rightFender, false)
-    if (mods.roof !== undefined) SetVehicleMod(this._handle, 10, mods.roof, false)
-    if (mods.engine !== undefined) SetVehicleMod(this._handle, 11, mods.engine, false)
-    if (mods.brakes !== undefined) SetVehicleMod(this._handle, 12, mods.brakes, false)
-    if (mods.transmission !== undefined) SetVehicleMod(this._handle, 13, mods.transmission, false)
-    if (mods.horns !== undefined) SetVehicleMod(this._handle, 14, mods.horns, false)
-    if (mods.suspension !== undefined) SetVehicleMod(this._handle, 15, mods.suspension, false)
-    if (mods.armor !== undefined) SetVehicleMod(this._handle, 16, mods.armor, false)
-
-    if (mods.turbo !== undefined) ToggleVehicleMod(this._handle, 18, mods.turbo)
-    if (mods.xenon !== undefined) ToggleVehicleMod(this._handle, 22, mods.xenon)
-
-    if (mods.wheelType !== undefined) SetVehicleWheelType(this._handle, mods.wheelType)
-    if (mods.wheels !== undefined) SetVehicleMod(this._handle, 23, mods.wheels, false)
-    if (mods.windowTint !== undefined) SetVehicleWindowTint(this._handle, mods.windowTint)
-
-    if (mods.primaryColor !== undefined || mods.secondaryColor !== undefined) {
-      const [currentPrimary, currentSecondary] = GetVehicleColours(this._handle)
-      SetVehicleColours(
-        this._handle,
-        mods.primaryColor ?? currentPrimary,
-        mods.secondaryColor ?? currentSecondary,
-      )
-    }
-
-    if (mods.pearlescentColor !== undefined || mods.wheelColor !== undefined) {
-      const [currentPearl, currentWheel] = GetVehicleExtraColours(this._handle)
-      SetVehicleExtraColours(
-        this._handle,
-        mods.pearlescentColor ?? currentPearl,
-        mods.wheelColor ?? currentWheel,
-      )
-    }
-
-    if (mods.neonEnabled !== undefined) {
-      SetVehicleNeonLightEnabled(this._handle, 0, mods.neonEnabled[0])
-      SetVehicleNeonLightEnabled(this._handle, 1, mods.neonEnabled[1])
-      SetVehicleNeonLightEnabled(this._handle, 2, mods.neonEnabled[2])
-      SetVehicleNeonLightEnabled(this._handle, 3, mods.neonEnabled[3])
-    }
-
-    if (mods.neonColor !== undefined) {
-      SetVehicleNeonLightsColour(
-        this._handle,
-        mods.neonColor[0],
-        mods.neonColor[1],
-        mods.neonColor[2],
-      )
-    }
-
-    if (mods.extras) {
-      for (const [extraId, enabled] of Object.entries(mods.extras)) {
-        SetVehicleExtra(this._handle, Number(extraId), !enabled)
-      }
-    }
-
-    if (mods.livery !== undefined) {
-      SetVehicleLivery(this._handle, mods.livery)
-    }
-
-    if (mods.plateStyle !== undefined) {
-      SetVehicleNumberPlateTextIndex(this._handle, mods.plateStyle)
-    }
-
+    // Sync to state bag for client-side application
     this.syncStateBag('mods', this._mods)
   }
 
@@ -231,28 +178,52 @@ export class Vehicle {
    */
   setRoutingBucket(bucket: number): void {
     if (!this.exists) return
-    SetEntityRoutingBucket(this._handle, bucket)
+    this._adapters.entityServer.setRoutingBucket(this._handle, bucket)
     this._routingBucket = bucket
   }
 
   /**
-   * Repairs the vehicle completely.
+   * Sets the license plate text.
+   *
+   * @param plate - Plate text (max 8 characters)
    */
-  repair(): void {
+  setPlate(plate: string): void {
     if (!this.exists) return
-    SetVehicleFixed(this._handle)
-    SetVehicleDeformationFixed(this._handle)
-    SetVehicleUndriveable(this._handle, false)
-    SetVehicleEngineOn(this._handle, true, true, false)
-    SetVehicleEngineHealth(this._handle, 1000.0)
-    SetVehiclePetrolTankHealth(this._handle, 1000.0)
-    this._metadata.engineHealth = 1000.0
-    this._metadata.bodyHealth = 1000.0
-    this.syncStateBag('health', { engine: 1000.0, body: 1000.0 })
+    this._adapters.vehicleServer.setNumberPlateText(this._handle, plate.substring(0, 8))
   }
 
   /**
-   * Sets the fuel level.
+   * Sets the vehicle colors (server-side native).
+   *
+   * @param primaryColor - Primary color index
+   * @param secondaryColor - Secondary color index
+   */
+  setColors(primaryColor?: number, secondaryColor?: number): void {
+    if (!this.exists) return
+
+    const [currentPrimary, currentSecondary] = this._adapters.vehicleServer.getColours(this._handle)
+    this._adapters.vehicleServer.setColours(
+      this._handle,
+      primaryColor ?? currentPrimary,
+      secondaryColor ?? currentSecondary,
+    )
+  }
+
+  /**
+   * Marks vehicle for repair (client applies the actual repair).
+   *
+   * @remarks
+   * Sets a state bag flag that clients should watch to apply repair locally.
+   */
+  markForRepair(): void {
+    if (!this.exists) return
+    this._metadata.needsRepair = true
+    this._metadata.repairRequestedAt = Date.now()
+    this.syncStateBag('needsRepair', true)
+  }
+
+  /**
+   * Sets the fuel level (stored in metadata, applied client-side).
    *
    * @param level - Fuel level (0–100)
    */
@@ -260,29 +231,27 @@ export class Vehicle {
     if (!this.exists) return
 
     const clampedLevel = Math.max(0, Math.min(100, level))
-    SetVehicleFuelLevel(this._handle, clampedLevel)
     this._metadata.fuel = clampedLevel
     this.syncStateBag('fuel', clampedLevel)
   }
 
   /**
-   * Gets the current fuel level.
+   * Gets the stored fuel level from metadata.
    *
-   * @returns Fuel level (0.0-1.0)
+   * @returns Fuel level (0-100) or 100 if not set
    */
   getFuel(): number {
-    if (!this.exists) return 0
-    return GetVehicleFuelLevel(this._handle) / 100
+    return this._metadata.fuel ?? 100
   }
 
   /**
-   * Sets the vehicle doors locked state.
+   * Sets the vehicle doors locked state (server-side native).
    *
    * @param locked - Whether doors should be locked
    */
   setDoorsLocked(locked: boolean): void {
     if (!this.exists) return
-    SetVehicleDoorsLocked(this._handle, locked ? 2 : 1)
+    this._adapters.vehicleServer.setDoorsLocked(this._handle, locked ? 2 : 1)
     this.syncStateBag('locked', locked)
   }
 
@@ -294,9 +263,18 @@ export class Vehicle {
    */
   teleport(position: Vector3, heading?: number): void {
     if (!this.exists) return
-    SetEntityCoords(this._handle, position.x, position.y, position.z, false, false, false, true)
+    this._adapters.entityServer.setCoords(
+      this._handle,
+      position.x,
+      position.y,
+      position.z,
+      false,
+      false,
+      false,
+      true,
+    )
     if (heading !== undefined) {
-      SetEntityHeading(this._handle, heading)
+      this._adapters.entityServer.setHeading(this._handle, heading)
     }
   }
 
@@ -305,7 +283,7 @@ export class Vehicle {
    */
   delete(): void {
     if (!this.exists) return
-    DeleteEntity(this._handle)
+    this._adapters.entityServer.delete(this._handle)
   }
 
   /**
@@ -315,7 +293,7 @@ export class Vehicle {
    * @param value - Value to sync
    */
   private syncStateBag(key: string, value: any): void {
-    const stateBag = Entity(this._handle).state
+    const stateBag = this._adapters.entityServer.getStateBag(this._handle)
     stateBag.set(key, value, true)
   }
 

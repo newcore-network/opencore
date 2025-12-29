@@ -1,0 +1,71 @@
+import { injectable } from 'tsyringe'
+import { IEntityServer, type EntityStateBag } from '../contracts/IEntityServer'
+import type { Vector3 } from '../../kernel/utils'
+
+/**
+ * FiveM implementation of server-side entity operations.
+ */
+@injectable()
+export class FiveMEntityServer extends IEntityServer {
+  doesExist(handle: number): boolean {
+    return DoesEntityExist(handle)
+  }
+
+  getCoords(handle: number): Vector3 {
+    const coords = GetEntityCoords(handle)
+    return { x: coords[0], y: coords[1], z: coords[2] }
+  }
+
+  setCoords(
+    handle: number,
+    x: number,
+    y: number,
+    z: number,
+    alive = false,
+    deadFlag = false,
+    ragdollFlag = false,
+    clearArea = true,
+  ): void {
+    SetEntityCoords(handle, x, y, z, alive, deadFlag, ragdollFlag, clearArea)
+  }
+
+  getHeading(handle: number): number {
+    return GetEntityHeading(handle)
+  }
+
+  setHeading(handle: number, heading: number): void {
+    SetEntityHeading(handle, heading)
+  }
+
+  getModel(handle: number): number {
+    return GetEntityModel(handle)
+  }
+
+  delete(handle: number): void {
+    DeleteEntity(handle)
+  }
+
+  setOrphanMode(handle: number, mode: number): void {
+    SetEntityOrphanMode(handle, mode)
+  }
+
+  setRoutingBucket(handle: number, bucket: number): void {
+    SetEntityRoutingBucket(handle, bucket)
+  }
+
+  getRoutingBucket(handle: number): number {
+    return GetEntityRoutingBucket(handle)
+  }
+
+  getStateBag(handle: number): EntityStateBag {
+    const stateBag = Entity(handle).state
+    return {
+      set: (key: string, value: unknown, replicated = true) => {
+        stateBag.set(key, value, replicated)
+      },
+      get: (key: string) => {
+        return stateBag[key]
+      },
+    }
+  }
+}

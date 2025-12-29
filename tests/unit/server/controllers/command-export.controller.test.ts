@@ -3,18 +3,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
 import { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import { Player } from '../../../../src/runtime/server/entities/player'
+import { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
 import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
 import { AppError } from '../../../../src/kernel/utils'
 import { createTestPlayer, createAuthenticatedPlayer } from '../../../helpers'
-
-// Mock emitNet global
-global.emitNet = vi.fn()
 
 describe('CommandExportController', () => {
   let controller: CommandExportController
   let mockCommandService: CommandExecutionPort
   let mockPlayerDirectory: PlayerDirectoryPort
+  let mockEngineEvents: IEngineEvents
+  let mockAccessControl: any
+  let mockRateLimiter: any
 
   beforeEach(() => {
     // Create mock services
@@ -29,7 +29,28 @@ describe('CommandExportController', () => {
       getAll: vi.fn(() => []),
     } as any
 
-    controller = new CommandExportController(mockCommandService, mockPlayerDirectory)
+    // Mock engine events adapter
+    mockEngineEvents = {
+      on: vi.fn(),
+      emit: vi.fn(),
+    } as any
+
+    // Mock security services (default: allow everything)
+    mockAccessControl = {
+      enforce: vi.fn().mockResolvedValue(undefined),
+    }
+
+    mockRateLimiter = {
+      checkLimit: vi.fn().mockReturnValue(true),
+    }
+
+    controller = new CommandExportController(
+      mockCommandService,
+      mockPlayerDirectory,
+      mockAccessControl,
+      mockRateLimiter,
+      mockEngineEvents,
+    )
 
     // Clear mocks
     vi.clearAllMocks()
@@ -136,8 +157,8 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(1, 'remotecmd', ['arg1', 'arg2'])
 
-      // Should emit event to resource
-      expect(global.emitNet).toHaveBeenCalledWith(
+      // Should emit event to resource via adapter
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:my-resource',
         1,
         'remotecmd',
@@ -163,7 +184,7 @@ describe('CommandExportController', () => {
       // Execute with lowercase
       await controller.executeCommand(1, 'remote', [])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:my-resource',
         1,
         'remote',
@@ -193,7 +214,7 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(42, 'test', [])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         expect.any(String),
         42, // clientID
         'test',
@@ -214,7 +235,7 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(1, 'noargs', [])
 
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:test-resource',
         1,
         'noargs',
@@ -342,7 +363,7 @@ describe('CommandExportController', () => {
       controller.registerCommand(dto2)
 
       await controller.executeCommand(1, 'cmd1', [])
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:resource-a',
         expect.any(Number),
         'cmd1',
@@ -352,7 +373,7 @@ describe('CommandExportController', () => {
       vi.clearAllMocks()
 
       await controller.executeCommand(1, 'cmd2', [])
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:resource-b',
         expect.any(Number),
         'cmd2',
@@ -362,11 +383,8 @@ describe('CommandExportController', () => {
   })
 
   describe('security validation', () => {
-    let mockAccessControl: any
-    let mockRateLimiter: any
-
     beforeEach(() => {
-      // Create new mocks for security services
+      // Reset security mocks to allow all by default
       mockAccessControl = {
         enforce: vi.fn().mockResolvedValue(undefined),
       }
@@ -375,12 +393,13 @@ describe('CommandExportController', () => {
         checkLimit: vi.fn().mockReturnValue(true),
       }
 
-      // Create controller with security services
-      controller = new (CommandExportController as any)(
+      // Recreate controller with fresh mocks
+      controller = new CommandExportController(
         mockCommandService,
         mockPlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockEngineEvents,
       )
 
       vi.clearAllMocks()
@@ -410,7 +429,7 @@ describe('CommandExportController', () => {
       expect(mockAccessControl.enforce).toHaveBeenCalledWith(fakePlayer, { rank: 5 })
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should validate @Throttle before delegating', async () => {
@@ -437,7 +456,7 @@ describe('CommandExportController', () => {
       expect(mockRateLimiter.checkLimit).toHaveBeenCalledWith('1:remote:test', 5, 1000)
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should validate @RequiresState before delegating', async () => {
@@ -464,7 +483,7 @@ describe('CommandExportController', () => {
       expect(fakePlayer.hasState).toHaveBeenCalledWith('dead')
 
       // Should NOT delegate to resource
-      expect(global.emitNet).not.toHaveBeenCalled()
+      expect(mockEngineEvents.emit).not.toHaveBeenCalled()
     })
 
     it('should validate in order: guard → throttle → requiresState', async () => {
@@ -504,7 +523,7 @@ describe('CommandExportController', () => {
       expect(callOrder).toEqual(['guard', 'throttle', 'requiresState'])
 
       // Should delegate after all validations pass
-      expect(global.emitNet).toHaveBeenCalled()
+      expect(mockEngineEvents.emit).toHaveBeenCalled()
     })
 
     it('should skip validation if no security metadata', async () => {
@@ -527,7 +546,7 @@ describe('CommandExportController', () => {
       expect(mockRateLimiter.checkLimit).not.toHaveBeenCalled()
 
       // Should delegate
-      expect(global.emitNet).toHaveBeenCalled()
+      expect(mockEngineEvents.emit).toHaveBeenCalled()
     })
 
     it('should stop validation chain on first failure', async () => {
@@ -587,7 +606,7 @@ describe('CommandExportController', () => {
       expect(fakePlayer.hasState).toHaveBeenCalled()
 
       // Should delegate to resource
-      expect(global.emitNet).toHaveBeenCalledWith(
+      expect(mockEngineEvents.emit).toHaveBeenCalledWith(
         'opencore:command:execute:test-resource',
         1,
         'test',

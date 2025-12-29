@@ -335,6 +335,98 @@ export class VehicleClientService {
   }
 
   /**
+   * Applies vehicle mods from state bag data.
+   *
+   * @param vehicle - Vehicle handle
+   * @param mods - Mods object from state bag
+   */
+  applyMods(vehicle: number, mods: Record<string, any>): void {
+    if (!DoesEntityExist(vehicle)) return
+
+    SetVehicleModKit(vehicle, 0)
+
+    if (mods.spoiler !== undefined) SetVehicleMod(vehicle, 0, mods.spoiler, false)
+    if (mods.frontBumper !== undefined) SetVehicleMod(vehicle, 1, mods.frontBumper, false)
+    if (mods.rearBumper !== undefined) SetVehicleMod(vehicle, 2, mods.rearBumper, false)
+    if (mods.sideSkirt !== undefined) SetVehicleMod(vehicle, 3, mods.sideSkirt, false)
+    if (mods.exhaust !== undefined) SetVehicleMod(vehicle, 4, mods.exhaust, false)
+    if (mods.frame !== undefined) SetVehicleMod(vehicle, 5, mods.frame, false)
+    if (mods.grille !== undefined) SetVehicleMod(vehicle, 6, mods.grille, false)
+    if (mods.hood !== undefined) SetVehicleMod(vehicle, 7, mods.hood, false)
+    if (mods.fender !== undefined) SetVehicleMod(vehicle, 8, mods.fender, false)
+    if (mods.rightFender !== undefined) SetVehicleMod(vehicle, 9, mods.rightFender, false)
+    if (mods.roof !== undefined) SetVehicleMod(vehicle, 10, mods.roof, false)
+    if (mods.engine !== undefined) SetVehicleMod(vehicle, 11, mods.engine, false)
+    if (mods.brakes !== undefined) SetVehicleMod(vehicle, 12, mods.brakes, false)
+    if (mods.transmission !== undefined) SetVehicleMod(vehicle, 13, mods.transmission, false)
+    if (mods.horns !== undefined) SetVehicleMod(vehicle, 14, mods.horns, false)
+    if (mods.suspension !== undefined) SetVehicleMod(vehicle, 15, mods.suspension, false)
+    if (mods.armor !== undefined) SetVehicleMod(vehicle, 16, mods.armor, false)
+
+    if (mods.turbo !== undefined) ToggleVehicleMod(vehicle, 18, mods.turbo)
+    if (mods.xenon !== undefined) ToggleVehicleMod(vehicle, 22, mods.xenon)
+
+    if (mods.wheelType !== undefined) SetVehicleWheelType(vehicle, mods.wheelType)
+    if (mods.wheels !== undefined) SetVehicleMod(vehicle, 23, mods.wheels, false)
+    if (mods.windowTint !== undefined) SetVehicleWindowTint(vehicle, mods.windowTint)
+    if (mods.livery !== undefined) SetVehicleLivery(vehicle, mods.livery)
+    if (mods.plateStyle !== undefined) SetVehicleNumberPlateTextIndex(vehicle, mods.plateStyle)
+
+    if (mods.neonEnabled !== undefined) {
+      SetVehicleNeonLightEnabled(vehicle, 0, mods.neonEnabled[0])
+      SetVehicleNeonLightEnabled(vehicle, 1, mods.neonEnabled[1])
+      SetVehicleNeonLightEnabled(vehicle, 2, mods.neonEnabled[2])
+      SetVehicleNeonLightEnabled(vehicle, 3, mods.neonEnabled[3])
+    }
+
+    if (mods.neonColor !== undefined) {
+      SetVehicleNeonLightsColour(vehicle, mods.neonColor[0], mods.neonColor[1], mods.neonColor[2])
+    }
+
+    if (mods.extras) {
+      for (const [extraId, enabled] of Object.entries(mods.extras)) {
+        SetVehicleExtra(vehicle, Number(extraId), !enabled)
+      }
+    }
+
+    if (mods.pearlescentColor !== undefined || mods.wheelColor !== undefined) {
+      const [currentPearl, currentWheel] = GetVehicleExtraColours(vehicle)
+      SetVehicleExtraColours(
+        vehicle,
+        mods.pearlescentColor ?? currentPearl,
+        mods.wheelColor ?? currentWheel,
+      )
+    }
+  }
+
+  /**
+   * Repairs a vehicle completely (client-side).
+   *
+   * @param vehicle - Vehicle handle
+   */
+  repair(vehicle: number): void {
+    if (!DoesEntityExist(vehicle)) return
+
+    SetVehicleFixed(vehicle)
+    SetVehicleDeformationFixed(vehicle)
+    SetVehicleUndriveable(vehicle, false)
+    SetVehicleEngineOn(vehicle, true, true, false)
+    SetVehicleEngineHealth(vehicle, 1000.0)
+    SetVehiclePetrolTankHealth(vehicle, 1000.0)
+  }
+
+  /**
+   * Sets fuel level on a vehicle (client-side).
+   *
+   * @param vehicle - Vehicle handle
+   * @param level - Fuel level (0-100)
+   */
+  setFuel(vehicle: number, level: number): void {
+    if (!DoesEntityExist(vehicle)) return
+    SetVehicleFuelLevel(vehicle, Math.max(0, Math.min(100, level)))
+  }
+
+  /**
    * Registers event handlers for server responses.
    */
   private registerEventHandlers(): void {
@@ -351,8 +443,28 @@ export class VehicleClientService {
       },
     )
 
-    onNet('opencore:vehicle:created', (data: SerializedVehicleData) => {
-      console.log('[VehicleClient] Vehicle created:', data.networkId)
+    onNet('opencore:vehicle:created', async (data: SerializedVehicleData) => {
+      // Wait for vehicle to exist locally
+      const started = GetGameTimer()
+      let veh = 0
+
+      while (GetGameTimer() - started < 5000) {
+        veh = this.getVehicleFromNetworkId(data.networkId)
+        if (veh && DoesEntityExist(veh)) break
+        await new Promise((r) => setTimeout(r, 0))
+      }
+
+      if (veh && DoesEntityExist(veh)) {
+        // Apply mods from server data
+        if (data.mods && Object.keys(data.mods).length > 0) {
+          this.applyMods(veh, data.mods)
+        }
+
+        // Apply fuel from metadata
+        if (data.metadata?.fuel !== undefined) {
+          this.setFuel(veh, data.metadata.fuel)
+        }
+      }
     })
 
     onNet('opencore:vehicle:deleted', (networkId: number) => {
@@ -360,15 +472,38 @@ export class VehicleClientService {
     })
 
     onNet('opencore:vehicle:modified', (data: { networkId: number; mods: any }) => {
-      console.log('[VehicleClient] Vehicle modified:', data.networkId)
+      const veh = this.getVehicleFromNetworkId(data.networkId)
+      if (veh && DoesEntityExist(veh)) {
+        this.applyMods(veh, data.mods)
+      }
     })
 
     onNet('opencore:vehicle:repaired', (networkId: number) => {
-      console.log('[VehicleClient] Vehicle repaired:', networkId)
+      const veh = this.getVehicleFromNetworkId(networkId)
+      if (veh && DoesEntityExist(veh)) {
+        this.repair(veh)
+      }
     })
 
     onNet('opencore:vehicle:lockedChanged', (data: { networkId: number; locked: boolean }) => {
       console.log('[VehicleClient] Vehicle lock changed:', data.networkId, data.locked)
+    })
+
+    onNet('opencore:vehicle:warpInto', async (networkId: number, seatIndex: number = -1) => {
+      const started = GetGameTimer()
+      let veh = 0
+
+      while (GetGameTimer() - started < 5000) {
+        veh = this.getVehicleFromNetworkId(networkId)
+        if (veh && DoesEntityExist(veh)) break
+        await new Promise((r) => setTimeout(r, 0))
+      }
+
+      if (veh && DoesEntityExist(veh)) {
+        this.warpIntoVehicle(veh, seatIndex)
+      } else {
+        console.error('[VehicleClient] Failed to warp into vehicle:', networkId)
+      }
     })
   }
 }

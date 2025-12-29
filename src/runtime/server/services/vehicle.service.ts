@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe'
-import { Vehicle } from '../entities/vehicle'
+import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import type {
   VehicleCreateOptions,
   VehicleSpawnResult,
@@ -7,6 +7,11 @@ import type {
 } from '../types/vehicle.types'
 import { coreLogger } from '../../../kernel/shared/logger'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
+import { IEntityServer } from '../../../adapters/contracts/IEntityServer'
+import { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
+import { IHasher } from '../../../adapters/contracts/IHasher'
+import { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
+import { INetTransport } from '../../../adapters/contracts/INetTransport'
 
 /**
  * Server-side service for managing vehicle entities.
@@ -28,9 +33,24 @@ export class VehicleService {
    */
   private vehiclesByNetworkId = new Map<number, Vehicle>()
 
+  /**
+   * Cached adapters bundle for Vehicle instances
+   */
+  private readonly vehicleAdapters: VehicleAdapters
+
   constructor(
     @inject(PlayerDirectoryPort as any) private readonly playerDirectory: PlayerDirectoryPort,
-  ) {}
+    @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
+    @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
+    @inject(IHasher as any) private readonly hasher: IHasher,
+    @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+  ) {
+    this.vehicleAdapters = {
+      entityServer: this.entityServer,
+      vehicleServer: this.vehicleServer,
+    }
+  }
 
   /**
    * Creates a new vehicle on the server.
@@ -59,20 +79,10 @@ export class VehicleService {
         fuel = 100.0,
       } = options
 
-      const modelHash = typeof model === 'string' ? GetHashKey(model) : model
-
-      if (!IsModelInCdimage(modelHash) || !IsModelAVehicle(modelHash)) {
-        coreLogger.error('Invalid vehicle model', { model, modelHash })
-        return {
-          networkId: 0,
-          handle: 0,
-          success: false,
-          error: `Invalid vehicle model: ${model}`,
-        }
-      }
+      const modelHash = typeof model === 'string' ? this.hasher.getHashKey(model) : model
 
       const vehicleType = 'automobile'
-      const handle = CreateVehicleServerSetter(
+      const handle = this.vehicleServer.createServerSetter(
         modelHash,
         vehicleType,
         position.x,
@@ -91,11 +101,11 @@ export class VehicleService {
         }
       }
 
-      while (!DoesEntityExist(handle)) {
+      while (!this.entityServer.doesExist(handle)) {
         await new Promise((resolve) => setTimeout(resolve, 0))
       }
 
-      const networkId = NetworkGetNetworkIdFromEntity(handle)
+      const networkId = this.vehicleServer.getNetworkIdFromEntity(handle)
 
       const vehicleOwnership = {
         clientID: ownership?.clientID,
@@ -103,23 +113,27 @@ export class VehicleService {
         type: ownership?.type ?? 'temporary',
       }
 
-      const vehicle = new Vehicle(handle, networkId, vehicleOwnership, persistent, routingBucket)
+      const vehicle = new Vehicle(
+        handle,
+        networkId,
+        vehicleOwnership,
+        this.vehicleAdapters,
+        persistent,
+        routingBucket,
+      )
 
+      // Server-side operations (these natives work on server)
       if (plate) {
-        SetVehicleNumberPlateText(handle, plate)
+        vehicle.setPlate(plate)
       }
 
       if (primaryColor !== undefined || secondaryColor !== undefined) {
-        const [currentPrimary, currentSecondary] = GetVehicleColours(handle)
-        SetVehicleColours(
-          handle,
-          primaryColor ?? currentPrimary,
-          secondaryColor ?? currentSecondary,
-        )
+        vehicle.setColors(primaryColor, secondaryColor)
       }
 
+      // Mods stored in state bag, applied client-side
       if (mods) {
-        vehicle.applyMods(mods)
+        vehicle.setMods(mods)
       }
 
       if (metadata) {
@@ -145,15 +159,20 @@ export class VehicleService {
         totalVehicles: this.vehiclesByNetworkId.size,
       })
 
-      emitNet('opencore:vehicle:created', -1, vehicle.serialize())
+      this.netTransport.emitNet('opencore:vehicle:created', -1, vehicle.serialize())
 
       return {
         networkId,
         handle,
         success: true,
       }
-    } catch (error) {
-      coreLogger.error('Error creating vehicle', { error, options })
+    } catch (error: unknown) {
+      const errorInfo =
+        error instanceof Error
+          ? { message: error.message, name: error.name, stack: error.stack }
+          : { message: String(error) }
+
+      coreLogger.error('Error creating vehicle', { error: errorInfo, options })
       return {
         networkId: 0,
         handle: 0,
@@ -190,10 +209,14 @@ export class VehicleService {
       type: 'player' as const,
     }
 
-    return this.create({
+    const result = await this.create({
       ...options,
       ownership,
     })
+    if (result.success) {
+      this.netTransport.emitNet('opencore:vehicle:warpInto', clientID, result.networkId, -1)
+    }
+    return result
   }
 
   /**
@@ -213,7 +236,7 @@ export class VehicleService {
    * @returns Vehicle entity or undefined
    */
   getByHandle(handle: number): Vehicle | undefined {
-    const networkId = NetworkGetNetworkIdFromEntity(handle)
+    const networkId = this.vehicleServer.getNetworkIdFromEntity(handle)
     return this.vehiclesByNetworkId.get(networkId)
   }
 
@@ -290,7 +313,7 @@ export class VehicleService {
       totalVehicles: this.vehiclesByNetworkId.size,
     })
 
-    emitNet('opencore:vehicle:deleted', -1, networkId)
+    this.netTransport.emitNet('opencore:vehicle:deleted', -1, networkId)
 
     return true
   }
@@ -341,16 +364,16 @@ export class VehicleService {
     const player = this.playerDirectory.getByClient(clientID)
     if (!player) return false
 
-    const playerPed = GetPlayerPed(player.clientIDStr)
+    const playerPed = this.playerServer.getPed(player.clientIDStr)
     if (!playerPed || playerPed === 0) return false
 
-    const playerPos = GetEntityCoords(playerPed)
+    const playerPos = this.entityServer.getCoords(playerPed)
     const vehiclePos = vehicle.position
 
     const distance = Math.sqrt(
-      Math.pow(playerPos[0] - vehiclePos.x, 2) +
-        Math.pow(playerPos[1] - vehiclePos.y, 2) +
-        Math.pow(playerPos[2] - vehiclePos.z, 2),
+      Math.pow(playerPos.x - vehiclePos.x, 2) +
+        Math.pow(playerPos.y - vehiclePos.y, 2) +
+        Math.pow(playerPos.z - vehiclePos.z, 2),
     )
 
     return distance <= maxDistance

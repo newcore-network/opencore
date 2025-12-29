@@ -1,7 +1,10 @@
 import { inject, injectable } from 'tsyringe'
-import { Player } from '../../entities'
+import { Player, type PlayerAdapters } from '../../entities'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { IPlayerInfo } from '../../../../adapters'
+import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
+import { IEntityServer } from '../../../../adapters/contracts/IEntityServer'
+import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.object'
@@ -23,7 +26,24 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    */
   private playersByClient = new Map<number, Player>()
 
-  constructor(@inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo) {}
+  /**
+   * Cached adapters bundle for Player instances
+   */
+  private readonly playerAdapters: PlayerAdapters
+
+  constructor(
+    @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
+    @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
+    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+  ) {
+    this.playerAdapters = {
+      playerInfo: this.playerInfo,
+      playerServer: this.playerServer,
+      entityServer: this.entityServer,
+      netTransport: this.netTransport,
+    }
+  }
 
   /**
    * Initializes a new player session for a connecting client.
@@ -42,7 +62,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
       meta: {},
     }
 
-    const player = new Player(session, this.playerInfo)
+    const player = new Player(session, this.playerAdapters)
     this.playersByClient.set(clientID, player)
     loggers.session.debug('Player session bound', {
       clientID,

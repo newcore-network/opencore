@@ -5,6 +5,10 @@ import { IExports } from './contracts/IExports'
 import { IResourceInfo } from './contracts/IResourceInfo'
 import { ITick } from './contracts/ITick'
 import { IPlayerInfo } from './contracts/IPlayerInfo'
+import { IEntityServer } from './contracts/IEntityServer'
+import { IVehicleServer } from './contracts/IVehicleServer'
+import { IPlayerServer } from './contracts/IPlayerServer'
+import { IHasher } from './contracts/IHasher'
 
 export type Platform = 'fivem' | 'node'
 
@@ -35,6 +39,10 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       { NodeResourceInfo },
       { NodeTick },
       { NodePlayerInfo },
+      { NodeEntityServer },
+      { NodeVehicleServer },
+      { NodePlayerServer },
+      { NodeHasher },
     ] = await Promise.all([
       import('./node/node-net-transport'),
       import('./node/node-engine-events'),
@@ -42,6 +50,10 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       import('./node/node-resourceinfo'),
       import('./node/node-tick'),
       import('./node/node-playerinfo'),
+      import('./node/node-entity-server'),
+      import('./node/node-vehicle-server'),
+      import('./node/node-player-server'),
+      import('./node/node-hasher'),
     ])
 
     // Register Node.js implementations
@@ -55,6 +67,13 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
     if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, NodeTick)
     if (!di.isRegistered(IPlayerInfo as any))
       di.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
+    if (!di.isRegistered(IEntityServer as any))
+      di.registerSingleton(IEntityServer as any, NodeEntityServer)
+    if (!di.isRegistered(IVehicleServer as any))
+      di.registerSingleton(IVehicleServer as any, NodeVehicleServer)
+    if (!di.isRegistered(IPlayerServer as any))
+      di.registerSingleton(IPlayerServer as any, NodePlayerServer)
+    if (!di.isRegistered(IHasher as any)) di.registerSingleton(IHasher as any, NodeHasher)
   } else {
     // Dynamically import FiveM implementations only when needed
     const [
@@ -64,6 +83,10 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       { FiveMResourceInfo },
       { FiveMTick },
       { FiveMPlayerInfo },
+      { FiveMEntityServer },
+      { FiveMVehicleServer },
+      { FiveMPlayerServer },
+      { FiveMHasher },
     ] = await Promise.all([
       import('./fivem/fivem-net-transport'),
       import('./fivem/fivem-engine-events'),
@@ -71,6 +94,10 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       import('./fivem/fivem-resourceinfo'),
       import('./fivem/fivem-tick'),
       import('./fivem/fivem-playerinfo'),
+      import('./fivem/fivem-entity-server'),
+      import('./fivem/fivem-vehicle-server'),
+      import('./fivem/fivem-player-server'),
+      import('./fivem/fivem-hasher'),
     ])
 
     // Register FiveM implementations
@@ -84,5 +111,12 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
     if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, FiveMTick)
     if (!di.isRegistered(IPlayerInfo as any))
       di.registerSingleton(IPlayerInfo as any, FiveMPlayerInfo)
+    if (!di.isRegistered(IEntityServer as any))
+      di.registerSingleton(IEntityServer as any, FiveMEntityServer)
+    if (!di.isRegistered(IVehicleServer as any))
+      di.registerSingleton(IVehicleServer as any, FiveMVehicleServer)
+    if (!di.isRegistered(IPlayerServer as any))
+      di.registerSingleton(IPlayerServer as any, FiveMPlayerServer)
+    if (!di.isRegistered(IHasher as any)) di.registerSingleton(IHasher as any, FiveMHasher)
   }
 }

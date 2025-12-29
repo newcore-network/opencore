@@ -232,7 +232,8 @@ export class PrincipalExportController {
       }
 
       const hasPerm =
-        principal.permissions.includes('*') || principal.permissions.includes(requirements.permission)
+        principal.permissions.includes('*') ||
+        principal.permissions.includes(requirements.permission)
       if (!hasPerm) {
         throw new AppError(
           'AUTH:PERMISSION_DENIED',
