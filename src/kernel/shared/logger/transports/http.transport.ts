@@ -1,6 +1,19 @@
-import * as http from 'node:http'
 import { type LogEntry, LogLevel } from '../logger.types'
 import type { LogTransport } from './transport.interface'
+
+// Lazy-loaded http module (only loaded at runtime, not bundled)
+let httpModule: any = null
+
+// Use variable to prevent esbuild from statically analyzing the require
+const HTTP_MODULE = 'http'
+
+function getHttpSync() {
+  if (!httpModule) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    httpModule = require(HTTP_MODULE)
+  }
+  return httpModule
+}
 
 /**
  * Configuration for HTTP log transport.
@@ -123,6 +136,8 @@ export class HttpLogTransport implements LogTransport {
    */
   private sendLogs(logs: LogEntry[]): Promise<void> {
     return new Promise((resolve, reject) => {
+      const http = getHttpSync()
+
       const payload = JSON.stringify({
         type: 'logs',
         payload: logs.map((entry) => ({
@@ -141,7 +156,7 @@ export class HttpLogTransport implements LogTransport {
         })),
       })
 
-      const options: http.RequestOptions = {
+      const options = {
         hostname: this.parsedUrl.hostname,
         port: this.parsedUrl.port || 80,
         path: this.parsedUrl.pathname,
@@ -153,7 +168,7 @@ export class HttpLogTransport implements LogTransport {
         timeout: this.options.timeout,
       }
 
-      const req = http.request(options, (res) => {
+      const req = http.request(options, (res: { statusCode?: number; resume: () => void }) => {
         // Consume response to free up memory
         res.resume()
 

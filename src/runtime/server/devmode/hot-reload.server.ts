@@ -1,6 +1,35 @@
-import * as http from 'node:http'
 import { loggers } from '../../../kernel/shared/logger'
 import type { HotReloadOptions } from './types'
+
+// Lazy-loaded http module (only loaded at runtime, not bundled)
+let httpModule: any = null
+
+// Use variable to prevent esbuild from statically analyzing the require
+const HTTP_MODULE = 'http'
+
+function getHttpSync() {
+  if (!httpModule) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    httpModule = require(HTTP_MODULE)
+  }
+  return httpModule
+}
+
+// Safe wrappers for FiveM globals (no-op in Node.js)
+function safeGetCurrentResourceName(): string {
+  if (typeof GetCurrentResourceName === 'function') {
+    return GetCurrentResourceName()
+  }
+  return 'unknown'
+}
+
+function safeExecuteCommand(command: string): void {
+  if (typeof ExecuteCommand === 'function') {
+    ExecuteCommand(command)
+  } else {
+    loggers.bootstrap.warn('[DevMode] ExecuteCommand not available (not running in FiveM)')
+  }
+}
 
 /**
  * Log message structure for HTTP transport.
@@ -32,7 +61,7 @@ export interface LogMessage {
  * ```
  */
 export class HotReloadServer {
-  private server: http.Server | null = null
+  private server: any = null
   private options: HotReloadOptions
   private logBuffer: LogMessage[] = []
   private maxLogBuffer = 1000
@@ -83,7 +112,8 @@ export class HotReloadServer {
     if (!this.options.enabled) return
     if (this.server) return
 
-    this.server = http.createServer((req, res) => {
+    const http = getHttpSync()
+    this.server = http.createServer((req: any, res: any) => {
       this.handleRequest(req, res)
     })
 
@@ -91,7 +121,7 @@ export class HotReloadServer {
       loggers.bootstrap.info(`[DevMode] Hot reload server listening on port ${this.options.port}`)
     })
 
-    this.server.on('error', (error) => {
+    this.server.on('error', (error: Error) => {
       loggers.bootstrap.error(`[DevMode] Hot reload server error`, {}, error as Error)
     })
   }
@@ -114,7 +144,7 @@ export class HotReloadServer {
     return this.server !== null
   }
 
-  private handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
+  private handleRequest(req: any, res: any): void {
     // CORS headers for CLI access
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -156,7 +186,7 @@ export class HotReloadServer {
     res.end(JSON.stringify({ error: 'Not found' }))
   }
 
-  private handleRestart(req: http.IncomingMessage, res: http.ServerResponse): void {
+  private handleRestart(req: any, res: any): void {
     try {
       const url = new URL(req.url ?? '', `http://localhost:${this.options.port}`)
       const resource = url.searchParams.get('resource')
@@ -174,7 +204,7 @@ export class HotReloadServer {
       }
 
       // Don't restart ourselves
-      const currentResource = GetCurrentResourceName()
+      const currentResource = safeGetCurrentResourceName()
       if (resource === currentResource) {
         res.writeHead(400, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ error: 'Cannot restart the hot-reload resource itself' }))
@@ -184,7 +214,7 @@ export class HotReloadServer {
       loggers.bootstrap.info(`[DevMode] Hot reloading resource: ${resource}`)
 
       // Execute the restart command
-      ExecuteCommand(`restart ${resource}`)
+      safeExecuteCommand(`restart ${resource}`)
 
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ success: true, resource }))
@@ -195,10 +225,10 @@ export class HotReloadServer {
     }
   }
 
-  private handleRefresh(res: http.ServerResponse): void {
+  private handleRefresh(res: any): void {
     try {
       loggers.bootstrap.info('[DevMode] Refreshing resources')
-      ExecuteCommand('refresh')
+      safeExecuteCommand('refresh')
 
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ success: true }))
@@ -209,12 +239,12 @@ export class HotReloadServer {
     }
   }
 
-  private handleHealth(res: http.ServerResponse): void {
+  private handleHealth(res: any): void {
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(
       JSON.stringify({
         status: 'ok',
-        resource: GetCurrentResourceName(),
+        resource: safeGetCurrentResourceName(),
         timestamp: Date.now(),
       }),
     )
@@ -230,7 +260,7 @@ export class HotReloadServer {
   /**
    * Handles GET /logs - CLI polls for buffered logs.
    */
-  private handleGetLogs(res: http.ServerResponse): void {
+  private handleGetLogs(res: any): void {
     const logs = this.consumeLogs()
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ logs, timestamp: Date.now() }))
@@ -239,10 +269,10 @@ export class HotReloadServer {
   /**
    * Handles POST /logs - Framework pushes logs to buffer.
    */
-  private handlePostLogs(req: http.IncomingMessage, res: http.ServerResponse): void {
+  private handlePostLogs(req: any, res: any): void {
     let body = ''
 
-    req.on('data', (chunk) => {
+    req.on('data', (chunk: any) => {
       body += chunk.toString()
       // Limit body size to 1MB
       if (body.length > 1024 * 1024) {

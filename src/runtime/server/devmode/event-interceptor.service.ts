@@ -12,6 +12,7 @@ import type { DevEvent, InterceptorOptions } from './types'
 export class EventInterceptorService extends IDevModeInterceptor {
   private enabled = false
   private history: DevEvent[] = []
+  private pendingEvents = new Map<string, DevEvent>()
   private options: InterceptorOptions
   private eventCounter = 0
   private listeners: Array<(event: DevEvent) => void> = []
@@ -97,7 +98,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
     source?: { clientId?: number },
   ): string {
     const id = this.generateEventId()
-    const event: Omit<DevEvent, 'result' | 'duration'> = {
+    const event: DevEvent = {
       id,
       timestamp: Date.now(),
       type: 'net',
@@ -106,6 +107,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       args,
       source,
     }
+    this.pendingEvents.set(id, event)
     this.onEventBefore(event)
     return id
   }
@@ -115,7 +117,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
    */
   recordCommand(name: string, args: string[], source?: { clientId?: number }): string {
     const id = this.generateEventId()
-    const event: Omit<DevEvent, 'result' | 'duration'> = {
+    const event: DevEvent = {
       id,
       timestamp: Date.now(),
       type: 'command',
@@ -124,6 +126,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       args,
       source,
     }
+    this.pendingEvents.set(id, event)
     this.onEventBefore(event)
     return id
   }
@@ -133,7 +136,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
    */
   recordExport(name: string, args: unknown[]): string {
     const id = this.generateEventId()
-    const event: Omit<DevEvent, 'result' | 'duration'> = {
+    const event: DevEvent = {
       id,
       timestamp: Date.now(),
       type: 'export',
@@ -141,6 +144,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       direction: 'in',
       args,
     }
+    this.pendingEvents.set(id, event)
     this.onEventBefore(event)
     return id
   }
@@ -149,10 +153,11 @@ export class EventInterceptorService extends IDevModeInterceptor {
    * Completes an event with result.
    */
   completeEvent(id: string, result: unknown, startTime: number): void {
-    const event = this.history.find((e) => e.id === id)
+    const event = this.pendingEvents.get(id)
     if (event) {
       event.result = result
       event.duration = Date.now() - startTime
+      this.pendingEvents.delete(id)
       this.onEventAfter(event)
     }
   }
@@ -161,10 +166,11 @@ export class EventInterceptorService extends IDevModeInterceptor {
    * Fails an event with error.
    */
   failEvent(id: string, error: string, startTime: number): void {
-    const event = this.history.find((e) => e.id === id)
+    const event = this.pendingEvents.get(id)
     if (event) {
       event.error = error
       event.duration = Date.now() - startTime
+      this.pendingEvents.delete(id)
       this.onEventError(event)
     }
   }

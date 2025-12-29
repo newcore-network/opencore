@@ -15,6 +15,15 @@ import { PlayerSimulatorService } from './player-simulator.service'
 import { StateInspectorService } from './state-inspector.service'
 import type { BridgeMessage, DevEvent, DevModeOptions, RuntimeSnapshot } from './types'
 
+// Safe wrapper for FiveM ExecuteCommand (no-op in Node.js)
+function safeExecuteCommand(command: string): void {
+  if (typeof ExecuteCommand === 'function') {
+    ExecuteCommand(command)
+  } else {
+    loggers.bootstrap.warn('[DevMode] ExecuteCommand not available (not running in FiveM)')
+  }
+}
+
 /**
  * Main DevMode service that orchestrates all development tools.
  *
@@ -361,6 +370,6 @@ export class DevModeService {
 
   private handleRemoteReload(payload: { resource: string }): void {
     loggers.bootstrap.info(`[DevMode] Remote reload requested for: ${payload.resource}`)
-    ExecuteCommand(`restart ${payload.resource}`)
+    safeExecuteCommand(`restart ${payload.resource}`)
   }
 }
