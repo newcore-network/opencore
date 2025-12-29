@@ -9,6 +9,8 @@ import { IEntityServer } from './contracts/IEntityServer'
 import { IVehicleServer } from './contracts/IVehicleServer'
 import { IPlayerServer } from './contracts/IPlayerServer'
 import { IHasher } from './contracts/IHasher'
+import { IPedAppearanceClient } from './contracts/IPedAppearanceClient'
+import { IPedAppearanceServer } from './contracts/IPedAppearanceServer'
 
 export type Platform = 'fivem' | 'node'
 
@@ -43,6 +45,8 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       { NodeVehicleServer },
       { NodePlayerServer },
       { NodeHasher },
+      { NodePedAppearanceClient },
+      { NodePedAppearanceServer },
     ] = await Promise.all([
       import('./node/node-net-transport'),
       import('./node/node-engine-events'),
@@ -54,6 +58,8 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       import('./node/node-vehicle-server'),
       import('./node/node-player-server'),
       import('./node/node-hasher'),
+      import('./node/node-ped-appearance-client'),
+      import('./node/node-ped-appearance-server'),
     ])
 
     // Register Node.js implementations
@@ -74,6 +80,10 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
     if (!di.isRegistered(IPlayerServer as any))
       di.registerSingleton(IPlayerServer as any, NodePlayerServer)
     if (!di.isRegistered(IHasher as any)) di.registerSingleton(IHasher as any, NodeHasher)
+    if (!di.isRegistered(IPedAppearanceClient as any))
+      di.registerSingleton(IPedAppearanceClient as any, NodePedAppearanceClient)
+    if (!di.isRegistered(IPedAppearanceServer as any))
+      di.registerSingleton(IPedAppearanceServer as any, NodePedAppearanceServer)
   } else {
     // Dynamically import FiveM implementations only when needed
     const [
@@ -87,6 +97,8 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       { FiveMVehicleServer },
       { FiveMPlayerServer },
       { FiveMHasher },
+      { FiveMPedAppearanceClientAdapter },
+      { FiveMPedAppearanceServerAdapter },
     ] = await Promise.all([
       import('./fivem/fivem-net-transport'),
       import('./fivem/fivem-engine-events'),
@@ -98,6 +110,8 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
       import('./fivem/fivem-vehicle-server'),
       import('./fivem/fivem-player-server'),
       import('./fivem/fivem-hasher'),
+      import('./fivem/fivem-ped-appearance-client'),
+      import('./fivem/fivem-ped-appearance-server'),
     ])
 
     // Register FiveM implementations
@@ -118,5 +132,9 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
     if (!di.isRegistered(IPlayerServer as any))
       di.registerSingleton(IPlayerServer as any, FiveMPlayerServer)
     if (!di.isRegistered(IHasher as any)) di.registerSingleton(IHasher as any, FiveMHasher)
+    if (!di.isRegistered(IPedAppearanceClient as any))
+      di.registerSingleton(IPedAppearanceClient as any, FiveMPedAppearanceClientAdapter)
+    if (!di.isRegistered(IPedAppearanceServer as any))
+      di.registerSingleton(IPedAppearanceServer as any, FiveMPedAppearanceServerAdapter)
   }
 }

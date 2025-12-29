@@ -8,6 +8,7 @@ export { ConfigService } from './config.service'
 export * from '../database'
 export * from './vehicle.service'
 export * from './vehicle-modification.service'
+export * from './appearance.service'
 
 // Contract Services (Ports)
 export * from './ports/player-directory.port'

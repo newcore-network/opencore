@@ -14,6 +14,8 @@ export * from './contracts/IEntityServer'
 export * from './contracts/IVehicleServer'
 export * from './contracts/IPlayerServer'
 export * from './contracts/IHasher'
+export * from './contracts/IPedAppearanceClient'
+export * from './contracts/IPedAppearanceServer'
 
 // Database adapters
 export { OxMySQLAdapter } from './database/oxmysql.adapter'

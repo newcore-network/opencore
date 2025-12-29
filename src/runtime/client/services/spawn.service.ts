@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
 import { loggers } from '../../../kernel/shared'
+import type { PlayerAppearance } from '../../../kernel/shared'
 import { Vector3 } from '../../../kernel/utils'
 import { AppearanceService } from './appearance.service'
-import { PlayerAppearance } from '../interfaces/appearance.interface'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -277,7 +277,9 @@ export class SpawnService {
       return
     }
 
-    if (!this.appearanceService.validateAppearance(appearance)) {
+    const validation = this.appearanceService.validateAppearance(appearance)
+    if (!validation.valid) {
+      loggers.spawn.warn('Invalid appearance data', { errors: validation.errors })
       SetPedDefaultComponentVariation(ped)
       return
     }
