@@ -11,3 +11,6 @@ export * from './shared/logger'
 
 // Utils
 export * from './utils'
+
+// Schema utilities (Zod helpers)
+export * from './schema'
