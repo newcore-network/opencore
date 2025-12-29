@@ -1,5 +1,3 @@
-import type { Vector3 } from '../../kernel/utils'
-
 /**
  * Server-side vehicle operations adapter.
  *
