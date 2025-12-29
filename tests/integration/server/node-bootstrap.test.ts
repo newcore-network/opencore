@@ -128,7 +128,7 @@ describe('Node.js Runtime Bootstrap', () => {
     const globalAccess: string[] = []
     const originalGlobal = globalThis as any
 
-    const proxy = new Proxy(originalGlobal, {
+    const _proxy = new Proxy(originalGlobal, {
       get(target, prop) {
         if (
           typeof prop === 'string' &&

@@ -23,7 +23,6 @@ function registerDefaultDatabaseFactories(): void {
 @injectable()
 export class DatabaseService extends DatabaseContract {
   private adapter: DatabaseContract | null = null
-  private config: DatabaseConfig = {}
   private isInitialized = false
 
   /**
@@ -111,7 +110,7 @@ export class DatabaseService extends DatabaseContract {
    */
   async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
     this.ensureInitialized()
-    return this.adapter!.query<T>(sql, params)
+    return this.adapter?.query<T>(sql, params)
   }
 
   /**
@@ -119,7 +118,7 @@ export class DatabaseService extends DatabaseContract {
    */
   async single<T = any>(sql: string, params?: any[]): Promise<T | null> {
     this.ensureInitialized()
-    return this.adapter!.single<T>(sql, params)
+    return this.adapter?.single<T>(sql, params)
   }
 
   /**
@@ -127,7 +126,7 @@ export class DatabaseService extends DatabaseContract {
    */
   async scalar<T = any>(sql: string, params?: any[]): Promise<T | null> {
     this.ensureInitialized()
-    return this.adapter!.scalar<T>(sql, params)
+    return this.adapter?.scalar<T>(sql, params)
   }
 
   /**
@@ -135,7 +134,7 @@ export class DatabaseService extends DatabaseContract {
    */
   async execute(sql: string, params?: any[]): Promise<ExecuteResult> {
     this.ensureInitialized()
-    return this.adapter!.execute(sql, params)
+    return this.adapter?.execute(sql, params)
   }
 
   /**
@@ -143,7 +142,7 @@ export class DatabaseService extends DatabaseContract {
    */
   async insert(sql: string, params?: any[]): Promise<InsertResult> {
     this.ensureInitialized()
-    return this.adapter!.insert(sql, params)
+    return this.adapter?.insert(sql, params)
   }
 
   /**
@@ -154,7 +153,7 @@ export class DatabaseService extends DatabaseContract {
     sharedParams?: TransactionSharedParams,
   ): Promise<boolean> {
     this.ensureInitialized()
-    return this.adapter!.transaction(queries, sharedParams)
+    return this.adapter?.transaction(queries, sharedParams)
   }
 }
 

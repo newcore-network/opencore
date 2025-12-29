@@ -510,7 +510,7 @@ describe('CommandExportController', () => {
         callOrder.push('throttle')
         return true
       })
-      fakePlayer.hasState = vi.fn().mockImplementation((state: string) => {
+      fakePlayer.hasState = vi.fn().mockImplementation((_state: string) => {
         callOrder.push('requiresState')
         return true
       })

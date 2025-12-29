@@ -26,13 +26,13 @@ export const emitNet = vi.fn((eventName: string, target: number | string, ...arg
 })
 
 export const RegisterCommand = vi.fn(
-  (commandName: string, handler: (...args: any[]) => void, restricted: boolean) => {
+  (commandName: string, handler: (...args: any[]) => void, _restricted: boolean) => {
     registeredCommands.set(commandName, handler)
   },
 )
 
 export const RegisterKeyMapping = vi.fn(
-  (commandName: string, description: string, inputMapper: string, key: string) => {
+  (commandName: string, description: string, _inputMapper: string, key: string) => {
     registeredKeyMappings.set(commandName, { description, key })
   },
 )
@@ -47,7 +47,7 @@ export const GetPlayerIdentifiers = vi.fn((playerId: number) => [
 
 export const GetPlayerName = vi.fn((playerId: number) => `TestPlayer${playerId}`)
 
-export const GetNumPlayerIdentifiers = vi.fn((playerId: number) => 3)
+export const GetNumPlayerIdentifiers = vi.fn((_playerId: number) => 3)
 
 export const GetPlayerIdentifier = vi.fn((playerId: number, index: number) => {
   const identifiers = [`license:test-license-${playerId}`, `discord:123456789`, `steam:test-steam`]
@@ -78,111 +78,111 @@ export const on = vi.fn((eventName: string, handler: (...args: any[]) => void) =
 // Player data mocks (client)
 export const PlayerPedId = vi.fn(() => 1)
 export const PlayerId = vi.fn(() => 1)
-export const GetPlayerServerId = vi.fn((playerId: number) => 1)
-export const GetEntityCoords = vi.fn((entity: number, alive?: boolean) => [0.0, 0.0, 0.0])
-export const GetEntityHeading = vi.fn((entity: number) => 0.0)
+export const GetPlayerServerId = vi.fn((_playerId: number) => 1)
+export const GetEntityCoords = vi.fn((_entity: number, _alive?: boolean) => [0.0, 0.0, 0.0])
+export const GetEntityHeading = vi.fn((_entity: number) => 0.0)
 export const SetEntityCoords = vi.fn(
   (
-    entity: number,
-    x: number,
-    y: number,
-    z: number,
-    xAxis: boolean,
-    yAxis: boolean,
-    zAxis: boolean,
-    clearArea: boolean,
+    _entity: number,
+    _x: number,
+    _y: number,
+    _z: number,
+    _xAxis: boolean,
+    _yAxis: boolean,
+    _zAxis: boolean,
+    _clearArea: boolean,
   ) => {},
 )
 export const SetEntityCoordsNoOffset = vi.fn(
-  (entity: number, x: number, y: number, z: number, ...args: any[]) => {},
+  (_entity: number, _x: number, _y: number, _z: number, ..._args: any[]) => {},
 )
-export const SetEntityHeading = vi.fn((entity: number, heading: number) => {})
+export const SetEntityHeading = vi.fn((_entity: number, _heading: number) => {})
 
 // Entity health/status
-export const GetEntityHealth = vi.fn((entity: number) => 200)
-export const GetEntityMaxHealth = vi.fn((entity: number) => 200)
-export const SetEntityHealth = vi.fn((entity: number, health: number) => {})
-export const GetPedArmour = vi.fn((ped: number) => 0)
-export const SetPedArmour = vi.fn((ped: number, armor: number) => {})
-export const IsEntityDead = vi.fn((entity: number) => false)
-export const IsEntityInWater = vi.fn((entity: number) => false)
+export const GetEntityHealth = vi.fn((_entity: number) => 200)
+export const GetEntityMaxHealth = vi.fn((_entity: number) => 200)
+export const SetEntityHealth = vi.fn((_entity: number, _health: number) => {})
+export const GetPedArmour = vi.fn((_ped: number) => 0)
+export const SetPedArmour = vi.fn((_ped: number, _armor: number) => {})
+export const IsEntityDead = vi.fn((_entity: number) => false)
+export const IsEntityInWater = vi.fn((_entity: number) => false)
 
 // Ped state
-export const IsPedSwimming = vi.fn((ped: number) => false)
-export const IsPedFalling = vi.fn((ped: number) => false)
-export const IsPedClimbing = vi.fn((ped: number) => false)
-export const IsPedRagdoll = vi.fn((ped: number) => false)
-export const IsPedInParachuteFreeFall = vi.fn((ped: number) => false)
-export const IsPedWalking = vi.fn((ped: number) => false)
-export const IsPedRunning = vi.fn((ped: number) => false)
-export const IsPedSprinting = vi.fn((ped: number) => false)
-export const IsPedOnFoot = vi.fn((ped: number) => true)
-export const IsPedStill = vi.fn((ped: number) => true)
-export const GetEntitySpeed = vi.fn((entity: number) => 0)
+export const IsPedSwimming = vi.fn((_ped: number) => false)
+export const IsPedFalling = vi.fn((_ped: number) => false)
+export const IsPedClimbing = vi.fn((_ped: number) => false)
+export const IsPedRagdoll = vi.fn((_ped: number) => false)
+export const IsPedInParachuteFreeFall = vi.fn((_ped: number) => false)
+export const IsPedWalking = vi.fn((_ped: number) => false)
+export const IsPedRunning = vi.fn((_ped: number) => false)
+export const IsPedSprinting = vi.fn((_ped: number) => false)
+export const IsPedOnFoot = vi.fn((_ped: number) => true)
+export const IsPedStill = vi.fn((_ped: number) => true)
+export const GetEntitySpeed = vi.fn((_entity: number) => 0)
 
 // Vehicle
-export const IsPedInAnyVehicle = vi.fn((ped: number, atGetIn: boolean) => false)
-export const GetVehiclePedIsIn = vi.fn((ped: number, lastVehicle: boolean) => 0)
-export const GetPedInVehicleSeat = vi.fn((vehicle: number, seat: number) => 0)
-export const GetVehicleMaxNumberOfPassengers = vi.fn((vehicle: number) => 4)
-export const TaskWarpPedIntoVehicle = vi.fn((ped: number, vehicle: number, seat: number) => {})
-export const TaskLeaveVehicle = vi.fn((ped: number, vehicle: number, flags: number) => {})
+export const IsPedInAnyVehicle = vi.fn((_ped: number, _atGetIn: boolean) => false)
+export const GetVehiclePedIsIn = vi.fn((_ped: number, _lastVehicle: boolean) => 0)
+export const GetPedInVehicleSeat = vi.fn((_vehicle: number, _seat: number) => 0)
+export const GetVehicleMaxNumberOfPassengers = vi.fn((_vehicle: number) => 4)
+export const TaskWarpPedIntoVehicle = vi.fn((_ped: number, _vehicle: number, _seat: number) => {})
+export const TaskLeaveVehicle = vi.fn((_ped: number, _vehicle: number, _flags: number) => {})
 
 // Combat
-export const IsPedShooting = vi.fn((ped: number) => false)
-export const IsPlayerFreeAiming = vi.fn((playerId: number) => false)
-export const IsPedReloading = vi.fn((ped: number) => false)
-export const IsPedInCover = vi.fn((ped: number, arg: boolean) => false)
-export const IsPedInMeleeCombat = vi.fn((ped: number) => false)
-export const GetCurrentPedWeapon = vi.fn((ped: number, arg: boolean) => [true, 0])
-export const GetAmmoInPedWeapon = vi.fn((ped: number, weaponHash: number) => 0)
+export const IsPedShooting = vi.fn((_ped: number) => false)
+export const IsPlayerFreeAiming = vi.fn((_playerId: number) => false)
+export const IsPedReloading = vi.fn((_ped: number) => false)
+export const IsPedInCover = vi.fn((_ped: number, _arg: boolean) => false)
+export const IsPedInMeleeCombat = vi.fn((_ped: number) => false)
+export const GetCurrentPedWeapon = vi.fn((_ped: number, _arg: boolean) => [true, 0])
+export const GetAmmoInPedWeapon = vi.fn((_ped: number, _weaponHash: number) => 0)
 
 // Weapons
 export const GetHashKey = vi.fn((str: string) => str.length * 1000)
 export const GiveWeaponToPed = vi.fn(
-  (ped: number, hash: number, ammo: number, arg1: boolean, arg2: boolean) => {},
+  (_ped: number, _hash: number, _ammo: number, _arg1: boolean, _arg2: boolean) => {},
 )
-export const RemoveWeaponFromPed = vi.fn((ped: number, hash: number) => {})
-export const RemoveAllPedWeapons = vi.fn((ped: number, arg: boolean) => {})
-export const SetPedAmmo = vi.fn((ped: number, hash: number, ammo: number) => {})
-export const HasPedGotWeapon = vi.fn((ped: number, hash: number, arg: boolean) => false)
+export const RemoveWeaponFromPed = vi.fn((_ped: number, _hash: number) => {})
+export const RemoveAllPedWeapons = vi.fn((_ped: number, _arg: boolean) => {})
+export const SetPedAmmo = vi.fn((_ped: number, _hash: number, _ammo: number) => {})
+export const HasPedGotWeapon = vi.fn((_ped: number, _hash: number, _arg: boolean) => false)
 
 // Entity control
-export const FreezeEntityPosition = vi.fn((entity: number, freeze: boolean) => {})
-export const SetEntityInvincible = vi.fn((entity: number, invincible: boolean) => {})
-export const SetEntityVisible = vi.fn((entity: number, visible: boolean, arg: boolean) => {})
-export const SetEntityAlpha = vi.fn((entity: number, alpha: number, arg: boolean) => {})
-export const SetPedCanRagdoll = vi.fn((ped: number, canRagdoll: boolean) => {})
-export const SetPedConfigFlag = vi.fn((ped: number, flag: number, value: boolean) => {})
-export const GetPedConfigFlag = vi.fn((ped: number, flag: number, arg: boolean) => false)
+export const FreezeEntityPosition = vi.fn((_entity: number, _freeze: boolean) => {})
+export const SetEntityInvincible = vi.fn((_entity: number, _invincible: boolean) => {})
+export const SetEntityVisible = vi.fn((_entity: number, _visible: boolean, _arg: boolean) => {})
+export const SetEntityAlpha = vi.fn((_entity: number, _alpha: number, _arg: boolean) => {})
+export const SetPedCanRagdoll = vi.fn((_ped: number, _canRagdoll: boolean) => {})
+export const SetPedConfigFlag = vi.fn((_ped: number, _flag: number, _value: boolean) => {})
+export const GetPedConfigFlag = vi.fn((_ped: number, _flag: number, _arg: boolean) => false)
 
 // Animations
-export const RequestAnimDict = vi.fn((dict: string) => {})
-export const HasAnimDictLoaded = vi.fn((dict: string) => true)
-export const TaskPlayAnim = vi.fn((...args: any[]) => {})
-export const ClearPedTasks = vi.fn((ped: number) => {})
-export const ClearPedTasksImmediately = vi.fn((ped: number) => {})
+export const RequestAnimDict = vi.fn((_dict: string) => {})
+export const HasAnimDictLoaded = vi.fn((_dict: string) => true)
+export const TaskPlayAnim = vi.fn((..._args: any[]) => {})
+export const ClearPedTasks = vi.fn((_ped: number) => {})
+export const ClearPedTasksImmediately = vi.fn((_ped: number) => {})
 export const IsEntityPlayingAnim = vi.fn(
-  (entity: number, dict: string, name: string, flag: number) => false,
+  (_entity: number, _dict: string, _name: string, _flag: number) => false,
 )
 
 // Respawn
-export const NetworkResurrectLocalPlayer = vi.fn((...args: any[]) => {})
+export const NetworkResurrectLocalPlayer = vi.fn((..._args: any[]) => {})
 
 // Controls
 export const DisableControlAction = vi.fn(
-  (padIndex: number, control: number, disable: boolean) => {},
+  (_padIndex: number, _control: number, _disable: boolean) => {},
 )
-export const IsControlPressed = vi.fn((padIndex: number, control: number) => false)
-export const IsControlJustPressed = vi.fn((padIndex: number, control: number) => false)
+export const IsControlPressed = vi.fn((_padIndex: number, _control: number) => false)
+export const IsControlJustPressed = vi.fn((_padIndex: number, _control: number) => false)
 
 // Aiming
-export const GetEntityPlayerIsFreeAimingAt = vi.fn((playerId: number) => [false, 0])
+export const GetEntityPlayerIsFreeAimingAt = vi.fn((_playerId: number) => [false, 0])
 
 // Resource file operations
-export const LoadResourceFile = vi.fn((resourceName: string, fileName: string) => null)
+export const LoadResourceFile = vi.fn((_resourceName: string, _fileName: string) => null)
 export const SaveResourceFile = vi.fn(
-  (resourceName: string, fileName: string, data: string, length: number) => true,
+  (_resourceName: string, _fileName: string, _data: string, _length: number) => true,
 )
 
 // Exports mock

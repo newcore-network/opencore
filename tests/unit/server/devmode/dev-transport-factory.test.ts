@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { LogLevel } from '../../../../src/kernel/shared/logger/logger.types'
 import {
   createDevTransport,
   detectEnvironment,
@@ -9,7 +10,6 @@ import {
 } from '../../../../src/kernel/shared/logger/transports/dev-transport.factory'
 import { HttpLogTransport } from '../../../../src/kernel/shared/logger/transports/http.transport'
 import { WebSocketLogTransport } from '../../../../src/kernel/shared/logger/transports/websocket.transport'
-import { LogLevel } from '../../../../src/kernel/shared/logger/logger.types'
 
 describe('dev-transport.factory', () => {
   describe('detectEnvironment', () => {

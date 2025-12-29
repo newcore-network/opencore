@@ -114,7 +114,6 @@ export class BufferedTransport implements LogTransport {
         return this.exportJson()
       case 'csv':
         return this.exportCsv()
-      case 'text':
       default:
         return this.exportText()
     }

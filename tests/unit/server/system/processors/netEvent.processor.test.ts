@@ -12,7 +12,7 @@ import { NetEventProcessor } from '../../../../../src/runtime/server/system/proc
 class MockNetTransport extends INetTransport {
   onNet(
     _eventName: string,
-    handler: (ctx: NetEventContext, ...args: any[]) => void | Promise<void>,
+    _handler: (ctx: NetEventContext, ...args: any[]) => void | Promise<void>,
   ): void {}
 
   emitNet(_eventName: string, _target: number | 'all', ..._args: any[]): void {}
@@ -53,7 +53,7 @@ describe('NetEventProcessor', () => {
 
     class TestController {
       @OnNet('test:event')
-      handleTest(player: Player) {}
+      handleTest(_player: Player) {}
     }
 
     const instance = new TestController()

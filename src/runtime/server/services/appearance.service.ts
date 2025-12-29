@@ -78,7 +78,7 @@ export class AppearanceService {
     this.applyServerSideAppearance(ped, appearance)
 
     // Emit event to client for client-only natives
-    this.netTransport.emitNet('opencore:appearance:apply', parseInt(playerSrc), appearance)
+    this.netTransport.emitNet('opencore:appearance:apply', parseInt(playerSrc, 10), appearance)
 
     return { success: true, appearance }
   }
@@ -121,7 +121,7 @@ export class AppearanceService {
     this.pedAdapter.setDefaultComponentVariation(ped)
 
     // Notify client to reset client-only appearance elements
-    this.netTransport.emitNet('opencore:appearance:reset', parseInt(playerSrc))
+    this.netTransport.emitNet('opencore:appearance:reset', parseInt(playerSrc, 10))
 
     return true
   }
@@ -146,8 +146,8 @@ export class AppearanceService {
     // Validate components (0-11)
     if (appearance.components) {
       for (const [id, data] of Object.entries(appearance.components)) {
-        const componentId = parseInt(id)
-        if (isNaN(componentId) || componentId < 0 || componentId > 11) {
+        const componentId = parseInt(id, 10)
+        if (Number.isNaN(componentId) || componentId < 0 || componentId > 11) {
           errors.push(`Invalid component ID: ${id} (must be 0-11)`)
         }
         if (data.drawable === undefined || data.drawable < -1) {
@@ -162,8 +162,8 @@ export class AppearanceService {
     // Validate props (0-7)
     if (appearance.props) {
       for (const [id, data] of Object.entries(appearance.props)) {
-        const propId = parseInt(id)
-        if (isNaN(propId) || propId < 0 || propId > 7) {
+        const propId = parseInt(id, 10)
+        if (Number.isNaN(propId) || propId < 0 || propId > 7) {
           errors.push(`Invalid prop ID: ${id} (must be 0-7)`)
         }
         if (data.drawable === undefined) {
@@ -178,8 +178,8 @@ export class AppearanceService {
     // Validate faceFeatures (0-19, values -1.0 to 1.0)
     if (appearance.faceFeatures) {
       for (const [id, value] of Object.entries(appearance.faceFeatures)) {
-        const index = parseInt(id)
-        if (isNaN(index) || index < 0 || index > 19) {
+        const index = parseInt(id, 10)
+        if (Number.isNaN(index) || index < 0 || index > 19) {
           errors.push(`Invalid face feature index: ${id} (must be 0-19)`)
         }
         if (typeof value !== 'number' || value < -1.0 || value > 1.0) {
@@ -223,8 +223,8 @@ export class AppearanceService {
     // Validate headOverlays (0-12)
     if (appearance.headOverlays) {
       for (const [id, overlay] of Object.entries(appearance.headOverlays)) {
-        const overlayId = parseInt(id)
-        if (isNaN(overlayId) || overlayId < 0 || overlayId > 12) {
+        const overlayId = parseInt(id, 10)
+        if (Number.isNaN(overlayId) || overlayId < 0 || overlayId > 12) {
           errors.push(`Invalid overlay ID: ${id} (must be 0-12)`)
         }
         if (typeof overlay.index !== 'number' || overlay.index < 0) {
@@ -305,7 +305,7 @@ export class AppearanceService {
       for (const [componentId, data] of Object.entries(appearance.components)) {
         this.pedAdapter.setComponentVariation(
           ped,
-          parseInt(componentId),
+          parseInt(componentId, 10),
           data.drawable,
           data.texture,
           2,
@@ -317,9 +317,9 @@ export class AppearanceService {
     if (appearance.props) {
       for (const [propId, data] of Object.entries(appearance.props)) {
         if (data.drawable === -1) {
-          this.pedAdapter.clearProp(ped, parseInt(propId))
+          this.pedAdapter.clearProp(ped, parseInt(propId, 10))
         } else {
-          this.pedAdapter.setPropIndex(ped, parseInt(propId), data.drawable, data.texture, true)
+          this.pedAdapter.setPropIndex(ped, parseInt(propId, 10), data.drawable, data.texture, true)
         }
       }
     }

@@ -242,7 +242,7 @@ export class ParallelComputeService {
             functionBody: options.compute.toString(),
             input: chunk,
           }
-          return this.pool!.execute(message) as Promise<TOutput>
+          return this.pool?.execute(message) as Promise<TOutput>
         }),
       )
 

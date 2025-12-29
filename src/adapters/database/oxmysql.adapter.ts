@@ -36,7 +36,7 @@ interface OxMySQL {
  * Get the oxmysql export from FiveM
  */
 function getOxMySQL(): OxMySQL {
-  const ox = exports['oxmysql'] as unknown as OxMySQL
+  const ox = exports.oxmysql as unknown as OxMySQL
 
   if (!ox) {
     throw new Error(

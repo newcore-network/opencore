@@ -191,7 +191,7 @@ describe('@Guard decorator', () => {
       }
 
       const instance = new TestController()
-      const invalidPlayer = { name: 'NoClientID' }
+      const _invalidPlayer = { name: 'NoClientID' }
 
       await expect(instance.guardedMethod.call(instance)).rejects.toThrow('Guard Security Error')
     })

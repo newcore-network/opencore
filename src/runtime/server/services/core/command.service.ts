@@ -21,10 +21,6 @@ import { CommandExecutionPort, type CommandInfo } from '../ports/command-executi
  */
 @injectable()
 export class CommandService extends CommandExecutionPort {
-  constructor() {
-    super()
-  }
-
   private commands = new Map<
     string,
     { meta: CommandMetadata; handler: Function; isPublic: boolean }

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'node:events'
 import { injectable } from 'tsyringe'
 import type { IEngineEvents } from '../contracts/IEngineEvents'
 

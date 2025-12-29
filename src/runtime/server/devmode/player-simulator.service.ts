@@ -16,8 +16,6 @@ export class PlayerSimulatorService {
   private simulatedPlayers = new Map<number, SimulatedPlayerData>()
   private clientIdCounter = 90000 // Start high to avoid conflicts with real players
 
-  constructor() {}
-
   private get transport(): INetTransport {
     return di.resolve(INetTransport as any)
   }

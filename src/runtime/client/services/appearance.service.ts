@@ -55,7 +55,7 @@ export class AppearanceService {
     // 2. Face features (requires headBlend)
     if (appearance.faceFeatures) {
       for (const [index, value] of Object.entries(appearance.faceFeatures)) {
-        this.pedAdapter.setFaceFeature(ped, parseInt(index), value)
+        this.pedAdapter.setFaceFeature(ped, parseInt(index, 10), value)
       }
     }
 
@@ -64,7 +64,7 @@ export class AppearanceService {
       for (const [componentId, data] of Object.entries(appearance.components)) {
         this.pedAdapter.setComponentVariation(
           ped,
-          parseInt(componentId),
+          parseInt(componentId, 10),
           data.drawable,
           data.texture,
           2,
@@ -76,9 +76,9 @@ export class AppearanceService {
     if (appearance.props) {
       for (const [propId, data] of Object.entries(appearance.props)) {
         if (data.drawable === -1) {
-          this.pedAdapter.clearProp(ped, parseInt(propId))
+          this.pedAdapter.clearProp(ped, parseInt(propId, 10))
         } else {
-          this.pedAdapter.setPropIndex(ped, parseInt(propId), data.drawable, data.texture, true)
+          this.pedAdapter.setPropIndex(ped, parseInt(propId, 10), data.drawable, data.texture, true)
         }
       }
     }
@@ -86,7 +86,7 @@ export class AppearanceService {
     // 5. Head overlays with colors (requires headBlend)
     if (appearance.headOverlays) {
       for (const [overlayId, overlay] of Object.entries(appearance.headOverlays)) {
-        const id = parseInt(overlayId)
+        const id = parseInt(overlayId, 10)
         this.pedAdapter.setHeadOverlay(ped, id, overlay.index, overlay.opacity)
 
         if (overlay.colorType !== undefined && overlay.colorId !== undefined) {
@@ -259,8 +259,8 @@ export class AppearanceService {
     // Validate components (0-11)
     if (appearance.components) {
       for (const [id, data] of Object.entries(appearance.components)) {
-        const componentId = parseInt(id)
-        if (isNaN(componentId) || componentId < 0 || componentId > 11) {
+        const componentId = parseInt(id, 10)
+        if (Number.isNaN(componentId) || componentId < 0 || componentId > 11) {
           errors.push(`Invalid component ID: ${id}`)
         }
         if (data.drawable === undefined || data.texture === undefined) {
@@ -272,8 +272,8 @@ export class AppearanceService {
     // Validate props (0-7)
     if (appearance.props) {
       for (const [id, data] of Object.entries(appearance.props)) {
-        const propId = parseInt(id)
-        if (isNaN(propId) || propId < 0 || propId > 7) {
+        const propId = parseInt(id, 10)
+        if (Number.isNaN(propId) || propId < 0 || propId > 7) {
           errors.push(`Invalid prop ID: ${id}`)
         }
         if (data.drawable === undefined || data.texture === undefined) {
@@ -285,8 +285,8 @@ export class AppearanceService {
     // Validate faceFeatures (0-19, values -1.0 to 1.0)
     if (appearance.faceFeatures) {
       for (const [id, value] of Object.entries(appearance.faceFeatures)) {
-        const index = parseInt(id)
-        if (isNaN(index) || index < 0 || index > 19) {
+        const index = parseInt(id, 10)
+        if (Number.isNaN(index) || index < 0 || index > 19) {
           errors.push(`Invalid face feature index: ${id}`)
         }
         if (value < -1.0 || value > 1.0) {
@@ -309,8 +309,8 @@ export class AppearanceService {
     // Validate headOverlays (0-12)
     if (appearance.headOverlays) {
       for (const [id, overlay] of Object.entries(appearance.headOverlays)) {
-        const overlayId = parseInt(id)
-        if (isNaN(overlayId) || overlayId < 0 || overlayId > 12) {
+        const overlayId = parseInt(id, 10)
+        if (Number.isNaN(overlayId) || overlayId < 0 || overlayId > 12) {
           errors.push(`Invalid overlay ID: ${id}`)
         }
         if (overlay.opacity < 0 || overlay.opacity > 1) {

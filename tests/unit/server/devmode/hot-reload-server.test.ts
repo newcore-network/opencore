@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as http from 'node:http'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   HotReloadServer,
   type LogMessage,

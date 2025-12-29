@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'node:events'
 import { injectable } from 'tsyringe'
 import { loggers } from '../../kernel/shared'
 import type { INetTransport, NetEventContext, NetTarget } from '../contracts/INetTransport'

@@ -7,11 +7,7 @@ import { Player } from '../../../src/runtime/server/entities/player'
 import { CommandService } from '../../../src/runtime/server/services/core/command.service'
 import type { CommandExecutionPort } from '../../../src/runtime/server/services/ports/command-execution.port'
 import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
-import {
-  createAuthenticatedPlayer,
-  createMockPlayerAdapters,
-  createTestPlayer,
-} from '../../helpers'
+import { createMockPlayerAdapters } from '../../helpers'
 
 // Mock getRuntimeContext
 vi.mock('../../../src/runtime/server/runtime', () => ({

@@ -31,7 +31,7 @@ describe('RemoteCommandExecutionController', () => {
 
     // Create mock adapters
     mockEngineEvents = {
-      on: vi.fn((eventName: string, handler: any) => {
+      on: vi.fn((_eventName: string, handler: any) => {
         capturedEventHandler = handler
       }),
       emit: vi.fn(),
@@ -73,7 +73,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
       // Simulate event from CORE
-      await capturedEventHandler!(1, 'heal', ['self'])
+      await capturedEventHandler?.(1, 'heal', ['self'])
 
       expect(mockPlayerDirectory.getByClient).toHaveBeenCalledWith(1)
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'heal', ['self'])
@@ -84,7 +84,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      await capturedEventHandler!(1, 'ping', [])
+      await capturedEventHandler?.(1, 'ping', [])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'ping', [])
     })
@@ -94,7 +94,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      await capturedEventHandler!(1, 'teleport', ['100', '200', '300'])
+      await capturedEventHandler?.(1, 'teleport', ['100', '200', '300'])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'teleport', [
         '100',
@@ -107,7 +107,7 @@ describe('RemoteCommandExecutionController', () => {
       // Player is null (not found in directory)
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(undefined)
 
-      await capturedEventHandler!(999, 'test', [])
+      await capturedEventHandler?.(999, 'test', [])
 
       // Should not call execute
       expect(mockCommandService.execute).not.toHaveBeenCalled()
@@ -122,7 +122,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockCommandService.execute as any).mockRejectedValue(error)
 
       // Should not throw, just log the error
-      await expect(capturedEventHandler!(1, 'failcmd', [])).resolves.toBeUndefined()
+      await expect(capturedEventHandler?.(1, 'failcmd', [])).resolves.toBeUndefined()
 
       expect(mockCommandService.execute).toHaveBeenCalled()
     })
@@ -137,7 +137,7 @@ describe('RemoteCommandExecutionController', () => {
         executed = true
       })
 
-      await capturedEventHandler!(1, 'asynccmd', [])
+      await capturedEventHandler?.(1, 'asynccmd', [])
 
       expect(executed).toBe(true)
     })
@@ -147,7 +147,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      await capturedEventHandler!(42, 'test', ['arg'])
+      await capturedEventHandler?.(42, 'test', ['arg'])
 
       // Verify player was looked up by clientID
       expect(mockPlayerDirectory.getByClient).toHaveBeenCalledWith(42)
@@ -168,7 +168,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
       const args = ['arg1', 'arg2', 'arg3', 'arg4']
-      await capturedEventHandler!(1, 'test', args)
+      await capturedEventHandler?.(1, 'test', args)
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'test', args)
     })
@@ -178,7 +178,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(fakePlayer)
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
-      await capturedEventHandler!(1, 'admin:ban', ['player123'])
+      await capturedEventHandler?.(1, 'admin:ban', ['player123'])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'admin:ban', [
         'player123',
@@ -192,7 +192,7 @@ describe('RemoteCommandExecutionController', () => {
       ;(mockCommandService.execute as any).mockResolvedValue(undefined)
 
       // Controller should still pass to service (service enforces auth)
-      await capturedEventHandler!(1, 'test', [])
+      await capturedEventHandler?.(1, 'test', [])
 
       expect(mockCommandService.execute).toHaveBeenCalledWith(fakePlayer, 'test', [])
     })

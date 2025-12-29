@@ -63,7 +63,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
     const ctx: NetEventContext = { clientId: 1 }
 
     for (let i = 0; i < 10; i++) {
-      await expect(fn!(ctx, { a: 123 })).resolves.toBeUndefined()
+      await expect(fn?.(ctx, { a: 123 })).resolves.toBeUndefined()
     }
 
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(10)
@@ -103,7 +103,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
     // Create context with clientId instead of using global.source
     const ctx: NetEventContext = { clientId: 1 }
 
-    await expect(fn!(ctx, { a: 123 })).resolves.toBeUndefined()
+    await expect(fn?.(ctx, { a: 123 })).resolves.toBeUndefined()
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(1)
   })
 })

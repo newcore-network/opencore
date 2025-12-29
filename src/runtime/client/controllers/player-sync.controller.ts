@@ -15,7 +15,7 @@ export class PlayerSyncController {
 
   private registerStateBagHandlers(): void {
     // Sync health from server state bag to local ped
-    AddStateBagChangeHandler('health', '', (bagName: string, key: string, value: number) => {
+    AddStateBagChangeHandler('health', '', (bagName: string, _key: string, value: number) => {
       const entity = GetEntityFromStateBagName(bagName)
       if (entity === 0) return
 
@@ -27,7 +27,7 @@ export class PlayerSyncController {
     })
 
     // Sync armor from server state bag to local ped
-    AddStateBagChangeHandler('armor', '', (bagName: string, key: string, value: number) => {
+    AddStateBagChangeHandler('armor', '', (bagName: string, _key: string, value: number) => {
       const entity = GetEntityFromStateBagName(bagName)
       if (entity === 0) return
 

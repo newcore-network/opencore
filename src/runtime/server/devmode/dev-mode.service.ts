@@ -149,7 +149,7 @@ export class DevModeService {
     }
 
     const env = detectEnvironment()
-    const httpUrl = url.replace('ws://', 'http://').replace('wss://', 'https://') + '/logs'
+    const httpUrl = `${url.replace('ws://', 'http://').replace('wss://', 'https://')}/logs`
     const wsUrl = url.startsWith('http')
       ? url.replace('http://', 'ws://').replace('https://', 'wss://')
       : url

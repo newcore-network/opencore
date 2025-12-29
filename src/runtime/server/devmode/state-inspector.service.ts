@@ -22,10 +22,6 @@ export class StateInspectorService extends IDevModeInspector {
   private exportHandlers = new Map<string, HandlerInfo>()
   private fiveMEventHandlers = new Map<string, HandlerInfo>()
 
-  constructor() {
-    super()
-  }
-
   private get players(): PlayerDirectoryPort {
     return di.resolve(PlayerDirectoryPort as any)
   }

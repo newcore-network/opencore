@@ -14,7 +14,7 @@ export class MockPlayerInfo extends IPlayerInfo {
     return `TestPlayer${clientId}`
   }
 
-  getPlayerPosition(clientId: number): Vector3 | undefined {
+  getPlayerPosition(_clientId: number): Vector3 | undefined {
     return { x: 0, y: 0, z: 0 }
   }
 }

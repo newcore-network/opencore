@@ -20,7 +20,7 @@ export class FiveMPlayerServer extends IPlayerServer {
 
     for (let i = 0; i < numIdentifiers; i++) {
       const identifier = GetPlayerIdentifier(playerSrc, i)
-      if (identifier && identifier.startsWith(prefix)) {
+      if (identifier?.startsWith(prefix)) {
         return identifier
       }
     }

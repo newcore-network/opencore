@@ -81,16 +81,16 @@ export class NodeEntityServer extends IEntityServer {
   }
 
   // TODO
-  getHealth(handle: number): number {
+  getHealth(_handle: number): number {
     throw new Error('Method not implemented.')
   }
-  setHealth(handle: number, health: number): void {
+  setHealth(_handle: number, _health: number): void {
     throw new Error('Method not implemented.')
   }
-  getArmor(handle: number): number {
+  getArmor(_handle: number): number {
     throw new Error('Method not implemented.')
   }
-  setArmor(handle: number, armor: number): void {
+  setArmor(_handle: number, _armor: number): void {
     throw new Error('Method not implemented.')
   }
 
