@@ -223,11 +223,6 @@ export async function initServer(options: ServerRuntimeOptions) {
         loggers.bootstrap.fatal(errorMsg)
         throw new Error(`[OpenCore] ${errorMsg}`)
       }
-
-      loggers.bootstrap.info(`CORE exports validated successfully`, {
-        coreResourceName,
-        validatedExports: requiredExports,
-      })
     }
   }
 

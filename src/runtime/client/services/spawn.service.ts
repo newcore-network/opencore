@@ -127,11 +127,6 @@ export class SpawnService {
     }
 
     FreezeEntityPosition(ped, false)
-
-    loggers.spawn.debug('Teleported', {
-      position: { x: position.x, y: position.y, z: position.z },
-      heading,
-    })
   }
 
   /**
@@ -216,8 +211,6 @@ export class SpawnService {
     if (ped !== 0) {
       SetPedDefaultComponentVariation(ped)
     }
-
-    loggers.spawn.debug('Player model set', { model, modelHash })
   }
 
   private async ensurePed(): Promise<number> {
@@ -265,8 +258,6 @@ export class SpawnService {
     SetEntityVisible(ped, true, false)
     SetEntityCollision(ped, true, true)
     SetEntityInvincible(ped, false)
-
-    loggers.spawn.debug('Ped prepared for gameplay', { ped })
   }
 
   private async placePed(ped: number, position: Vector3, heading: number): Promise<void> {
