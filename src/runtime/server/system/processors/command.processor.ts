@@ -1,12 +1,12 @@
 import { injectable } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { METADATA_KEYS } from '../metadata-server.keys'
-import { CommandExecutionPort } from '../../services/ports/command-execution.port'
-import { CommandMetadata } from '../../decorators/command'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import type { CommandMetadata } from '../../decorators/command'
 import type { GuardOptions } from '../../decorators/guard'
-import type { ThrottleOptions } from '../../decorators/throttle'
 import type { StateRequirement } from '../../decorators/requiresState'
+import type { ThrottleOptions } from '../../decorators/throttle'
+import type { CommandExecutionPort } from '../../services/ports/command-execution.port'
 import type { SecurityMetadata } from '../../types/core-exports'
+import { METADATA_KEYS } from '../metadata-server.keys'
 
 /**
  * Processor for @Command decorator.

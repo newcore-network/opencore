@@ -1,5 +1,5 @@
 import { METADATA_KEYS } from '../system/metadata-client.keys'
-import type { GameEventName, GameEventMap } from '../types/game-events'
+import type { GameEventMap, GameEventName } from '../types/game-events'
 
 /**
  * Decorator for handling native game events from the RAGE engine.
@@ -63,9 +63,9 @@ export function OnGameEvent<K extends GameEventName>(
 export type { GameEventName, GameEventMap }
 export type {
   EntityDamageEvent,
+  GunShotEvent,
   PlayerEnteredVehicleEvent,
   PlayerLeftVehicleEvent,
   SeenPedKilledEvent,
   VehicleUndrivableEvent,
-  GunShotEvent,
 } from '../types/game-events'

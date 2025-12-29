@@ -1,45 +1,45 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
 import { Command } from '../../src/runtime/server/decorators/command'
 import { Controller } from '../../src/runtime/server/decorators/controller'
-import { CommandProcessor } from '../../src/runtime/server/system/processors/command.processor'
 import { CommandService } from '../../src/runtime/server/services/command.service'
 import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { CommandProcessor } from '../../src/runtime/server/system/processors/command.processor'
+import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 
-// @ts-ignore - experimentalDecorators compatibility
+// @ts-expect-error - experimentalDecorators compatibility
 @Controller()
 class TestController1 {
-  // @ts-ignore - experimentalDecorators compatibility
+  // @ts-expect-error - experimentalDecorators compatibility
   @Command('test1')
   async method1() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
+// @ts-expect-error - experimentalDecorators compatibility
 @Controller()
 class TestController2 {
-  // @ts-ignore - experimentalDecorators compatibility
+  // @ts-expect-error - experimentalDecorators compatibility
   @Command('test2')
   async method1() {}
 
-  // @ts-ignore - experimentalDecorators compatibility
+  // @ts-expect-error - experimentalDecorators compatibility
   @Command('test3')
   async method2() {}
 }
 
-// @ts-ignore - experimentalDecorators compatibility
+// @ts-expect-error - experimentalDecorators compatibility
 @Controller()
 class TestController3 {
-  // @ts-ignore - experimentalDecorators compatibility
+  // @ts-expect-error - experimentalDecorators compatibility
   @Command('test4')
   async method1() {}
 
-  // @ts-ignore - experimentalDecorators compatibility
+  // @ts-expect-error - experimentalDecorators compatibility
   @Command('test5')
   async method2() {}
 
-  // @ts-ignore - experimentalDecorators compatibility
+  // @ts-expect-error - experimentalDecorators compatibility
   @Command('test6')
   async method3() {}
 }

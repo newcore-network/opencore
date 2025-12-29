@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 import 'reflect-metadata'
 
-import { runMetadataScannerBenchmark } from './core/metadata-scanner.bench'
-import { runDependencyInjectionBenchmark } from './core/dependency-injection.bench'
-import { runValidationBenchmark } from './core/validation.bench'
-import { runRateLimiterBenchmark } from './core/rate-limiter.bench'
-import { runAccessControlBenchmark } from './core/access-control.bench'
-import { runEventBusBenchmark } from './core/event-bus.bench'
-import { runDecoratorsBenchmark } from './core/decorators.bench'
-import { runParallelComputeBenchmark } from './core/parallel-compute.bench'
-import { printReport, saveReport } from './utils/reporter'
-import type { BenchmarkMetrics, LoadTestMetrics } from './utils/metrics'
-import { readCollectedMetrics, clearCollectedMetrics } from './utils/load-collector'
+import { spawn } from 'child_process'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { spawn } from 'child_process'
+import { runAccessControlBenchmark } from './core/access-control.bench'
+import { runDecoratorsBenchmark } from './core/decorators.bench'
+import { runDependencyInjectionBenchmark } from './core/dependency-injection.bench'
+import { runEventBusBenchmark } from './core/event-bus.bench'
+import { runMetadataScannerBenchmark } from './core/metadata-scanner.bench'
+import { runParallelComputeBenchmark } from './core/parallel-compute.bench'
+import { runRateLimiterBenchmark } from './core/rate-limiter.bench'
+import { runValidationBenchmark } from './core/validation.bench'
+import { clearCollectedMetrics, readCollectedMetrics } from './utils/load-collector'
+import type { BenchmarkMetrics, LoadTestMetrics } from './utils/metrics'
+import { printReport, saveReport } from './utils/reporter'
 
 function percentileHelper(sorted: number[], p: number): number {
   if (sorted.length === 0) return 0

@@ -1,9 +1,9 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ExportProcessor } from '../../../../../src/runtime/server/system/processors/export.processor'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { IExports } from '../../../../../src/adapters'
 import { Export } from '../../../../../src/runtime/server/decorators/export'
 import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
-import { IExports } from '../../../../../src/adapters'
+import { ExportProcessor } from '../../../../../src/runtime/server/system/processors/export.processor'
 
 /**
  * Mock implementation of IExports for testing.

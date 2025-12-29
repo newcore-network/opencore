@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
-import { VehicleService } from './vehicle.service'
-import type { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
 import { coreLogger } from '../../../kernel/shared/logger'
+import type { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
+import { VehicleService } from './vehicle.service'
 
 /**
  * Service for handling vehicle modifications with validation.

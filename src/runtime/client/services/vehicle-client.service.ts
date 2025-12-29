@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe'
 import type { Vector3 } from '../../../kernel/utils'
 import type {
+  SerializedVehicleData,
   VehicleCreateOptions,
   VehicleSpawnResult,
-  SerializedVehicleData,
 } from '../../server/types/vehicle.types'
 
 /**
@@ -78,7 +78,7 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:delete', networkId)
 
       setTimeout(() => {
-        // @ts-ignore
+        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve(false)
       }, 5000)
@@ -105,7 +105,7 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:repair', networkId)
 
       setTimeout(() => {
-        // @ts-ignore
+        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve(false)
       }, 5000)
@@ -236,7 +236,7 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:getData', networkId)
 
       setTimeout(() => {
-        // @ts-ignore
+        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve(null)
       }, 5000)
@@ -260,7 +260,7 @@ export class VehicleClientService {
       emitNet('opencore:vehicle:getPlayerVehicles')
 
       setTimeout(() => {
-        // @ts-ignore
+        // @ts-expect-error
         removeEventListener(eventName, handler)
         resolve([])
       }, 5000)

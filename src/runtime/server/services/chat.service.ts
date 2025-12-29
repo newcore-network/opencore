@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import { Server } from '../../..'
-import { RGB } from '../../../kernel/utils'
+import type { Server } from '../../..'
+import type { RGB } from '../../../kernel/utils'
 
 /**
  * Service for sending chat messages to players.

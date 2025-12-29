@@ -1,14 +1,13 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { registeredNetEvents } from '../../../mocks/citizenfx'
+import type { INetTransport, NetEventContext } from '../../../../src/adapters'
+import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
+import type { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import type { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
 import { NetEventProcessor } from '../../../../src/runtime/server/system/processors/netEvent.processor'
-import { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
-import { INetTransport, NetEventContext } from '../../../../src/adapters'
-import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
-import { beforeEach } from 'vitest'
+import { registeredNetEvents } from '../../../mocks/citizenfx'
 
 const securityHandler: SecurityHandlerContract = {
   handleViolation: vi.fn().mockResolvedValue(undefined),

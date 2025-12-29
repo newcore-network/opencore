@@ -1,16 +1,16 @@
 import { di } from '../client-container'
-import { KeyMappingProcessor } from './processors/key.processor'
-import { TickProcessor } from './processors/tick.processor'
-import { NuiProcessor } from './processors/nui.processor'
-import { ClientNetEventProcessor } from './processors/netEvent.processor'
-import { LocalEventProcessor } from './processors/localEvent.processor'
-import { IntervalProcessor } from './processors/interval.processor'
 import { ClientExportProcessor } from './processors/export.processor'
+import { GameEventProcessor } from './processors/gameEvent.processor'
+import { IntervalProcessor } from './processors/interval.processor'
+import { KeyMappingProcessor } from './processors/key.processor'
+import { LocalEventProcessor } from './processors/localEvent.processor'
+import { ClientNetEventProcessor } from './processors/netEvent.processor'
+import { NuiProcessor } from './processors/nui.processor'
 import {
   ResourceStartProcessor,
   ResourceStopProcessor,
 } from './processors/resourceLifecycle.processor'
-import { GameEventProcessor } from './processors/gameEvent.processor'
+import { TickProcessor } from './processors/tick.processor'
 
 export function registerSystemClient() {
   // Core processors

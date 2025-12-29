@@ -1,10 +1,10 @@
-import { injectable, inject } from 'tsyringe'
-import { OnNet, Controller } from '../decorators'
+import { inject, injectable } from 'tsyringe'
+import { coreLogger } from '../../../kernel/shared/logger'
+import { Controller, OnNet } from '../decorators'
+import type { Player } from '../entities/player'
 import { VehicleService } from '../services/vehicle.service'
 import { VehicleModificationService } from '../services/vehicle-modification.service'
 import type { VehicleCreateOptions, VehicleModificationOptions } from '../types/vehicle.types'
-import type { Player } from '../entities/player'
-import { coreLogger } from '../../../kernel/shared/logger'
 
 /**
  * Controller for handling vehicle-related network events.

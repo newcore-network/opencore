@@ -1,23 +1,23 @@
+import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { di } from '../../kernel/di/container'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
-import { registerSystemServer } from './system/processors.register'
-import { registerServicesServer } from './services/services.register'
 import { loggers } from '../../kernel/shared/logger'
-import { AuthProviderContract } from './contracts/auth-provider.contract'
-import { getServerControllerRegistry } from './decorators/controller'
-import {
-  getFrameworkModeScope,
-  setRuntimeContext,
-  type RuntimeContext,
-  type ServerRuntimeOptions,
-  validateRuntimeOptions,
-} from './runtime'
 import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
-import { registerServerCapabilities } from '../../adapters/register-capabilities'
+import { AuthProviderContract } from './contracts/auth-provider.contract'
 import { PrincipalProviderContract } from './contracts/security/principal-provider.contract'
+import { getServerControllerRegistry } from './decorators/controller'
+import {
+  getFrameworkModeScope,
+  type RuntimeContext,
+  type ServerRuntimeOptions,
+  setRuntimeContext,
+  validateRuntimeOptions,
+} from './runtime'
+import { registerServicesServer } from './services/services.register'
+import { registerSystemServer } from './system/processors.register'
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return

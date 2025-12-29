@@ -1,9 +1,9 @@
 import {
   LogDomain,
   LogDomainLabels,
+  type LogEntry,
   LogLevel,
   LogLevelLabels,
-  type LogEntry,
 } from '../logger.types'
 import type { LogTransport } from './transport.interface'
 

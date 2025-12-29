@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import { IEntityServer, type EntityStateBag } from '../contracts/IEntityServer'
 import type { Vector3 } from '../../kernel/utils'
+import { type EntityStateBag, IEntityServer } from '../contracts/IEntityServer'
 
 /**
  * FiveM implementation of server-side entity operations.

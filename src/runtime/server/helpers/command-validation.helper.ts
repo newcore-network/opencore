@@ -1,8 +1,8 @@
 import z from 'zod'
 import { AppError } from '../../../kernel'
-import { type CommandMetadata } from '../decorators/command'
+import type { CommandMetadata } from '../decorators/command'
+import type { Player } from '../entities'
 import { generateSchemaFromTypes } from '../system/schema-generator'
-import { type Player } from '../entities'
 
 /**
  * Centraliza validación de argumentos de comandos.

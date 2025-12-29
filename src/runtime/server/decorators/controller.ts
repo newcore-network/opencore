@@ -46,7 +46,7 @@ export function getServerControllerRegistry(resourceName?: string): ClassConstru
  * ```
  */
 export function Controller(): (target: ClassConstructor) => void {
-  return function (target: ClassConstructor) {
+  return (target: ClassConstructor) => {
     injectable()(target)
     Reflect.defineMetadata(METADATA_KEYS.CONTROLLER, { type: 'server' }, target)
     const key = getCurrentResourceNameSafe()

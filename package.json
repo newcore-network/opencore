@@ -79,17 +79,13 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
     "@citizenfx/client": "2.0.22443-1",
     "@citizenfx/server": "2.0.22443-1",
     "@types/node": "^24.10.1",
-    "@typescript-eslint/eslint-plugin": "^8.48.1",
-    "@typescript-eslint/parser": "^8.48.1",
     "@vitest/coverage-v8": "^4.0.15",
-    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "3.7.1",
     "tinybench": "^2.7.0",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",

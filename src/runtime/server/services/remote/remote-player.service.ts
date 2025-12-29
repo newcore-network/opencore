@@ -1,13 +1,13 @@
 import { inject, injectable } from 'tsyringe'
-import { Player, type PlayerAdapters } from '../../entities'
-import { getRuntimeContext } from '../../runtime'
-import { PlayerDirectoryPort } from '../ports/player-directory.port'
-import { IPlayerInfo, IExports } from '../../../../adapters'
-import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
+import { IExports, IPlayerInfo } from '../../../../adapters'
 import { IEntityServer } from '../../../../adapters/contracts/IEntityServer'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
-import type { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
+import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
 import { loggers } from '../../../../kernel/shared/logger'
+import { Player, type PlayerAdapters } from '../../entities'
+import { getRuntimeContext } from '../../runtime'
+import type { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
+import { PlayerDirectoryPort } from '../ports/player-directory.port'
 
 /**
  * Player service implementation for `RESOURCE` mode.

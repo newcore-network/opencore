@@ -1,5 +1,5 @@
 import { Bench } from 'tinybench'
-import { onCoreEvent, emitCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
+import { emitCoreEvent, onCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
 import type { CoreEventMap } from '../../src/runtime/server/types/core-events'
 
 export async function runEventBusBenchmark(): Promise<Bench> {

@@ -43,39 +43,34 @@
  * ```
  */
 
+// Service
+// Standalone functions
+// Built-in tasks
+export {
+  defineBatchFilter,
+  defineBatchReduce,
+  defineBatchTransform,
+  defineTask,
+  filterByDistance,
+  findClosest,
+  getParallelComputeService,
+  initParallelCompute,
+  ParallelComputeService,
+  shutdownParallelCompute,
+  sortByDistance,
+  type Vector3Like,
+} from './parallel-compute.service'
 // Types
 export type {
   ExecutionMode,
-  WorkerPoolConfig,
-  ParallelTaskOptions,
-  ParallelTask,
   ParallelComputeMetrics,
+  ParallelTask,
+  ParallelTaskOptions,
   TaskResult,
   WorkerInfo,
+  WorkerPoolConfig,
   WorkerStatus,
 } from './types'
-
-// Service
-export { ParallelComputeService } from './parallel-compute.service'
-
-// Standalone functions
-export {
-  getParallelComputeService,
-  initParallelCompute,
-  shutdownParallelCompute,
-  defineTask,
-} from './parallel-compute.service'
-
-// Built-in tasks
-export {
-  filterByDistance,
-  sortByDistance,
-  findClosest,
-  defineBatchTransform,
-  defineBatchFilter,
-  defineBatchReduce,
-  type Vector3Like,
-} from './parallel-compute.service'
 
 // Worker pool (for advanced usage)
 export { WorkerPool } from './worker-pool'

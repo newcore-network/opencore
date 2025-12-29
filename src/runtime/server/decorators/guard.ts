@@ -1,8 +1,8 @@
 import type { Server } from '../../..'
-import { di } from '../../../kernel/di/container'
-import { PrincipalPort } from '../services/ports/principal.port'
-import { loggers } from '../../../kernel/shared/logger'
 import { AppError } from '../../../kernel'
+import { di } from '../../../kernel/di/container'
+import { loggers } from '../../../kernel/shared/logger'
+import { PrincipalPort } from '../services/ports/principal.port'
 
 export interface GuardOptions {
   /**
@@ -54,7 +54,7 @@ export interface GuardOptions {
  * ```
  */
 export function Guard(options: GuardOptions) {
-  return function (target: any, propertyKey: string, descriptor?: PropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor?: PropertyDescriptor) => {
     if (!descriptor) {
       // In benchmarks or edge cases, only register metadata without method wrapping
       // This should NOT happen in production code with proper TypeScript compilation

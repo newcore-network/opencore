@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { CommandService } from '../../src/runtime/server/services/command.service'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
-import { HttpService } from '../../src/runtime/server/services/http/http.service'
-import { PlayerFactory } from '../utils/player-factory'
-import { getAllScenarios } from '../utils/load-scenarios'
-import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
 import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 import { Player } from '../../src/runtime/server/entities/player'
+import { CommandService } from '../../src/runtime/server/services/command.service'
+import { PlayerService } from '../../src/runtime/server/services/core/player.service'
+import { HttpService } from '../../src/runtime/server/services/http/http.service'
+import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
+import { getAllScenarios } from '../utils/load-scenarios'
+import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { PlayerFactory } from '../utils/player-factory'
 
 global.fetch = vi.fn(() =>
   Promise.resolve({

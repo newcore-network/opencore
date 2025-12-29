@@ -1,5 +1,5 @@
-import { type Vector3 } from '../../kernel'
-import { type IPlayerInfo } from '../contracts/IPlayerInfo'
+import type { Vector3 } from '../../kernel'
+import type { IPlayerInfo } from '../contracts/IPlayerInfo'
 
 export class NodePlayerInfo implements IPlayerInfo {
   getPlayerName(clientId: number): string | null {

@@ -1,11 +1,11 @@
-import type { Vector3 } from '../../../kernel/utils'
 import type { IEntityServer } from '../../../adapters/contracts/IEntityServer'
 import type { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
+import type { Vector3 } from '../../../kernel/utils'
 import type {
-  VehicleOwnership,
-  VehicleMods,
-  VehicleMetadata,
   SerializedVehicleData,
+  VehicleMetadata,
+  VehicleMods,
+  VehicleOwnership,
 } from '../types/vehicle.types'
 
 /**

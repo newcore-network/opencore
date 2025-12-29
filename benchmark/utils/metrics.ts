@@ -43,7 +43,7 @@ export function calculateMetrics(timings: number[], name: string): BenchmarkMetr
   const p95 = percentile(sorted, 95)
   const p99 = percentile(sorted, 99)
 
-  const variance = sorted.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / sorted.length
+  const variance = sorted.reduce((acc, val) => acc + (val - mean) ** 2, 0) / sorted.length
   const stdDev = Math.sqrt(variance)
   const opsPerSec = 1000 / mean
 

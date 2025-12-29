@@ -1,10 +1,10 @@
 import { injectable } from 'tsyringe'
-import type { Player } from '../../entities'
-import type { Principal } from '../../contracts/security/permission.types'
-import { PrincipalProviderContract } from '../../contracts'
-import { PrincipalPort } from '../ports/principal.port'
-import type { GuardOptions } from '../../decorators/guard'
 import { AppError } from '../../../../kernel/utils'
+import type { PrincipalProviderContract } from '../../contracts'
+import type { Principal } from '../../contracts/security/permission.types'
+import type { GuardOptions } from '../../decorators/guard'
+import type { Player } from '../../entities'
+import { PrincipalPort } from '../ports/principal.port'
 
 /**
  * Local principal service for CORE/STANDALONE mode.

@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
-import { resetContainer } from '../../helpers/di.helper'
-import { PrincipalProviderContract } from '../../../src/runtime/server/contracts/security/principal-provider.contract'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { AuthProviderContract } from '../../../src/runtime/server/contracts/auth-provider.contract'
-import { setPrincipalProvider, setAuthProvider } from '../../../src/runtime/server/setup'
+import { PrincipalProviderContract } from '../../../src/runtime/server/contracts/security/principal-provider.contract'
+import { setAuthProvider, setPrincipalProvider } from '../../../src/runtime/server/setup'
+import { resetContainer } from '../../helpers/di.helper'
 
 // Mock implementations
 class MockPrincipalProvider extends PrincipalProviderContract {

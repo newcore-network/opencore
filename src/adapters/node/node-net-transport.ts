@@ -1,7 +1,7 @@
-import { injectable } from 'tsyringe'
 import { EventEmitter } from 'events'
-import { INetTransport, NetEventContext, NetTarget } from '../contracts/INetTransport'
+import { injectable } from 'tsyringe'
 import { loggers } from '../../kernel/shared'
+import type { INetTransport, NetEventContext, NetTarget } from '../contracts/INetTransport'
 
 /**
  * Node.js implementation of INetTransport using EventEmitter.

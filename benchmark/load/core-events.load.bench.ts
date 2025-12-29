@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { onFrameworkEvent, emitFrameworkEvent } from '../../src/runtime/server/bus/core-event-bus'
-import { PlayerFactory } from '../utils/player-factory'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { emitFrameworkEvent, onFrameworkEvent } from '../../src/runtime/server/bus/core-event-bus'
+import type { CoreEventMap } from '../../src/runtime/server/types/core-events'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
-import type { CoreEventMap } from '../../src/runtime/server/types/core-events'
+import { PlayerFactory } from '../utils/player-factory'
 
 describe('Core Events Load Benchmarks', () => {
   beforeEach(() => {

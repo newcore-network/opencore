@@ -1,5 +1,5 @@
-import { AppError } from '../../../kernel/utils'
 import type { Server } from '../../..'
+import { AppError } from '../../../kernel/utils'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
@@ -68,7 +68,7 @@ export interface StateRequirement {
  * ```
  */
 export function RequiresState(req: StateRequirement) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value
 
     // Store metadata for remote transmission

@@ -1,6 +1,6 @@
-import type { Player } from '../../entities'
 import type { Principal } from '../../contracts/security/permission.types'
 import type { GuardOptions } from '../../decorators/guard'
+import type { Player } from '../../entities'
 
 /**
  * Core port that provides access to player authorization and permissions.

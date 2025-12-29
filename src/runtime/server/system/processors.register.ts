@@ -1,15 +1,15 @@
 import { di } from '../../../kernel/di/container'
-import { DefaultNetEventSecurityObserver } from '../services/default/default-net-event-security-observer'
-import { DefaultSecurityHandler } from '../services/default/default-security.handler'
 import { NetEventSecurityObserverContract } from '../contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from '../contracts/security/security-handler.contract'
+import type { RuntimeContext } from '../runtime'
+import { DefaultNetEventSecurityObserver } from '../services/default/default-net-event-security-observer'
+import { DefaultSecurityHandler } from '../services/default/default-security.handler'
 import { CommandProcessor } from './processors/command.processor'
 import { CoreEventProcessor } from './processors/coreEvent.processor'
 import { ExportProcessor } from './processors/export.processor'
 import { FiveMEventProcessor } from './processors/fivemEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
 import { TickProcessor } from './processors/tick.processor'
-import type { RuntimeContext } from '../runtime'
 
 export function registerSystemServer(ctx: RuntimeContext) {
   const { features } = ctx

@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { container } from 'tsyringe'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { RateLimiterService } from '../../src/runtime/server/services/rate-limiter.service'
 import { resetContainer } from '../../tests/helpers/di.helper'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
-import { RateLimiterService } from '../../src/runtime/server/services/rate-limiter.service'
-import { PlayerFactory } from '../utils/player-factory'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
+import { PlayerFactory } from '../utils/player-factory'
 
 describe('Throttle Load Benchmarks', () => {
   let rateLimiter: RateLimiterService

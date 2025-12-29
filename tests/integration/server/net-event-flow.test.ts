@@ -1,15 +1,15 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
-import { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
-import { SecurityHandlerContract } from '../../../src/runtime/server/contracts/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import type { NetEventSecurityObserverContract } from '../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import type { SecurityHandlerContract } from '../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../src/runtime/server/decorators/onNet'
 import { Public } from '../../../src/runtime/server/decorators/public'
+import type { Player } from '../../../src/runtime/server/entities'
+import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
 import { METADATA_KEYS } from '../../../src/runtime/server/system/metadata-server.keys'
-import { Player } from '../../../src/runtime/server/entities'
+import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 
 /**
  * Creates a mock Player instance with configurable session state.

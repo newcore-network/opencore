@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { onFrameworkEvent } from '../../bus/core-event-bus'
-import { METADATA_KEYS } from '../metadata-server.keys'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { loggers } from '../../../../kernel/shared/logger'
+import { onFrameworkEvent } from '../../bus/core-event-bus'
 import { resolveMethod } from '../../helpers/resolve-method'
+import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()
 export class CoreEventProcessor implements DecoratorProcessor {

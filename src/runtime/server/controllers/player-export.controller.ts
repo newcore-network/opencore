@@ -1,6 +1,6 @@
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 import type { CorePlayerExports, SerializedPlayerData } from '../types/core-exports'
 
 /**

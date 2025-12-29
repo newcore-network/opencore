@@ -1,6 +1,6 @@
-import type { LinkedID, PlayerSession } from '../../src/runtime/server/services/core/player.service'
-import { Player } from '../../src/runtime/server/entities/player'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import { Player } from '../../src/runtime/server/entities/player'
+import type { LinkedID, PlayerSession } from '../../src/runtime/server/services/core/player.service'
 
 const playerInfo = new NodePlayerInfo()
 
@@ -17,7 +17,7 @@ export class PlayerFactory {
   private static clientIDCounter = 1
 
   static createPlayer(config?: Partial<PlayerConfig>): Player {
-    const clientID = config?.clientID ?? this.clientIDCounter++
+    const clientID = config?.clientID ?? PlayerFactory.clientIDCounter++
     const accountID: LinkedID | undefined = config?.accountID
 
     const session: PlayerSession = {
@@ -43,13 +43,13 @@ export class PlayerFactory {
     for (let i = 0; i < count; i++) {
       const config: Partial<PlayerConfig> = {
         ...baseConfig,
-        clientID: baseConfig?.clientID ?? this.clientIDCounter++,
+        clientID: baseConfig?.clientID ?? PlayerFactory.clientIDCounter++,
         accountID: baseConfig?.accountID ?? `account-${i}`,
         rank: baseConfig?.rank ?? Math.floor(Math.random() * 10),
         permissions: baseConfig?.permissions ?? [],
       }
 
-      players.push(this.createPlayer(config))
+      players.push(PlayerFactory.createPlayer(config))
     }
 
     return players
@@ -65,8 +65,8 @@ export class PlayerFactory {
     for (const { rank, count: rankCount } of rankDistribution) {
       for (let i = 0; i < rankCount && playerIndex < count; i++) {
         players.push(
-          this.createPlayer({
-            clientID: this.clientIDCounter++,
+          PlayerFactory.createPlayer({
+            clientID: PlayerFactory.clientIDCounter++,
             accountID: `account-${playerIndex}`,
             rank,
             permissions: [],
@@ -78,8 +78,8 @@ export class PlayerFactory {
 
     while (playerIndex < count) {
       players.push(
-        this.createPlayer({
-          clientID: this.clientIDCounter++,
+        PlayerFactory.createPlayer({
+          clientID: PlayerFactory.clientIDCounter++,
           accountID: `account-${playerIndex}`,
           rank: 0,
           permissions: [],
@@ -97,8 +97,8 @@ export class PlayerFactory {
     for (let i = 0; i < count; i++) {
       const permissions = permissionSets[i % permissionSets.length] ?? []
       players.push(
-        this.createPlayer({
-          clientID: this.clientIDCounter++,
+        PlayerFactory.createPlayer({
+          clientID: PlayerFactory.clientIDCounter++,
           accountID: `account-${i}`,
           permissions,
         }),
@@ -109,7 +109,7 @@ export class PlayerFactory {
   }
 
   static reset(): void {
-    this.clientIDCounter = 1
+    PlayerFactory.clientIDCounter = 1
   }
 
   static createPlayersWithConfig(
@@ -121,8 +121,8 @@ export class PlayerFactory {
     for (let i = 0; i < count; i++) {
       const config = configs[i % configs.length] ?? {}
       players.push(
-        this.createPlayer({
-          clientID: this.clientIDCounter++,
+        PlayerFactory.createPlayer({
+          clientID: PlayerFactory.clientIDCounter++,
           accountID: `account-${i}`,
           rank: config.rank ?? 0,
           permissions: config.permissions ?? [],

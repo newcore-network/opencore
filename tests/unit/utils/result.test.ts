@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { ok, err, type Result, type Ok, type Err } from '../../../src/kernel/utils/result'
+import { describe, expect, it } from 'vitest'
+import { err, ok, type Result } from '../../../src/kernel/utils/result'
 
 describe('Result utilities', () => {
   describe('ok()', () => {

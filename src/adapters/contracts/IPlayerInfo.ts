@@ -1,4 +1,4 @@
-import { type Vector3 } from '../../kernel'
+import type { Vector3 } from '../../kernel'
 
 export abstract class IPlayerInfo {
   abstract getPlayerName(clientId: number): string | null

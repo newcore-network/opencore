@@ -1,7 +1,7 @@
 import { inject } from 'tsyringe'
+import type { PlayerAppearance } from '../../../kernel/shared'
 import { Controller, OnNet } from '../decorators'
 import { AppearanceService } from '../services/appearance.service'
-import { PlayerAppearance } from '../../../kernel/shared'
 
 @Controller()
 export class AppearanceTestClientController {

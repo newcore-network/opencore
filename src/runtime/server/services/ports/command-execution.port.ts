@@ -1,5 +1,5 @@
-import { type CommandMetadata } from '../../decorators/command'
-import { type Player } from '../../entities'
+import type { CommandMetadata } from '../../decorators/command'
+import type { Player } from '../../entities'
 
 /**
  * Command information returned by getAllCommands.

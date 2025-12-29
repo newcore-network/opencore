@@ -11,15 +11,15 @@
 
 import { injectable } from 'tsyringe'
 import { v4 as uuid } from 'uuid'
-import { WorkerPool } from './worker-pool'
 import type {
-  ParallelTaskOptions,
-  ParallelTask,
-  WorkerPoolConfig,
   ParallelComputeMetrics,
-  WorkerMessage,
+  ParallelTask,
+  ParallelTaskOptions,
   TaskResult,
+  WorkerMessage,
+  WorkerPoolConfig,
 } from './types'
+import { WorkerPool } from './worker-pool'
 
 const DEFAULT_WORKER_THRESHOLD = 10000
 

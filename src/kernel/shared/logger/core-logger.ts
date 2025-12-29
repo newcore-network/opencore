@@ -1,8 +1,8 @@
-import { LogDomain } from './logger.types'
+import { getLogLevel, isClientEnvironment } from './logger.env'
 import { LoggerService } from './logger.service'
+import { LogDomain } from './logger.types'
 import { ConsoleTransport } from './transports/console.transport'
 import { SimpleConsoleTransport } from './transports/simple-console.transport'
-import { getLogLevel, isClientEnvironment } from './logger.env'
 import type { LogTransport } from './transports/transport.interface'
 
 /**

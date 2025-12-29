@@ -1,17 +1,17 @@
 import { inject, injectable } from 'tsyringe'
+import { IEntityServer } from '../../../adapters/contracts/IEntityServer'
+import { IHasher } from '../../../adapters/contracts/IHasher'
+import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
+import { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
+import { coreLogger } from '../../../kernel/shared/logger'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import type {
+  SerializedVehicleData,
   VehicleCreateOptions,
   VehicleSpawnResult,
-  SerializedVehicleData,
 } from '../types/vehicle.types'
-import { coreLogger } from '../../../kernel/shared/logger'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
-import { IEntityServer } from '../../../adapters/contracts/IEntityServer'
-import { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
-import { IHasher } from '../../../adapters/contracts/IHasher'
-import { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
-import { INetTransport } from '../../../adapters/contracts/INetTransport'
 
 /**
  * Server-side service for managing vehicle entities.
@@ -373,9 +373,9 @@ export class VehicleService {
     const vehiclePos = vehicle.position
 
     const distance = Math.sqrt(
-      Math.pow(playerPos.x - vehiclePos.x, 2) +
-        Math.pow(playerPos.y - vehiclePos.y, 2) +
-        Math.pow(playerPos.z - vehiclePos.z, 2),
+      (playerPos.x - vehiclePos.x) ** 2 +
+        (playerPos.y - vehiclePos.y) ** 2 +
+        (playerPos.z - vehiclePos.z) ** 2,
     )
 
     return distance <= maxDistance

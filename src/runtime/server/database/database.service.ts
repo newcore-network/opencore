@@ -1,7 +1,8 @@
 import { injectable } from 'tsyringe'
-import { DatabaseContract } from './database.contract'
+import { OxMySQLAdapter } from '../../../adapters/database/oxmysql.adapter'
 import { ResourceDatabaseAdapter } from '../../../adapters/database/resource.adapter'
 import { registerDatabaseAdapterFactory, resolveDatabaseAdapterFactory } from './adapter.registry'
+import { DatabaseContract } from './database.contract'
 import type {
   DatabaseConfig,
   ExecuteResult,
@@ -9,7 +10,6 @@ import type {
   TransactionInput,
   TransactionSharedParams,
 } from './types'
-import { OxMySQLAdapter } from '../../../adapters/database/oxmysql.adapter'
 
 let defaultFactoriesRegistered = false
 

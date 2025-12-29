@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { beforeEach, vi } from 'vitest'
-import { installGlobalMocks, resetCitizenFxMocks } from './mocks/citizenfx'
 import { resetContainer } from './helpers/di.helper'
+import { installGlobalMocks, resetCitizenFxMocks } from './mocks/citizenfx'
 
 // Install FiveM API mocks globally
 installGlobalMocks()

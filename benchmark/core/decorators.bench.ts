@@ -1,6 +1,6 @@
 import { Bench } from 'tinybench'
-import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
 import { injectable } from 'tsyringe'
+import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
 
 class TestController {
   async testMethod() {

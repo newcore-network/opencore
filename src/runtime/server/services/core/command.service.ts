@@ -1,10 +1,10 @@
 import { injectable } from 'tsyringe'
-import type { CommandMetadata } from '../../decorators/command'
-import { AppError } from '../../../../kernel/utils'
 import { loggers } from '../../../../kernel/shared/logger'
-import { Player } from '../../entities'
-import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
+import { AppError } from '../../../../kernel/utils'
+import type { CommandMetadata } from '../../decorators/command'
+import type { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
+import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
 
 /**
  * Local command execution service (CORE/STANDALONE modes).

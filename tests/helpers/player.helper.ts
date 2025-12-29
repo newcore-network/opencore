@@ -1,10 +1,10 @@
-import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
+import { type EntityStateBag, IEntityServer } from '../../src/adapters/contracts/IEntityServer'
+import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
 import { IPlayerServer } from '../../src/adapters/contracts/IPlayerServer'
-import { IEntityServer, type EntityStateBag } from '../../src/adapters/contracts/IEntityServer'
-import { INetTransport } from '../../src/adapters/contracts/INetTransport'
-import type { PlayerSession } from '../../src/runtime/server/services/types/player-session.object'
 import type { Vector3 } from '../../src/kernel/utils'
+import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
+import type { PlayerSession } from '../../src/runtime/server/services/types/player-session.object'
 
 /**
  * Mock implementation of IPlayerInfo for testing.

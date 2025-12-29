@@ -1,6 +1,6 @@
 import 'reflect-metadata'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { container } from 'tsyringe'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Guard, type GuardOptions } from '../../../../src/runtime/server/decorators/guard'
 import { PrincipalPort } from '../../../../src/runtime/server/services/ports/principal.port'
 

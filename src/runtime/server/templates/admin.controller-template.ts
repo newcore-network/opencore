@@ -1,4 +1,4 @@
-import { type Player } from '../entities'
+import type { Player } from '../entities'
 
 type CommandArgs = string[] | any
 

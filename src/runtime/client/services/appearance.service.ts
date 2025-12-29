@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
-import type { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
-import { IPedAppearanceClient } from '../../../adapters/contracts/IPedAppearanceClient'
 import { IHasher } from '../../../adapters/contracts/IHasher'
+import { IPedAppearanceClient } from '../../../adapters/contracts/IPedAppearanceClient'
+import type { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
 
 /**
  * Client-side appearance management service.

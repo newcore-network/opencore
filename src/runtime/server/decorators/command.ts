@@ -1,8 +1,8 @@
-import { METADATA_KEYS } from '../system/metadata-server.keys'
-import type { ClassConstructor } from '../../../kernel/di/class-constructor'
 import type { z } from 'zod'
+import type { ClassConstructor } from '../../../kernel/di/class-constructor'
 import { Player } from '../entities/player'
 import { getParameterNames } from '../helpers/function-helper'
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 import type { SecurityMetadata } from '../types/core-exports'
 
 export interface CommandConfig {

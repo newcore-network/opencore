@@ -1,8 +1,8 @@
-import { RGB } from '../../../kernel/utils'
+import type { RGB } from '../../../kernel/utils'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { ChatService } from '../services/chat.service'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import type { ChatService } from '../services/chat.service'
+import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 @Controller()
 export class ChatController {

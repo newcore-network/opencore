@@ -1,6 +1,6 @@
-import { METADATA_KEYS } from '../system/metadata-server.keys'
 import { z } from 'zod'
 import type { Player } from '../entities/player'
+import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 export interface NetEventOptions {
   /**

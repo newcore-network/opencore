@@ -504,9 +504,7 @@ class Player {
   distanceTo(position: Vector3): number {
     const coords = this.coords
     return Math.sqrt(
-      Math.pow(coords.x - position.x, 2) +
-        Math.pow(coords.y - position.y, 2) +
-        Math.pow(coords.z - position.z, 2),
+      (coords.x - position.x) ** 2 + (coords.y - position.y) ** 2 + (coords.z - position.z) ** 2,
     )
   }
 
@@ -530,9 +528,9 @@ class Player {
     const coords = this.coords
     const entityCoords = GetEntityCoords(entity, true)
     const distance = Math.sqrt(
-      Math.pow(coords.x - entityCoords[0], 2) +
-        Math.pow(coords.y - entityCoords[1], 2) +
-        Math.pow(coords.z - entityCoords[2], 2),
+      (coords.x - entityCoords[0]) ** 2 +
+        (coords.y - entityCoords[1]) ** 2 +
+        (coords.z - entityCoords[2]) ** 2,
     )
 
     return distance <= maxDistance ? entity : null

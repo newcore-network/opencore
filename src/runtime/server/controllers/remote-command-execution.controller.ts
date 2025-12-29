@@ -1,11 +1,11 @@
 import { inject, injectable } from 'tsyringe'
-import { Controller } from '../decorators'
-import { CommandExecutionPort } from '../services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import { loggers } from '../../../kernel/shared/logger'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { IResourceInfo } from '../../../adapters/contracts/IResourceInfo'
 import { AppError } from '../../../kernel'
+import { loggers } from '../../../kernel/shared/logger'
+import { Controller } from '../decorators'
+import type { CommandExecutionPort } from '../services/ports/command-execution.port'
+import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 /**
  * Controller for executing remote commands in RESOURCE mode.

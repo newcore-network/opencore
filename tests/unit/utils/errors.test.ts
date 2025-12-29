@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { AppError, isAppError } from '../../../src/kernel/utils'
 import { SecurityError } from '../../../src/kernel/utils/error/security.error'
 

@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
+import type { IResourceInfo } from '../../../../src/adapters/contracts/IResourceInfo'
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
-import { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
-import { IResourceInfo } from '../../../../src/adapters/contracts/IResourceInfo'
+import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
+import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
 import { createTestPlayer } from '../../../helpers'
 
 describe('RemoteCommandExecutionController', () => {

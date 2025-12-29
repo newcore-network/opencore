@@ -1,14 +1,14 @@
 import 'reflect-metadata'
-import { describe, it, expect, beforeEach } from 'vitest'
-import { resetContainer } from '../../helpers/di.helper'
-import { initServer } from '../../../src/runtime/server/bootstrap'
-import { di } from '../../../src/kernel/di/container'
-import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
-import { NodeExports } from '../../../src/adapters/node/node-exports'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { IEngineEvents, IExports, INetTransport, IResourceInfo, ITick } from '../../../src/adapters'
 import { NodeEngineEvents } from '../../../src/adapters/node/node-engine-events'
+import { NodeExports } from '../../../src/adapters/node/node-exports'
+import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
 import { NodeResourceInfo } from '../../../src/adapters/node/node-resourceinfo'
 import { NodeTick } from '../../../src/adapters/node/node-tick'
-import { INetTransport, IExports, IEngineEvents, IResourceInfo, ITick } from '../../../src/adapters'
+import { di } from '../../../src/kernel/di/container'
+import { initServer } from '../../../src/runtime/server/bootstrap'
+import { resetContainer } from '../../helpers/di.helper'
 
 describe('Node.js Runtime Bootstrap', () => {
   beforeEach(() => {

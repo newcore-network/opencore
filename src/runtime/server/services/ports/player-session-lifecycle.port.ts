@@ -1,6 +1,6 @@
-import { type Player } from '../../entities'
-import { type LinkedID } from '../types/linked-id'
-import { type PlayerSession } from '../types/player-session.object'
+import type { Player } from '../../entities'
+import type { LinkedID } from '../types/linked-id'
+import type { PlayerSession } from '../types/player-session.object'
 
 /**
  * Core port responsible for managing the lifecycle of player sessions.

@@ -26,7 +26,7 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
  * ```
  */
 export function Public() {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     Reflect.defineMetadata(METADATA_KEYS.PUBLIC, true, target, propertyKey)
     return descriptor
   }

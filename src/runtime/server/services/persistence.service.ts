@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
 import { di } from '../../../kernel/di/container'
-import type { Player } from '../entities/player'
 import { loggers } from '../../../kernel/shared/logger'
 import { PlayerPersistenceContract } from '../contracts'
+import type { Player } from '../entities/player'
 
 /**
  * Internal service that orchestrates player data persistence.

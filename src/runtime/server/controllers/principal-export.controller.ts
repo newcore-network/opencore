@@ -1,9 +1,9 @@
-import { PrincipalProviderContract, Principal } from '../contracts'
+import { AppError } from '../../../kernel/utils'
+import type { Principal, PrincipalProviderContract } from '../contracts'
 import { Controller } from '../decorators'
 import { Export } from '../decorators/export'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 import type { GuardOptions } from '../decorators/guard'
-import { AppError } from '../../../kernel/utils'
+import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 /**
  * Exports principal/permission functionality for RESOURCE mode access.

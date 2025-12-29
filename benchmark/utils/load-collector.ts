@@ -1,5 +1,5 @@
-import { writeFileSync, readFileSync, existsSync, unlinkSync, mkdirSync } from 'fs'
-import { join, dirname } from 'path'
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { dirname, join } from 'path'
 import type { LoadTestMetrics } from './metrics'
 
 const METRICS_FILE = join(process.cwd(), 'benchmark', 'reports', '.load-metrics.json')

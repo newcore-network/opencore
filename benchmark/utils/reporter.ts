@@ -1,7 +1,7 @@
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import type { BenchmarkMetrics, LoadTestMetrics } from './metrics'
-import { formatTime, formatOpsPerSec } from './metrics'
+import { formatOpsPerSec, formatTime } from './metrics'
 
 export interface BenchmarkReport {
   timestamp: string

@@ -1,13 +1,17 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { CommandService } from '../../../src/runtime/server/services/core/command.service'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { IEngineEvents } from '../../../src/adapters/contracts/IEngineEvents'
 import { CommandExportController } from '../../../src/runtime/server/controllers/command-export.controller'
-import { CommandExecutionPort } from '../../../src/runtime/server/services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
-import { Player } from '../../../src/runtime/server/entities/player'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
-import { IEngineEvents } from '../../../src/adapters/contracts/IEngineEvents'
-import { createTestPlayer, createAuthenticatedPlayer, createMockPlayerAdapters } from '../../helpers'
+import { Player } from '../../../src/runtime/server/entities/player'
+import { CommandService } from '../../../src/runtime/server/services/core/command.service'
+import type { CommandExecutionPort } from '../../../src/runtime/server/services/ports/command-execution.port'
+import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
+import {
+  createAuthenticatedPlayer,
+  createMockPlayerAdapters,
+  createTestPlayer,
+} from '../../helpers'
 
 // Mock getRuntimeContext
 vi.mock('../../../src/runtime/server/runtime', () => ({
@@ -29,7 +33,10 @@ describe('Command Ports Integration', () => {
 
       playerDirectory = {
         getByClient: vi.fn((clientID) => {
-          return new Player({ clientID, accountID: 'test-account', meta: {} }, createMockPlayerAdapters())
+          return new Player(
+            { clientID, accountID: 'test-account', meta: {} },
+            createMockPlayerAdapters(),
+          )
         }),
         getAll: vi.fn(() => []),
       } as any
@@ -175,7 +182,10 @@ describe('Command Ports Integration', () => {
       const coreCommandService = new CommandService()
       const corePlayerDirectory: PlayerDirectoryPort = {
         getByClient: vi.fn((clientID) => {
-          return new Player({ clientID, accountID: 'test-account', meta: {} }, createMockPlayerAdapters())
+          return new Player(
+            { clientID, accountID: 'test-account', meta: {} },
+            createMockPlayerAdapters(),
+          )
         }),
         getAll: vi.fn(() => []),
       } as any

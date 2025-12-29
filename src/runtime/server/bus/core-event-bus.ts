@@ -1,5 +1,5 @@
-import type { CoreEventMap } from '../types/core-events'
 import { loggers } from '../../../kernel/shared/logger'
+import type { CoreEventMap } from '../types/core-events'
 
 type CoreEventName = keyof CoreEventMap
 type CoreEventHandler<E extends CoreEventName> = (payload: CoreEventMap[E]) => void

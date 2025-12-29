@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { Command, type CommandMetadata } from '../../../../src/runtime/server/decorators/command'
 import { Public } from '../../../../src/runtime/server/decorators/public'
-import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 import { Player } from '../../../../src/runtime/server/entities/player'
+import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 import { createTestPlayer } from '../../../helpers'
 
 describe('@Command decorator', () => {

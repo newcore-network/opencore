@@ -1,5 +1,5 @@
-import { Bind } from './bind'
 import type { BindingScope } from './bind'
+import { Bind } from './bind'
 
 /**
  * Marks a class as a framework-managed Service.

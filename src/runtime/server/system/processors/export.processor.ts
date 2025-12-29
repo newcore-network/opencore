@@ -1,9 +1,9 @@
-import { injectable, inject } from 'tsyringe'
-import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { METADATA_KEYS } from '../metadata-server.keys'
+import { inject, injectable } from 'tsyringe'
+import { IExports } from '../../../../adapters/contracts/IExports'
+import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { loggers } from '../../../../kernel/shared/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
-import { IExports } from '../../../../adapters/contracts/IExports'
+import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()
 export class ExportProcessor implements DecoratorProcessor {

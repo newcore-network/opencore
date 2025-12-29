@@ -1,14 +1,13 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { NetEventProcessor } from '../../../../../src/runtime/server/system/processors/netEvent.processor'
-
-import { PlayerDirectoryPort } from '../../../../../src/runtime/server/services/ports/player-directory.port'
-import { SecurityHandlerContract } from '../../../../../src/runtime/server/contracts/security/security-handler.contract'
-import { NetEventSecurityObserverContract } from '../../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { INetTransport, type NetEventContext } from '../../../../../src/adapters'
+import type { NetEventSecurityObserverContract } from '../../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
+import type { SecurityHandlerContract } from '../../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../../../src/runtime/server/decorators/onNet'
+import type { Player } from '../../../../../src/runtime/server/entities'
+import type { PlayerDirectoryPort } from '../../../../../src/runtime/server/services/ports/player-directory.port'
 import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
-import { Player } from '../../../../../src/runtime/server/entities'
-import { INetTransport, NetEventContext } from '../../../../../src/adapters'
+import { NetEventProcessor } from '../../../../../src/runtime/server/system/processors/netEvent.processor'
 
 class MockNetTransport extends INetTransport {
   onNet(

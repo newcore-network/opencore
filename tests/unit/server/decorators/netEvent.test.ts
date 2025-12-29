@@ -1,9 +1,9 @@
 import 'reflect-metadata'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { OnNet, type NetEventOptions } from '../../../../src/runtime/server/decorators/onNet'
+import type { Player } from '../../../../src/runtime/server'
+import { type NetEventOptions, OnNet } from '../../../../src/runtime/server/decorators/onNet'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
-import { Player } from '../../../../src/runtime/server'
 import { createTestPlayer } from '../../../helpers'
 
 describe('@OnNet decorator', () => {

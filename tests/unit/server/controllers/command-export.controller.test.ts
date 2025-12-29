@@ -1,12 +1,12 @@
 import 'reflect-metadata'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
-import { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
-import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
 import { AppError } from '../../../../src/kernel/utils'
-import { createTestPlayer, createAuthenticatedPlayer } from '../../../helpers'
+import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
+import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
+import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
+import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
+import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
 
 describe('CommandExportController', () => {
   let controller: CommandExportController
@@ -196,9 +196,7 @@ describe('CommandExportController', () => {
       ;(mockPlayerDirectory.getByClient as any).mockReturnValue(undefined)
 
       await expect(controller.executeCommand(999, 'test', [])).rejects.toThrow(AppError)
-      await expect(controller.executeCommand(999, 'test', [])).rejects.toThrow(
-        /player not found/i,
-      )
+      await expect(controller.executeCommand(999, 'test', [])).rejects.toThrow(/player not found/i)
     })
 
     it('should pass correct clientID to emitNet', async () => {
