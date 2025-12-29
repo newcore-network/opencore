@@ -14,7 +14,7 @@ const validators = new Map<string, BootstrapValidator>()
  */
 export function registerBootstrapValidator(name: string, validator: BootstrapValidator) {
   if (validators.has(name)) {
-    throw new Error(`[NewCore] Bootstrap validator '${name}' is already registered`)
+    throw new Error(`[OpenCore] Bootstrap validator '${name}' is already registered`)
   }
   validators.set(name, validator)
 }
@@ -31,7 +31,7 @@ export async function runBootstrapValidatorsOrThrow(): Promise<void> {
 
   const message = ['Invalid configuration detected during bootstrap:', ...allErrors].join('\n')
   loggers.bootstrap.fatal(message)
-  throw new Error(`[NewCore] CRITICAL: ${message}`)
+  throw new Error(`[OpenCore] CRITICAL: ${message}`)
 }
 
 function getBooleanConvar(name: string, defaultValue = false): boolean {
@@ -66,7 +66,7 @@ const PersistenceSchema = z
       ctx.addIssue({
         code: 'custom',
         path: ['adapter'],
-        message: 'Required when newcore_persistence_enabled=true (set newcore_db_adapter)',
+        message: 'Required when opencore_persistence_enabled=true (set opencore_db_adapter)',
       })
       return
     }
@@ -75,17 +75,17 @@ const PersistenceSchema = z
       ctx.addIssue({
         code: 'custom',
         path: ['resourceName'],
-        message: 'Required when newcore_db_adapter=resource (set newcore_db_resource)',
+        message: 'Required when opencore_db_adapter=resource (set opencore_db_resource)',
       })
     }
   })
 
 function validatePersistence(): string[] {
-  const enabled = getBooleanConvar('newcore_persistence_enabled', false)
+  const enabled = getBooleanConvar('opencore_persistence_enabled', false)
   if (!enabled) return []
 
-  const adapter = getOptionalStringConvar('newcore_db_adapter')
-  const resourceName = getOptionalStringConvar('newcore_db_resource')
+  const adapter = getOptionalStringConvar('opencore_db_adapter')
+  const resourceName = getOptionalStringConvar('opencore_db_resource')
 
   const parsed = PersistenceSchema.safeParse({ enabled, adapter, resourceName })
   if (!parsed.success) return zodIssuesToLines('persistence', parsed.error)

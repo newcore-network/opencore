@@ -39,18 +39,19 @@ export class DatabaseService extends DatabaseContract {
     registerDefaultDatabaseFactories()
 
     if (!this.adapter) {
-      const adapterName = config.adapter?.trim() || GetConvar('newcore_db_adapter', '').trim() || ''
+      const adapterName =
+        config.adapter?.trim() || GetConvar('opencore_db_adapter', '').trim() || ''
 
       if (!adapterName) {
         throw new Error(
-          "[NewCore] Database adapter is not configured. Set 'newcore_db_adapter' (recommended: 'resource') or call initDatabase({ adapter: 'resource' }).",
+          "[OpenCore] Database adapter is not configured. Set 'opencore_db_adapter' (recommended: 'resource') or call initDatabase({ adapter: 'resource' }).",
         )
       }
 
       const factory = resolveDatabaseAdapterFactory(adapterName)
       if (!factory) {
         throw new Error(
-          `[NewCore] Unknown database adapter '${adapterName}'. Register it via registerDatabaseAdapterFactory('${adapterName}', factory).`,
+          `[OpenCore] Unknown database adapter '${adapterName}'. Register it via registerDatabaseAdapterFactory('${adapterName}', factory).`,
         )
       }
 
@@ -101,7 +102,7 @@ export class DatabaseService extends DatabaseContract {
     }
 
     if (!this.adapter) {
-      throw new Error('[NewCore] Database adapter not initialized')
+      throw new Error('[OpenCore] Database adapter not initialized')
     }
   }
 
