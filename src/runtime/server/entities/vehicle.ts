@@ -34,6 +34,8 @@ export class Vehicle {
   private readonly _networkId: number
   private readonly _handle: number
   private readonly _adapters: VehicleAdapters
+  private readonly _model: string
+  private readonly _modelHash: number
   private _ownership: VehicleOwnership
   private _mods: VehicleMods = {}
   private _metadata: VehicleMetadata = {}
@@ -58,6 +60,8 @@ export class Vehicle {
     adapters: VehicleAdapters,
     persistent: boolean = false,
     routingBucket: number = 0,
+    model: string,
+    modelHash: number,
   ) {
     this._handle = handle
     this._networkId = networkId
@@ -65,6 +69,8 @@ export class Vehicle {
     this._adapters = adapters
     this._persistent = persistent
     this._routingBucket = routingBucket
+    this._model = model
+    this._modelHash = modelHash
 
     if (persistent) {
       this._adapters.entityServer.setOrphanMode(handle, 2)
@@ -105,8 +111,12 @@ export class Vehicle {
     return this._adapters.entityServer.doesExist(this._handle)
   }
 
-  get model(): number {
-    return this._adapters.entityServer.getModel(this._handle)
+  get model(): string {
+    return this._model
+  }
+
+  get modelHash(): number {
+    return this._modelHash
   }
 
   get position(): Vector3 {
@@ -306,6 +316,7 @@ export class Vehicle {
     return {
       networkId: this._networkId,
       handle: this._handle,
+      modelHash: this.modelHash,
       model: this.model,
       position: this.position,
       heading: this.heading,

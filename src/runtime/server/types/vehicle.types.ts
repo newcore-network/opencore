@@ -123,7 +123,9 @@ export interface SerializedVehicleData {
   /** Entity handle (server-side) */
   handle: number
   /** Vehicle model hash */
-  model: number
+  modelHash: number
+  /** Vehicle model */
+  model: string
   /** Current position */
   position: Vector3
   /** Current heading */

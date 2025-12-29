@@ -120,6 +120,8 @@ export class VehicleService {
         this.vehicleAdapters,
         persistent,
         routingBucket,
+        model,
+        modelHash,
       )
 
       // Server-side operations (these natives work on server)
