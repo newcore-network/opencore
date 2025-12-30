@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import type { Vector3 } from '../../../kernel/utils'
-import type {
+import { Vector3 } from '../../../kernel/utils'
+import {
   SerializedVehicleData,
   VehicleCreateOptions,
   VehicleSpawnResult,

@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { IDevModeInterceptor } from './contracts/IDevModeInterceptor'
-import type { DevEvent, InterceptorOptions } from './types'
+import { DevEvent, InterceptorOptions } from './types'
 
 /**
  * Implementation of the DevMode event interceptor.

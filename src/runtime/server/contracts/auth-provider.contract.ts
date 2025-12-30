@@ -1,5 +1,5 @@
-import type { Server } from '../../..'
-import type { LinkedID } from '../services/types/linked-id'
+import { Server } from '../../..'
+import { LinkedID } from '../services/types/linked-id'
 
 export interface AuthCredentials {
   /** Standard username/password auth */

@@ -6,7 +6,7 @@
  * Can be extended to support native workers when available.
  */
 
-import type { WorkerInfo, WorkerMessage, WorkerPoolConfig, WorkerResponse } from './types'
+import { WorkerInfo, WorkerMessage, WorkerPoolConfig, WorkerResponse } from './types'
 
 const DEFAULT_CONFIG: WorkerPoolConfig = {
   minWorkers: 0,

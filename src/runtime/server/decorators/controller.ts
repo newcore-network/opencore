@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { ClassConstructor } from '../../../kernel/di/class-constructor'
+import { ClassConstructor } from '../../../kernel/di/class-constructor'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 export const _serverControllerRegistryByResource = new Map<string, Set<ClassConstructor>>()

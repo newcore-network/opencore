@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * import { Repository, FindOptions } from '@open-core/framework/server'
- * import type { DatabaseContract } from '@open-core/framework/server'
+ * import { DatabaseContract } from '@open-core/framework/server'
  *
  * interface User {
  *   id: number

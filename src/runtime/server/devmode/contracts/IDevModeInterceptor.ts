@@ -1,4 +1,4 @@
-import type { DevEvent } from '../types'
+import { DevEvent } from '../types'
 
 /**
  * Contract for intercepting and recording runtime events.

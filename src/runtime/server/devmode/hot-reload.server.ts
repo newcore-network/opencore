@@ -1,5 +1,5 @@
 import { loggers } from '../../../kernel/shared/logger'
-import type { HotReloadOptions } from './types'
+import { HotReloadOptions } from './types'
 
 // Lazy-loaded http module (only loaded at runtime, not bundled)
 let httpModule: any = null

@@ -1,4 +1,4 @@
-import type { HeadBlendData } from '../../kernel/shared'
+import { HeadBlendData } from '../../kernel/shared'
 import { IPedAppearanceClient } from '../contracts/IPedAppearanceClient'
 
 /**

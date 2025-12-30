@@ -7,7 +7,7 @@ import {
   type HandlerInfo,
   IDevModeInspector,
 } from './contracts/IDevModeInspector'
-import type { RuntimeSnapshot } from './types'
+import { RuntimeSnapshot } from './types'
 
 /**
  * Implementation of the DevMode state inspector.

@@ -1,7 +1,7 @@
-import type { IEntityServer } from '../../../adapters/contracts/IEntityServer'
-import type { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
-import type { Vector3 } from '../../../kernel/utils'
-import type {
+import { IEntityServer } from '../../../adapters/contracts/IEntityServer'
+import { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
+import { Vector3 } from '../../../kernel/utils'
+import {
   SerializedVehicleData,
   VehicleMetadata,
   VehicleMods,

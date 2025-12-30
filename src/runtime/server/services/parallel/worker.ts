@@ -9,7 +9,7 @@
  * this script can be used as the worker entry point.
  */
 
-import type { WorkerMessage, WorkerResponse } from './types'
+import { WorkerMessage, WorkerResponse } from './types'
 
 /**
  * Execute a compute function from its string body

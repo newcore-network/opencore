@@ -1,5 +1,5 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
-import type { CoreEventMap } from '../types/core-events'
+import { CoreEventMap } from '../types/core-events'
 
 /**
  * Registers a method as a listener for an internal OpenCore framework event.

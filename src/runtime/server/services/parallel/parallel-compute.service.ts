@@ -11,7 +11,7 @@
 
 import { injectable } from 'tsyringe'
 import { v4 as uuid } from 'uuid'
-import type {
+import {
   ParallelComputeMetrics,
   ParallelTask,
   ParallelTaskOptions,

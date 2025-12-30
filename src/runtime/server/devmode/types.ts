@@ -1,4 +1,4 @@
-import type { FrameworkMode } from '../runtime'
+import { FrameworkMode } from '../runtime'
 
 /**
  * Event captured by the DevMode interceptor.

@@ -3,7 +3,7 @@ import {
   type NetEventInvalidPayloadContext,
   NetEventSecurityObserverContract,
 } from '../../contracts/security/net-event-security-observer.contract'
-import type { Player } from '../../entities/player'
+import { Player } from '../../entities/player'
 
 /**
  * Default net-event security observer.

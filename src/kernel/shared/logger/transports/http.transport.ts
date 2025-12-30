@@ -1,5 +1,5 @@
 import { type LogEntry, LogLevel } from '../logger.types'
-import type { LogTransport } from './transport.interface'
+import { LogTransport } from './transport.interface'
 
 // Lazy-loaded http module (only loaded at runtime, not bundled)
 let httpModule: any = null

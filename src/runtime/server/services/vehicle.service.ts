@@ -6,7 +6,7 @@ import { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
 import { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
 import { coreLogger } from '../../../kernel/shared/logger'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
-import type {
+import {
   SerializedVehicleData,
   VehicleCreateOptions,
   VehicleSpawnResult,

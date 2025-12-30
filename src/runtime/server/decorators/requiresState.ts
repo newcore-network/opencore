@@ -1,4 +1,4 @@
-import type { Server } from '../../..'
+import { Server } from '../../..'
 import { AppError } from '../../../kernel/utils'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 

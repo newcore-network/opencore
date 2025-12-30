@@ -1,4 +1,4 @@
-import type { Player } from '../../entities'
+import { Player } from '../../entities'
 
 /**
  * Core port that provides access to active player sessions.

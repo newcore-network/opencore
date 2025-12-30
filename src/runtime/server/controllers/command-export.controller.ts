@@ -5,12 +5,12 @@ import { AppError } from '../../../kernel/utils'
 import { SecurityError } from '../../../kernel/utils/error/security.error'
 import { Controller, Export, Public } from '../decorators'
 import { OnNet } from '../decorators/onNet'
-import type { Player } from '../entities'
+import { Player } from '../entities'
 import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 import { PrincipalPort } from '../services/ports/principal.port'
 import { RateLimiterService } from '../services/rate-limiter.service'
-import type {
+import {
   CommandRegistrationDto,
   CoreCommandsExports,
   SecurityMetadata,

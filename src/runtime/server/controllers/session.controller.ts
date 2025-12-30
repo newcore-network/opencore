@@ -2,9 +2,9 @@ import { loggers } from '../../../kernel/shared'
 import { emitFrameworkEvent } from '../bus/core-event-bus'
 import { Controller } from '../decorators'
 import { OnFiveMEvent } from '../decorators/onFiveMEvent'
-import type { PlayerDirectoryPort } from '../services'
-import type { PlayerPersistenceService } from '../services/persistence.service'
-import type { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
+import { PlayerDirectoryPort } from '../services'
+import { PlayerPersistenceService } from '../services/persistence.service'
+import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
 
 @Controller()
 export class SessionController {

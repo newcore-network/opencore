@@ -1,7 +1,7 @@
 import z from 'zod'
 import { AppError } from '../../../kernel'
-import type { CommandMetadata } from '../decorators/command'
-import type { Player } from '../entities'
+import { CommandMetadata } from '../decorators/command'
+import { Player } from '../entities'
 import { generateSchemaFromTypes } from '../system/schema-generator'
 
 /**

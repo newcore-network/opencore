@@ -11,10 +11,10 @@ import {
   NetEventSecurityObserverContract,
 } from '../../contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from '../../contracts/security/security-handler.contract'
-import type { NetEventOptions } from '../../decorators'
-import type { Player } from '../../entities'
+import { NetEventOptions } from '../../decorators'
+import { Player } from '../../entities'
 import { resolveMethod } from '../../helpers/resolve-method'
-import type { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
+import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
 

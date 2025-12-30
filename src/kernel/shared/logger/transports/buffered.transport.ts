@@ -1,5 +1,5 @@
 import { LogDomainLabels, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
-import type { LogTransport } from './transport.interface'
+import { LogTransport } from './transport.interface'
 
 /**
  * Output format for exported logs.

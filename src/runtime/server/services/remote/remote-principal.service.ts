@@ -1,10 +1,10 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters'
-import type { Principal } from '../../contracts/security/permission.types'
-import type { GuardOptions } from '../../decorators/guard'
-import type { Player } from '../../entities'
+import { Principal } from '../../contracts/security/permission.types'
+import { GuardOptions } from '../../decorators/guard'
+import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import type { CorePrincipalExports } from '../../types/core-exports'
+import { CorePrincipalExports } from '../../types/core-exports'
 import { PrincipalPort } from '../ports/principal.port'
 
 /**

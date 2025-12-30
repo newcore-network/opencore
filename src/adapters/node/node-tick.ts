@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { ITick } from '../contracts/ITick'
+import { ITick } from '../contracts/ITick'
 
 /**
  * Node.js implementation of ITick using setInterval.

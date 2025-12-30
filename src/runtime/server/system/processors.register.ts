@@ -1,7 +1,7 @@
 import { di } from '../../../kernel/di/index'
 import { NetEventSecurityObserverContract } from '../contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from '../contracts/security/security-handler.contract'
-import type { RuntimeContext } from '../runtime'
+import { RuntimeContext } from '../runtime'
 import { DefaultNetEventSecurityObserver } from '../services/default/default-net-event-security-observer'
 import { DefaultSecurityHandler } from '../services/default/default-security.handler'
 import { CommandProcessor } from './processors/command.processor'

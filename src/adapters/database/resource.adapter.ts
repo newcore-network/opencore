@@ -1,5 +1,5 @@
 import { DatabaseContract } from '../../runtime/server/database/database.contract'
-import type {
+import {
   ExecuteResult,
   InsertResult,
   TransactionInput,

@@ -3,7 +3,7 @@ import { AppError } from '../../../kernel/utils'
 import { Principal, PrincipalProviderContract } from '../contracts/index'
 import { Controller } from '../decorators/index'
 import { Export } from '../decorators/export'
-import type { GuardOptions } from '../decorators/guard'
+import { GuardOptions } from '../decorators/guard'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 /**

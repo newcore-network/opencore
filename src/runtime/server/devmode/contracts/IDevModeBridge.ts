@@ -1,4 +1,4 @@
-import type { BridgeMessage } from '../types'
+import { BridgeMessage } from '../types'
 
 /**
  * Contract for the WebSocket bridge between framework and CLI.

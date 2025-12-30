@@ -1,4 +1,4 @@
-import type { BindingScope } from './bind'
+import { BindingScope } from './bind'
 import { Bind } from './bind'
 
 /**

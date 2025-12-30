@@ -1,4 +1,4 @@
-import type { DatabaseContract } from './database.contract'
+import { DatabaseContract } from './database.contract'
 
 export type DatabaseAdapterFactoryFn = () => DatabaseContract
 

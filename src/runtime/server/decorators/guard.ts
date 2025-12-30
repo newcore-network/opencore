@@ -1,4 +1,4 @@
-import type { Server } from '../../..'
+import { Server } from '../../..'
 import { AppError } from '../../../kernel'
 import { di } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/shared/logger'

@@ -1,5 +1,5 @@
 import { METADATA_KEYS } from '../system/metadata-client.keys'
-import type { GameEventMap, GameEventName } from '../types/game-events'
+import { GameEventMap, GameEventName } from '../types/game-events'
 
 /**
  * Decorator for handling native game events from the RAGE engine.

@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { coreLogger, LogDomain } from '../../../../kernel/shared/logger'
 import { GameEventParsers } from '../../types/game-events'
 import { METADATA_KEYS } from '../metadata-client.keys'

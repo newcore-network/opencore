@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe'
 import { AppError } from '../../../../kernel/utils'
-import type { PrincipalProviderContract } from '../../contracts'
-import type { Principal } from '../../contracts/security/permission.types'
-import type { GuardOptions } from '../../decorators/guard'
-import type { Player } from '../../entities'
+import { PrincipalProviderContract } from '../../contracts'
+import { Principal } from '../../contracts/security/permission.types'
+import { GuardOptions } from '../../decorators/guard'
+import { Player } from '../../entities'
 import { PrincipalPort } from '../ports/principal.port'
 
 /**

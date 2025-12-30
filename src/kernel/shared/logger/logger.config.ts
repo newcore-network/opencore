@@ -1,6 +1,6 @@
 import { LogDomain, LogLevel } from './logger.types'
 import { ConsoleTransport } from './transports/console.transport'
-import type { LogTransport } from './transports/transport.interface'
+import { LogTransport } from './transports/transport.interface'
 
 /**
  * Global configuration options for the LoggerService.

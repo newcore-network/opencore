@@ -1,6 +1,6 @@
 import { di } from '../../../kernel/di/index'
 import { DatabaseService } from '../database'
-import type { RuntimeContext } from '../runtime'
+import { RuntimeContext } from '../runtime'
 import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
 import { PlayerService } from './core/player.service'

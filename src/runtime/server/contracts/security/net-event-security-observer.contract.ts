@@ -1,4 +1,4 @@
-import type { Player } from '../../entities/player'
+import { Player } from '../../entities/player'
 
 export type NetEventInvalidPayloadReason = 'zod' | 'arg_count' | 'security_error' | 'unknown'
 
