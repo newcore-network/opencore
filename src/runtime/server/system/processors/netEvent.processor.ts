@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import z from 'zod'
-import { INetTransport } from '../../../../adapters/contracts/INetTransport'
-import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import type { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { type DecoratorProcessor, DI_TOKENS } from '../../../../kernel/di/index'
 import { coreLogger, loggers } from '../../../../kernel/shared/logger'
 import { AppError } from '../../../../kernel/utils'
 import { SecurityError } from '../../../../kernel/utils/error/security.error'
@@ -14,7 +14,7 @@ import { SecurityHandlerContract } from '../../contracts/security/security-handl
 import type { NetEventOptions } from '../../decorators'
 import type { Player } from '../../entities'
 import { resolveMethod } from '../../helpers/resolve-method'
-import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
+import type { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
 
@@ -24,11 +24,11 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    @inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort,
+    @inject(DI_TOKENS.PlayerDirectoryPort) private playerService: PlayerDirectoryPort,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
-    @inject(INetTransport as any) private netTransport: INetTransport,
+    @inject(DI_TOKENS.NetTransport) private netTransport: INetTransport,
   ) {}
 
   process(instance: any, methodName: string, metadata: NetEventOptions) {

@@ -1,3 +1,5 @@
+import { inject } from 'tsyringe'
+import { DI_TOKENS } from '../../../kernel/di/index'
 import { AppError } from '../../../kernel/utils'
 import type { Principal, PrincipalProviderContract } from '../contracts'
 import { Controller } from '../decorators'
@@ -18,7 +20,8 @@ import type { PlayerDirectoryPort } from '../services/ports/player-directory.por
 @Controller()
 export class PrincipalExportController {
   constructor(
-    private readonly playerService: PlayerDirectoryPort,
+    @inject(DI_TOKENS.PlayerDirectoryPort) private readonly playerService: PlayerDirectoryPort,
+    @inject(DI_TOKENS.PrincipalProvider)
     private readonly principalProvider: PrincipalProviderContract,
   ) {}
 

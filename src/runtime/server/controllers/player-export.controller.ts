@@ -1,3 +1,5 @@
+import { inject } from 'tsyringe'
+import { DI_TOKENS } from '../../../kernel/di/index'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
@@ -15,7 +17,7 @@ import type { CorePlayerExports, SerializedPlayerData } from '../types/core-expo
  */
 @Controller()
 export class PlayerExportController implements CorePlayerExports {
-  constructor(private playerService: PlayerDirectoryPort) {}
+  constructor(@inject(DI_TOKENS.PlayerDirectoryPort) private playerService: PlayerDirectoryPort) {}
 
   // ═══════════════════════════════════════════════════════════════
   // Basic Player Queries

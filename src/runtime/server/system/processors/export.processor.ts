@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe'
-import { IExports } from '../../../../adapters/contracts/IExports'
-import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import type { IExports } from '../../../../adapters/contracts/IExports'
+import { type DecoratorProcessor, DI_TOKENS } from '../../../../kernel/di/index'
 import { loggers } from '../../../../kernel/shared/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
 import { METADATA_KEYS } from '../metadata-server.keys'
@@ -9,7 +9,7 @@ import { METADATA_KEYS } from '../metadata-server.keys'
 export class ExportProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.EXPORT
 
-  constructor(@inject(IExports as any) private exportsService: IExports) {}
+  constructor(@inject(DI_TOKENS.Exports) private exportsService: IExports) {}
 
   process(instance: any, methodName: string, metadata: { exportName: string }) {
     const result = resolveMethod(

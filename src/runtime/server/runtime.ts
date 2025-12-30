@@ -488,6 +488,9 @@ export interface ServerInitOptions {
 
   /** Resource grants configuration (CORE mode only) */
   resourceGrants?: ResourceGrants
+
+  /** Development mode configuration (disabled in production) */
+  devMode?: DevModeConfig
 }
 
 function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
@@ -585,6 +588,7 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
     features,
     coreResourceName: options.coreResourceName ?? 'core',
     resourceGrants: options.resourceGrants,
+    devMode: options.devMode,
   }
 }
 

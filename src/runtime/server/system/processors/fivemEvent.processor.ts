@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe'
-import { IEngineEvents } from '../../../../adapters/contracts/IEngineEvents'
-import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import type { IEngineEvents } from '../../../../adapters/contracts/IEngineEvents'
+import { type DecoratorProcessor, DI_TOKENS } from '../../../../kernel/di/index'
 import { loggers } from '../../../../kernel/shared/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
 import { METADATA_KEYS } from '../metadata-server.keys'
@@ -8,7 +8,7 @@ import { METADATA_KEYS } from '../metadata-server.keys'
 @injectable()
 export class FiveMEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.FIVEM_EVENT
-  constructor(@inject(IEngineEvents as any) private readonly engineEvents: IEngineEvents) {}
+  constructor(@inject(DI_TOKENS.EngineEvents) private readonly engineEvents: IEngineEvents) {}
 
   process(instance: any, methodName: string, metadata: { event: string }) {
     const result = resolveMethod(

@@ -1,4 +1,4 @@
-import { di } from '../../../kernel/di/container'
+import { DI_TOKENS, di } from '../../../kernel/di/index'
 import { DatabaseService } from '../database'
 import type { RuntimeContext } from '../runtime'
 import { ChatService } from './chat.service'
@@ -7,8 +7,6 @@ import { PlayerService } from './core/player.service'
 import { LocalPrincipalService } from './core/principal.service'
 import { HttpService } from './http/http.service'
 import { PlayerPersistenceService } from './persistence.service'
-import { CommandExecutionPort } from './ports/command-execution.port'
-import { PlayerDirectoryPort } from './ports/player-directory.port'
 import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
 import { PrincipalPort } from './ports/principal.port'
 import { RemoteCommandService } from './remote/remote-command.service'
@@ -51,10 +49,10 @@ export function registerServicesServer(ctx: RuntimeContext) {
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {
       di.registerSingleton(PlayerService)
-      di.register(PlayerDirectoryPort as any, { useToken: PlayerService })
+      di.register(DI_TOKENS.PlayerDirectoryPort, { useToken: PlayerService })
       di.register(PlayerSessionLifecyclePort as any, { useToken: PlayerService })
     } else {
-      di.registerSingleton(PlayerDirectoryPort as any, RemotePlayerService)
+      di.registerSingleton(DI_TOKENS.PlayerDirectoryPort, RemotePlayerService)
     }
   }
 
@@ -88,24 +86,24 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.database.enabled) {
-    di.registerSingleton(DatabaseService, DatabaseService)
+    di.registerSingleton(DI_TOKENS.DatabaseService, DatabaseService)
   }
 
   if (features.commands.enabled) {
     if (features.commands.provider === 'local' || mode === 'CORE') {
       // CORE/STANDALONE: local command execution
       di.registerSingleton(CommandService)
-      di.register(CommandExecutionPort as any, { useToken: CommandService })
+      di.register(DI_TOKENS.CommandExecutionPort, { useToken: CommandService })
     } else {
       // RESOURCE: remote command execution (delegates to CORE)
-      di.registerSingleton(CommandExecutionPort as any, RemoteCommandService)
+      di.registerSingleton(DI_TOKENS.CommandExecutionPort, RemoteCommandService)
     }
   }
 
   if (features.http.enabled) {
-    di.registerSingleton(HttpService, HttpService)
+    di.registerSingleton(DI_TOKENS.HttpService, HttpService)
   }
   if (features.chat.enabled) {
-    di.registerSingleton(ChatService, ChatService)
+    di.registerSingleton(DI_TOKENS.ChatService, ChatService)
   }
 }
