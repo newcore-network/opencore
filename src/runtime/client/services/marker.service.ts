@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { Vector3 } from '../../../kernel/utils'
+import { Vector3 } from '../../../kernel/utils'
 
 export interface MarkerOptions {
   /** Marker type (0-43) */

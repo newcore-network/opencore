@@ -3,7 +3,7 @@ import { LoggerService } from './logger.service'
 import { LogDomain } from './logger.types'
 import { ConsoleTransport } from './transports/console.transport'
 import { SimpleConsoleTransport } from './transports/simple-console.transport'
-import type { LogTransport } from './transports/transport.interface'
+import { LogTransport } from './transports/transport.interface'
 
 /**
  * Creates the appropriate transport based on the runtime environment.

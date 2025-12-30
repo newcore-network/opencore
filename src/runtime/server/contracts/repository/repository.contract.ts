@@ -46,13 +46,8 @@
  * ```
  */
 
-import type { DatabaseContract } from '../../database/database.contract'
-import type {
-  FindManyResult,
-  FindOptions,
-  OrderDirection,
-  WhereCondition,
-} from './repository.types'
+import { DatabaseContract } from '../../database/database.contract'
+import { FindManyResult, FindOptions, OrderDirection, WhereCondition } from './repository.types'
 
 /**
  * Abstract Repository base class

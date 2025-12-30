@@ -1,11 +1,11 @@
-import type { IPlayerInfo } from '../../../adapters'
-import type { IEntityServer } from '../../../adapters/contracts/IEntityServer'
-import type { INetTransport } from '../../../adapters/contracts/INetTransport'
-import type { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
-import type { Vector3 } from '../../../kernel/utils'
-import type { LinkedID } from '../services/types/linked-id'
-import type { PlayerSession } from '../services/types/player-session.object'
-import type { SerializedPlayerData } from '../types/core-exports'
+import { IPlayerInfo } from '../../../adapters'
+import { IEntityServer } from '../../../adapters/contracts/IEntityServer'
+import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
+import { Vector3 } from '../../../kernel/utils'
+import { LinkedID } from '../services/types/linked-id'
+import { PlayerSession } from '../services/types/player-session.object'
+import { SerializedPlayerData } from '../types/core-exports'
 
 /**
  * Adapter bundle for player operations.

@@ -1,13 +1,11 @@
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
-import { di } from '../../kernel/di/container'
-import { MetadataScanner } from '../../kernel/di/metadata.scanner'
+import { di, MetadataScanner } from '../../kernel/di/index'
 import { loggers } from '../../kernel/shared/logger'
+import { AuthProviderContract, PrincipalProviderContract } from './contracts/index'
 import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
-import { AuthProviderContract } from './contracts/auth-provider.contract'
-import { PrincipalProviderContract } from './contracts/security/principal-provider.contract'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,

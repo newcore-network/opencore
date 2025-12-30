@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { IResourceInfo } from '../contracts/IResourceInfo'
+import { IResourceInfo } from '../contracts/IResourceInfo'
 
 /**
  * Node.js implementation of IResourceInfo.

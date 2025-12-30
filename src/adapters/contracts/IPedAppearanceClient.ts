@@ -1,4 +1,4 @@
-import type { HeadBlendData } from '../../kernel/shared'
+import { HeadBlendData } from '../../kernel/shared'
 
 /**
  * Client-side ped appearance operations adapter.

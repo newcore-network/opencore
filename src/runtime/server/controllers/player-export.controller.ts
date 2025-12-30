@@ -1,7 +1,7 @@
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import type { CorePlayerExports, SerializedPlayerData } from '../types/core-exports'
+import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { CorePlayerExports, SerializedPlayerData } from '../types/core-exports'
 
 /**
  * Exports player directory functionality for RESOURCE mode access.

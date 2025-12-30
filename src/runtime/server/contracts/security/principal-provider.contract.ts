@@ -1,6 +1,6 @@
-import type { Server } from '../../../..'
-import type { LinkedID } from '../../services/types/linked-id'
-import type { Principal } from './permission.types'
+import { Server } from '../../../..'
+import { LinkedID } from '../../services/types/linked-id'
+import { Principal } from './permission.types'
 
 /**
  * **Authorization**

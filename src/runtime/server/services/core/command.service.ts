@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe'
 import { loggers } from '../../../../kernel/shared/logger'
 import { AppError } from '../../../../kernel/utils'
-import type { CommandMetadata } from '../../decorators/command'
-import type { Player } from '../../entities'
+import { CommandMetadata } from '../../decorators/command'
+import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
 import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
 

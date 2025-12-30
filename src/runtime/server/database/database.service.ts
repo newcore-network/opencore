@@ -3,7 +3,7 @@ import { OxMySQLAdapter } from '../../../adapters/database/oxmysql.adapter'
 import { ResourceDatabaseAdapter } from '../../../adapters/database/resource.adapter'
 import { registerDatabaseAdapterFactory, resolveDatabaseAdapterFactory } from './adapter.registry'
 import { DatabaseContract } from './database.contract'
-import type {
+import {
   DatabaseConfig,
   ExecuteResult,
   InsertResult,

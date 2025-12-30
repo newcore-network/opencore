@@ -3,7 +3,7 @@ import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { di } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/shared/logger'
 import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
-import type { SimulatedPlayer, SimulatedPlayerOptions } from './types'
+import { SimulatedPlayer, SimulatedPlayerOptions } from './types'
 
 /**
  * Service for simulating player connections during development.

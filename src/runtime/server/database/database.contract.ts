@@ -15,12 +15,7 @@
  * ```
  */
 
-import type {
-  ExecuteResult,
-  InsertResult,
-  TransactionInput,
-  TransactionSharedParams,
-} from './types'
+import { ExecuteResult, InsertResult, TransactionInput, TransactionSharedParams } from './types'
 
 /**
  * Abstract contract for database adapters.

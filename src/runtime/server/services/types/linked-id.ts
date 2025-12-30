@@ -1,4 +1,4 @@
-import type { UUIDTypes } from 'uuid'
+import { UUIDTypes } from 'uuid'
 
 /**
  * Type representing a linked account identifier. This come from your persistence layer

@@ -1,5 +1,5 @@
-import type { ClassConstructor } from '../../kernel/di/class-constructor'
-import { di } from '../../kernel/di/container'
+import { ClassConstructor } from '../../kernel/di/index'
+import { di } from '../../kernel/di/index'
 import { loggers } from '../../kernel/shared/logger'
 import { PlayerPersistenceContract, PrincipalProviderContract } from './contracts'
 import { AuthProviderContract } from './contracts/auth-provider.contract'

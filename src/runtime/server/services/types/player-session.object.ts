@@ -1,4 +1,4 @@
-import type { LinkedID } from './linked-id'
+import { LinkedID } from './linked-id'
 
 export interface PlayerSession {
   clientID: number

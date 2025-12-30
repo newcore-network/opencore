@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import type { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
+import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { loggers } from '../../../../kernel/shared/logger'
 import { onFrameworkEvent } from '../../bus/core-event-bus'
 import { resolveMethod } from '../../helpers/resolve-method'

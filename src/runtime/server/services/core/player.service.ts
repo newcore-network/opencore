@@ -5,10 +5,10 @@ import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
 import { loggers } from '../../../../kernel/shared/logger'
 import { Player, type PlayerAdapters } from '../../entities'
-import type { PlayerDirectoryPort } from '../ports/player-directory.port'
-import type { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
-import type { LinkedID } from '../types/linked-id'
-import type { PlayerSession } from '../types/player-session.object'
+import { PlayerDirectoryPort } from '../ports/player-directory.port'
+import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
+import { LinkedID } from '../types/linked-id'
+import { PlayerSession } from '../types/player-session.object'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.

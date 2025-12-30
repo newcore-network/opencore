@@ -1,19 +1,19 @@
-import { di } from '../../../kernel/di/container'
+import { di } from '../../../kernel/di/index'
 import { DatabaseService } from '../database'
-import type { RuntimeContext } from '../runtime'
+import { RuntimeContext } from '../runtime'
 import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
 import { PlayerService } from './core/player.service'
 import { LocalPrincipalService } from './core/principal.service'
 import { HttpService } from './http/http.service'
 import { PlayerPersistenceService } from './persistence.service'
-import { CommandExecutionPort } from './ports/command-execution.port'
-import { PlayerDirectoryPort } from './ports/player-directory.port'
 import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
+import { PlayerDirectoryPort } from './ports/player-directory.port'
 import { PrincipalPort } from './ports/principal.port'
 import { RemoteCommandService } from './remote/remote-command.service'
 import { RemotePlayerService } from './remote/remote-player.service'
 import { RemotePrincipalService } from './remote/remote-principal.service'
+import { CommandExecutionPort } from './ports/command-execution.port'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -88,7 +88,7 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.database.enabled) {
-    di.registerSingleton(DatabaseService, DatabaseService)
+    di.registerSingleton(DatabaseService)
   }
 
   if (features.commands.enabled) {
@@ -103,9 +103,9 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.http.enabled) {
-    di.registerSingleton(HttpService, HttpService)
+    di.registerSingleton(HttpService)
   }
   if (features.chat.enabled) {
-    di.registerSingleton(ChatService, ChatService)
+    di.registerSingleton(ChatService)
   }
 }

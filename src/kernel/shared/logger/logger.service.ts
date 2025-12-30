@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
 import { createLoggerConfig, type LoggerConfig } from './logger.config'
 import { type LogContext, LogDomain, type LogEntry, LogLevel } from './logger.types'
-import type { LogTransport } from './transports/transport.interface'
+import { LogTransport } from './transports/transport.interface'
 
 /**
  * Central logging service for the framework.

@@ -6,7 +6,7 @@ import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
 import { loggers } from '../../../../kernel/shared/logger'
 import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import type { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
+import { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 
 /**

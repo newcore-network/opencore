@@ -8,12 +8,12 @@ import {
   startDevTransport,
   stopDevTransport,
 } from '../../../kernel/shared/logger/transports/dev-transport.factory'
-import type { LogTransport } from '../../../kernel/shared/logger/transports/transport.interface'
+import { LogTransport } from '../../../kernel/shared/logger/transports/transport.interface'
 import { EventInterceptorService } from './event-interceptor.service'
 import { HotReloadServer } from './hot-reload.server'
 import { PlayerSimulatorService } from './player-simulator.service'
 import { StateInspectorService } from './state-inspector.service'
-import type { BridgeMessage, DevEvent, DevModeOptions, RuntimeSnapshot } from './types'
+import { BridgeMessage, DevEvent, DevModeOptions, RuntimeSnapshot } from './types'
 
 // Safe wrapper for FiveM ExecuteCommand (no-op in Node.js)
 function safeExecuteCommand(command: string): void {

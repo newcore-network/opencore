@@ -1,6 +1,6 @@
 import { LogLevel } from '../logger.types'
 import { HttpLogTransport, type HttpTransportOptions } from './http.transport'
-import type { LogTransport } from './transport.interface'
+import { LogTransport } from './transport.interface'
 import { WebSocketLogTransport, type WebSocketTransportOptions } from './websocket.transport'
 
 /**

@@ -1,5 +1,5 @@
 import { initClientCore } from './client-bootstrap'
-import type { ClientInitOptions } from './client-runtime'
+import { ClientInitOptions } from './client-runtime'
 
 /**
  * Initialize the OpenCore client framework

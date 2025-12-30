@@ -1,4 +1,4 @@
-import type { RuntimeSnapshot } from '../types'
+import { RuntimeSnapshot } from '../types'
 
 /**
  * Handler metadata for inspection.

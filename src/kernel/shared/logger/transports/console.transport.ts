@@ -5,7 +5,7 @@ import {
   LogLevel,
   LogLevelLabels,
 } from '../logger.types'
-import type { LogTransport } from './transport.interface'
+import { LogTransport } from './transport.interface'
 
 /**
  * Color codes for console output.

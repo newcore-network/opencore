@@ -1,4 +1,4 @@
-import type { LogEntry, LogLevel } from '../logger.types'
+import { LogEntry, LogLevel } from '../logger.types'
 
 /**
  * Contract that all log transports must implement.
