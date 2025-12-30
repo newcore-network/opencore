@@ -1,10 +1,10 @@
 import { container, injectAll, injectable } from 'tsyringe'
 import { loggers } from '../shared/logger'
-import { type ClassConstructor, type DecoratorProcessor, DI_TOKENS } from './index'
+import { type ClassConstructor, type DecoratorProcessor } from './index'
 
 @injectable()
 export class MetadataScanner {
-  constructor(@injectAll(DI_TOKENS.DecoratorProcessor) private processors: DecoratorProcessor[]) {}
+  constructor(@injectAll('DecoratorProcessor') private processors: DecoratorProcessor[]) {}
 
   public scan(registry: ClassConstructor[]) {
     loggers.scanner.info(

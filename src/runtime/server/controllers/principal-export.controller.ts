@@ -1,11 +1,10 @@
 import { inject } from 'tsyringe'
-import { DI_TOKENS } from '../../../kernel/di/index'
 import { AppError } from '../../../kernel/utils'
-import type { Principal, PrincipalProviderContract } from '../contracts'
-import { Controller } from '../decorators'
+import { Principal, PrincipalProviderContract } from '../contracts/index'
+import { Controller } from '../decorators/index'
 import { Export } from '../decorators/export'
 import type { GuardOptions } from '../decorators/guard'
-import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 /**
  * Exports principal/permission functionality for RESOURCE mode access.
@@ -20,8 +19,8 @@ import type { PlayerDirectoryPort } from '../services/ports/player-directory.por
 @Controller()
 export class PrincipalExportController {
   constructor(
-    @inject(DI_TOKENS.PlayerDirectoryPort) private readonly playerService: PlayerDirectoryPort,
-    @inject(DI_TOKENS.PrincipalProvider)
+    private readonly playerService: PlayerDirectoryPort,
+    @inject(PrincipalProviderContract as any)
     private readonly principalProvider: PrincipalProviderContract,
   ) {}
 

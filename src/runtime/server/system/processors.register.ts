@@ -1,4 +1,4 @@
-import { DI_TOKENS, di } from '../../../kernel/di/index'
+import { di } from '../../../kernel/di/index'
 import { NetEventSecurityObserverContract } from '../contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from '../contracts/security/security-handler.contract'
 import type { RuntimeContext } from '../runtime'
@@ -15,7 +15,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
   const { features } = ctx
 
   if (features.netEvents.enabled) {
-    di.register(DI_TOKENS.DecoratorProcessor, { useClass: NetEventProcessor })
+    di.register('DecoratorProcessor', { useClass: NetEventProcessor })
 
     if (!di.isRegistered(SecurityHandlerContract as any)) {
       di.registerSingleton(SecurityHandlerContract as any, DefaultSecurityHandler)
@@ -25,19 +25,19 @@ export function registerSystemServer(ctx: RuntimeContext) {
     }
   }
 
-  di.register(DI_TOKENS.DecoratorProcessor, { useClass: TickProcessor })
+  di.register('DecoratorProcessor', { useClass: TickProcessor })
 
   if (features.exports.enabled) {
-    di.register(DI_TOKENS.DecoratorProcessor, { useClass: ExportProcessor })
+    di.register('DecoratorProcessor', { useClass: ExportProcessor })
   }
 
-  di.register(DI_TOKENS.DecoratorProcessor, { useClass: CoreEventProcessor })
+  di.register('DecoratorProcessor', { useClass: CoreEventProcessor })
 
   if (features.commands.enabled) {
-    di.register(DI_TOKENS.DecoratorProcessor, { useClass: CommandProcessor })
+    di.register('DecoratorProcessor', { useClass: CommandProcessor })
   }
 
   if (features.fiveMEvents.enabled) {
-    di.register(DI_TOKENS.DecoratorProcessor, { useClass: FiveMEventProcessor })
+    di.register('DecoratorProcessor', { useClass: FiveMEventProcessor })
   }
 }

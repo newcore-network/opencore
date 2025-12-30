@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import z from 'zod'
-import type { INetTransport } from '../../../../adapters/contracts/INetTransport'
-import { type DecoratorProcessor, DI_TOKENS } from '../../../../kernel/di/index'
+import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { type DecoratorProcessor } from '../../../../kernel/di/index'
 import { coreLogger, loggers } from '../../../../kernel/shared/logger'
 import { AppError } from '../../../../kernel/utils'
 import { SecurityError } from '../../../../kernel/utils/error/security.error'
@@ -24,11 +24,11 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    @inject(DI_TOKENS.PlayerDirectoryPort) private playerService: PlayerDirectoryPort,
+    private playerService: PlayerDirectoryPort,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
-    @inject(DI_TOKENS.NetTransport) private netTransport: INetTransport,
+    @inject(INetTransport as any) private netTransport: INetTransport,
   ) {}
 
   process(instance: any, methodName: string, metadata: NetEventOptions) {

@@ -6,10 +6,10 @@ import { SecurityError } from '../../../kernel/utils/error/security.error'
 import { Controller, Export, Public } from '../decorators'
 import { OnNet } from '../decorators/onNet'
 import type { Player } from '../entities'
-import type { CommandExecutionPort, CommandInfo } from '../services/ports/command-execution.port'
-import type { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import type { PrincipalPort } from '../services/ports/principal.port'
-import type { RateLimiterService } from '../services/rate-limiter.service'
+import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
+import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { PrincipalPort } from '../services/ports/principal.port'
+import { RateLimiterService } from '../services/rate-limiter.service'
 import type {
   CommandRegistrationDto,
   CoreCommandsExports,
