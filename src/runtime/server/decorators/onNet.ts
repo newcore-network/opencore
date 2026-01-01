@@ -65,13 +65,24 @@ type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: T
  * ```
  */
 // Overload: Schema as second argument (recommended)
-export function OnNet<_TArgs extends any[]>(eventName: string, schema: z.ZodType): MethodDecorator
+export function OnNet<TArgs extends any[]>(
+  eventName: string,
+  schema: z.ZodType,
+): <H extends ServerNetHandler<TArgs>>(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<H>,
+) => void
 
 // Overload: Options object (legacy, for backwards compatibility)
-export function OnNet<_TArgs extends any[]>(
+export function OnNet<TArgs extends any[]>(
   eventName: string,
   options?: Pick<NetEventOptions, 'schema'>,
-): MethodDecorator
+): <H extends ServerNetHandler<TArgs>>(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<H>,
+) => void
 
 // Implementation
 export function OnNet<TArgs extends any[]>(

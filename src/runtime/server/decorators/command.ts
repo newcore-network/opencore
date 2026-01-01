@@ -85,13 +85,32 @@ type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => a
  * ```
  */
 // Overload: command name with schema as second argument (recommended for simple commands)
-export function Command(name: string, schema: z.ZodType): MethodDecorator
+export function Command(
+  name: string,
+  schema: z.ZodType,
+): <T extends ServerCommandHandler>(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<T>,
+) => void
 
 // Overload: command name only
-export function Command(name: string): MethodDecorator
+export function Command(
+  name: string,
+): <T extends ServerCommandHandler>(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<T>,
+) => void
 
 // Overload: full config object
-export function Command(config: CommandConfig): MethodDecorator
+export function Command(
+  config: CommandConfig,
+): <T extends ServerCommandHandler>(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<T>,
+) => void
 
 // Implementation
 export function Command(configOrName: string | CommandConfig, schema?: z.ZodType) {
