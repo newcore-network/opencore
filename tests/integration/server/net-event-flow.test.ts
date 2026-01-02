@@ -239,7 +239,7 @@ describe('NetEventProcessor Node Runtime Flow', () => {
       )
 
       // PlayerService returns undefined (no session)
-      vi.mocked(mockPlayerService.getByClient).mockReturnValue(null)
+      vi.mocked(mockPlayerService.getByClient).mockReturnValue(undefined)
 
       processor.process(instance, 'handleAction', metadata)
 
