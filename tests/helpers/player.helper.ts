@@ -1,6 +1,6 @@
 import { type EntityStateBag, IEntityServer } from '../../src/adapters/contracts/IEntityServer'
-import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
+import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
 import { IPlayerServer } from '../../src/adapters/contracts/IPlayerServer'
 import type { Vector3 } from '../../src/kernel/utils'
