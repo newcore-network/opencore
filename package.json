@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "0.2.1-beta.1",
+  "version": "0.2.2-beta.1",
   "description": "Secure, Event-Driven, OOP Engine for FiveM. Stop scripting, start engineering.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,6 +47,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "publish": "pnpm build && npm publish",
     "build": "tsc -p tsconfig.build.json",
     "watch": "tsc -p tsconfig.build.json --watch",
     "check": "biome check .",
