@@ -49,7 +49,15 @@ jobs:
         run: pnpm build
 
       - name: Publish to npm (Trusted Publishing)
-        run: npm publish
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            PRERELEASE_TAG=$(node -p "require('./package.json').version.split('-')[1].split('.')[0]")
+            npm publish --tag "$PRERELEASE_TAG"
+          else
+            npm publish
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -100,7 +100,7 @@ These files are considered **local artifacts** and are typically gitignored.
 
 ## 📈 Latest Benchmark Results
 
-**Framework version:** `0.2.3-beta.1`  
+**Framework version:** `0.2.4`  
 **Run date:** Dec 22, 2025  
 **Environment:** Local development machine (results vary by hardware)
 
