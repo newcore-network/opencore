@@ -91,7 +91,8 @@ function validatePersistence(): string[] {
   if (!parsed.success) return zodIssuesToLines('persistence', parsed.error)
 
   if (adapter === 'resource') {
-    const db = (exports as any)[resourceName!]
+    if (!resourceName) return ['persistence.resourceName: Missing opencore_db_resource']
+    const db = (exports as any)[resourceName]
     if (!db) {
       return [
         `persistence.resource: Database resource '${resourceName}' is not available. Start it before this resource.`,

@@ -142,13 +142,16 @@ export class AppearanceService {
       props: {},
     }
 
+    if (!appearance.components) appearance.components = {}
+    if (!appearance.props) appearance.props = {}
+
     // Components (0-11)
     for (let i = 0; i <= 11; i++) {
       const drawable = this.pedAdapter.getDrawableVariation(ped, i)
       const texture = this.pedAdapter.getTextureVariation(ped, i)
 
       if (drawable !== -1) {
-        appearance.components![i] = { drawable, texture }
+        appearance.components[i] = { drawable, texture }
       }
     }
 
@@ -158,7 +161,7 @@ export class AppearanceService {
       const texture = this.pedAdapter.getPropTextureIndex(ped, i)
 
       if (drawable !== -1) {
-        appearance.props![i] = { drawable, texture }
+        appearance.props[i] = { drawable, texture }
       }
     }
 

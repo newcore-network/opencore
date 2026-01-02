@@ -1,4 +1,4 @@
-export function getParameterNames(func: Function): string[] {
+export function getParameterNames(func: (...args: any[]) => any): string[] {
   const stripped = func
     .toString()
     .replace(/\/\/.*$/gm, '')

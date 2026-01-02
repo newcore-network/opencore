@@ -77,6 +77,8 @@ export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: nu
       opts = { onExceed: 'LOG', ...optionsOrLimit }
     }
 
+    const onExceed = opts.onExceed ?? 'LOG'
+
     // Store metadata for remote transmission
     Reflect.defineMetadata(METADATA_KEYS.THROTTLE, opts, target, propertyKey)
 
@@ -89,7 +91,7 @@ export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: nu
 
         if (!service.checkLimit(key, opts.limit, opts.windowMs)) {
           throw new SecurityError(
-            opts.onExceed!,
+            onExceed,
             opts.message || `Rate limit exceeded on ${propertyKey}`,
             { limit: opts.limit, key },
           )

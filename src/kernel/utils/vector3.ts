@@ -5,6 +5,8 @@ export type Vector3 = {
 }
 
 export class Vec3 {
+  private constructor() {}
+
   static create(x: number, y: number, z: number): Vector3 {
     return { x, y, z }
   }

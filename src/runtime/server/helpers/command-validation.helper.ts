@@ -11,7 +11,7 @@ export async function validateAndExecuteCommand(
   meta: CommandMetadata,
   player: Player,
   args: string[],
-  handler: Function,
+  handler: (...args: any[]) => any,
 ): Promise<any> {
   const paramNames = meta.expectsPlayer ? meta.paramNames.slice(1) : meta.paramNames
   let schema: z.ZodTypeAny | undefined = meta.schema

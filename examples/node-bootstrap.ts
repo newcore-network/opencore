@@ -24,7 +24,7 @@ import { initServer } from '../src/runtime/server/bootstrap'
 // Example Controller
 @Controller()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class ExampleController {
+export class ExampleController {
   @OnNet('example:greet')
   handleGreeting(player: Player, name: string) {
     console.log(`[NetEvent] Client ${player.clientID} says: Hello, ${name}!`)
