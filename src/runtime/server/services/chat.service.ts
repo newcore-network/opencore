@@ -1,6 +1,7 @@
 import { injectable } from 'tsyringe'
 import { Server } from '../../..'
 import { RGB } from '../../../kernel/utils'
+import { PlayerDirectoryPort } from './ports/player-directory.port'
 
 /**
  * Service for sending chat messages to players.
@@ -10,6 +11,7 @@ import { RGB } from '../../../kernel/utils'
  */
 @injectable()
 export class ChatService {
+  constructor(private readonly playerDirectory: PlayerDirectoryPort) {}
   /**
    * Broadcast a chat message to all connected players.
    *
@@ -53,5 +55,78 @@ export class ChatService {
     emitNet('core:chat:clear', player.clientID)
   }
 
-  // TODO: add send by group of players
+  /**
+   * Send a chat message to multiple players.
+   *
+   * @param players - Array of target players or their client IDs.
+   * @param message - Message body.
+   * @param author - Author label.
+   * @param color - Message color (RGB).
+   */
+  sendMany(
+    players: (Server.Player | number)[],
+    message: string,
+    author: string = 'SYSTEM',
+    color: RGB = { r: 255, g: 255, b: 255 },
+  ) {
+    players.forEach((p) => {
+      const targetId = typeof p === 'number' ? p : p.clientID
+      emitNet('core:chat:addMessage', targetId, {
+        args: [author, message],
+        color: color,
+      })
+    })
+  }
+
+  /**
+   * Send a chat message to players within a certain radius of a specific player.
+   *
+   * @param playerFrom - Origin player.
+   * @param message - Message body.
+   * @param radius - Distance radius in game units.
+   * @param author - Author label.
+   * @param color - Message color (RGB).
+   */
+  sendNearby(
+    playerFrom: Server.Player,
+    message: string,
+    radius: number,
+    author: string = playerFrom.name,
+    color: RGB = { r: 255, g: 255, b: 255 },
+  ) {
+    const originPos = playerFrom.getPosition()
+    if (!originPos) return
+
+    const allPlayers = this.playerDirectory.getAll()
+    const nearbyPlayers = allPlayers.filter((p) => {
+      const pos = p.getPosition()
+      if (!pos) return false
+
+      const dx = originPos.x - pos.x
+      const dy = originPos.y - pos.y
+      const dz = originPos.z - pos.z
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+      return distance <= radius
+    })
+
+    this.sendMany(nearbyPlayers, message, author, color)
+  }
+
+  /**
+   * Broadcast a system message to all players.
+   *
+   * @param message - Message body.
+   * @param color - Message color (RGB). Defaults to a light blue/cyan.
+   */
+  broadcastSystem(message: string, color: RGB = { r: 0, g: 191, b: 255 }) {
+    this.broadcast(message, 'SYSTEM', color)
+  }
+
+  /**
+   * Clear chat for all connected players.
+   */
+  clearChatAll() {
+    emitNet('core:chat:clear', -1)
+  }
 }
