@@ -1,5 +1,6 @@
 import { type EntityStateBag, IEntityServer } from '../../src/adapters/contracts/IEntityServer'
 import { INetTransport } from '../../src/adapters/contracts/INetTransport'
+import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
 import { IPlayerServer } from '../../src/adapters/contracts/IPlayerServer'
 import type { Vector3 } from '../../src/kernel/utils'
@@ -68,13 +69,22 @@ export class MockEntityServer extends IEntityServer {
     return { x: 0, y: 0, z: 0 }
   }
 
-  setCoords(): void {}
+  setCoords(
+    _handle: number,
+    _x: number,
+    _y: number,
+    _z: number,
+    _alive?: boolean,
+    _deadFlag?: boolean,
+    _ragdollFlag?: boolean,
+    _clearArea?: boolean,
+  ): void {}
 
   getHeading(_handle: number): number {
     return 0
   }
 
-  setHeading(): void {}
+  setHeading(_handle: number, _heading: number): void {}
 
   getModel(_handle: number): number {
     return 0
@@ -82,9 +92,9 @@ export class MockEntityServer extends IEntityServer {
 
   delete(_handle: number): void {}
 
-  setOrphanMode(): void {}
+  setOrphanMode(_handle: number, _mode: number): void {}
 
-  setRoutingBucket(): void {}
+  setRoutingBucket(_handle: number, _bucket: number): void {}
 
   getRoutingBucket(_handle: number): number {
     return 0
@@ -93,10 +103,22 @@ export class MockEntityServer extends IEntityServer {
   getStateBag(_handle: number): EntityStateBag {
     const state = new Map<string, unknown>()
     return {
-      set: (key: string, value: unknown) => state.set(key, value),
+      set: (key: string, value: unknown, _replicated?: boolean) => state.set(key, value),
       get: (key: string) => state.get(key),
     }
   }
+
+  getHealth(_handle: number): number {
+    return 100
+  }
+
+  setHealth(_handle: number, _health: number): void {}
+
+  getArmor(_handle: number): number {
+    return 0
+  }
+
+  setArmor(_handle: number, _armor: number): void {}
 }
 
 /**
@@ -105,11 +127,7 @@ export class MockEntityServer extends IEntityServer {
 export class MockNetTransport extends INetTransport {
   onNet(_eventName: string, _handler: (...args: any[]) => void): void {}
 
-  emitNet(_eventName: string, _target: number | string, ..._args: any[]): void {}
-
-  on(_eventName: string, _handler: (...args: any[]) => void): void {}
-
-  emit(_eventName: string, ..._args: any[]): void {}
+  emitNet(_eventName: string, _target: NetTarget, ..._args: any[]): void {}
 }
 
 /**

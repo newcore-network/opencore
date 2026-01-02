@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import type { INetTransport, NetEventContext } from '../../../../src/adapters'
 import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
+import { NodeEntityServer } from '../../../../src/adapters/node/node-entity-server'
+import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
+import { NodePlayerServer } from '../../../../src/adapters/node/node-player-server'
 import type { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
@@ -32,6 +35,9 @@ const netAbstract: INetTransport = {
 }
 
 const playerInfo = new NodePlayerInfo()
+const playerServer = new NodePlayerServer()
+const entityServer = new NodeEntityServer()
+const netTransport = new NodeNetTransport()
 
 describe('NetEventProcessor invalid payload resilience', () => {
   beforeEach(() => {
@@ -39,7 +45,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
-    const playerService = new PlayerService(playerInfo)
+    const playerService = new PlayerService(playerInfo, playerServer, entityServer, netTransport)
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
@@ -80,7 +86,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash even if handleViolation throws', async () => {
-    const playerService = new PlayerService(playerInfo)
+    const playerService = new PlayerService(playerInfo, playerServer, entityServer, netTransport)
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
