@@ -13,7 +13,7 @@ export class NuiProcessor implements DecoratorProcessor {
 
     RegisterNuiCallbackType(metadata.eventName)
 
-    on(`__cfx_nui:${metadata.eventName}`, async (data: any, cb: Function) => {
+    on(`__cfx_nui:${metadata.eventName}`, async (data: any, cb: (response: unknown) => void) => {
       try {
         await handler(data)
         cb({ ok: true })

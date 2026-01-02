@@ -7,13 +7,13 @@ import { PlayerService } from './core/player.service'
 import { LocalPrincipalService } from './core/principal.service'
 import { HttpService } from './http/http.service'
 import { PlayerPersistenceService } from './persistence.service'
-import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
+import { CommandExecutionPort } from './ports/command-execution.port'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
+import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
 import { PrincipalPort } from './ports/principal.port'
 import { RemoteCommandService } from './remote/remote-command.service'
 import { RemotePlayerService } from './remote/remote-player.service'
 import { RemotePrincipalService } from './remote/remote-principal.service'
-import { CommandExecutionPort } from './ports/command-execution.port'
 
 /**
  * Registers server runtime services in the dependency injection container.

@@ -353,12 +353,14 @@ export class WorkerPool extends SimpleEventEmitter {
       const idleWorker = this.findIdleWorker()
 
       if (idleWorker) {
-        const task = this.taskQueue.shift()!
+        const task = this.taskQueue.shift()
+        if (!task) break
         this.assignTask(idleWorker, task)
       } else if (this.workers.size < this.config.maxWorkers) {
         const newWorker = this.spawnWorker()
         if (newWorker) {
-          const task = this.taskQueue.shift()!
+          const task = this.taskQueue.shift()
+          if (!task) break
           this.assignTask(newWorker, task)
         } else {
           break

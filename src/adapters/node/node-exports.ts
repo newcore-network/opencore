@@ -7,9 +7,9 @@ import { IExports } from '../contracts/IExports'
  */
 @injectable()
 export class NodeExports implements IExports {
-  private exports = new Map<string, Function>()
+  private exports = new Map<string, (...args: any[]) => any>()
 
-  register(exportName: string, handler: Function): void {
+  register(exportName: string, handler: (...args: any[]) => any): void {
     this.exports.set(exportName, handler)
   }
 
@@ -47,7 +47,7 @@ export class NodeExports implements IExports {
   /**
    * Utility method for testing: get a specific export
    */
-  getExport(exportName: string): Function | undefined {
+  getExport(exportName: string): ((...args: any[]) => any) | undefined {
     return this.exports.get(exportName)
   }
 

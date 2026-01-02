@@ -27,7 +27,7 @@ export abstract class CommandExecutionPort {
    * @param metadata - Command metadata from decorator
    * @param handler - Bound method to invoke when command is executed
    */
-  abstract register(metadata: CommandMetadata, handler: Function): void
+  abstract register(metadata: CommandMetadata, handler: (...args: any[]) => any): void
 
   /**
    * Executes a registered command.

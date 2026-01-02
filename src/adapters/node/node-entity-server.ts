@@ -68,7 +68,10 @@ export class NodeEntityServer extends IEntityServer {
     if (!this.stateBags.has(handle)) {
       this.stateBags.set(handle, new Map())
     }
-    const bag = this.stateBags.get(handle)!
+    const bag = this.stateBags.get(handle)
+    if (!bag) {
+      throw new Error(`[OpenCore] NodeEntityServer state bag missing for handle ${handle}`)
+    }
 
     return {
       set: (key: string, value: unknown) => {

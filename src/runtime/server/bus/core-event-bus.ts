@@ -4,15 +4,17 @@ import { CoreEventMap } from '../types/core-events'
 type CoreEventName = keyof CoreEventMap
 type CoreEventHandler<E extends CoreEventName> = (payload: CoreEventMap[E]) => void
 
-const handlers: {
-  [E in CoreEventName]?: CoreEventHandler<E>[]
-} = {}
+const handlers: Partial<Record<CoreEventName, CoreEventHandler<any>[]>> = {}
 
 export function onFrameworkEvent<E extends CoreEventName>(
   event: E,
   handler: CoreEventHandler<E>,
 ): () => void {
-  const list = (handlers[event] ??= []) as CoreEventHandler<E>[]
+  let list = handlers[event] as CoreEventHandler<E>[] | undefined
+  if (!list) {
+    list = [] as CoreEventHandler<E>[]
+    handlers[event] = list as CoreEventHandler<any>[]
+  }
   list.push(handler)
 
   return () => {

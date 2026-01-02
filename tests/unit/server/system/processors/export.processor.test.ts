@@ -11,7 +11,7 @@ import { ExportProcessor } from '../../../../../src/runtime/server/system/proces
  * rather than direct FiveM exports.
  */
 class MockExports extends IExports {
-  registeredExports = new Map<string, Function>()
+  registeredExports = new Map<string, (...args: any[]) => any>()
 
   register(exportName: string, handler: (...args: any[]) => any): void {
     this.registeredExports.set(exportName, handler)

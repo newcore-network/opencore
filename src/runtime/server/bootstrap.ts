@@ -1,11 +1,11 @@
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { di, MetadataScanner } from '../../kernel/di/index'
 import { loggers } from '../../kernel/shared/logger'
-import { AuthProviderContract, PrincipalProviderContract } from './contracts/index'
 import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
+import { AuthProviderContract, PrincipalProviderContract } from './contracts/index'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,

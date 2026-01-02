@@ -1,9 +1,9 @@
 import { inject } from 'tsyringe'
 import { AppError } from '../../../kernel/utils'
 import { Principal, PrincipalProviderContract } from '../contracts/index'
-import { Controller } from '../decorators/index'
 import { Export } from '../decorators/export'
 import { GuardOptions } from '../decorators/guard'
+import { Controller } from '../decorators/index'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
 /**

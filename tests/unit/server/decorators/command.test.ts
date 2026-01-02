@@ -400,7 +400,8 @@ describe('@Command decorator', () => {
         PlayerOnlyController.prototype,
         'whoami',
       )
-      const descriptor = Object.getOwnPropertyDescriptor(PlayerOnlyController.prototype, 'whoami')!
+      const descriptor = Object.getOwnPropertyDescriptor(PlayerOnlyController.prototype, 'whoami')
+      if (!descriptor) throw new Error('Missing descriptor for whoami')
       Command('whoami')(PlayerOnlyController.prototype, 'whoami', descriptor as any)
       const metadata = Reflect.getMetadata(
         METADATA_KEYS.COMMAND,
@@ -415,7 +416,8 @@ describe('@Command decorator', () => {
         bad(_x: number) {}
       }
       Reflect.defineMetadata('design:paramtypes', [Number], InvalidController.prototype, 'bad')
-      const descriptor = Object.getOwnPropertyDescriptor(InvalidController.prototype, 'bad')!
+      const descriptor = Object.getOwnPropertyDescriptor(InvalidController.prototype, 'bad')
+      if (!descriptor) throw new Error('Missing descriptor for bad')
       expect(() => {
         Command('bad')(InvalidController.prototype, 'bad', descriptor as any)
       }).toThrow(/first parameter must be Player/i)

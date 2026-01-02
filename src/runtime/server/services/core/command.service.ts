@@ -23,7 +23,7 @@ import { CommandExecutionPort, type CommandInfo } from '../ports/command-executi
 export class CommandService extends CommandExecutionPort {
   private commands = new Map<
     string,
-    { meta: CommandMetadata; handler: Function; isPublic: boolean }
+    { meta: CommandMetadata; handler: (...args: any[]) => any; isPublic: boolean }
   >()
 
   /**
@@ -32,7 +32,7 @@ export class CommandService extends CommandExecutionPort {
    * @param meta - Command metadata collected from the {@link Command} decorator.
    * @param handler - The bound method to invoke.
    */
-  register(meta: CommandMetadata, handler: Function) {
+  register(meta: CommandMetadata, handler: (...args: any[]) => any) {
     if (this.commands.has(meta.command.toLowerCase())) {
       loggers.command.error(`Command '${meta.command}' is already registered. Skipped`, {
         command: meta.command,

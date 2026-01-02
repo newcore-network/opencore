@@ -14,7 +14,7 @@ import { CommandExecutionPort, type CommandInfo } from '../ports/command-executi
  */
 interface CommandEntry {
   meta: CommandMetadata
-  handler: Function
+  handler: (...args: any[]) => any
 }
 
 /**
@@ -69,7 +69,7 @@ export class RemoteCommandService extends CommandExecutionPort {
    * The handler and full metadata are stored locally for schema validation.
    * Only serializable metadata is sent to CORE for security validation.
    */
-  register(metadata: CommandMetadata, handler: Function): void {
+  register(metadata: CommandMetadata, handler: (...args: any[]) => any): void {
     const commandKey = metadata.command.toLowerCase()
 
     // Store handler with full metadata locally (for schema validation)

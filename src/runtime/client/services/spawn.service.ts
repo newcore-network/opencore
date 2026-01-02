@@ -1,6 +1,5 @@
 import { injectable } from 'tsyringe'
-import { PlayerAppearance } from '../../../kernel/shared'
-import { loggers } from '../../../kernel/shared'
+import { loggers, PlayerAppearance } from '../../../kernel/shared'
 import { Vector3 } from '../../../kernel/utils'
 import { AppearanceService } from './appearance.service'
 
