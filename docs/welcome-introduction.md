@@ -1,6 +1,6 @@
 # Welcome to OpenCore Framework
 
-**Current Version:** `v0.2.0-beta.1`
+**Current Version:** `v0.2.1-beta.1`
 
 OpenCore is a **high-performance, event-driven TypeScript runtime** designed to bring enterprise-grade software engineering standards to the FiveM ecosystem.
 
@@ -28,7 +28,7 @@ OpenCore is built for developers and teams who:
 
 ## Project Status
 
-OpenCore is currently in **Alpha (v0.2.0-beta.1)**.
+OpenCore is currently in **Alpha (v0.2.1-beta.1)**.
 The Core APIs are considered stable ("frozen"), but the ecosystem is still evolving. We recommend this framework for new projects aiming for high stability or for teams looking to refactor legacy codebases into a modern architecture.
 
 ---
