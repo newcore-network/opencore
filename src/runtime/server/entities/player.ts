@@ -197,6 +197,10 @@ export class Player {
     this.session.accountID = accountID
   }
 
+  unlinkAccount() {
+    this.session.accountID = undefined
+  }
+
   /**
    * Checks if the player currently possesses a specific state flag.
    *
