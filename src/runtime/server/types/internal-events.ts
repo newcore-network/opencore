@@ -19,5 +19,5 @@ export type InternalEventMap = {
   'internal:playerSessionCreated': PlayerSessionCreatedPayload
   'internal:playerSessionDestroyed': PlayerSessionDestroyedPayload
   'internal:transfer:completed': TransferCompletedPayload
-  'core:playerFullyConnected': Player
+  'internal:playerFullyConnected': Player
 }
