@@ -43,7 +43,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Tests (CI)
-        run: pnpm test:ci
+        run: pnpm test
 
       - name: Build
         run: pnpm build

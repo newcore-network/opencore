@@ -1,6 +1,6 @@
 import { loggers } from '../../../kernel/shared'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
-import { Controller } from '../decorators'
+import { Controller, OnFrameworkEvent } from '../decorators'
 import { OnFiveMEvent } from '../decorators/onFiveMEvent'
 import { PlayerDirectoryPort } from '../services'
 import { PlayerPersistenceService } from '../services/persistence.service'
@@ -35,6 +35,9 @@ export class SessionController {
       emitFrameworkEvent('internal:playerFullyConnected', { player: currentPlayer })
     })
   }
+
+  @OnFrameworkEvent('internal:playerFullyConnected')
+  test(a: {}) {}
 
   @OnFiveMEvent('playerDropped')
   public async onPlayerDropped(): Promise<void> {
