@@ -24,11 +24,7 @@ import { InternalEventMap } from '../types/internal-events'
  * ```
  */
 export function OnFrameworkEvent<K extends keyof InternalEventMap>(event: K) {
-  return (
-    target: object,
-    propertyKey: string | symbol,
-    _descriptor: PropertyDescriptor,
-  ): void => {
+  return (target: object, propertyKey: string | symbol, _descriptor: PropertyDescriptor): void => {
     Reflect.defineMetadata(METADATA_KEYS.INTERNAL_EVENT, { event }, target, propertyKey)
   }
 }
