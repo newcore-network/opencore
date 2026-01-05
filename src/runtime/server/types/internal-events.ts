@@ -15,9 +15,13 @@ export interface TransferCompletedPayload {
   targetId: number
 }
 
+export interface PlayerFullyConnectedPayload {
+  player: Player
+}
+
 export type InternalEventMap = {
   'internal:playerSessionCreated': PlayerSessionCreatedPayload
   'internal:playerSessionDestroyed': PlayerSessionDestroyedPayload
   'internal:transfer:completed': TransferCompletedPayload
-  'internal:playerFullyConnected': Player
+  'internal:playerFullyConnected': PlayerFullyConnectedPayload
 }
