@@ -5,9 +5,9 @@ import { RuntimeContext } from '../runtime'
 import { DefaultNetEventSecurityObserver } from '../services/default/default-net-event-security-observer'
 import { DefaultSecurityHandler } from '../services/default/default-security.handler'
 import { CommandProcessor } from './processors/command.processor'
-import { CoreEventProcessor } from './processors/coreEvent.processor'
 import { ExportProcessor } from './processors/export.processor'
 import { FiveMEventProcessor } from './processors/fivemEvent.processor'
+import { InternalEventProcessor } from './processors/internalEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
 import { TickProcessor } from './processors/tick.processor'
 
@@ -31,7 +31,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
     di.register('DecoratorProcessor', { useClass: ExportProcessor })
   }
 
-  di.register('DecoratorProcessor', { useClass: CoreEventProcessor })
+  di.register('DecoratorProcessor', { useClass: InternalEventProcessor })
 
   if (features.commands.enabled) {
     di.register('DecoratorProcessor', { useClass: CommandProcessor })

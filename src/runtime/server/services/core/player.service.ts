@@ -7,7 +7,6 @@ import { loggers } from '../../../../kernel/shared/logger'
 import { Player, type PlayerAdapters } from '../../entities'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
-import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.object'
 
 /**
@@ -69,21 +68,6 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
       totalPlayers: this.playersByClient.size,
     })
     return player
-  }
-
-  /**
-   * Associates an authenticated Account ID (database ID) with an active player session.
-   *
-   * Call this method once the player has successfully authenticated (e.g., after character selection
-   * or login) to link their session to their persistent data.
-   *
-   * @param clientID - The FiveM server ID of the player.
-   * @param accountID - The unique identifier from your database/persistence layer.
-   */
-  linkAccount(clientID: number, accountID: LinkedID) {
-    const player = this.playersByClient.get(clientID)
-    if (!player) return
-    player.linkAccount(accountID)
   }
 
   /**

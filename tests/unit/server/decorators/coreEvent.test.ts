@@ -13,7 +13,7 @@ describe('@OnFrameworkEvent decorator', () => {
       }
 
       const metadata = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         SessionController.prototype,
         'handleConnecting',
       )
@@ -29,7 +29,7 @@ describe('@OnFrameworkEvent decorator', () => {
       }
 
       const metadata = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         SessionController.prototype,
         'handleDropped',
       )
@@ -44,7 +44,7 @@ describe('@OnFrameworkEvent decorator', () => {
       }
 
       const metadata = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         SessionController.prototype,
         'handleSessionCreated',
       )
@@ -67,19 +67,19 @@ describe('@OnFrameworkEvent decorator', () => {
       }
 
       const connectMeta = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         LifecycleController.prototype,
         'onConnect',
       )
 
       const dropMeta = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         LifecycleController.prototype,
         'onDrop',
       )
 
       const sessionMeta = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         LifecycleController.prototype,
         'onSession',
       )
@@ -99,13 +99,13 @@ describe('@OnFrameworkEvent decorator', () => {
       }
 
       const meta1 = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         TestController.prototype,
         'method1',
       )
 
       const meta2 = Reflect.getMetadata(
-        METADATA_KEYS.CORE_EVENT,
+        METADATA_KEYS.INTERNAL_EVENT,
         TestController.prototype,
         'method2',
       )
@@ -165,11 +165,11 @@ describe('@OnFrameworkEvent decorator', () => {
       }
 
       expect(
-        Reflect.hasMetadata(METADATA_KEYS.CORE_EVENT, TestController.prototype, 'decorated'),
+        Reflect.hasMetadata(METADATA_KEYS.INTERNAL_EVENT, TestController.prototype, 'decorated'),
       ).toBe(true)
 
       expect(
-        Reflect.hasMetadata(METADATA_KEYS.CORE_EVENT, TestController.prototype, 'normal'),
+        Reflect.hasMetadata(METADATA_KEYS.INTERNAL_EVENT, TestController.prototype, 'normal'),
       ).toBe(false)
     })
 
@@ -192,9 +192,9 @@ describe('@OnFrameworkEvent decorator', () => {
       )
 
       const handlers = methods
-        .filter((method) => Reflect.hasMetadata(METADATA_KEYS.CORE_EVENT, prototype, method))
+        .filter((method) => Reflect.hasMetadata(METADATA_KEYS.INTERNAL_EVENT, prototype, method))
         .map((method) => {
-          const meta = Reflect.getMetadata(METADATA_KEYS.CORE_EVENT, prototype, method)
+          const meta = Reflect.getMetadata(METADATA_KEYS.INTERNAL_EVENT, prototype, method)
           return { method, event: meta.event }
         })
 

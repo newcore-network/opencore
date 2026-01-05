@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Secure, Event-Driven, OOP Engine for FiveM. Stop scripting, start engineering.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
