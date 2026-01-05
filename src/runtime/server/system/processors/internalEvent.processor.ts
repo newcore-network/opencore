@@ -1,19 +1,19 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { loggers } from '../../../../kernel/shared/logger'
-import { onFrameworkEvent } from '../../bus/core-event-bus'
+import { onFrameworkEvent } from '../../bus/internal-event.bus'
 import { resolveMethod } from '../../helpers/resolve-method'
 import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()
-export class CoreEventProcessor implements DecoratorProcessor {
-  readonly metadataKey = METADATA_KEYS.CORE_EVENT
+export class InternalEventProcessor implements DecoratorProcessor {
+  readonly metadataKey = METADATA_KEYS.INTERNAL_EVENT
 
   process(instance: any, methodName: string, metadata: { event: string }) {
     const result = resolveMethod(
       instance,
       methodName,
-      `[CoreEventProcessor] Method "${methodName}" not found`,
+      `[InternalEventProcessor] Method "${methodName}" not found`,
     )
     if (!result) return
 
@@ -24,7 +24,7 @@ export class CoreEventProcessor implements DecoratorProcessor {
         handler(payload)
       } catch (error) {
         loggers.eventBus.error(
-          `Handler error in CoreEvent`,
+          `Handler error in InternalEvent`,
           {
             event: metadata.event,
             handler: handlerName,

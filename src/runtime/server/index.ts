@@ -15,7 +15,7 @@ export * from './services'
 export * from './setup'
 export * from './templates'
 // Types
-export type * from './types/core-events'
+export type * from './types/internal-events'
 
 import { di } from '../../kernel/di/container'
 

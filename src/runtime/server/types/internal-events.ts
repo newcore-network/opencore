@@ -15,9 +15,9 @@ export interface TransferCompletedPayload {
   targetId: number
 }
 
-export type CoreEventMap = {
-  'core:playerSessionCreated': PlayerSessionCreatedPayload
-  'core:playerSessionDestroyed': PlayerSessionDestroyedPayload
-  'core:transfer:completed': TransferCompletedPayload
+export type InternalEventMap = {
+  'internal:playerSessionCreated': PlayerSessionCreatedPayload
+  'internal:playerSessionDestroyed': PlayerSessionDestroyedPayload
+  'internal:transfer:completed': TransferCompletedPayload
   'core:playerFullyConnected': Player
 }

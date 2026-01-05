@@ -1,12 +1,12 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
-import { CoreEventMap } from '../types/core-events'
+import { InternalEventMap } from '../types/internal-events'
 
 /**
  * Handler function type for framework events.
  * Accepts the event payload and returns void or Promise<void>.
  */
-type FrameworkEventHandler<K extends keyof CoreEventMap> = (
-  payload: CoreEventMap[K],
+type FrameworkEventHandler<K extends keyof InternalEventMap> = (
+  payload: InternalEventMap[K],
 ) => void | Promise<void>
 
 /**
@@ -19,7 +19,7 @@ type FrameworkEventHandler<K extends keyof CoreEventMap> = (
  * The method signature is type-checked against the event payload. TypeScript will error if
  * the handler parameter type doesn't match the expected payload for the specified event.
  *
- * @param event - Core event name, strongly typed to {@link CoreEventMap}.
+ * @param event - Core event name, strongly typed to {@link InternalEventMap}.
  *
  * @example
  * ```ts
@@ -32,12 +32,12 @@ type FrameworkEventHandler<K extends keyof CoreEventMap> = (
  * }
  * ```
  */
-export function OnFrameworkEvent<K extends keyof CoreEventMap>(event: K) {
+export function OnFrameworkEvent<K extends keyof InternalEventMap>(event: K) {
   return (
     target: object,
     propertyKey: string | symbol,
     _descriptor: TypedPropertyDescriptor<FrameworkEventHandler<K>>,
   ): void => {
-    Reflect.defineMetadata(METADATA_KEYS.CORE_EVENT, { event }, target, propertyKey)
+    Reflect.defineMetadata(METADATA_KEYS.INTERNAL_EVENT, { event }, target, propertyKey)
   }
 }
