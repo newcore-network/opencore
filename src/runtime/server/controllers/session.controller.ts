@@ -32,7 +32,7 @@ export class SessionController {
     setImmediate(() => {
       const currentPlayer = this.playerDirectory.getByClient(clientId)
       if (!currentPlayer) return
-      emitFrameworkEvent('core:playerFullyConnected', { clientId, license })
+      emitFrameworkEvent('core:playerFullyConnected', currentPlayer)
     })
   }
 

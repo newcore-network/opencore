@@ -88,8 +88,19 @@ export class Player {
    *
    * @returns An array of identifier strings (e.g., `['steam:11000...', 'license:2332...']`).
    */
-  getIdentifiers() {
+  getIdentifiers(): string[] {
     return this.adapters.playerServer.getIdentifiers(this.clientIDStr)
+  }
+
+  /**
+   * FiveM license
+   */
+  getLicense() {
+    return this.adapters.playerServer.getIdentifier(this.clientIDStr, 'license')
+  }
+
+  getIdentifier(identifier: string) {
+    return this.adapters.playerServer.getIdentifier(this.clientIDStr, identifier)
   }
 
   /**
