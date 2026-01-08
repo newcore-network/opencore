@@ -61,4 +61,8 @@ export class FiveMPlayerServer extends IPlayerServer {
   setRoutingBucket(playerSrc: string, bucket: number): void {
     SetPlayerRoutingBucket(playerSrc, bucket)
   }
+
+  getConnectedPlayers(): string[] {
+    return getPlayers()
+  }
 }

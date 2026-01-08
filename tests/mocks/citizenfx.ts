@@ -54,6 +54,9 @@ export const GetPlayerIdentifier = vi.fn((playerId: number, index: number) => {
   return identifiers[index] || null
 })
 
+// Returns array of connected player sources as strings
+export const getPlayers = vi.fn(() => [] as string[])
+
 // Client-side mocks
 export const TriggerServerEvent = vi.fn((eventName: string, ...args: any[]) => {
   emittedNetEvents.push({ eventName, target: 'server', args })
@@ -217,6 +220,7 @@ export function installGlobalMocks() {
   globalObj.GetPlayerName = GetPlayerName
   globalObj.GetNumPlayerIdentifiers = GetNumPlayerIdentifiers
   globalObj.GetPlayerIdentifier = GetPlayerIdentifier
+  globalObj.getPlayers = getPlayers
 
   // Client natives - core
   globalObj.TriggerServerEvent = TriggerServerEvent

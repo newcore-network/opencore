@@ -7,6 +7,7 @@ export { ConfigService } from './config.service'
 export { type HttpOptions, HttpService } from './http/http.service'
 export * from './parallel'
 export { PlayerPersistenceService } from './persistence.service'
+export { SessionRecoveryService } from './core/session-recovery.service'
 export * from './ports/command-execution.port'
 // Contract Services (Ports)
 export * from './ports/player-directory.port'

@@ -84,6 +84,10 @@ export class NodePlayerServer extends IPlayerServer {
     // Mock: no-op in Node.js
   }
 
+  getConnectedPlayers(): string[] {
+    return Array.from(this.players.keys())
+  }
+
   _clear(): void {
     this.players.clear()
     this.droppedPlayers = []

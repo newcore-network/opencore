@@ -14,6 +14,7 @@ import {
   setRuntimeContext,
   validateRuntimeOptions,
 } from './runtime'
+import { SessionRecoveryService } from './services/core/session-recovery.service'
 import { registerServicesServer } from './services/services.register'
 import { registerSystemServer } from './system/processors.register'
 
@@ -235,7 +236,35 @@ export async function initServer(options: ServerRuntimeOptions) {
     await initDevMode(ctx.devMode)
   }
 
+  // Run session recovery if enabled (recovers sessions for players already connected)
+  if (ctx.features.sessionLifecycle.enabled && ctx.features.sessionLifecycle.recoveryOnRestart) {
+    runSessionRecovery()
+  }
+
   loggers.bootstrap.info('OpenCore Server initialized successfully')
+}
+
+/**
+ * Runs session recovery to restore sessions for players already connected.
+ *
+ * @remarks
+ * This is useful during development when hot-reloading resources.
+ * Players remain connected to FiveM but lose their sessions when the resource restarts.
+ * This function detects these orphaned players and recreates their sessions.
+ */
+function runSessionRecovery(): void {
+  try {
+    const recoveryService = di.resolve(SessionRecoveryService)
+    const stats = recoveryService.recoverSessions()
+
+    if (stats.recovered > 0) {
+      loggers.bootstrap.info(`[SessionRecovery] Recovered ${stats.recovered} player session(s)`)
+    }
+  } catch (error) {
+    loggers.bootstrap.warn('[SessionRecovery] Failed to run session recovery', {
+      error: (error as Error).message,
+    })
+  }
 }
 
 /**

@@ -271,8 +271,24 @@ export interface UserFeatureConfig {
    *
    * @defaultValue
    * - enabled: true (CORE/STANDALONE), false (RESOURCE)
+   * - recoveryOnRestart: true
    */
-  sessionLifecycle?: BaseFeatureConfig
+  sessionLifecycle?: BaseFeatureConfig & {
+    /**
+     * Automatically recover sessions for players already connected when the resource restarts.
+     *
+     * @remarks
+     * When enabled, the framework will scan for connected players on startup and
+     * create sessions for any players that don't have an active session.
+     * This is useful during development when hot-reloading resources.
+     *
+     * **Note**: Only basic session data (clientID, identifiers) is recovered.
+     * Players will need to re-authenticate to restore accountID and other auth-related data.
+     *
+     * @defaultValue true
+     */
+    recoveryOnRestart?: boolean
+  }
 }
 
 // ========================================
@@ -321,6 +337,16 @@ export interface FeatureContract {
    * When `true`, the feature cannot be disabled (`enabled` must be `true`).
    */
   required: boolean
+  /**
+   * (sessionLifecycle only) Enable automatic session recovery on resource restart.
+   *
+   * @remarks
+   * When true, scans for connected players on startup and creates sessions
+   * for any that don't have an active session.
+   *
+   * @defaultValue true
+   */
+  recoveryOnRestart?: boolean
 }
 
 export type FrameworkFeatures = Record<FeatureName, FeatureContract>
@@ -567,6 +593,7 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
       export: false,
       scope,
       required: false,
+      recoveryOnRestart: true,
     },
   }
 }
