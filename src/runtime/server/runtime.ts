@@ -385,8 +385,8 @@ export interface DevModeConfig {
 }
 
 export interface Hooks {
-  waitFor: Promise<any> | Promise<any>[]
-  onReady: () => Promise<void> | void
+  waitFor?: Promise<any> | Promise<any>[]
+  onReady?: () => Promise<void> | void
 }
 
 export interface ServerRuntimeOptions {
