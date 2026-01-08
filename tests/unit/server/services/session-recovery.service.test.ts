@@ -5,7 +5,7 @@ import { Player } from '../../../../src/runtime/server/entities/player'
 import { SessionRecoveryService } from '../../../../src/runtime/server/services/core/session-recovery.service'
 import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
 import { PlayerSessionLifecyclePort } from '../../../../src/runtime/server/services/ports/player-session-lifecycle.port'
-import { MockPlayerServer, createMockPlayerAdapters } from '../../../helpers/player.helper'
+import { createMockPlayerAdapters, MockPlayerServer } from '../../../helpers/player.helper'
 
 describe('SessionRecoveryService', () => {
   let recoveryService: SessionRecoveryService
@@ -121,14 +121,8 @@ describe('SessionRecoveryService', () => {
 
     it('should handle mixed scenarios with existing and new sessions', () => {
       // Pre-create sessions for players 1 and 3
-      boundPlayers.set(
-        1,
-        new Player({ clientID: 1, meta: {} }, createMockPlayerAdapters()),
-      )
-      boundPlayers.set(
-        3,
-        new Player({ clientID: 3, meta: {} }, createMockPlayerAdapters()),
-      )
+      boundPlayers.set(1, new Player({ clientID: 1, meta: {} }, createMockPlayerAdapters()))
+      boundPlayers.set(3, new Player({ clientID: 3, meta: {} }, createMockPlayerAdapters()))
 
       mockPlayerServer._setConnectedPlayers(['1', '2', '3', '4', '5'])
       mockPlayerServer._setPlayerIdentifiers('2', { license: 'license:p2' })

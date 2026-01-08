@@ -1,3 +1,4 @@
+import { IEngineEvents } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { di, MetadataScanner } from '../../kernel/di/index'
 import { loggers } from '../../kernel/shared/logger'
@@ -17,7 +18,6 @@ import {
 import { SessionRecoveryService } from './services/core/session-recovery.service'
 import { registerServicesServer } from './services/services.register'
 import { registerSystemServer } from './system/processors.register'
-import { IEngineEvents } from '../../adapters'
 
 const CORE_WAIT_TIMEOUT = 10_000
 
