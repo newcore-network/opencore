@@ -5,7 +5,7 @@ export abstract class IEngineEvents {
    * @param eventName - The event name to listen for
    * @param handler - The callback to invoke when the event is emitted
    */
-  abstract on(eventName: string, handler: (...args: any[]) => void): void
+  abstract on(eventName: string, handler?: (...args: any[]) => void): void
 
   /**
    * Emits a local (server-side) event.

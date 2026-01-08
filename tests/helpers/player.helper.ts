@@ -24,26 +24,32 @@ export class MockPlayerInfo extends IPlayerInfo {
  * Mock implementation of IPlayerServer for testing.
  */
 export class MockPlayerServer extends IPlayerServer {
+  private connectedPlayers: string[] = []
+  private playerIdentifiers: Map<string, Record<string, string>> = new Map()
+
   getPed(_playerSrc: string): number {
     return 1
   }
 
   drop(_playerSrc: string, _reason: string): void {}
 
-  getIdentifier(_playerSrc: string, _identifierType: string): string | undefined {
-    return undefined
+  getIdentifier(playerSrc: string, identifierType: string): string | undefined {
+    const identifiers = this.playerIdentifiers.get(playerSrc)
+    return identifiers?.[identifierType]
   }
 
-  getIdentifiers(_playerSrc: string): string[] {
-    return []
+  getIdentifiers(playerSrc: string): string[] {
+    const identifiers = this.playerIdentifiers.get(playerSrc)
+    if (!identifiers) return []
+    return Object.entries(identifiers).map(([type, value]) => `${type}:${value}`)
   }
 
-  getNumIdentifiers(_playerSrc: string): number {
-    return 0
+  getNumIdentifiers(playerSrc: string): number {
+    return this.getIdentifiers(playerSrc).length
   }
 
-  getName(_playerSrc: string): string {
-    return 'TestPlayer'
+  getName(playerSrc: string): string {
+    return `TestPlayer${playerSrc}`
   }
 
   getPing(_playerSrc: string): number {
@@ -55,6 +61,24 @@ export class MockPlayerServer extends IPlayerServer {
   }
 
   setRoutingBucket(_playerSrc: string, _bucket: number): void {}
+
+  getConnectedPlayers(): string[] {
+    return [...this.connectedPlayers]
+  }
+
+  // Test helpers
+  _setConnectedPlayers(players: string[]): void {
+    this.connectedPlayers = players
+  }
+
+  _setPlayerIdentifiers(playerSrc: string, identifiers: Record<string, string>): void {
+    this.playerIdentifiers.set(playerSrc, identifiers)
+  }
+
+  _reset(): void {
+    this.connectedPlayers = []
+    this.playerIdentifiers.clear()
+  }
 }
 
 /**

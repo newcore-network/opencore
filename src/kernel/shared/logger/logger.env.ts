@@ -1,5 +1,7 @@
 import { LogLevel, parseLogLevel } from './logger.types'
 
+type LOG_LEVEL = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL' | 'OFF'
+
 /**
  * Global log level constant.
  * This value is injected at build-time by the OpenCore CLI based on opencore.config.ts
@@ -15,7 +17,7 @@ import { LogLevel, parseLogLevel } from './logger.types'
  * The CLI will replace `__OPENCORE_LOG_LEVEL__` with the configured value during build.
  * Default: 'INFO' for production-like behavior.
  */
-declare const __OPENCORE_LOG_LEVEL__: string | undefined
+declare const __OPENCORE_LOG_LEVEL__: LOG_LEVEL | undefined
 declare const __OPENCORE_TARGET__: 'client' | 'server' | undefined
 
 /**

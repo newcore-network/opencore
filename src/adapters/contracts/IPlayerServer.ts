@@ -78,4 +78,15 @@ export abstract class IPlayerServer {
    * @param bucket - Routing bucket ID
    */
   abstract setRoutingBucket(playerSrc: string, bucket: number): void
+
+  /**
+   * Gets all currently connected player sources.
+   *
+   * @remarks
+   * Returns the source IDs (as strings) of all players currently connected to the server.
+   * Used for session recovery after resource restarts.
+   *
+   * @returns Array of player source strings
+   */
+  abstract getConnectedPlayers(): string[]
 }

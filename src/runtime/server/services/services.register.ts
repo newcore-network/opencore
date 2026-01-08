@@ -5,6 +5,7 @@ import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
 import { PlayerService } from './core/player.service'
 import { LocalPrincipalService } from './core/principal.service'
+import { SessionRecoveryService } from './core/session-recovery.service'
 import { HttpService } from './http/http.service'
 import { PlayerPersistenceService } from './persistence.service'
 import { CommandExecutionPort } from './ports/command-execution.port'
@@ -68,6 +69,7 @@ export function registerServicesServer(ctx: RuntimeContext) {
 
   if (features.sessionLifecycle.enabled && mode !== 'RESOURCE') {
     di.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
+    di.registerSingleton(SessionRecoveryService, SessionRecoveryService)
   }
 
   if (features.principal.enabled) {

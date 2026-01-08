@@ -112,6 +112,15 @@ export function Command(
   descriptor: TypedPropertyDescriptor<T>,
 ) => void
 
+export function Command(
+  config: CommandConfig,
+  schema: z.ZodType,
+): <T extends ServerCommandHandler>(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<T>,
+) => void
+
 // Implementation
 export function Command(configOrName: string | CommandConfig, schema?: z.ZodType) {
   return <T extends ServerCommandHandler>(
