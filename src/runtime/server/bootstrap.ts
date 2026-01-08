@@ -17,6 +17,9 @@ import {
 import { SessionRecoveryService } from './services/core/session-recovery.service'
 import { registerServicesServer } from './services/services.register'
 import { registerSystemServer } from './system/processors.register'
+import { IEngineEvents } from '../../adapters'
+
+const CORE_WAIT_TIMEOUT = 10_000
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
@@ -104,7 +107,31 @@ export async function initServer(options: ServerRuntimeOptions) {
     scope: getFrameworkModeScope(ctx.mode),
   })
 
+  // Adapters
   await registerServerCapabilities()
+
+  const dependenciesToWaitFor: Promise<any>[] = []
+  if (ctx.mode === 'RESOURCE') {
+    loggers.bootstrap.info(`[WAIT] Standing by for Core '${ctx.coreResourceName}' to be ready...`)
+    dependenciesToWaitFor.push(createCoreDependency(ctx.coreResourceName))
+  }
+
+  if (options.onDependency?.waitFor) {
+    const userDeps = Array.isArray(options.onDependency.waitFor)
+      ? options.onDependency.waitFor
+      : [options.onDependency.waitFor]
+    dependenciesToWaitFor.push(...userDeps)
+  }
+
+  if (dependenciesToWaitFor.length > 0 || options.onDependency?.onReady) {
+    await dependencyResolver(dependenciesToWaitFor, options.onDependency?.onReady)
+  }
+
+  if (ctx.mode === 'RESOURCE') {
+    loggers.bootstrap.info(`Core ready detected!`)
+  }
+  loggers.bootstrap.debug('Dependencies resolved. Proceeding with system boot.')
+
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
   registerSystemServer(ctx)
@@ -242,6 +269,68 @@ export async function initServer(options: ServerRuntimeOptions) {
   }
 
   loggers.bootstrap.info('OpenCore Server initialized successfully')
+
+  if (ctx.mode === 'CORE' && di.isRegistered(IEngineEvents as any)) {
+    const engineInterface = di.resolve(IEngineEvents as any) as IEngineEvents
+    engineInterface.emit('core:ready')
+  }
+}
+
+function createCoreDependency(coreName: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let resolved = false
+    const engineEvents = di.resolve(IEngineEvents as any) as IEngineEvents
+
+    const cleanup = () => {
+      resolved = true
+      clearTimeout(timeout)
+    }
+
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        reject(
+          new Error(
+            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit 'core:ready' within ${CORE_WAIT_TIMEOUT}ms.`,
+          ),
+        )
+      }
+    }, CORE_WAIT_TIMEOUT)
+
+    const onReady = () => {
+      if (!resolved) {
+        cleanup()
+        resolve()
+      }
+    }
+
+    engineEvents.on('core:ready', onReady)
+  })
+}
+
+async function dependencyResolver(
+  waitFor?: Promise<any> | Promise<any>[],
+  onReady?: () => Promise<void> | void,
+): Promise<void> {
+  if (waitFor) {
+    const dependencyPromises = Array.isArray(waitFor) ? waitFor : [waitFor]
+    try {
+      await Promise.all(dependencyPromises)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      loggers.bootstrap.fatal(`Failed to resolve startup dependencies`, { error: msg })
+      throw new Error(`[OpenCore] Startup aborted: ${msg}`)
+    }
+  }
+
+  if (onReady) {
+    try {
+      await onReady()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      loggers.bootstrap.fatal('Failed to execute onReady hook', { error: msg })
+      throw new Error(`[OpenCore] onReady hook failed: ${msg}`)
+    }
+  }
 }
 
 /**

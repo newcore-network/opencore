@@ -384,6 +384,11 @@ export interface DevModeConfig {
   }
 }
 
+export interface Hooks {
+  waitFor: Promise<any> | Promise<any>[]
+  onReady: () => Promise<void> | void
+}
+
 export interface ServerRuntimeOptions {
   mode: FrameworkMode
   features: FrameworkFeatures
@@ -391,6 +396,7 @@ export interface ServerRuntimeOptions {
   resourceGrants?: ResourceGrants
   /** Development mode configuration (disabled in production) */
   devMode?: DevModeConfig
+  onDependency?: Hooks
 }
 
 export type RuntimeContext = ServerRuntimeOptions
@@ -517,6 +523,9 @@ export interface ServerInitOptions {
 
   /** Development mode configuration (disabled in production) */
   devMode?: DevModeConfig
+
+  /** If you want to wait for a dependency promise, or when ready do something (By default, the core server will emit a "ready" when it is ready to all resources.)  */
+  onDependency?: Hooks
 }
 
 function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
