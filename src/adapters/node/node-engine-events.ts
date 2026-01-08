@@ -13,8 +13,9 @@ import { IEngineEvents } from '../contracts/IEngineEvents'
 export class NodeEngineEvents implements IEngineEvents {
   private eventEmitter = new EventEmitter()
 
-  on(eventName: string, handler: (...args: any[]) => void): void {
-    this.eventEmitter.on(eventName, handler)
+  on(eventName: string, handler?: (...args: any[]) => void): void {
+    if (handler) this.eventEmitter.on(eventName, handler)
+    else this.eventEmitter.on(eventName, () => {}) // empty handler
   }
 
   /**
