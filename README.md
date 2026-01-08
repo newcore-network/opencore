@@ -1,4 +1,4 @@
-# OpenCore Framework (v0.2.4) Open Stable beta
+# OpenCore Framework - Open Stable beta
 
 OpenCore is a TypeScript multiplayer runtime framework targeting FiveM via an adapter.
 
