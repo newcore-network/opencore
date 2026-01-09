@@ -1,12 +1,15 @@
 /**
  * Worker Script
  *
- * This file is reserved for future native worker thread support.
- * Currently, the WorkerPool uses virtual workers that execute
- * tasks asynchronously on the main thread with yielding.
+ * Utilities used by the native worker thread entrypoint.
  *
- * When FiveM or the target environment supports native worker threads,
- * this script can be used as the worker entry point.
+ * The worker pool executes user-provided compute functions by serializing the
+ * function body (`Function#toString()`) and evaluating it with `new Function`.
+ *
+ * Requirements/limitations:
+ * - The compute function must be pure (no closures / no external references).
+ * - Inputs/outputs must be structured-cloneable.
+ * - Do not pass untrusted code as compute functions.
  */
 
 import { WorkerMessage, WorkerResponse } from './types'

@@ -45,8 +45,11 @@ export interface ParallelTaskOptions<TInput, TOutput> {
 
   /**
    * The compute function to execute.
-   * MUST be pure (no closures, no external dependencies).
-   * Will be serialized and sent to worker.
+   *
+   * Requirements/limitations:
+   * - MUST be pure (no closures / no external references).
+   * - Inputs/outputs MUST be structured-cloneable.
+   * - The function body is serialized with `Function#toString()` and evaluated in a worker.
    */
   compute: (input: TInput) => TOutput
 
