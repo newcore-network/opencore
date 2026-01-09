@@ -19,10 +19,7 @@ It is not a gamemode or RP framework. It provides:
 
 License: MPL-2.0
 
-🌐 Documentation & Website: https://opencorejs.dev
-
-**OpenCore CLI** – Project scaffolding, module generation and build tooling  
-  https://github.com/newcore-network/opencore-cli
+[Discord Community](https://discord.gg/99g3FgvkPs) | [Website](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
 
 ## Scope
 
