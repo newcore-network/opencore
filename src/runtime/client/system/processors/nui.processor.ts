@@ -15,8 +15,8 @@ export class NuiProcessor implements DecoratorProcessor {
 
     on(`__cfx_nui:${metadata.eventName}`, async (data: any, cb: (response: unknown) => void) => {
       try {
-        await handler(data)
-        cb({ ok: true })
+        const result = await handler(data)
+        cb({ ok: true, data: result })
       } catch (error) {
         loggers.nui.error(
           `NUI callback error`,
@@ -26,7 +26,8 @@ export class NuiProcessor implements DecoratorProcessor {
           },
           error as Error,
         )
-        cb({ ok: false, error: String(error) })
+        const message = error instanceof Error ? error.message : String(error)
+        cb({ ok: false, error: message })
       }
     })
 

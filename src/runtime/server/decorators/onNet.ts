@@ -52,15 +52,15 @@ type ServerNetHandler<TArgs extends any[] = any[]> = (player: Player, ...args: T
  * export class ExampleController {
  *   // Simple handler (no schema)
  *   @Server.OnNet('example:ping')
- *   ping(player: Player, message: string) { }
+ *   ping(player: Server.Player, message: string) { }
  *
  *   // With schema directly (recommended)
  *   @Server.OnNet('example:data', PayloadSchema)
- *   handleData(player: Player, data: Infer<typeof PayloadSchema>) { }
+ *   handleData(player: Server.Player, data: Infer<typeof PayloadSchema>) { }
  *
  *   // With options object (legacy)
  *   @Server.OnNet('example:legacy', { schema: PayloadSchema })
- *   handleLegacy(player: Player, data: Infer<typeof PayloadSchema>) { }
+ *   handleLegacy(player: Server.Player, data: Infer<typeof PayloadSchema>) { }
  * }
  * ```
  */
