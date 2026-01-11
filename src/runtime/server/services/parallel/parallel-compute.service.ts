@@ -2,15 +2,20 @@
  * ParallelCompute Service
  *
  * Provides an ergonomic API for parallel computation.
- * Uses virtual workers in FiveM environment, with async execution
- * that yields to the event loop for better performance.
+ * Uses native `node:worker_threads` to run CPU-bound work off the main thread.
  *
- * Automatically decides whether to run synchronously or asynchronously
+ * Automatically decides whether to run synchronously or in a worker
  * based on estimated computational cost.
+ *
+ * Requirements/limitations:
+ * - The compute function is serialized with `Function#toString()`.
+ * - The compute function must be pure (no closures / no external references).
+ * - Inputs/outputs must be structured-cloneable.
  */
 
 import { injectable } from 'tsyringe'
 import { v4 as uuid } from 'uuid'
+import { Vector3 } from '../../../../kernel'
 import {
   ParallelComputeMetrics,
   ParallelTask,
@@ -351,19 +356,12 @@ export function defineTask<TInput, TOutput>(
 // ─────────────────────────────────────────────────────────────────────────────
 // Built-in Tasks
 // ─────────────────────────────────────────────────────────────────────────────
-
-export interface Vector3Like {
-  x: number
-  y: number
-  z: number
-}
-
 /**
  * Built-in task: Filter entities by distance from a position
  */
 export const filterByDistance = defineTask<
-  { entities: Vector3Like[]; position: Vector3Like; radius: number },
-  Vector3Like[]
+  { entities: Vector3[]; position: Vector3; radius: number },
+  Vector3[]
 >({
   name: 'filterByDistance',
   estimateCost: (input) => input.entities.length,
@@ -394,16 +392,13 @@ export const filterByDistance = defineTask<
 
     return chunks
   },
-  merger: (results) => ([] as Vector3Like[]).concat(...results),
+  merger: (results) => ([] as Vector3[]).concat(...results),
 })
 
 /**
  * Built-in task: Sort entities by distance from a position
  */
-export const sortByDistance = defineTask<
-  { entities: Vector3Like[]; position: Vector3Like },
-  Vector3Like[]
->({
+export const sortByDistance = defineTask<{ entities: Vector3[]; position: Vector3 }, Vector3[]>({
   name: 'sortByDistance',
   estimateCost: (input) => input.entities.length * Math.log(input.entities.length),
   workerThreshold: 500,
@@ -429,10 +424,7 @@ export const sortByDistance = defineTask<
 /**
  * Built-in task: Find closest entity to a position
  */
-export const findClosest = defineTask<
-  { entities: Vector3Like[]; position: Vector3Like },
-  Vector3Like | null
->({
+export const findClosest = defineTask<{ entities: Vector3[]; position: Vector3 }, Vector3 | null>({
   name: 'findClosest',
   estimateCost: (input) => input.entities.length,
   workerThreshold: 5000,

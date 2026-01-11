@@ -37,20 +37,22 @@ export interface GuardOptions {
  *
  * @throws Error - If the method is invoked without a valid `Player` as the first argument.
  *
- * @example
  * ```ts
  * @Server.Controller()
- * export class FactionController {
+ * export class AdminController {
+ * 
  *   @Server.Guard({ permission: 'factions.manage' })
- *   async createFaction(player: Server.Player, dto: CreateFactionDTO) {
+ *   @Server.Command('newfaction', schema)
+ *   async createFaction(player: Server.Player, dto: Infer<typeof schema>) {
  *     return this.service.create(dto)
  *   }
- *
+ * 
  *   @Server.Guard({ rank: 3 })
- *   async promoteMember(player: Server.Player, memberID: string) {
- *     return this.service.promote(player, memberID)
+ *   @Server.Command('ban')
+ *   async ban(player: Server.Player, targetID: string) {
+ *     return this.service.ban(player, memberID)
  *   }
- * }
+}
  * ```
  */
 export function Guard(options: GuardOptions) {

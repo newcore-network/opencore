@@ -1,3 +1,11 @@
+[![CI](https://github.com/newcore-network/opencore/actions/workflows/ci.yml/badge.svg)](https://github.com/newcore-network/opencore/actions/workflows/ci.yml)
+![npm](https://img.shields.io/npm/v/@open-core/framework?style=flat-square)
+![license](https://img.shields.io/github/license/newcore-network/opencore?style=flat-square)
+![typescript](https://img.shields.io/badge/TypeScript-first-blue?style=flat-square)
+[![cli](https://img.shields.io/badge/CLI-opencore--cli-purple?style=flat-square)](https://opencorejs.dev/docs/cli/introduction)
+[![website](https://img.shields.io/badge/web-opencorejs.dev-black?style=flat-square)](https://opencorejs.dev)
+
+
 # OpenCore Framework - Open Stable beta
 
 OpenCore is a TypeScript multiplayer runtime framework targeting FiveM via an adapter.
@@ -10,6 +18,8 @@ It is not a gamemode or RP framework. It provides:
 - Security primitives (validation, access control, rate limiting)
 
 License: MPL-2.0
+
+[Discord Community](https://discord.gg/99g3FgvkPs) | [Website](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
 
 ## Scope
 
