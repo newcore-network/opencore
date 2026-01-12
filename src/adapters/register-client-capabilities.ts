@@ -1,6 +1,6 @@
 import { di } from '../runtime/client/client-container'
 import { IHasher } from './contracts/IHasher'
-import { IPedAppearanceClient } from './contracts/IPedAppearanceClient'
+import { IPedAppearanceClient } from './contracts/client/IPedAppearanceClient'
 
 /**
  * Registers client-side platform-specific capability implementations.

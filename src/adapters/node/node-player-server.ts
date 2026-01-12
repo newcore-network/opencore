@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { IPlayerServer } from '../contracts/IPlayerServer'
+import { IPlayerServer } from '../contracts/server/IPlayerServer'
 
 /**
  * Node.js mock implementation of server-side player operations.

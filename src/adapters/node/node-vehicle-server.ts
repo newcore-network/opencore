@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { IVehicleServer } from '../contracts/IVehicleServer'
+import { IVehicleServer } from '../contracts/server/IVehicleServer'
 
 /**
  * Node.js mock implementation of server-side vehicle operations.

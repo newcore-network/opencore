@@ -1,6 +1,6 @@
 import { Vector3 } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { type EntityStateBag, IEntityServer } from '../contracts/IEntityServer'
+import { type EntityStateBag, IEntityServer } from '../contracts/server/IEntityServer'
 
 /**
  * Node.js mock implementation of server-side entity operations.

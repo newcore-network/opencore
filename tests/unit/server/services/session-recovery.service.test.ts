@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { IPlayerServer } from '../../../../src/adapters/contracts/IPlayerServer'
+import { IPlayerServer } from '../../../../src/adapters/contracts/server/IPlayerServer'
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { SessionRecoveryService } from '../../../../src/runtime/server/services/core/session-recovery.service'
 import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'

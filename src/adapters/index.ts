@@ -1,18 +1,18 @@
 // Adapters - External world connections
 
 export * from './contracts/IEngineEvents'
-export * from './contracts/IEntityServer'
+export * from './contracts/server/IEntityServer'
 export * from './contracts/IExports'
 export * from './contracts/IHasher'
 // Contracts (interfaces)
 export * from './contracts/INetTransport'
-export * from './contracts/IPedAppearanceClient'
-export * from './contracts/IPedAppearanceServer'
+export * from './contracts/client/IPedAppearanceClient'
+export * from './contracts/server/IPedAppearanceServer'
 export * from './contracts/IPlayerInfo'
-export * from './contracts/IPlayerServer'
+export * from './contracts/server/IPlayerServer'
 export * from './contracts/IResourceInfo'
 export * from './contracts/ITick'
-export * from './contracts/IVehicleServer'
+export * from './contracts/server/IVehicleServer'
 // Database adapters
 export { OxMySQLAdapter } from './database/oxmysql.adapter'
 export { ResourceDatabaseAdapter } from './database/resource.adapter'

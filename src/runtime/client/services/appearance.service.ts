@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
-import { IPedAppearanceClient } from '../../../adapters/contracts/IPedAppearanceClient'
+import { IPedAppearanceClient } from '../../../adapters/contracts/client/IPedAppearanceClient'
 import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
 
 /**

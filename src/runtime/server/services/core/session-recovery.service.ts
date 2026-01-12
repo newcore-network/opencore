@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { IPlayerServer } from '../../../../adapters/contracts/IPlayerServer'
+import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/shared/logger'
 import { emitFrameworkEvent } from '../../bus/internal-event.bus'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'

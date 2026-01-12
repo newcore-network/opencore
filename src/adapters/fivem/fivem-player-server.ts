@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { IPlayerServer } from '../contracts/IPlayerServer'
+import { IPlayerServer } from '../contracts/server/IPlayerServer'
 
 /**
  * FiveM implementation of server-side player operations.

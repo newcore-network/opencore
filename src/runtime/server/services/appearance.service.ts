@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
-import { IPedAppearanceServer } from '../../../adapters/contracts/IPedAppearanceServer'
-import { IPlayerServer } from '../../../adapters/contracts/IPlayerServer'
+import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
+import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
 
 /**

@@ -1,9 +1,12 @@
 import type { Vector3 } from '@open-core/framework'
-import { type EntityStateBag, IEntityServer } from '../../src/adapters/contracts/IEntityServer'
+import {
+  type EntityStateBag,
+  IEntityServer,
+} from '../../src/adapters/contracts/server/IEntityServer'
 import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
 import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
-import { IPlayerServer } from '../../src/adapters/contracts/IPlayerServer'
+import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer'
 import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
 import type { PlayerSession } from '../../src/runtime/server/services/types/player-session.object'
 
