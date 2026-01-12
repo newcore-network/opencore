@@ -1,5 +1,5 @@
-import { Server } from '../../..'
-import { AppError } from '../../../kernel/utils'
+import { Server } from '..'
+import { AppError } from '@open-core/framework'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**

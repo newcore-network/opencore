@@ -1,4 +1,4 @@
-import { Server } from '../../..'
+import { Server } from '..'
 import { LinkedID } from '../services/types/linked-id'
 
 export interface AuthCredentials {

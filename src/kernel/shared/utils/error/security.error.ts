@@ -1,5 +1,5 @@
-import { SecurityAction } from '../../../runtime/server/types/security.types'
 import { AppError } from './app.error'
+import { SecurityAction } from './security.types'
 
 export class SecurityError extends AppError {
   readonly action: SecurityAction

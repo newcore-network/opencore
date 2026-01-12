@@ -1,5 +1,5 @@
 import { loggers } from '../../../kernel/shared/logger'
-import { AppError } from '../../../kernel/utils'
+import { AppError } from '@open-core/framework'
 
 export function resolveMethod(
   instance: Record<string, any>,

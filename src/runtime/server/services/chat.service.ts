@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import { Server } from '../../..'
-import { RGB } from '../../../kernel/utils'
+import { Server } from '..'
+import { RGB } from '@open-core/framework'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
 
 /**

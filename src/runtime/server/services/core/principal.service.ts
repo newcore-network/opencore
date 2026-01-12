@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { AppError } from '../../../../kernel/utils'
+import { AppError } from '@open-core/framework'
 import { PrincipalProviderContract } from '../../contracts'
 import { Principal } from '../../contracts/security/permission.types'
 import { GuardOptions } from '../../decorators/guard'

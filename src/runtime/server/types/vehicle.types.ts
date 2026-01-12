@@ -1,4 +1,4 @@
-import { Vector3 } from '../../../kernel/utils'
+import { Vector3 } from '../../../'
 
 /**
  * Vehicle ownership information

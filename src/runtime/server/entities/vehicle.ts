@@ -1,6 +1,6 @@
 import { IEntityServer } from '../../../adapters/contracts/IEntityServer'
 import { IVehicleServer } from '../../../adapters/contracts/IVehicleServer'
-import { Vector3 } from '../../../kernel/utils'
+import { Vector3 } from '@open-core/framework'
 import {
   SerializedVehicleData,
   VehicleMetadata,

@@ -1,5 +1,5 @@
-import { ErrorOrigin } from './types/common.error-codes'
-import { FrameworkErrorCode } from './types/framework.error-codes'
+import { ErrorOrigin } from './common.error-codes'
+import { FrameworkErrorCode } from './framework.error-codes'
 
 export class AppError extends Error {
   readonly code: FrameworkErrorCode

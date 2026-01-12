@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters/contracts/IExports'
 import { loggers } from '../../../../kernel/shared/logger'
-import { AppError } from '../../../../kernel/utils'
+import { AppError } from '@open-core/framework'
 import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'

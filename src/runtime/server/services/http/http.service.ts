@@ -1,6 +1,5 @@
+import { AppError, FrameworkErrorCode } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { AppError } from '../../../../kernel/utils'
-import { FrameworkErrorCode } from '../../../../kernel/utils/error/types/framework.error-codes'
 
 export interface HttpOptions {
   headers?: Record<string, string>

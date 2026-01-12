@@ -20,9 +20,9 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "types": "./dist/kernel/index.d.ts",
+      "import": "./dist/kernel/index.js",
+      "require": "./dist/kernel/index.js"
     },
     "./server": {
       "types": "./dist/runtime/server/index.d.ts",
@@ -33,16 +33,6 @@
       "types": "./dist/runtime/client/index.d.ts",
       "import": "./dist/runtime/client/index.js",
       "require": "./dist/runtime/client/index.js"
-    },
-    "./shared": {
-      "types": "./dist/kernel/shared/index.d.ts",
-      "import": "./dist/kernel/shared/index.js",
-      "require": "./dist/kernel/shared/index.js"
-    },
-    "./utils": {
-      "types": "./dist/kernel/utils/index.d.ts",
-      "import": "./dist/kernel/utils/index.js",
-      "require": "./dist/kernel/utils/index.js"
     },
     "./package.json": "./package.json"
   },

@@ -3,8 +3,6 @@ import z from 'zod'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
 import { coreLogger, loggers } from '../../../../kernel/shared/logger'
-import { AppError } from '../../../../kernel/utils'
-import { SecurityError } from '../../../../kernel/utils/error/security.error'
 import {
   type NetEventInvalidPayloadContext,
   type NetEventInvalidPayloadReason,
@@ -17,6 +15,7 @@ import { resolveMethod } from '../../helpers/resolve-method'
 import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
+import { AppError, SecurityError } from '../../../../'
 
 @injectable()
 export class NetEventProcessor implements DecoratorProcessor {
