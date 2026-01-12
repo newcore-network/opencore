@@ -1,5 +1,5 @@
-import { injectable } from 'tsyringe'
 import { Vector3 } from '@open-core/framework'
+import { injectable } from 'tsyringe'
 import { type EntityStateBag, IEntityServer } from '../contracts/IEntityServer'
 
 /**

@@ -1,7 +1,7 @@
-import { Server } from '..'
 import { AppError } from '../../../kernel'
 import { di } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/shared/logger'
+import { Server } from '..'
 import { PrincipalPort } from '../services/ports/principal.port'
 
 export interface GuardOptions {

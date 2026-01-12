@@ -1,5 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import z from 'zod'
+import { AppError, SecurityError } from '../../../../'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
 import { coreLogger, loggers } from '../../../../kernel/shared/logger'
@@ -15,7 +16,6 @@ import { resolveMethod } from '../../helpers/resolve-method'
 import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
-import { AppError, SecurityError } from '../../../../'
 
 @injectable()
 export class NetEventProcessor implements DecoratorProcessor {

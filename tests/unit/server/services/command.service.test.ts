@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import { describe, expect, it, vi } from 'vitest'
-import { AppError } from '../../../../src/kernel/utils'
-import { Player } from '../../../../src/runtime/server'
+import { AppError } from '../../../../src/kernel'
 import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
+import { Player } from '../../../../src/runtime/server/entities'
 import { CommandService } from '../../../../src/runtime/server/services/core/command.service'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
 

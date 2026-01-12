@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
+import { AppError, SecurityError } from '../../../kernel/shared/error'
 import { loggers } from '../../../kernel/shared/logger'
-import { AppError, SecurityError } from '@open-core/framework'
 import { Controller, Export, Public } from '../decorators'
 import { OnNet } from '../decorators/onNet'
 import { Player } from '../entities'

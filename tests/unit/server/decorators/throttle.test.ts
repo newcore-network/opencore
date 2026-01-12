@@ -1,7 +1,7 @@
 import 'reflect-metadata'
+import { SecurityError } from '@open-core/framework'
 import { container } from 'tsyringe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SecurityError } from '../../../../src/kernel/utils/error/security.error'
 import { Throttle } from '../../../../src/runtime/server/decorators/throttle'
 import { RateLimiterService } from '../../../../src/runtime/server/services/rate-limiter.service'
 

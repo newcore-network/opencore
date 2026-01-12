@@ -1,5 +1,5 @@
-import { coreLogger, LogDomain } from '../../../kernel/shared/logger'
 import { Vec3 } from '@open-core/framework'
+import { coreLogger, LogDomain } from '../../../kernel/shared/logger'
 import { ClientPlayer } from './player'
 
 const clientSession = coreLogger.child('Session', LogDomain.CLIENT)

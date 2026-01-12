@@ -1,7 +1,6 @@
-import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
-import { AppError } from '../../../../src/kernel/utils'
+import { AppError } from '../../../../src/kernel/shared/error'
 import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
 import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
 import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'

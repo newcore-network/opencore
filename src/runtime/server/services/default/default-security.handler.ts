@@ -1,5 +1,5 @@
+import { loggers, SecurityError } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { SecurityError, loggers } from '@open-core/framework'
 import { SecurityHandlerContract } from '../../contracts/security/security-handler.contract'
 import { Player } from '../../entities'
 

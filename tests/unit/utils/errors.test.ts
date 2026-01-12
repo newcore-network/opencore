@@ -1,6 +1,5 @@
+import { AppError, isAppError, SecurityError } from '@open-core/framework'
 import { describe, expect, it } from 'vitest'
-import { AppError, isAppError } from '../../../src/kernel/utils'
-import { SecurityError } from '../../../src/kernel/utils/error/security.error'
 
 describe('AppError', () => {
   describe('constructor', () => {
