@@ -29,6 +29,7 @@
 - Deep internal imports (e.g. `@open-core/framework/kernel/...`) are **no longer supported** and will fail at build time.
 - The generic `runtime/index.ts` entrypoint has been **removed** to prevent client/server graph leakage.
 - Internal utility and error module paths have changed and require updated imports.
+- Utils and Shared apis are deleted
 
 ---
 
