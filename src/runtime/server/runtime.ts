@@ -33,11 +33,9 @@ export type FeatureName =
   | 'fiveMEvents'
   | 'commands'
   | 'exports'
-  | 'http'
   | 'chat'
   | 'database'
   | 'principal'
-  | 'auth'
   | 'sessionLifecycle'
 
 // ========================================
@@ -168,22 +166,6 @@ export interface UserFeatureConfig {
   principal?: ProviderFeatureConfig & ExportableFeatureConfig
 
   /**
-   * Authentication provider for login/logout.
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Configurable
-   * - CORE: User-provided AuthProvider implementation
-   * - RESOURCE: Delegates to CORE
-   * - STANDALONE: User-provided AuthProvider implementation
-   *
-   * @defaultValue
-   * - enabled: false
-   * - provider: 'core' (RESOURCE), 'core' (CORE), 'local' (STANDALONE)
-   */
-  auth?: ProviderFeatureConfig
-
-  /**
    * Network events (`onNet` decorator support).
    *
    * @remarks
@@ -220,18 +202,6 @@ export interface UserFeatureConfig {
    * @defaultValue enabled: false
    */
   exports?: BaseFeatureConfig
-
-  /**
-   * HTTP server and endpoints.
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Auto-determined (not configurable)
-   * - Always `'local'`
-   *
-   * @defaultValue enabled: false
-   */
-  http?: BaseFeatureConfig
 
   /**
    * Chat message handling.
@@ -407,11 +377,9 @@ const FEATURE_NAMES: FeatureName[] = [
   'fiveMEvents',
   'commands',
   'exports',
-  'http',
   'chat',
   'database',
   'principal',
-  'auth',
   'sessionLifecycle',
 ]
 
@@ -421,11 +389,9 @@ const FEATURE_ALLOWED_SCOPES: Record<FeatureName, FeatureScope[]> = {
   fiveMEvents: ['core', 'resource', 'standalone'],
   commands: ['core', 'resource', 'standalone'],
   exports: ['core', 'resource', 'standalone'],
-  http: ['core', 'resource', 'standalone'],
   chat: ['core', 'resource', 'standalone'],
   database: ['core', 'resource', 'standalone'],
   principal: ['core', 'resource', 'standalone'],
-  auth: ['core', 'resource', 'standalone'],
   sessionLifecycle: ['core', 'standalone'],
 }
 
@@ -537,13 +503,11 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
   const playersProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
   const commandsProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
   const principalProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
-  const authProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
 
   // These always use 'local' regardless of mode
   const netEventsProvider: FeatureProvider = 'local'
   const fiveMEventsProvider: FeatureProvider = 'local'
   const exportsProvider: FeatureProvider = 'local'
-  const httpProvider: FeatureProvider = 'local'
   const chatProvider: FeatureProvider = 'local'
   const databaseProvider: FeatureProvider = 'local'
   const sessionLifecycleProvider: FeatureProvider = 'local'
@@ -585,7 +549,6 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
       required: false,
     },
     exports: { enabled: false, provider: exportsProvider, export: false, scope, required: false },
-    http: { enabled: false, provider: httpProvider, export: false, scope, required: false },
     chat: { enabled: false, provider: chatProvider, export: false, scope, required: false },
     database: { enabled: false, provider: databaseProvider, export: false, scope, required: false },
     principal: {
@@ -595,7 +558,6 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
       scope,
       required: false,
     },
-    auth: { enabled: false, provider: authProvider, export: false, scope, required: false },
     sessionLifecycle: {
       enabled: sessionLifecycleEnabled,
       provider: sessionLifecycleProvider,
@@ -652,8 +614,7 @@ export function validateRuntimeOptions(options: ServerRuntimeOptions): void {
     mode === 'RESOURCE' &&
     (features.players.provider === 'core' ||
       features.commands.provider === 'core' ||
-      features.principal.provider === 'core' ||
-      features.auth.provider === 'core')
+      features.principal.provider === 'core')
 
   // Validate coreResourceName exists if needed
   if (mode === 'RESOURCE') {
@@ -719,10 +680,6 @@ export function validateRuntimeOptions(options: ServerRuntimeOptions): void {
 
   if (features.principal.enabled && mode === 'RESOURCE' && features.principal.provider !== 'core') {
     throw new Error(`[OpenCore] Feature 'principal' must use provider 'core' in RESOURCE mode`)
-  }
-
-  if (features.auth.enabled && mode === 'RESOURCE' && features.auth.provider !== 'core') {
-    throw new Error(`[OpenCore] Feature 'auth' must use provider 'core' in RESOURCE mode`)
   }
 
   if (features.commands.enabled && mode === 'RESOURCE' && features.commands.provider !== 'core') {

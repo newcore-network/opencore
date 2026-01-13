@@ -1,18 +1,12 @@
 import { ClassConstructor, di } from '../../kernel/di/index'
 import { loggers } from '../../kernel/shared/logger'
 import { PlayerPersistenceContract, PrincipalProviderContract } from './contracts'
-import { AuthProviderContract } from './contracts/auth-provider.contract'
 import { NetEventSecurityObserverContract } from './contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from './contracts/security/security-handler.contract'
 
 export function setPrincipalProvider(provider: ClassConstructor<PrincipalProviderContract>) {
   di.registerSingleton(PrincipalProviderContract as any, provider)
   loggers.bootstrap.info(`Principal Provider configured: ${provider.name}`)
-}
-
-export function setAuthProvider(provider: ClassConstructor<AuthProviderContract>) {
-  di.registerSingleton(AuthProviderContract as any, provider)
-  loggers.bootstrap.info(`Auth Provider configured: ${provider.name}`)
 }
 
 export function setSecurityHandler(handler: ClassConstructor<SecurityHandlerContract>) {

@@ -1,7 +1,8 @@
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
- * Registers a method as a server-side listener for a native FiveM event.
+ * Registers a method as a server-side listener for a native Runtime event.
+ * Runtime === FiveM
  *
  * @remarks
  * This decorator only stores metadata. During bootstrap, the framework scans controller
@@ -10,20 +11,20 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
  * FiveM server event reference:
  * https://docs.fivem.net/docs/scripting-reference/events/server-events/
  *
- * @param event - FiveM event name (e.g. `"playerJoining"`).
+ * @param event - event name (e.g. `"playerJoining"`). FiveM Events
  *
  * @example
  * ```ts
  * @Server.Controller()
  * export class SessionController {
- *   @Server.OnFiveMEvent('playerJoining')
+ *   @Server.OnRuntimeEvent('playerJoining')
  *   onPlayerJoining() {
  *     // ...
  *   }
  * }
  * ```
  */
-export function OnFiveMEvent(event: string) {
+export function OnRuntimeEvent(event: string) {
   return (target: any, propertyKey: string) => {
     Reflect.defineMetadata(METADATA_KEYS.FIVEM_EVENT, { event }, target, propertyKey)
   }

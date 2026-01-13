@@ -6,7 +6,6 @@ import { CommandService } from './core/command.service'
 import { PlayerService } from './core/player.service'
 import { LocalPrincipalService } from './core/principal.service'
 import { SessionRecoveryService } from './core/session-recovery.service'
-import { HttpService } from './http/http.service'
 import { PlayerPersistenceService } from './persistence.service'
 import { CommandExecutionPort } from './ports/command-execution.port'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
@@ -40,11 +39,6 @@ export function registerServicesServer(ctx: RuntimeContext) {
     if (features.principal.enabled && !resourceGrants?.principal) {
       throw new Error(
         `[OpenCore] Feature 'principal' is forbidden in RESOURCE mode unless resourceGrants.principal=true`,
-      )
-    }
-    if (features.auth.enabled && !resourceGrants?.auth) {
-      throw new Error(
-        `[OpenCore] Feature 'auth' is forbidden in RESOURCE mode unless resourceGrants.auth=true`,
       )
     }
   }
@@ -83,12 +77,6 @@ export function registerServicesServer(ctx: RuntimeContext) {
     }
   }
 
-  if (features.auth.enabled && features.auth.provider === 'core' && mode === 'RESOURCE') {
-    throw new Error(
-      "[OpenCore] Feature 'auth' with provider='core' in RESOURCE mode is not implemented yet (missing RemoteAuthProvider).",
-    )
-  }
-
   if (features.database.enabled) {
     di.registerSingleton(DatabaseService)
   }
@@ -104,9 +92,6 @@ export function registerServicesServer(ctx: RuntimeContext) {
     }
   }
 
-  if (features.http.enabled) {
-    di.registerSingleton(HttpService)
-  }
   if (features.chat.enabled) {
     di.registerSingleton(ChatService)
   }

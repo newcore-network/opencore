@@ -4,7 +4,7 @@ import { Principal } from '../../contracts/security/permission.types'
 import { GuardOptions } from '../../decorators/guard'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import { CorePrincipalExports } from '../../types/core-exports'
+import { InternalPrincipalExports } from '../../types/core-exports'
 import { PrincipalPort } from '../ports/principal.port'
 
 /**
@@ -24,9 +24,9 @@ export class RemotePrincipalService extends PrincipalPort {
   /**
    * Gets typed access to CORE resource exports.
    */
-  private get core(): CorePrincipalExports {
+  private get core(): InternalPrincipalExports {
     const { coreResourceName } = getRuntimeContext()
-    const coreExports = this.exportsService.getResource<CorePrincipalExports>(coreResourceName)
+    const coreExports = this.exportsService.getResource<InternalPrincipalExports>(coreResourceName)
 
     if (!coreExports) {
       throw new Error(

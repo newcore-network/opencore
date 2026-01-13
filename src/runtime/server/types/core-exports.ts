@@ -86,7 +86,7 @@ export interface CommandRegistrationDto {
  * core.registerCommand({ ... })
  * ```
  */
-export interface CorePrincipalExports {
+export interface InternalPrincipalExports {
   // ═══════════════════════════════════════════════════════════════
   // Principal/Permission Exports
   // ═══════════════════════════════════════════════════════════════
@@ -199,7 +199,7 @@ export interface CorePrincipalExports {
   enforce(source: number, requirements: GuardOptions): Promise<void>
 }
 
-export interface CoreCommandsExports {
+export interface InternalCommandsExports {
   // ═══════════════════════════════════════════════════════════════
   // Command Exports
   // ═══════════════════════════════════════════════════════════════
@@ -232,7 +232,7 @@ export interface CoreCommandsExports {
   getAllCommands(): CommandInfo[]
 }
 
-export interface CorePlayerExports {
+export interface InternalPlayerExports {
   // ═══════════════════════════════════════════════════════════════
   // Player Exports
   // ═══════════════════════════════════════════════════════════════

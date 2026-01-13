@@ -1,12 +1,34 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# AGENTS.md
 
 ## Project Overview
 
 OpenCore is a **TypeScript-based multiplayer runtime framework** targeting FiveM as its primary platform via a dedicated adapter. It is not a gamemode, script pack, or RP framework—it provides a stable, event-driven runtime and architectural foundation for building gameplay systems.
 
 **Core Vision**: OpenCore is a long-lived runtime engine, not a FiveM-only solution. FiveM is the default first-class adapter, not a hard dependency. The architecture supports multiple platforms via adapters and must remain testable in pure Node.js.
+
+## Requirements (All Platforms)
+
+- Node.js (LTS recommended)
+- pnpm (recommended via Corepack)
+- Git
+
+Enable pnpm via Corepack:
+
+```bash
+corepack enable
+corepack prepare pnpm@latest --activate
+```
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+Notes:
+
+- Run commands from the package root (this folder).
+- Use a terminal that supports Node tooling (PowerShell on Windows, or any POSIX shell on macOS/Linux).
 
 ## Build & Development Commands
 
@@ -151,6 +173,23 @@ The `@open-core/framework` package contains only **transversal infrastructure**:
 ## Testing Setup
 
 Tests use Vitest with FiveM API mocks in `tests/mocks/citizenfx.ts`. The setup file (`tests/setup.ts`) installs mocks globally and resets DI container between tests.
+
+## Troubleshooting
+
+- If `corepack` is not recognized, upgrade Node.js to a recent LTS release.
+- If `pnpm` is not recognized, ensure Corepack is enabled (see Requirements) or install pnpm globally.
+- If tests fail with missing FiveM globals, confirm you are running via Vitest and not executing test files directly.
+- If TypeScript build output looks stale, try `pnpm build` after a clean install (`pnpm install`).
+
+## Contribution Checklist
+
+Before opening a PR or shipping changes locally, run:
+
+```bash
+pnpm lint
+pnpm test
+pnpm build
+```
 
 ## Rules for Development
 

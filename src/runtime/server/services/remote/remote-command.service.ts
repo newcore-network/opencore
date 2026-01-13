@@ -6,7 +6,7 @@ import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
 import { getRuntimeContext } from '../../runtime'
-import { CoreCommandsExports } from '../../types/core-exports'
+import { InternalCommandsExports } from '../../types/core-exports'
 import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
 
 /**
@@ -47,9 +47,9 @@ export class RemoteCommandService extends CommandExecutionPort {
   /**
    * Gets typed access to CORE resource exports.
    */
-  private get core(): CoreCommandsExports {
+  private get core(): InternalCommandsExports {
     const { coreResourceName } = getRuntimeContext()
-    const coreExports = this.exportsService.getResource<CoreCommandsExports>(coreResourceName)
+    const coreExports = this.exportsService.getResource<InternalCommandsExports>(coreResourceName)
 
     if (!coreExports) {
       throw new Error(

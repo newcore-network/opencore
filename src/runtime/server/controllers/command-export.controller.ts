@@ -11,7 +11,7 @@ import { PrincipalPort } from '../services/ports/principal.port'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import {
   CommandRegistrationDto,
-  CoreCommandsExports,
+  InternalCommandsExports,
   SecurityMetadata,
 } from '../types/core-exports'
 
@@ -33,7 +33,7 @@ interface RemoteCommandEntry {
  */
 @injectable()
 @Controller()
-export class CommandExportController implements CoreCommandsExports {
+export class CommandExportController implements InternalCommandsExports {
   private remoteCommands = new Map<string, RemoteCommandEntry>()
 
   constructor(

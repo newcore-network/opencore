@@ -83,18 +83,24 @@ export class NodeEntityServer extends IEntityServer {
     }
   }
 
-  // TODO
-  getHealth(_handle: number): number {
-    throw new Error('Method not implemented.')
+  getHealth(handle: number): number {
+    const bag = this.getStateBag(handle)
+    return (bag.get('health') as number) ?? 200
   }
-  setHealth(_handle: number, _health: number): void {
-    throw new Error('Method not implemented.')
+
+  setHealth(handle: number, health: number): void {
+    const bag = this.getStateBag(handle)
+    bag.set('health', health, true)
   }
-  getArmor(_handle: number): number {
-    throw new Error('Method not implemented.')
+
+  getArmor(handle: number): number {
+    const bag = this.getStateBag(handle)
+    return (bag.get('armor') as number) ?? 0
   }
-  setArmor(_handle: number, _armor: number): void {
-    throw new Error('Method not implemented.')
+
+  setArmor(handle: number, armor: number): void {
+    const bag = this.getStateBag(handle)
+    bag.set('armor', armor, true)
   }
 
   // Test helper: Create a mock entity

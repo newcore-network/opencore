@@ -1,7 +1,7 @@
 import { loggers } from '../../../kernel/shared'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
 import { Controller } from '../decorators'
-import { OnFiveMEvent } from '../decorators/onFiveMEvent'
+import { OnRuntimeEvent } from '../decorators/onRuntimeEvent'
 import { PlayerDirectoryPort } from '../services'
 import { PlayerPersistenceService } from '../services/persistence.service'
 import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
@@ -14,7 +14,7 @@ export class SessionController {
     private readonly persistance: PlayerPersistenceService,
   ) {}
 
-  @OnFiveMEvent('playerJoining')
+  @OnRuntimeEvent('playerJoining')
   public async onPlayerJoining(): Promise<void> {
     const clientId = Number(source)
     const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
@@ -36,7 +36,7 @@ export class SessionController {
     })
   }
 
-  @OnFiveMEvent('playerDropped')
+  @OnRuntimeEvent('playerDropped')
   public async onPlayerDropped(): Promise<void> {
     const clientId = Number(source)
     const player = this.playerDirectory.getByClient(clientId)

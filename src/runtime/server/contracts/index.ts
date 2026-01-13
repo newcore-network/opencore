@@ -1,6 +1,5 @@
 // Security
 
-export * from './auth-provider.contract'
 export * from './player-persistence.contract'
 // Repository
 export * from './repository/index'

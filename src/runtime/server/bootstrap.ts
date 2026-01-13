@@ -6,7 +6,7 @@ import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
 } from './bootstrap.validation'
-import { AuthProviderContract, PrincipalProviderContract } from './contracts/index'
+import { PrincipalProviderContract } from './contracts/index'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
@@ -29,16 +29,6 @@ function checkProviders(ctx: RuntimeContext): void {
       const errorMsg =
         'No Principal Provider configured. ' +
         "Please call 'Server.setPrincipalProvider(YourProvider)' before init(). This is required for authorization."
-      loggers.bootstrap.fatal(errorMsg)
-      throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
-    }
-  }
-
-  if (ctx.features.auth.enabled && ctx.features.auth.required) {
-    if (!di.isRegistered(AuthProviderContract as any)) {
-      const errorMsg =
-        'No Authentication Provider configured. ' +
-        "Please call 'Server.setAuthProvider(YourProvider)' before init(). This is required for authentication."
       loggers.bootstrap.fatal(errorMsg)
       throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
     }
@@ -144,8 +134,7 @@ export async function initServer(options: ServerRuntimeOptions) {
     const needsCoreExports =
       ctx.features.players.provider === 'core' ||
       ctx.features.commands.provider === 'core' ||
-      ctx.features.principal.provider === 'core' ||
-      ctx.features.auth.provider === 'core'
+      ctx.features.principal.provider === 'core'
 
     if (needsCoreExports) {
       const { coreResourceName } = ctx

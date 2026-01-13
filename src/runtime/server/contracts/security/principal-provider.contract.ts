@@ -12,7 +12,7 @@ import { Principal } from './permission.types'
  * @example
  * ```ts
  * // In your game resource:
- * class MyAuthProvider implements PrincipalProviderContract { ... }
+ * class MyPrincipal implements PrincipalProviderContract { ... }
  * ```
  */
 export abstract class PrincipalProviderContract {
