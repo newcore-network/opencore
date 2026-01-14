@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { ITick } from '../../../../adapters/contracts/ITick'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()

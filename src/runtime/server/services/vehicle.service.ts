@@ -4,7 +4,7 @@ import { IHasher } from '../../../adapters/contracts/IHasher'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
-import { coreLogger } from '../../../kernel/shared/logger'
+import { coreLogger } from '../../../kernel/logger'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import {
   SerializedVehicleData,

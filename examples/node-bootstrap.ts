@@ -15,7 +15,7 @@
 import 'reflect-metadata'
 import { IExports, INetTransport } from '../src/adapters'
 import type { NodeExports, NodeNetTransport } from '../src/adapters/node'
-import { di } from '../src/kernel'
+import { CONTAINER } from '../src/kernel'
 import { Export } from '../src/runtime/client'
 import type { Player } from '../src/runtime/server'
 import { Controller, OnNet } from '../src/runtime/server'
@@ -115,7 +115,7 @@ async function main() {
 
   // Demonstrate NetEvent handling
   console.log('--- Testing NetEvent ---')
-  const transport = di.resolve(INetTransport as any) as NodeNetTransport
+  const transport = CONTAINER.resolve(INetTransport as any) as NodeNetTransport
   transport.simulateClientEvent('example:greet', 42, 'Alice')
   transport.simulateClientEvent('example:greet', 99, 'Bob')
 
@@ -124,7 +124,7 @@ async function main() {
 
   // Demonstrate Export calls
   console.log('\n--- Testing Exports ---')
-  const exportsService = di.resolve(IExports as any) as NodeExports
+  const exportsService = CONTAINER.resolve(IExports as any) as NodeExports
 
   const getTimeFn = exportsService.getExport('getServerTime')
   if (getTimeFn) {

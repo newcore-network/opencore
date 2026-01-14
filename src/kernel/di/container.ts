@@ -1,4 +1,3 @@
-import 'reflect-metadata'
 import { container } from 'tsyringe'
 
-export const di = container
+export const GLOBAL_CONTAINER = container

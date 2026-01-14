@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { coreLogger, LogDomain } from '../../../../kernel/shared/logger'
+import { coreLogger, LogDomain } from '../../../../kernel/logger'
 import { METADATA_KEYS } from '../metadata-client.keys'
 
 const clientExport = coreLogger.child('Export', LogDomain.CLIENT)

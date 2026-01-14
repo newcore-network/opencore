@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  LogDomain,
-  type LogEntry,
-  LogLevel,
-} from '../../../../src/kernel/shared/logger/logger.types'
-import { HttpLogTransport } from '../../../../src/kernel/shared/logger/transports/http.transport'
+import { LogDomain, type LogEntry, LogLevel } from '../../../../src/kernel/logger/logger.types'
+import { HttpLogTransport } from '../../../../src/kernel/logger/transports/http.transport'
 
 const createEntry = (overrides: Partial<LogEntry> = {}): LogEntry => ({
   level: LogLevel.INFO,

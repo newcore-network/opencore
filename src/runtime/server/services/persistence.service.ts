@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import { di } from '../../../kernel/di/container'
-import { loggers } from '../../../kernel/shared/logger'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
+import { loggers } from '../../../kernel/logger'
 import { PlayerPersistenceContract } from '../contracts'
 import { Player } from '../entities/player'
 
@@ -24,8 +24,10 @@ export class PlayerPersistenceService {
     if (this.initialized) return
 
     try {
-      if (di.isRegistered(PlayerPersistenceContract as any)) {
-        const provider = di.resolve<PlayerPersistenceContract>(PlayerPersistenceContract as any)
+      if (GLOBAL_CONTAINER.isRegistered(PlayerPersistenceContract as any)) {
+        const provider = GLOBAL_CONTAINER.resolve<PlayerPersistenceContract>(
+          PlayerPersistenceContract as any,
+        )
         this.provider = provider
         loggers.bootstrap.info('Player Persistence Provider initialized', {
           autoSaveEnabled: provider.config.autoSaveEnabled,

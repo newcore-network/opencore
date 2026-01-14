@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { METADATA_KEYS } from '../metadata-client.keys'
 
 @injectable()

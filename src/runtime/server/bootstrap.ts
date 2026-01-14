@@ -1,7 +1,7 @@
 import { IEngineEvents } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
-import { di, MetadataScanner } from '../../kernel/di/index'
-import { loggers } from '../../kernel/shared/logger'
+import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
+import { loggers } from '../../kernel/logger'
 import {
   registerDefaultBootstrapValidators,
   runBootstrapValidatorsOrThrow,
@@ -25,7 +25,7 @@ function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
 
   if (ctx.features.principal.enabled && ctx.features.principal.required) {
-    if (!di.isRegistered(PrincipalProviderContract as any)) {
+    if (!GLOBAL_CONTAINER.isRegistered(PrincipalProviderContract as any)) {
       const errorMsg =
         'No Principal Provider configured. ' +
         "Please call 'Server.setPrincipalProvider(YourProvider)' before init(). This is required for authorization."
@@ -244,7 +244,7 @@ export async function initServer(options: ServerRuntimeOptions) {
     await runBootstrapValidatorsOrThrow()
   }
 
-  const scanner = di.resolve(MetadataScanner)
+  const scanner = GLOBAL_CONTAINER.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
 
   // Initialize DevMode if enabled
@@ -259,8 +259,8 @@ export async function initServer(options: ServerRuntimeOptions) {
 
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 
-  if (ctx.mode === 'CORE' && di.isRegistered(IEngineEvents as any)) {
-    const engineInterface = di.resolve(IEngineEvents as any) as IEngineEvents
+  if (ctx.mode === 'CORE' && GLOBAL_CONTAINER.isRegistered(IEngineEvents as any)) {
+    const engineInterface = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
     engineInterface.emit('core:ready')
   }
 }
@@ -268,7 +268,7 @@ export async function initServer(options: ServerRuntimeOptions) {
 function createCoreDependency(coreName: string): Promise<void> {
   return new Promise((resolve, reject) => {
     let resolved = false
-    const engineEvents = di.resolve(IEngineEvents as any) as IEngineEvents
+    const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
 
     const cleanup = () => {
       resolved = true
@@ -332,7 +332,7 @@ async function dependencyResolver(
  */
 function runSessionRecovery(): void {
   try {
-    const recoveryService = di.resolve(SessionRecoveryService)
+    const recoveryService = GLOBAL_CONTAINER.resolve(SessionRecoveryService)
     const stats = recoveryService.recoverSessions()
 
     if (stats.recovered > 0) {
@@ -356,13 +356,13 @@ async function initDevMode(config: NonNullable<RuntimeContext['devMode']>): Prom
   const { PlayerSimulatorService } = await import('./devmode/player-simulator.service')
 
   // Register DevMode services
-  di.registerSingleton(EventInterceptorService, EventInterceptorService)
-  di.registerSingleton(StateInspectorService, StateInspectorService)
-  di.registerSingleton(PlayerSimulatorService, PlayerSimulatorService)
-  di.registerSingleton(DevModeService, DevModeService)
+  GLOBAL_CONTAINER.registerSingleton(EventInterceptorService, EventInterceptorService)
+  GLOBAL_CONTAINER.registerSingleton(StateInspectorService, StateInspectorService)
+  GLOBAL_CONTAINER.registerSingleton(PlayerSimulatorService, PlayerSimulatorService)
+  GLOBAL_CONTAINER.registerSingleton(DevModeService, DevModeService)
 
   // Enable DevMode
-  const devModeService = di.resolve(DevModeService)
+  const devModeService = GLOBAL_CONTAINER.resolve(DevModeService)
   await devModeService.enable({
     enabled: true,
     hotReload: config.hotReload,

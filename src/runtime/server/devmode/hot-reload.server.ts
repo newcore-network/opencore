@@ -1,4 +1,4 @@
-import { loggers } from '../../../kernel/shared/logger'
+import { loggers } from '../../../kernel/logger'
 import { HotReloadOptions } from './types'
 
 // Lazy-loaded http module (only loaded at runtime, not bundled)

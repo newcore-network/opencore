@@ -1,6 +1,6 @@
 import { registerClientCapabilities } from '../../adapters/register-client-capabilities'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
-import { loggers } from '../../kernel/shared/logger'
+import { loggers } from '../../kernel/logger'
 import { di } from './client-container'
 import {
   type ClientInitOptions,

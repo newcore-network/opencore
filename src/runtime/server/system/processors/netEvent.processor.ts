@@ -3,7 +3,7 @@ import z from 'zod'
 import { AppError, SecurityError } from '../../../../'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
-import { coreLogger, loggers } from '../../../../kernel/shared/logger'
+import { coreLogger, loggers } from '../../../../kernel/logger'
 import {
   type NetEventInvalidPayloadContext,
   type NetEventInvalidPayloadReason,

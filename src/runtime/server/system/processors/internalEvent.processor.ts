@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { onFrameworkEvent } from '../../bus/internal-event.bus'
 import { resolveMethod } from '../../helpers/resolve-method'
 import { METADATA_KEYS } from '../metadata-server.keys'

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { loggers } from '../../kernel/shared/logger'
+import { loggers } from '../../kernel/logger'
 
 export type BootstrapValidator = () => string[] | Promise<string[]>
 

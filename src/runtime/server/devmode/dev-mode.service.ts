@@ -1,14 +1,14 @@
 import { injectable } from 'tsyringe'
-import { di } from '../../../kernel/di/container'
-import { loggers } from '../../../kernel/shared/logger'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
+import { loggers } from '../../../kernel/logger'
 import {
   createDevTransport,
   detectEnvironment,
   isWebSocketTransport,
   startDevTransport,
   stopDevTransport,
-} from '../../../kernel/shared/logger/transports/dev-transport.factory'
-import { LogTransport } from '../../../kernel/shared/logger/transports/transport.interface'
+} from '../../../kernel/logger/transports/dev-transport.factory'
+import { LogTransport } from '../../../kernel/logger/transports/transport.interface'
 import { EventInterceptorService } from './event-interceptor.service'
 import { HotReloadServer } from './hot-reload.server'
 import { PlayerSimulatorService } from './player-simulator.service'
@@ -42,15 +42,15 @@ export class DevModeService {
   private logTransport: LogTransport | null = null
 
   private get interceptor(): EventInterceptorService {
-    return di.resolve(EventInterceptorService)
+    return GLOBAL_CONTAINER.resolve(EventInterceptorService)
   }
 
   private get inspector(): StateInspectorService {
-    return di.resolve(StateInspectorService)
+    return GLOBAL_CONTAINER.resolve(StateInspectorService)
   }
 
   private get simulator(): PlayerSimulatorService {
-    return di.resolve(PlayerSimulatorService)
+    return GLOBAL_CONTAINER.resolve(PlayerSimulatorService)
   }
 
   /**

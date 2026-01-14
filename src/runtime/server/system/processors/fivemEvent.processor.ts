@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { IEngineEvents } from '../../../../adapters/contracts/IEngineEvents'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
 import { METADATA_KEYS } from '../metadata-server.keys'
 

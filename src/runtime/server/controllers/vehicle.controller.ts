@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe'
-import { coreLogger } from '../../../kernel/shared/logger'
+import { coreLogger } from '../../../kernel/logger'
 import { Controller, OnNet } from '../decorators'
 import { Player } from '../entities/player'
 import { VehicleService } from '../services/vehicle.service'

@@ -1,5 +1,5 @@
 import { container, injectAll, injectable } from 'tsyringe'
-import { loggers } from '../shared/logger'
+import { loggers } from '../logger'
 import { type ClassConstructor, type DecoratorProcessor } from './index'
 
 @injectable()
