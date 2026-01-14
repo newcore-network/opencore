@@ -1,12 +1,12 @@
 import { Vector3 } from '@open-core/framework'
 import { IPlayerInfo } from '../../../adapters'
-import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import { BaseEntity } from '../../core/entity'
 import { LinkedID } from '../services/types/linked-id'
 import { PlayerSession } from '../services/types/player-session.object'
 import { SerializedPlayerData } from '../types/core-exports'
-import { BaseEntity } from '../../core/entity'
 
 /**
  * Adapter bundle for player operations.

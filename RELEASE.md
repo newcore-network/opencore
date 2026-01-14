@@ -45,6 +45,11 @@
 - Updated all FiveM and Node implementations, runtime services, entities, and tests to reflect the new contract structure.
 - Improved import ordering (external dependencies first).
 - Standardized file formatting across the codebase.
+- Removed deprecated `auth`, `http`, and `config` features.
+- Removed `ConfigService` from server services.
+- Renamed dependency injection container from `di` to `CONTAINER`.
+- Renamed decorators for consistency and clarity.
+- Migrated `Player` entity to use `BaseEntity` and `WorldContext`.
 
 ---
 

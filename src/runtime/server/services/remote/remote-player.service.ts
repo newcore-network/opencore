@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports, IPlayerInfo } from '../../../../adapters'
-import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
 import { Player, type PlayerAdapters } from '../../entities'

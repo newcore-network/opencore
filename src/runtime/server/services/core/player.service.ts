@@ -1,15 +1,15 @@
+import { BaseEntity } from '@open-core/framework/runtime/core/entity'
+import { WorldContext } from '@open-core/framework/runtime/core/world'
 import { inject, injectable } from 'tsyringe'
 import { IPlayerInfo } from '../../../../adapters'
-import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
 import { Player, type PlayerAdapters } from '../../entities'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
 import { PlayerSession } from '../types/player-session.object'
-import { WorldContext } from '@open-core/framework/runtime/core/world'
-import { BaseEntity } from '@open-core/framework/runtime/core/entity'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.
