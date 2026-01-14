@@ -6,6 +6,7 @@ import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { LinkedID } from '../services/types/linked-id'
 import { PlayerSession } from '../services/types/player-session.object'
 import { SerializedPlayerData } from '../types/core-exports'
+import { BaseEntity } from '../../core/entity'
 
 /**
  * Adapter bundle for player operations.
@@ -28,7 +29,7 @@ export interface PlayerAdapters {
  * ⚠️ **Design Note:** This class does NOT contain gameplay logic (money, jobs, inventory).
  * Domain logic should live in your modules' services/models (e.g., `EconomyService`, `JobModel`).
  */
-export class Player {
+export class Player extends BaseEntity {
   private states = new Set<string>()
   private position: Vector3 | undefined
 
@@ -43,6 +44,7 @@ export class Player {
     private readonly session: PlayerSession,
     private readonly adapters: PlayerAdapters,
   ) {
+    super(`player:${session.clientID}`)
     this.position = adapters.playerInfo.getPlayerPosition(session.clientID)
   }
 
@@ -52,14 +54,6 @@ export class Player {
    */
   get clientID(): number {
     return this.session.clientID
-  }
-
-  /**
-   * The FiveM Server ID as a string.
-   * Required by most FiveM native functions (e.g., `GetPlayerName`, `DropPlayer`).
-   */
-  get clientIDStr(): string {
-    return this.session.clientID.toString()
   }
 
   /**
@@ -89,18 +83,18 @@ export class Player {
    * @returns An array of identifier strings (e.g., `['steam:11000...', 'license:2332...']`).
    */
   getIdentifiers(): string[] {
-    return this.adapters.playerServer.getIdentifiers(this.clientIDStr)
+    return this.adapters.playerServer.getIdentifiers(this.clientID.toString())
   }
 
   /**
    * FiveM license
    */
   getLicense() {
-    return this.adapters.playerServer.getIdentifier(this.clientIDStr, 'license')
+    return this.adapters.playerServer.getIdentifier(this.clientID.toString(), 'license')
   }
 
   getIdentifier(identifier: string) {
-    return this.adapters.playerServer.getIdentifier(this.clientIDStr, identifier)
+    return this.adapters.playerServer.getIdentifier(this.clientID.toString(), identifier)
   }
 
   /**
@@ -128,7 +122,7 @@ export class Player {
    * @param vector - The target coordinates (x, y, z).
    */
   teleport(vector: Vector3) {
-    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
     this.adapters.entityServer.setCoords(
       ped,
       vector.x,
@@ -163,7 +157,7 @@ export class Player {
    * @param reason - The message displayed to the player upon disconnection.
    */
   kick(reason = 'Kicked from server') {
-    this.adapters.playerServer.drop(this.clientIDStr, reason)
+    this.adapters.playerServer.drop(this.clientID.toString(), reason)
   }
 
   /**
@@ -173,7 +167,7 @@ export class Player {
    * @param bucket - The bucket ID (0 is the default shared world).
    */
   setRoutingBucket(bucket: number) {
-    this.adapters.playerServer.setRoutingBucket(this.clientIDStr, bucket)
+    this.adapters.playerServer.setRoutingBucket(this.clientID.toString(), bucket)
   }
 
   /**
@@ -293,7 +287,7 @@ export class Player {
    * @returns Current health value (0-200, where 100 is dead).
    */
   getHealth(): number {
-    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
     return this.adapters.entityServer.getHealth(ped)
   }
 
@@ -303,7 +297,7 @@ export class Player {
    * @param health - Health value to set (0-200).
    */
   setHealth(health: number): void {
-    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
     this.adapters.entityServer.setHealth(ped, health)
   }
 
@@ -313,7 +307,7 @@ export class Player {
    * @returns Current armor value (0-100).
    */
   getArmor(): number {
-    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
     return this.adapters.entityServer.getArmor(ped)
   }
 
@@ -323,7 +317,7 @@ export class Player {
    * @param armor - Armor value to set (0-100).
    */
   setArmor(armor: number): void {
-    const ped = this.adapters.playerServer.getPed(this.clientIDStr)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
     this.adapters.entityServer.setArmor(ped, armor)
   }
 
