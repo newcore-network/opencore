@@ -2,22 +2,22 @@ export type EntityId = `${string}:${string | number}`
 
 export abstract class BaseEntity {
   readonly id: EntityId
-  private state = new Map<string, unknown>()
+  private state = new Set<string>()
 
   constructor(id: EntityId) {
     this.id = id
   }
 
-  get<T>(key: string): T | undefined {
-    return this.state.get(key) as T | undefined
-  }
-
-  set<T>(key: string, value: T) {
-    this.state.set(key, value)
+  add(state: string) {
+    this.state.add(state)
   }
 
   has(key: string): boolean {
     return this.state.has(key)
+  }
+
+  all(): string[] {
+    return Array.from(this.state)
   }
 
   delete(key: string) {

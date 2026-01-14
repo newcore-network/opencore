@@ -4,6 +4,7 @@ import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { BaseEntity } from '../../core/entity'
+import { Spatial } from '../../core/spatial'
 import { LinkedID } from '../services/types/linked-id'
 import { PlayerSession } from '../services/types/player-session.object'
 import { SerializedPlayerData } from '../types/core-exports'
@@ -29,9 +30,8 @@ export interface PlayerAdapters {
  * ⚠️ **Design Note:** This class does NOT contain gameplay logic (money, jobs, inventory).
  * Domain logic should live in your modules' services/models (e.g., `EconomyService`, `JobModel`).
  */
-export class Player extends BaseEntity {
-  private states = new Set<string>()
-  private position: Vector3 | undefined
+export class Player extends BaseEntity implements Spatial {
+  private position: Vector3
 
   /**
    * Creates a new Player entity instance.
@@ -71,10 +71,32 @@ export class Player extends BaseEntity {
     return this.adapters.playerInfo.getPlayerName(this.clientID) ?? `Player#${this.clientID}`
   }
 
-  getPosition(): Vector3 | undefined {
+  getPosition(): Vector3 {
     // re-set last position
     this.position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
     return this.position
+  }
+
+  /**
+   * Teleports the player to a given position using Server-Side natives.
+   *
+   * **Note:** This forces the entity position on the server. For smoother gameplay transitions
+   * (e.g., inside interiors or across the map), consider using `teleport` for sync client.
+   *
+   * @param vector - The target coordinates (x, y, z).
+   */
+  setPosition(vector: Vector3): void {
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
+    this.adapters.entityServer.setCoords(
+      ped,
+      vector.x,
+      vector.y,
+      vector.z,
+      false,
+      false,
+      false,
+      true,
+    )
   }
 
   /**
@@ -114,28 +136,6 @@ export class Player extends BaseEntity {
   }
 
   /**
-   * Teleports the player to a given position using Server-Side natives.
-   *
-   * **Note:** This forces the entity position on the server. For smoother gameplay transitions
-   * (e.g., inside interiors or across the map), consider using `teleportClient`.
-   *
-   * @param vector - The target coordinates (x, y, z).
-   */
-  teleport(vector: Vector3) {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    this.adapters.entityServer.setCoords(
-      ped,
-      vector.x,
-      vector.y,
-      vector.z,
-      false,
-      false,
-      false,
-      true,
-    )
-  }
-
-  /**
    * Requests the Client to teleport itself via the Core Spawner system.
    *
    * This method is preferred for gameplay logic as it allows the client to handle
@@ -143,7 +143,7 @@ export class Player extends BaseEntity {
    *
    * @param vector - The target coordinates (x, y, z).
    */
-  teleportClient(vector: Vector3) {
+  teleport(vector: Vector3): void {
     this.emit('opencore:spawner:teleport', vector)
   }
 
@@ -213,7 +213,7 @@ export class Player extends BaseEntity {
    * @returns `true` if the state is active, `false` otherwise.
    */
   hasState(state: string): boolean {
-    return this.states.has(state)
+    return super.has(state)
   }
 
   /**
@@ -226,8 +226,7 @@ export class Player extends BaseEntity {
    * @param state - The state key to add.
    */
   addState(state: string): void {
-    this.states.add(state)
-    // this.emit('core:state:add', state) // ? optional !!
+    super.add(state)
   }
 
   /**
@@ -236,8 +235,7 @@ export class Player extends BaseEntity {
    * @param state - The state key to remove.
    */
   removeState(state: string): void {
-    this.states.delete(state)
-    // this.emit('core:state:remove', state) // ? optional !!
+    super.delete(state)
   }
 
   /**
@@ -278,7 +276,7 @@ export class Player extends BaseEntity {
    * @returns An array containing all active state keys.
    */
   getStates(): string[] {
-    return Array.from(this.states)
+    return super.all()
   }
 
   /**
