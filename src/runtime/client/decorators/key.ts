@@ -15,14 +15,14 @@ import { METADATA_KEYS } from '../system/metadata-client.keys'
  * ```ts
  * @Client.Controller()
  * export class InteractionController {
- *   @Client.KeyMapping('E', 'Interact')
+ *   @Client.Key('E', 'Interact')
  *   interact() {
  *     // ...
  *   }
  * }
  * ```
  */
-export function KeyMapping(key: string, description: string) {
+export function Key(key: string, description: string) {
   return (target: any, propertyKey: string) => {
     Reflect.defineMetadata(METADATA_KEYS.KEY, { key, description }, target, propertyKey)
   }
