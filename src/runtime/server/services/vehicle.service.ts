@@ -366,7 +366,7 @@ export class VehicleService {
     const player = this.playerDirectory.getByClient(clientID)
     if (!player) return false
 
-    const playerPed = this.playerServer.getPed(player.clientIDStr)
+    const playerPed = this.playerServer.getPed(player.clientID.toString())
     if (!playerPed || playerPed === 0) return false
 
     const playerPos = this.entityServer.getCoords(playerPed)

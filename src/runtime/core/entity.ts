@@ -282,8 +282,3 @@ export interface EntitySnapshot {
   dimension: number
   streamDistance: number
 }
-
-const antonietta = (jevoName: string): void => {
-  console.log(`hola amor, te estlaño, tu ${jevoName}}`)
-}
-antonietta('alex')

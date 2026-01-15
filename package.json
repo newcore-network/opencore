@@ -45,7 +45,7 @@
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "npx vitest run --project unit --project integration --project e2e",
     "test:ci": "npx vitest run --project unit --project integration",
     "test:watch": "npx vitest --project unit --project integration --project e2e",

@@ -84,20 +84,6 @@ describe('Node.js Runtime Bootstrap', () => {
           scope: 'core' as const,
           required: false,
         },
-        http: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        auth: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
       },
       coreResourceName: 'node-test',
     })
@@ -210,20 +196,6 @@ describe('Node.js Runtime Bootstrap', () => {
           scope: 'core' as const,
           required: false,
         },
-        http: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        auth: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
       },
       coreResourceName: 'node-test',
     })
@@ -295,20 +267,6 @@ describe('Node.js Runtime Bootstrap', () => {
           required: false,
         },
         database: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        http: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        auth: {
           enabled: false,
           provider: 'local' as const,
           export: false,
@@ -389,20 +347,6 @@ describe('Node.js Runtime Bootstrap', () => {
           required: false,
         },
         database: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        http: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        auth: {
           enabled: false,
           provider: 'local' as const,
           export: false,

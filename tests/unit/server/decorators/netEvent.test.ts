@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import type { Player } from '../../../../src/runtime/server'
+import type { Player } from '../../../../src/runtime/server/entities/player'
 import { type NetEventOptions, OnNet } from '../../../../src/runtime/server/decorators/onNet'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
 import { createTestPlayer } from '../../../helpers'
