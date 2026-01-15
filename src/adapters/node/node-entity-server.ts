@@ -1,6 +1,10 @@
 import { Vector3 } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { type EntityStateBag, IEntityServer } from '../contracts/server/IEntityServer'
+import {
+  type EntityStateBag,
+  IEntityServer,
+  type SetPositionOptions,
+} from '../contracts/server/IEntityServer'
 
 /**
  * Node.js mock implementation of server-side entity operations.
@@ -22,6 +26,16 @@ export class NodeEntityServer extends IEntityServer {
     return this.entities.get(handle)?.coords ?? { x: 0, y: 0, z: 0 }
   }
 
+  setPosition(handle: number, position: Vector3, _options?: SetPositionOptions): void {
+    const entity = this.entities.get(handle)
+    if (entity) {
+      entity.coords = { ...position }
+    }
+  }
+
+  /**
+   * @deprecated Use setPosition() for cross-platform compatibility.
+   */
   setCoords(handle: number, x: number, y: number, z: number): void {
     const entity = this.entities.get(handle)
     if (entity) {
@@ -103,8 +117,22 @@ export class NodeEntityServer extends IEntityServer {
     bag.set('armor', armor, true)
   }
 
-  // Test helper: Create a mock entity
+  // ─────────────────────────────────────────────────────────────────
+  // Test Helpers
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Create a mock entity for testing.
+   */
   _createMockEntity(handle: number, model: number, coords: Vector3, heading = 0): void {
     this.entities.set(handle, { coords, heading, model, bucket: 0 })
+  }
+
+  /**
+   * Clear all mock entities.
+   */
+  _clearAll(): void {
+    this.entities.clear()
+    this.stateBags.clear()
   }
 }

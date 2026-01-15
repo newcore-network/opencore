@@ -3,6 +3,7 @@ import { IPlayerInfo } from '../../../adapters'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import type { PlayerIdentifier } from '../../../adapters/contracts/types/identifier'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
 import { LinkedID } from '../services/types/linked-id'
@@ -23,12 +24,16 @@ export interface PlayerAdapters {
 /**
  * Core-level representation of a connected player on the server.
  *
- * This class wraps FiveM natives and session information.
+ * @remarks
+ * This class wraps platform natives and session information.
  * It serves as an abstraction layer to interact with the connected client
  * (kicking, teleporting, emitting events) without dealing with raw IDs everywhere.
  *
- * ⚠️ **Design Note:** This class does NOT contain gameplay logic (money, jobs, inventory).
+ * **Design Note:** This class does NOT contain gameplay logic (money, jobs, inventory).
  * Domain logic should live in your modules' services/models (e.g., `EconomyService`, `JobModel`).
+ *
+ * This class is platform-agnostic and works across different game engines
+ * (FiveM, RageMP, alt:V, etc.) through the adapter pattern.
  */
 export class Player extends BaseEntity implements Spatial {
   private position: Vector3
@@ -49,8 +54,8 @@ export class Player extends BaseEntity implements Spatial {
   }
 
   /**
-   * The numeric FiveM Server ID (Source) of the player.
-   * Useful for internal logic and array indexing.
+   * The numeric client/server ID of the player.
+   * This is the platform-specific player identifier used for native calls.
    */
   get clientID(): number {
     return this.session.clientID
@@ -65,43 +70,39 @@ export class Player extends BaseEntity implements Spatial {
   }
 
   /**
-   * The display name of the player (Steam name or FiveM username).
+   * The display name of the player.
    */
   get name(): string {
     return this.adapters.playerInfo.getPlayerName(this.clientID) ?? `Player#${this.clientID}`
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Position / Spatial
+  // ─────────────────────────────────────────────────────────────────
+
   getPosition(): Vector3 {
-    // re-set last position
     this.position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
     return this.position
   }
 
   /**
-   * Teleports the player to a given position using Server-Side natives.
-   *
-   * **Note:** This forces the entity position on the server. For smoother gameplay transitions
-   * (e.g., inside interiors or across the map), consider using `teleport` for sync client.
+   * Sets the player position using the platform-agnostic API.
    *
    * @param vector - The target coordinates (x, y, z).
    */
   setPosition(vector: Vector3): void {
     const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    this.adapters.entityServer.setCoords(
-      ped,
-      vector.x,
-      vector.y,
-      vector.z,
-      false,
-      false,
-      false,
-      true,
-    )
+    this.adapters.entityServer.setPosition(ped, vector, { clearArea: true })
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Identifiers
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Retrieves all platform identifiers associated with the player (steam, license, discord, ip, etc.).
+   * Retrieves all platform identifiers associated with the player.
    *
+   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
    * @returns An array of identifier strings (e.g., `['steam:11000...', 'license:2332...']`).
    */
   getIdentifiers(): string[] {
@@ -109,35 +110,64 @@ export class Player extends BaseEntity implements Spatial {
   }
 
   /**
-   * FiveM license
+   * Retrieves all identifiers as structured objects.
+   *
+   * @returns An array of PlayerIdentifier objects with type, value, and raw fields.
    */
-  getLicense() {
-    return this.adapters.playerServer.getIdentifier(this.clientID.toString(), 'license')
-  }
-
-  getIdentifier(identifier: string) {
-    return this.adapters.playerServer.getIdentifier(this.clientID.toString(), identifier)
+  getPlayerIdentifiers(): PlayerIdentifier[] {
+    return this.adapters.playerServer.getPlayerIdentifiers(this.clientID.toString())
   }
 
   /**
-   * Sends a network event exclusively to this specific player (Client-side).
-   * Wrapper for `emitNet` ensuring the correct target Source ID is used.
+   * Gets a specific identifier by type.
+   *
+   * @param identifierType - The type of identifier (e.g., 'steam', 'license', 'discord')
+   * @returns The identifier string or undefined if not found
+   */
+  getIdentifier(identifierType: string): string | undefined {
+    return this.adapters.playerServer.getIdentifier(this.clientID.toString(), identifierType)
+  }
+
+  /**
+   * Gets the player's license identifier.
+   * @deprecated Use getIdentifier('license') for cross-platform compatibility.
+   */
+  getLicense(): string | undefined {
+    return this.getIdentifier('license')
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Network Communication
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Sends a network event exclusively to this specific player (client-side).
    *
    * @param eventName - The name of the event to trigger on the client.
    * @param args - Data to send to the client.
    */
-  emit(eventName: string, ...args: any[]) {
+  emit(eventName: string, ...args: any[]): void {
     this.adapters.netTransport.emitNet(eventName, this.clientID, ...args)
   }
 
-  /** used to send a private message to the player */
-  send(message: string, type: 'chat' | 'error' | 'success' | 'warning' = 'chat') {
-    this.adapters.netTransport.emitNet('core:chat:send', this.clientID, message, type)
+  /**
+   * Sends a private message to the player.
+   *
+   * @param message - The message text
+   * @param type - Message type for styling
+   */
+  send(message: string, type: 'chat' | 'error' | 'success' | 'warning' = 'chat'): void {
+    this.emit('core:chat:send', message, type)
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Spawning / Teleporting
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Requests the Client to teleport itself via the Core Spawner system.
+   * Requests the client to teleport via the spawner system.
    *
+   * @remarks
    * This method is preferred for gameplay logic as it allows the client to handle
    * loading screens, fading, and collision loading gracefully.
    *
@@ -147,28 +177,68 @@ export class Player extends BaseEntity implements Spatial {
     this.emit('opencore:spawner:teleport', vector)
   }
 
-  spawn(vector: Vector3, model = 'mp_m_freemode_01') {
+  /**
+   * Spawns the player at a position with a specific model.
+   *
+   * @param vector - The spawn coordinates
+   * @param model - The ped model to use (default: 'mp_m_freemode_01')
+   */
+  spawn(vector: Vector3, model = 'mp_m_freemode_01'): void {
     this.emit('opencore:spawner:spawn', { position: vector, model })
   }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Connection Management
+  // ─────────────────────────────────────────────────────────────────
 
   /**
    * Disconnects the player from the server.
    *
    * @param reason - The message displayed to the player upon disconnection.
    */
-  kick(reason = 'Kicked from server') {
+  kick(reason = 'Kicked from server'): void {
     this.adapters.playerServer.drop(this.clientID.toString(), reason)
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Dimension / Routing Bucket
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Sets the routing bucket (virtual world / dimension) for the player.
+   * Sets the routing bucket (virtual world/dimension) for the player.
    * Players in different buckets cannot see or interact with each other.
    *
    * @param bucket - The bucket ID (0 is the default shared world).
    */
-  setRoutingBucket(bucket: number) {
+  setRoutingBucket(bucket: number): void {
     this.adapters.playerServer.setRoutingBucket(this.clientID.toString(), bucket)
+    this._dimension = bucket
   }
+
+  /**
+   * Gets the current routing bucket.
+   */
+  getRoutingBucket(): number {
+    return this.adapters.playerServer.getRoutingBucket(this.clientID.toString())
+  }
+
+  /**
+   * Sets the player dimension (alias for setRoutingBucket).
+   */
+  override set dimension(value: number) {
+    this.setRoutingBucket(value)
+  }
+
+  /**
+   * Gets the player dimension (alias for getRoutingBucket).
+   */
+  override get dimension(): number {
+    return this.getRoutingBucket()
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Session Metadata (Transient)
+  // ─────────────────────────────────────────────────────────────────
 
   /**
    * Stores arbitrary transient metadata for this player's session.
@@ -177,20 +247,23 @@ export class Player extends BaseEntity implements Spatial {
    * @param key - The unique key for the metadata.
    * @param value - The value to store.
    */
-  setMeta(key: string, value: unknown) {
+  override setMeta<T = unknown>(key: string, value: T): void {
     this.session.meta[key] = value
   }
 
   /**
    * Retrieves metadata previously stored in the session.
    *
-   * @template T - The expected type of the value.
    * @param key - The metadata key.
    * @returns The value cast to T, or `undefined` if not set.
    */
-  getMeta<T = unknown>(key: string): T | undefined {
+  override getMeta<T = unknown>(key: string): T | undefined {
     return this.session.meta[key] as T | undefined
   }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Account Linking
+  // ─────────────────────────────────────────────────────────────────
 
   /**
    * Links a persistent Account ID to the current session.
@@ -198,19 +271,25 @@ export class Player extends BaseEntity implements Spatial {
    *
    * @param accountID - The unique ID from the database.
    */
-  linkAccount(accountID: LinkedID) {
+  linkAccount(accountID: LinkedID): void {
     this.session.accountID = accountID
   }
 
-  unlinkAccount() {
+  /**
+   * Unlinks the account from the current session.
+   */
+  unlinkAccount(): void {
     this.session.accountID = undefined
   }
+
+  // ─────────────────────────────────────────────────────────────────
+  // State Flags
+  // ─────────────────────────────────────────────────────────────────
 
   /**
    * Checks if the player currently possesses a specific state flag.
    *
    * @param state - The unique string identifier of the state (e.g., 'dead', 'cuffed').
-   * @returns `true` if the state is active, `false` otherwise.
    */
   hasState(state: string): boolean {
     return super.has(state)
@@ -218,10 +297,6 @@ export class Player extends BaseEntity implements Spatial {
 
   /**
    * Applies a state flag to the player.
-   *
-   * @remarks
-   * Since states are stored in a `Set`, adding an existing state has no effect (idempotent).
-   * Ideally, this should trigger a sync event to the client if needed.
    *
    * @param state - The state key to add.
    */
@@ -242,47 +317,26 @@ export class Player extends BaseEntity implements Spatial {
    * Toggles the presence of a state flag.
    *
    * @param state - The state key to toggle.
-   * @param force - If provided, forces the state to be added (`true`) or removed (`false`) regardless of its current status.
-   *
-   * @returns The final status of the state (`true` if active, `false` if inactive).
-   *
-   * @example
-   * ```ts
-   * // Standard toggle
-   * player.toggleState('duty'); // turns on if off, off if on
-   *
-   * // Force enable (equivalent to addState but returns boolean)
-   * player.toggleState('duty', true); // always results in true
-   * ```
+   * @param force - If provided, forces the state to be added or removed.
+   * @returns The final status of the state.
    */
   toggleState(state: string, force?: boolean): boolean {
-    if (force !== undefined) {
-      force ? this.addState(state) : this.removeState(state)
-      return force
-    }
-
-    if (this.hasState(state)) {
-      this.removeState(state)
-      return false
-    } else {
-      this.addState(state)
-      return true
-    }
+    return super.toggle(state, force)
   }
 
   /**
-   * Retrieves a snapshot of all currently active state flags for this player.
-   *
-   * @returns An array containing all active state keys.
+   * Retrieves all currently active state flags.
    */
   getStates(): string[] {
     return super.all()
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Health & Armor
+  // ─────────────────────────────────────────────────────────────────
+
   /**
    * Gets the current health of the player's ped.
-   *
-   * @returns Current health value (0-200, where 100 is dead).
    */
   getHealth(): number {
     const ped = this.adapters.playerServer.getPed(this.clientID.toString())
@@ -292,7 +346,7 @@ export class Player extends BaseEntity implements Spatial {
   /**
    * Sets the health of the player's ped.
    *
-   * @param health - Health value to set (0-200).
+   * @param health - Health value to set (platform-specific range).
    */
   setHealth(health: number): void {
     const ped = this.adapters.playerServer.getPed(this.clientID.toString())
@@ -301,8 +355,6 @@ export class Player extends BaseEntity implements Spatial {
 
   /**
    * Gets the current armor of the player's ped.
-   *
-   * @returns Current armor value (0-100).
    */
   getArmor(): number {
     const ped = this.adapters.playerServer.getPed(this.clientID.toString())
@@ -312,7 +364,7 @@ export class Player extends BaseEntity implements Spatial {
   /**
    * Sets the armor of the player's ped.
    *
-   * @param armor - Armor value to set (0-100).
+   * @param armor - Armor value to set (typically 0-100).
    */
   setArmor(armor: number): void {
     const ped = this.adapters.playerServer.getPed(this.clientID.toString())
@@ -329,18 +381,20 @@ export class Player extends BaseEntity implements Spatial {
   /**
    * Checks if the player is alive.
    *
-   * @returns `true` if health is above 100 (dead threshold), `false` otherwise.
+   * @remarks
+   * The threshold (100) is platform-specific. In GTA V-based platforms,
+   * health below 100 means dead.
    */
   isAlive(): boolean {
     return this.getHealth() > 100
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // Serialization
+  // ─────────────────────────────────────────────────────────────────
+
   /**
    * Serializes the player data for cross-resource transfer.
-   *
-   * @remarks
-   * Creates a plain object representation of the player session that can be
-   * safely transferred between resources via FiveM exports.
    *
    * @returns Serialized player data DTO
    */

@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe'
 import { IPlayerServer } from '../contracts/server/IPlayerServer'
+import { type PlayerIdentifier, parseIdentifier } from '../contracts/types/identifier'
 
 /**
  * Node.js mock implementation of server-side player operations.
@@ -15,6 +16,7 @@ export class NodePlayerServer extends IPlayerServer {
       identifiers: string[]
       ping: number
       endpoint: string
+      routingBucket: number
     }
   >()
   private droppedPlayers: string[] = []
@@ -36,8 +38,25 @@ export class NodePlayerServer extends IPlayerServer {
     return player.identifiers.find((id) => id.startsWith(prefix))
   }
 
+  /**
+   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
+   */
   getIdentifiers(playerSrc: string): string[] {
     return this.players.get(playerSrc)?.identifiers ?? []
+  }
+
+  getPlayerIdentifiers(playerSrc: string): PlayerIdentifier[] {
+    const rawIdentifiers = this.getIdentifiers(playerSrc)
+    const identifiers: PlayerIdentifier[] = []
+
+    for (const raw of rawIdentifiers) {
+      const parsed = parseIdentifier(raw)
+      if (parsed) {
+        identifiers.push(parsed)
+      }
+    }
+
+    return identifiers
   }
 
   getNumIdentifiers(playerSrc: string): number {
@@ -56,7 +75,28 @@ export class NodePlayerServer extends IPlayerServer {
     return this.players.get(playerSrc)?.endpoint ?? ''
   }
 
-  // Test helpers
+  setRoutingBucket(playerSrc: string, bucket: number): void {
+    const player = this.players.get(playerSrc)
+    if (player) {
+      player.routingBucket = bucket
+    }
+  }
+
+  getRoutingBucket(playerSrc: string): number {
+    return this.players.get(playerSrc)?.routingBucket ?? 0
+  }
+
+  getConnectedPlayers(): string[] {
+    return Array.from(this.players.keys())
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Test Helpers
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Add a mock player for testing.
+   */
   _addMockPlayer(
     playerSrc: string,
     data: {
@@ -65,6 +105,7 @@ export class NodePlayerServer extends IPlayerServer {
       identifiers?: string[]
       ping?: number
       endpoint?: string
+      routingBucket?: number
     },
   ): void {
     this.players.set(playerSrc, {
@@ -73,21 +114,20 @@ export class NodePlayerServer extends IPlayerServer {
       identifiers: data.identifiers ?? [],
       ping: data.ping ?? 50,
       endpoint: data.endpoint ?? '127.0.0.1:30120',
+      routingBucket: data.routingBucket ?? 0,
     })
   }
 
+  /**
+   * Check if a player was dropped.
+   */
   _wasDropped(playerSrc: string): boolean {
     return this.droppedPlayers.includes(playerSrc)
   }
 
-  setRoutingBucket(_playerSrc: string, _bucket: number): void {
-    // Mock: no-op in Node.js
-  }
-
-  getConnectedPlayers(): string[] {
-    return Array.from(this.players.keys())
-  }
-
+  /**
+   * Clear all mock data.
+   */
   _clear(): void {
     this.players.clear()
     this.droppedPlayers = []
