@@ -26,6 +26,6 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
  */
 export function OnRuntimeEvent(event: string) {
   return (target: any, propertyKey: string) => {
-    Reflect.defineMetadata(METADATA_KEYS.FIVEM_EVENT, { event }, target, propertyKey)
+    Reflect.defineMetadata(METADATA_KEYS.RUNTIME_EVENT, { event }, target, propertyKey)
   }
 }

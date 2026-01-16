@@ -84,7 +84,6 @@ export class CommandService extends CommandExecutionPort {
           command: commandName,
           clientId: player.clientID,
         })
-        player.emit('core:auth:required', { command: commandName })
         player.send('You must be authenticated to use this command', 'error')
         return
       }

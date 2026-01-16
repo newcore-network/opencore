@@ -6,15 +6,15 @@ import { resolveMethod } from '../../helpers/resolve-method'
 import { METADATA_KEYS } from '../metadata-server.keys'
 
 @injectable()
-export class FiveMEventProcessor implements DecoratorProcessor {
-  readonly metadataKey = METADATA_KEYS.FIVEM_EVENT
+export class RuntimeEventProcessor implements DecoratorProcessor {
+  readonly metadataKey = METADATA_KEYS.RUNTIME_EVENT
   constructor(@inject(IEngineEvents as any) private readonly engineEvents: IEngineEvents) {}
 
   process(instance: any, methodName: string, metadata: { event: string }) {
     const result = resolveMethod(
       instance,
       methodName,
-      `[FiveMEventProcessor] Method "${methodName}" not found`,
+      `[RuntimeEventProcessor] Method "${methodName}" not found`,
     )
     if (!result) return
 

@@ -6,7 +6,7 @@ import { DefaultNetEventSecurityObserver } from '../services/default/default-net
 import { DefaultSecurityHandler } from '../services/default/default-security.handler'
 import { CommandProcessor } from './processors/command.processor'
 import { ExportProcessor } from './processors/export.processor'
-import { FiveMEventProcessor } from './processors/fivemEvent.processor'
+import { RuntimeEventProcessor } from './processors/runtimeEvent.processor'
 import { InternalEventProcessor } from './processors/internalEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
 import { TickProcessor } from './processors/tick.processor'
@@ -41,6 +41,6 @@ export function registerSystemServer(ctx: RuntimeContext) {
   }
 
   if (features.fiveMEvents.enabled) {
-    GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: FiveMEventProcessor })
+    GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: RuntimeEventProcessor })
   }
 }

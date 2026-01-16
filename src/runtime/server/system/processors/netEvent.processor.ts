@@ -58,7 +58,6 @@ export class NetEventProcessor implements DecoratorProcessor {
           event: metadata.eventName,
           clientId: clientId,
         })
-        player.emit('core:auth:required', { event: metadata.eventName })
         return
       }
 
