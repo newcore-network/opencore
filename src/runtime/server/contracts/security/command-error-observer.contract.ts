@@ -1,7 +1,7 @@
-import { AppError } from '../../../kernel/error'
-import type { CommandMetadata } from '../decorators/command'
-import type { Player } from '../entities/player'
-import type { FeatureScope, FrameworkMode } from '../runtime'
+import { AppError } from '../../../../kernel/error'
+import type { CommandMetadata } from '../../decorators/command'
+import type { Player } from '../../entities/player'
+import type { FeatureScope, FrameworkMode } from '../../runtime'
 
 /**
  * High-level stage where a command error happened.

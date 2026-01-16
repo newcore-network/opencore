@@ -3,7 +3,7 @@ import { loggers } from '../../../../kernel/logger'
 import {
   type CommandErrorContext,
   CommandErrorObserverContract,
-} from '../../contracts/command-error-observer.contract'
+} from '../../contracts/security/command-error-observer.contract'
 
 /**
  * Default implementation for {@link CommandErrorObserverContract}.

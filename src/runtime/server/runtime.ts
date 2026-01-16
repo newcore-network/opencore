@@ -178,7 +178,7 @@ export interface UserFeatureConfig {
   netEvents?: BaseFeatureConfig
 
   /**
-   * FiveM lifecycle events (`onServer`, `onClient`, etc.).
+   * Runtime lifecycle events (`onServer`, `onClient`, etc.).
    *
    * @remarks
    * **Dependencies**: None
@@ -189,7 +189,7 @@ export interface UserFeatureConfig {
    * @defaultValue
    * - enabled: true (CORE/STANDALONE), false (RESOURCE)
    */
-  fiveMEvents?: BaseFeatureConfig
+  runtimeEvents?: BaseFeatureConfig
 
   /**
    * FiveM exports support (`@Export` decorator).

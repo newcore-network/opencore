@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../src/adapters/contracts/IEngineEvents'
-import type { CommandErrorObserverContract } from '../../../src/runtime/server/contracts/command-error-observer.contract'
+import type { CommandErrorObserverContract } from '../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../src/runtime/server/controllers/command-export.controller'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
 import { Player } from '../../../src/runtime/server/entities/player'

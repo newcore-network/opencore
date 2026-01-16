@@ -1,5 +1,5 @@
 import { GLOBAL_CONTAINER } from '../../../kernel/di/index'
-import { CommandErrorObserverContract } from '../contracts/command-error-observer.contract'
+import { CommandErrorObserverContract } from '../contracts/security/command-error-observer.contract'
 import { NetEventSecurityObserverContract } from '../contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from '../contracts/security/security-handler.contract'
 import { RuntimeContext } from '../runtime'
