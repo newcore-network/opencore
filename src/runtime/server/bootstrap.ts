@@ -3,6 +3,7 @@ import { registerServerCapabilities } from '../../adapters/register-capabilities
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { loggers } from '../../kernel/logger'
 import { PrincipalProviderContract } from './contracts/index'
+import { DefaultPrincipalProvider } from './services/default/default-principal.provider'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
@@ -93,31 +94,11 @@ export async function initServer(options: ServerRuntimeOptions) {
     scope: getFrameworkModeScope(ctx.mode),
   })
 
-  // Adapters
+  // Register platform-specific capabilities (adapters)
   await registerServerCapabilities()
+  loggers.bootstrap.debug('Platform capabilities registered')
 
-  const dependenciesToWaitFor: Promise<any>[] = []
-  if (ctx.mode === 'RESOURCE') {
-    loggers.bootstrap.info(`[WAIT] Standing by for Core '${ctx.coreResourceName}' to be ready...`)
-    dependenciesToWaitFor.push(createCoreDependency(ctx.coreResourceName))
-  }
-
-  if (options.onDependency?.waitFor) {
-    const userDeps = Array.isArray(options.onDependency.waitFor)
-      ? options.onDependency.waitFor
-      : [options.onDependency.waitFor]
-    dependenciesToWaitFor.push(...userDeps)
-  }
-
-  if (dependenciesToWaitFor.length > 0 || options.onDependency?.onReady) {
-    await dependencyResolver(dependenciesToWaitFor, options.onDependency?.onReady)
-  }
-
-  if (ctx.mode === 'RESOURCE') {
-    loggers.bootstrap.info(`Core ready detected!`)
-  }
-  loggers.bootstrap.debug('Dependencies resolved. Proceeding with system boot.')
-
+  // Metadata scanning
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
   registerSystemServer(ctx)

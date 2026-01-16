@@ -1,3 +1,4 @@
+import { inject } from 'tsyringe'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
@@ -15,7 +16,7 @@ import { InternalPlayerExports, SerializedPlayerData } from '../types/core-expor
  */
 @Controller()
 export class PlayerExportController implements InternalPlayerExports {
-  constructor(private playerService: PlayerDirectoryPort) {}
+  constructor(@inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort) {}
 
   // ═══════════════════════════════════════════════════════════════
   // Basic Player Queries

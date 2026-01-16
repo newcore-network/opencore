@@ -335,6 +335,9 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
 }
 
 function assertFeatureKeys(features: any): asserts features is FrameworkFeatures {
+  if (!features) {
+    throw new Error('[OpenCore] Runtime options are missing features configuration')
+  }
   const keys = Object.keys(features)
   for (const key of keys) {
     if (!FEATURE_NAMES.includes(key as FeatureName)) {

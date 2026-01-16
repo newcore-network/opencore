@@ -23,7 +23,7 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    private playerService: PlayerDirectoryPort,
+    @inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,

@@ -1,6 +1,8 @@
-import { container, injectAll, injectable } from 'tsyringe'
+import { injectAll, injectable } from 'tsyringe'
+import { GLOBAL_CONTAINER } from './container'
 import { loggers } from '../logger'
-import { type ClassConstructor, type DecoratorProcessor } from './index'
+import { type ClassConstructor } from './class-constructor'
+import { type DecoratorProcessor } from './decorator-processor'
 
 @injectable()
 export class MetadataScanner {
@@ -12,7 +14,7 @@ export class MetadataScanner {
     )
 
     for (const ControllerClass of registry) {
-      const instance = container.resolve(ControllerClass)
+      const instance = GLOBAL_CONTAINER.resolve(ControllerClass)
       const prototype = Object.getPrototypeOf(instance)
 
       const methods = Object.getOwnPropertyNames(prototype).filter(

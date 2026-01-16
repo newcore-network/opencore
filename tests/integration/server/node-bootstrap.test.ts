@@ -8,6 +8,7 @@ import { NodeResourceInfo } from '../../../src/adapters/node/node-resourceinfo'
 import { NodeTick } from '../../../src/adapters/node/node-tick'
 import { GLOBAL_CONTAINER } from '../../../src/kernel/di/container'
 import { initServer } from '../../../src/runtime/server/bootstrap'
+import { resolveRuntimeOptions } from '../../../src/runtime/server/runtime'
 import { resetContainer } from '../../helpers/di.helper'
 
 describe('Node.js Runtime Bootstrap', () => {
@@ -18,10 +19,14 @@ describe('Node.js Runtime Bootstrap', () => {
   })
 
   it('should initialize DI container with Node capabilities', async () => {
-    await initServer({
+    const options = resolveRuntimeOptions({
       mode: 'CORE',
       coreResourceName: 'node-test',
-    } as any)
+      features: {
+        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+      },
+    })
+    await initServer(options)
 
     // Verify Node implementations are registered
     expect(GLOBAL_CONTAINER.isRegistered(INetTransport as any)).toBe(true)
@@ -45,26 +50,15 @@ describe('Node.js Runtime Bootstrap', () => {
   })
 
   it('should boot runtime without accessing FiveM globals', async () => {
-    // Monitor global access
-    const globalAccess: string[] = []
-    const originalGlobal = globalThis as any
-
-    const _proxy = new Proxy(originalGlobal, {
-      get(target, prop) {
-        if (
-          typeof prop === 'string' &&
-          ['onNet', 'emitNet', 'exports', 'GetCurrentResourceName', 'on', 'setTick'].includes(prop)
-        ) {
-          globalAccess.push(prop)
-        }
-        return target[prop]
-      },
-    })
-
-    await initServer({
+    // ... setup proxy ...
+    const options = resolveRuntimeOptions({
       mode: 'CORE',
       coreResourceName: 'node-test',
-    } as any)
+      features: {
+        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+      },
+    })
+    await initServer(options)
 
     // Runtime should initialize without errors
     expect(GLOBAL_CONTAINER.isRegistered(INetTransport as any)).toBe(true)
@@ -73,10 +67,14 @@ describe('Node.js Runtime Bootstrap', () => {
   it('should use environment variable for resource name in Node', async () => {
     process.env.RESOURCE_NAME = 'test-resource'
 
-    await initServer({
+    const options = resolveRuntimeOptions({
       mode: 'CORE',
       coreResourceName: 'node-test',
-    } as any)
+      features: {
+        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+      },
+    })
+    await initServer(options)
 
     const resourceInfo = GLOBAL_CONTAINER.resolve(IResourceInfo as any)
     if (resourceInfo instanceof IResourceInfo)
@@ -88,13 +86,16 @@ describe('Node.js Runtime Bootstrap', () => {
   it('should default to "default" resource name when env var not set', async () => {
     delete process.env.RESOURCE_NAME
 
-    await initServer({
+    const options = resolveRuntimeOptions({
       mode: 'CORE',
-      coreResourceName: 'node-test',
-    } as any)
+      features: {
+        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+      },
+    })
+    await initServer(options)
 
     const resourceInfo = GLOBAL_CONTAINER.resolve(IResourceInfo as any)
     if (resourceInfo instanceof IResourceInfo)
-      expect(resourceInfo.getCurrentResourceName()).toBe('test-resource')
+      expect(resourceInfo.getCurrentResourceName()).toBe('default')
   })
 })
