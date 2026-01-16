@@ -2,9 +2,12 @@ import { inject, injectable } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { AppError, SecurityError } from '../../../kernel/error'
 import { loggers } from '../../../kernel/logger'
+import { CommandErrorObserverContract } from '../contracts/command-error-observer.contract'
 import { Controller, Export, Public } from '../decorators'
 import { OnNet } from '../decorators/onNet'
 import { Player } from '../entities'
+import { normalizeToAppError } from '../helpers/normalize-app-error'
+import { getRuntimeContext } from '../runtime'
 import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 import { PrincipalPort } from '../services/ports/principal.port'
@@ -41,8 +44,25 @@ export class CommandExportController implements InternalCommandsExports {
     private playerDirectory: PlayerDirectoryPort,
     private principalPort: PrincipalPort,
     private rateLimiter: RateLimiterService,
-    @inject(IEngineEvents as any) private engineEvents: IEngineEvents,
+    @inject(CommandErrorObserverContract as any)
+    private readonly commandErrorObserver: CommandErrorObserverContract,
+    @inject(IEngineEvents as any)
+    private engineEvents: IEngineEvents,
   ) {}
+
+  /**
+   * Invokes the global {@link CommandErrorObserverContract} safely.
+   *
+   * @remarks
+   * Observers are user-land code; failures must never break the command pipeline.
+   */
+  private async safeObserve(ctx: Parameters<CommandErrorObserverContract['onError']>[0]) {
+    try {
+      await this.commandErrorObserver.onError(ctx)
+    } catch (e) {
+      loggers.command.fatal(`Command error observer failed`, ctx as any, e as Error)
+    }
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // Network Event Handler (receives commands from clients)
@@ -79,25 +99,61 @@ export class CommandExportController implements InternalCommandsExports {
       // Use unified execution that handles both local and remote commands
       await this.executeCommand(player.clientID, command, args)
     } catch (error) {
-      if (error instanceof AppError) {
-        if (error.code === 'GAME:BAD_REQUEST' || error.code === 'COMMAND:NOT_FOUND') {
-          player.send(error.message, 'error')
-        } else {
-          player.send('An error occurred while executing the command', 'error')
-        }
+      const runtime = getRuntimeContext()
+      const remoteEntry = this.remoteCommands.get(command.toLowerCase())
+      const localMeta = this.commandService.getCommandMeta(command)
+      const appError = normalizeToAppError(error, 'server')
 
-        loggers.command.error(
-          `Execution failed: /${command}`,
-          { playerId: player.clientID },
-          error as Error,
-        )
-      } else if (error instanceof SecurityError) {
-        player.send(error.message, 'error')
-        loggers.command.warn(`Security error: /${command}`, {
-          playerId: player.clientID,
-          error: error.message,
-        })
-      }
+      const stage =
+        error instanceof SecurityError
+          ? 'security'
+          : appError.code === 'AUTH:UNAUTHORIZED'
+            ? 'auth'
+            : appError.code === 'GAME:BAD_REQUEST' || appError.code.startsWith('SCHEMA:')
+              ? 'validation'
+              : appError.code === 'COMMAND:NOT_FOUND'
+                ? 'dispatch'
+                : 'unknown'
+
+      await this.safeObserve({
+        mode: runtime.mode,
+        scope:
+          runtime.mode === 'CORE'
+            ? 'core'
+            : runtime.mode === 'RESOURCE'
+              ? 'resource'
+              : 'standalone',
+        stage,
+        error: appError,
+        commandName: command,
+        args,
+        player: {
+          clientId: player.clientID,
+          accountId: player.accountID,
+          name: player.name,
+        },
+        playerRef: player,
+        ownerResourceName: remoteEntry?.resourceName,
+        command: localMeta
+          ? {
+              command: localMeta.command,
+              description: localMeta.description,
+              usage: localMeta.usage,
+              isPublic: localMeta.isPublic,
+              methodName: localMeta.methodName,
+              expectsPlayer: localMeta.expectsPlayer,
+              paramNames: localMeta.paramNames,
+            }
+          : remoteEntry
+            ? {
+                command: remoteEntry.metadata.command,
+                description: remoteEntry.metadata.description,
+                usage: remoteEntry.metadata.usage,
+                isPublic: remoteEntry.metadata.isPublic,
+              }
+            : undefined,
+        commandMeta: localMeta,
+      })
     }
   }
 

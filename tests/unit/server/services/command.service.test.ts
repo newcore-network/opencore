@@ -137,22 +137,13 @@ describe('CommandService - Authentication', () => {
 
     // Create player without accountID (unauthenticated)
     const fakePlayer = createTestPlayer({ clientID: 1 })
-    fakePlayer.emit = vi.fn()
-    fakePlayer.send = vi.fn()
 
-    await service.execute(fakePlayer, 'spawn', ['car'])
+    await expect(service.execute(fakePlayer, 'spawn', ['car'])).rejects.toThrow(
+      'You must be authenticated to use this command',
+    )
 
     // Handler should not be called
     expect(handler).not.toHaveBeenCalled()
-
-    // Should emit auth required event
-    expect(fakePlayer.emit).toHaveBeenCalledWith('core:auth:required', { command: 'spawn' })
-
-    // Should send error message
-    expect(fakePlayer.send).toHaveBeenCalledWith(
-      'You must be authenticated to use this command',
-      'error',
-    )
   })
 
   it('should allow authenticated player on non-public command', async () => {

@@ -1,5 +1,6 @@
 // Security
 
+export * from './command-error-observer.contract'
 export * from './player-persistence.contract'
 // Repository
 export * from './repository/index'

@@ -1,9 +1,11 @@
 import { inject, injectable } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { IResourceInfo } from '../../../adapters/contracts/IResourceInfo'
-import { AppError } from '../../../kernel'
 import { loggers } from '../../../kernel/logger'
+import { CommandErrorObserverContract } from '../contracts/command-error-observer.contract'
 import { Controller } from '../decorators'
+import { normalizeToAppError } from '../helpers/normalize-app-error'
+import { getRuntimeContext } from '../runtime'
 import { CommandExecutionPort } from '../services/ports/command-execution.port'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 
@@ -29,10 +31,26 @@ export class RemoteCommandExecutionController {
   constructor(
     private commandService: CommandExecutionPort,
     private playerDirectory: PlayerDirectoryPort,
+    @inject(CommandErrorObserverContract as any)
+    private readonly commandErrorObserver: CommandErrorObserverContract,
     @inject(IEngineEvents as any) private engineEvents: IEngineEvents,
     @inject(IResourceInfo as any) private resourceInfo: IResourceInfo,
   ) {
     this.registerEventHandler()
+  }
+
+  /**
+   * Invokes the global {@link CommandErrorObserverContract} safely.
+   *
+   * @remarks
+   * Observers are user-land code; failures must never break command execution.
+   */
+  private async safeObserve(ctx: Parameters<CommandErrorObserverContract['onError']>[0]) {
+    try {
+      await this.commandErrorObserver.onError(ctx)
+    } catch (e) {
+      loggers.command.fatal(`Command error observer failed`, ctx as any, e as Error)
+    }
   }
 
   /**
@@ -81,13 +99,49 @@ export class RemoteCommandExecutionController {
     try {
       await this.commandService.execute(player, commandName, args)
     } catch (error) {
-      if (error instanceof AppError) {
-        player.send(error.message)
-      }
-      loggers.command.error(`Remote command execution failed`, {
-        command: commandName,
-        clientID: player.clientID,
-        error: error instanceof Error ? error.message : String(error),
+      // Do not notify the player here. Report through the global observer.
+      const runtime = getRuntimeContext()
+      const appError = normalizeToAppError(error, 'server')
+      const meta = this.commandService.getCommandMeta(commandName)
+
+      const stage =
+        appError.code === 'GAME:BAD_REQUEST' || appError.code.startsWith('SCHEMA:')
+          ? 'validation'
+          : appError.code === 'COMMAND:NOT_FOUND'
+            ? 'dispatch'
+            : 'handler'
+
+      await this.safeObserve({
+        mode: runtime.mode,
+        scope:
+          runtime.mode === 'CORE'
+            ? 'core'
+            : runtime.mode === 'RESOURCE'
+              ? 'resource'
+              : 'standalone',
+        stage,
+        error: appError,
+        commandName,
+        args,
+        player: {
+          clientId: player.clientID,
+          accountId: player.accountID,
+          name: player.name,
+        },
+        playerRef: player,
+        command: meta
+          ? {
+              command: meta.command,
+              description: meta.description,
+              usage: meta.usage,
+              isPublic: meta.isPublic,
+              methodName: meta.methodName,
+              expectsPlayer: meta.expectsPlayer,
+              paramNames: meta.paramNames,
+            }
+          : undefined,
+        commandMeta: meta,
+        ownerResourceName: this.resourceInfo.getCurrentResourceName(),
       })
     }
   }

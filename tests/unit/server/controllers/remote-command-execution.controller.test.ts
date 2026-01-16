@@ -2,16 +2,22 @@ import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
 import type { IResourceInfo } from '../../../../src/adapters/contracts/IResourceInfo'
+import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/command-error-observer.contract'
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
 import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
 import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
 import { createTestPlayer } from '../../../helpers'
+
+vi.mock('../../../../src/runtime/server/runtime', () => ({
+  getRuntimeContext: vi.fn(() => ({ mode: 'RESOURCE' })),
+}))
 
 describe('RemoteCommandExecutionController', () => {
   let mockCommandService: CommandExecutionPort
   let mockPlayerDirectory: PlayerDirectoryPort
   let mockEngineEvents: IEngineEvents
   let mockResourceInfo: IResourceInfo
+  let mockCommandErrorObserver: CommandErrorObserverContract
   let capturedEventHandler: ((clientID: number, commandName: string, args: string[]) => void) | null
 
   beforeEach(() => {
@@ -22,6 +28,7 @@ describe('RemoteCommandExecutionController', () => {
       register: vi.fn(),
       execute: vi.fn(),
       getAllCommands: vi.fn(() => []),
+      getCommandMeta: vi.fn(() => undefined),
     } as any
 
     mockPlayerDirectory = {
@@ -41,6 +48,10 @@ describe('RemoteCommandExecutionController', () => {
       getCurrentResourceName: vi.fn(() => 'test-resource'),
     } as any
 
+    mockCommandErrorObserver = {
+      onError: vi.fn(),
+    } as any
+
     // Clear mocks before creating controller (constructor registers handler)
     vi.clearAllMocks()
 
@@ -48,6 +59,7 @@ describe('RemoteCommandExecutionController', () => {
     new RemoteCommandExecutionController(
       mockCommandService,
       mockPlayerDirectory,
+      mockCommandErrorObserver,
       mockEngineEvents,
       mockResourceInfo,
     )
@@ -125,6 +137,7 @@ describe('RemoteCommandExecutionController', () => {
       await expect(capturedEventHandler?.(1, 'failcmd', [])).resolves.toBeUndefined()
 
       expect(mockCommandService.execute).toHaveBeenCalled()
+      expect(mockCommandErrorObserver.onError).toHaveBeenCalled()
     })
 
     it('should handle async command execution', async () => {

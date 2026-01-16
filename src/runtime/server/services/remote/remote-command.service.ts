@@ -40,6 +40,10 @@ interface CommandEntry {
 export class RemoteCommandService extends CommandExecutionPort {
   private commands = new Map<string, CommandEntry>()
 
+  getCommandMeta(commandName: string): CommandMetadata | undefined {
+    return this.commands.get(commandName.toLowerCase())?.meta
+  }
+
   constructor(@inject(IExports as any) private exportsService: IExports) {
     super()
   }
