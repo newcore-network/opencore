@@ -1,8 +1,7 @@
 // Security
 
+// Persistence
 export * from './player-persistence.contract'
-// Repository
-export * from './repository/index'
 export * from './security/command-error-observer.contract'
 export * from './security/net-event-security-observer.contract'
 export * from './security/permission.types'

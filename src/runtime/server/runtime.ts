@@ -12,7 +12,7 @@ export type FrameworkMode = 'CORE' | 'RESOURCE' | 'STANDALONE'
  *
  * - `'local'`: Feature implemented locally in current resource
  *   - Used in CORE/STANDALONE for all features
- *   - Used in RESOURCE for: netEvents, fiveMEvents, exports, http, chat, database
+ *   - Used in RESOURCE for: netEvents, fiveMEvents, exports, http, chat
  *   - Triggers local service implementations
  *
  * @example
@@ -34,7 +34,6 @@ export type FeatureName =
   | 'commands'
   | 'exports'
   | 'chat'
-  | 'database'
   | 'principal'
   | 'sessionLifecycle'
 
@@ -43,222 +42,15 @@ export type FeatureName =
 // ========================================
 
 /**
- * Base feature configuration (all features support this).
- */
-export interface BaseFeatureConfig {
-  /**
-   * Enable or disable this feature.
-   *
-   * @defaultValue Varies by feature and mode (see specific feature docs)
-   */
-  enabled?: boolean
-}
-
-/**
- * Feature configuration with configurable provider.
- *
- * @remarks
- * Only applies to: `players`, `commands`, `principal`, `auth`
- *
- * For these features, you can choose:
- * - `'core'`: Use CORE's implementation (RESOURCE mode)
- * - `'local'`: Use local implementation (STANDALONE mode)
- *
- * **Defaults by mode:**
- * - CORE: `'core'`
- * - RESOURCE: `'core'` (delegates to CORE)
- * - STANDALONE: `'local'`
- */
-export interface ProviderFeatureConfig extends BaseFeatureConfig {
-  /**
-   * Provider source for this feature.
-   *
-   * @remarks
-   * - RESOURCE mode: Use `'core'` to delegate to CORE (default)
-   * - STANDALONE mode: Must use `'local'` (default)
-   */
-  provider?: FeatureProvider
-}
-
-/**
- * Feature configuration with export option (CORE mode only).
- *
- * @remarks
- * Only applies to: `players`, `principal`, `chat` in CORE mode
- *
- * When `export: true`, the feature exposes FiveM exports for RESOURCE mode access.
- */
-export interface ExportableFeatureConfig extends BaseFeatureConfig {
-  /**
-   * Whether to expose this feature via FiveM exports.
-   *
-   * @remarks
-   * - Only valid in CORE mode
-   * - Requires `exports` feature to be enabled
-   * - Used by RESOURCE mode to access CORE functionality
-   *
-   * @defaultValue false
-   */
-  export?: boolean
-}
-
-/**
  * User-facing feature configuration.
  *
  * @remarks
- * This is what users configure in `Server.init({ features: {...} })`.
- * Internal fields like `scope` and `required` are auto-managed by the framework.
+ * Most features are enabled by default and providers are auto-inferred.
+ * Use this config only if you need to explicitly disable a feature.
  */
 export interface UserFeatureConfig {
-  /**
-   * Player management and directory.
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Configurable
-   * - CORE/STANDALONE: Local player management
-   * - RESOURCE: Delegates to CORE
-   *
-   * **Export** (CORE only): When true, exposes player APIs to RESOURCE mode
-   *
-   * @defaultValue
-   * - enabled: true
-   * - provider: 'core' (RESOURCE), 'core' (CORE), 'local' (STANDALONE)
-   * - export: false
-   */
-  players?: ProviderFeatureConfig & ExportableFeatureConfig
-
-  /**
-   * Command registration and execution.
-   *
-   * @remarks
-   * **Dependencies**: Requires `players` to be enabled
-   * **Provider**: Configurable
-   * - CORE/STANDALONE: Local command execution
-   * - RESOURCE: Commands register with CORE for centralized security validation
-   *
-   * **Export** (CORE only): Always exported when enabled (for RESOURCE mode access)
-   *
-   * @defaultValue
-   * - enabled: false
-   * - provider: 'core' (RESOURCE), 'local' (CORE/STANDALONE)
-   * - export: true (CORE only, automatic)
-   */
-  commands?: ProviderFeatureConfig
-
-  /**
-   * Principal (identity) provider for permissions.
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Configurable
-   * - CORE: User-provided PrincipalProvider implementation
-   * - RESOURCE: Delegates to CORE
-   * - STANDALONE: User-provided PrincipalProvider implementation
-   *
-   * **Export** (CORE only): When true, exposes principal APIs to RESOURCE mode
-   *
-   * @defaultValue
-   * - enabled: false
-   * - provider: 'core' (RESOURCE), 'core' (CORE), 'local' (STANDALONE)
-   * - export: false
-   */
-  principal?: ProviderFeatureConfig & ExportableFeatureConfig
-
-  /**
-   * Network events (`onNet` decorator support).
-   *
-   * @remarks
-   * **Dependencies**: Requires `players` to be enabled
-   * **Provider**: Auto-determined (not configurable)
-   * - Always `'local'` (events are handled locally in each resource)
-   *
-   * @defaultValue enabled: true
-   */
-  netEvents?: BaseFeatureConfig
-
-  /**
-   * Runtime lifecycle events (`onServer`, `onClient`, etc.).
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Auto-determined (not configurable)
-   * - Always `'local'`
-   * - Disabled in RESOURCE mode (only CORE/STANDALONE need lifecycle management)
-   *
-   * @defaultValue
-   * - enabled: true (CORE/STANDALONE), false (RESOURCE)
-   */
-  runtimeEvents?: BaseFeatureConfig
-
-  /**
-   * FiveM exports support (`@Export` decorator).
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Auto-determined (not configurable)
-   * - Always `'local'`
-   *
-   * @defaultValue enabled: false
-   */
-  exports?: BaseFeatureConfig
-
-  /**
-   * Chat message handling.
-   *
-   * @remarks
-   * **Dependencies**: Requires `players` to be enabled
-   * **Provider**: Auto-determined (not configurable)
-   * - Always `'local'`
-   *
-   * **Export** (CORE only): When true, exposes chat APIs to RESOURCE mode
-   *
-   * @defaultValue
-   * - enabled: false
-   * - export: false
-   */
-  chat?: BaseFeatureConfig & ExportableFeatureConfig
-
-  /**
-   * Database access.
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Auto-determined (not configurable)
-   * - Always `'local'`
-   *
-   * @defaultValue enabled: false
-   */
-  database?: BaseFeatureConfig
-
-  /**
-   * Session lifecycle management (internal).
-   *
-   * @remarks
-   * **Dependencies**: None
-   * **Provider**: Auto-determined (not configurable)
-   * - Disabled in RESOURCE mode (CORE manages sessions)
-   *
-   * @defaultValue
-   * - enabled: true (CORE/STANDALONE), false (RESOURCE)
-   * - recoveryOnRestart: true
-   */
-  sessionLifecycle?: BaseFeatureConfig & {
-    /**
-     * Automatically recover sessions for players already connected when the resource restarts.
-     *
-     * @remarks
-     * When enabled, the framework will scan for connected players on startup and
-     * create sessions for any players that don't have an active session.
-     * This is useful during development when hot-reloading resources.
-     *
-     * **Note**: Only basic session data (clientID, identifiers) is recovered.
-     * Players will need to re-authenticate to restore accountID and other auth-related data.
-     *
-     * @defaultValue true
-     */
-    recoveryOnRestart?: boolean
-  }
+  /** Disable specific features if needed */
+  disabled?: FeatureName[]
 }
 
 // ========================================
@@ -321,12 +113,6 @@ export interface FeatureContract {
 
 export type FrameworkFeatures = Record<FeatureName, FeatureContract>
 
-export interface ResourceGrants {
-  database?: boolean
-  principal?: boolean
-  auth?: boolean
-}
-
 export interface DevModeConfig {
   /** Enable dev mode */
   enabled: boolean
@@ -363,7 +149,6 @@ export interface ServerRuntimeOptions {
   mode: FrameworkMode
   features: FrameworkFeatures
   coreResourceName: string
-  resourceGrants?: ResourceGrants
   /** Development mode configuration (disabled in production) */
   devMode?: DevModeConfig
   onDependency?: Hooks
@@ -378,7 +163,6 @@ const FEATURE_NAMES: FeatureName[] = [
   'commands',
   'exports',
   'chat',
-  'database',
   'principal',
   'sessionLifecycle',
 ]
@@ -390,7 +174,6 @@ const FEATURE_ALLOWED_SCOPES: Record<FeatureName, FeatureScope[]> = {
   commands: ['core', 'resource', 'standalone'],
   exports: ['core', 'resource', 'standalone'],
   chat: ['core', 'resource', 'standalone'],
-  database: ['core', 'resource', 'standalone'],
   principal: ['core', 'resource', 'standalone'],
   sessionLifecycle: ['core', 'standalone'],
 }
@@ -422,36 +205,10 @@ export function getFrameworkModeScope(mode: FrameworkMode): FeatureScope {
  * @remarks
  * Defines the runtime mode and feature configuration for OpenCore.
  *
- * @example Minimal CORE Mode
+ * @example Minimal Mode
  * ```typescript
  * Server.init({
- *   mode: 'CORE',
- *   features: {
- *     commands: { enabled: true },
- *     principal: { enabled: true },
- *   }
- * })
- * ```
- *
- * @example Minimal RESOURCE Mode
- * ```typescript
- * Server.init({
- *   mode: 'RESOURCE',
- *   coreResourceName: 'my-core',
- *   features: {
- *     commands: { enabled: true },  // Auto-uses 'core' provider
- *   }
- * })
- * ```
- *
- * @example STANDALONE Mode
- * ```typescript
- * Server.init({
- *   mode: 'STANDALONE',
- *   features: {
- *     players: { enabled: true },
- *     commands: { enabled: true },
- *   }
+ *   mode: 'CORE'
  * })
  * ```
  */
@@ -463,13 +220,7 @@ export interface ServerInitOptions {
    * Feature configuration.
    *
    * @remarks
-   * All features have sensible defaults. You only need to configure:
-   * - `enabled: true` to enable a feature
-   * - `provider` (optional, only for players/commands/principal/auth if you want non-default)
-   * - `export: true` (optional, CORE mode only, for players/principal/chat)
-   *
-   * **Most features auto-determine their provider based on mode.**
-   * Only configure `provider` if you need to override defaults.
+   * Most features are enabled by default. Use this only to disable specific ones.
    */
   features?: UserFeatureConfig
 
@@ -484,9 +235,6 @@ export interface ServerInitOptions {
    */
   coreResourceName?: string
 
-  /** Resource grants configuration (CORE mode only) */
-  resourceGrants?: ResourceGrants
-
   /** Development mode configuration (disabled in production) */
   devMode?: DevModeConfig
 
@@ -499,68 +247,65 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
 
   // Provider logic:
   // - CORE/STANDALONE: All features use 'local' (run locally)
-  // - RESOURCE: Some features delegate to CORE ('core'), others run locally ('local')
-  const playersProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
-  const commandsProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
-  const principalProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
+  // - RESOURCE: Identity/Command features delegate to CORE ('core'), others run locally ('local')
+  const remoteProvider: FeatureProvider = mode === 'RESOURCE' ? 'core' : 'local'
 
-  // These always use 'local' regardless of mode
-  const netEventsProvider: FeatureProvider = 'local'
-  const fiveMEventsProvider: FeatureProvider = 'local'
-  const exportsProvider: FeatureProvider = 'local'
-  const chatProvider: FeatureProvider = 'local'
-  const databaseProvider: FeatureProvider = 'local'
-  const sessionLifecycleProvider: FeatureProvider = 'local'
-
-  const sessionLifecycleEnabled = mode !== 'RESOURCE'
-
-  // Features that should auto-export in CORE mode for RESOURCE access
-  const commandsExport = mode === 'CORE'
-  const playersExport = mode === 'CORE'
-  const principalExport = mode === 'CORE'
+  const isResource = mode === 'RESOURCE'
+  const isCore = mode === 'CORE'
 
   return {
     players: {
       enabled: true,
-      provider: playersProvider,
-      export: playersExport,
+      provider: remoteProvider,
+      export: isCore,
       scope,
-      required: false,
+      required: true,
     },
     netEvents: {
       enabled: true,
-      provider: netEventsProvider,
+      provider: 'local',
       export: false,
       scope,
-      required: false,
+      required: true,
     },
     fiveMEvents: {
-      enabled: sessionLifecycleEnabled,
-      provider: fiveMEventsProvider,
+      enabled: true,
+      provider: 'local',
       export: false,
       scope,
       required: false,
     },
     commands: {
-      enabled: false,
-      provider: commandsProvider,
-      export: commandsExport,
+      enabled: true,
+      provider: remoteProvider,
+      export: isCore,
+      scope,
+      required: true,
+    },
+    exports: {
+      enabled: true,
+      provider: 'local',
+      export: false,
+      scope,
+      required: isCore,
+    },
+    chat: {
+      enabled: true,
+      provider: 'local',
+      export: isCore,
       scope,
       required: false,
     },
-    exports: { enabled: false, provider: exportsProvider, export: false, scope, required: false },
-    chat: { enabled: false, provider: chatProvider, export: false, scope, required: false },
-    database: { enabled: false, provider: databaseProvider, export: false, scope, required: false },
     principal: {
-      enabled: false,
-      provider: principalProvider,
-      export: principalExport,
+      enabled: true,
+      provider: remoteProvider,
+      export: isCore,
       scope,
       required: false,
     },
     sessionLifecycle: {
-      enabled: sessionLifecycleEnabled,
-      provider: sessionLifecycleProvider,
+      enabled: !isResource,
+      provider: 'local',
       export: false,
       scope,
       required: false,
@@ -570,14 +315,13 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
 }
 
 export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntimeOptions {
-  const defaults = createDefaultFeatures(options.mode)
-  const features: FrameworkFeatures = { ...defaults }
+  const features = createDefaultFeatures(options.mode)
 
-  if (options.features) {
-    for (const name of FEATURE_NAMES) {
-      const override = options.features[name as keyof UserFeatureConfig]
-      if (!override) continue
-      features[name] = { ...defaults[name], ...override } as FeatureContract
+  if (options.features?.disabled) {
+    for (const name of options.features.disabled) {
+      if (features[name]) {
+        features[name].enabled = false
+      }
     }
   }
 
@@ -585,8 +329,8 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
     mode: options.mode,
     features,
     coreResourceName: options.coreResourceName ?? 'core',
-    resourceGrants: options.resourceGrants,
     devMode: options.devMode,
+    onDependency: options.onDependency,
   }
 }
 

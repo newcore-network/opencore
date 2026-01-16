@@ -21,9 +21,6 @@ export * from './contracts/server/IVehicleServer'
 
 // Types
 export * from './contracts/types/identifier'
-// Database adapters
-export { OxMySQLAdapter } from './database/oxmysql.adapter'
-export { ResourceDatabaseAdapter } from './database/resource.adapter'
 // Platform registry
 export * from './platform/platform-registry'
 

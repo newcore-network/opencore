@@ -102,7 +102,7 @@ export interface InternalPrincipalExports {
   /**
    * Gets Principal by account ID (works for offline players too).
    *
-   * @param accountId - Database account identifier
+   * @param accountId - Account identifier
    * @returns Principal data or null
    */
   getPrincipalByAccountId(accountId: string): Promise<Principal | null>
@@ -283,7 +283,7 @@ export interface InternalPlayerExports {
   /**
    * Finds a player by their persistent account ID.
    *
-   * @param accountId - Database account identifier
+   * @param accountId - Account identifier
    * @returns Serialized player data or null if not online
    */
   getPlayerByAccountId(accountId: string): SerializedPlayerData | null
@@ -298,7 +298,7 @@ export interface InternalPlayerExports {
   /**
    * Checks if a player with given account ID is online.
    *
-   * @param accountId - Database account identifier
+   * @param accountId - Account identifier
    * @returns True if player is connected
    */
   isPlayerOnline(accountId: string): boolean

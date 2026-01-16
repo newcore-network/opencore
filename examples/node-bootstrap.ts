@@ -15,10 +15,11 @@
 import 'reflect-metadata'
 import { IExports, INetTransport } from '../src/adapters'
 import type { NodeExports, NodeNetTransport } from '../src/adapters/node'
-import { CONTAINER } from '../src/kernel'
-import { Export } from '../src/runtime/client'
-import type { Player } from '../src/runtime/server'
-import { Controller, OnNet } from '../src/runtime/server'
+import { GLOBAL_CONTAINER as CONTAINER } from '../src/kernel/di/container'
+import { Server } from '../src/runtime/server'
+
+const { Controller, OnNet, Export } = Server
+
 import { initServer } from '../src/runtime/server/bootstrap'
 
 // Example Controller
@@ -26,7 +27,7 @@ import { initServer } from '../src/runtime/server/bootstrap'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class ExampleController {
   @OnNet('example:greet')
-  handleGreeting(player: Player, name: string) {
+  handleGreeting(player: Server.Player, name: string) {
     console.log(`[NetEvent] Client ${player.clientID} says: Hello, ${name}!`)
     return `Welcome, ${name}!`
   }
@@ -65,51 +66,8 @@ async function main() {
   console.log('Initializing OpenCore runtime in Node.js...')
   await initServer({
     mode: 'CORE',
-    features: {
-      netEvents: { enabled: true, provider: 'core', export: false, scope: 'core', required: false },
-      exports: { enabled: true, provider: 'core', export: false, scope: 'core', required: false },
-      commands: {
-        enabled: false,
-        provider: 'local',
-        export: false,
-        scope: 'core',
-        required: false,
-      },
-      fiveMEvents: {
-        enabled: false,
-        provider: 'local',
-        export: false,
-        scope: 'core',
-        required: false,
-      },
-      players: { enabled: true, provider: 'core', export: false, scope: 'core', required: false },
-      sessionLifecycle: {
-        enabled: false,
-        provider: 'local',
-        export: false,
-        scope: 'core',
-        required: false,
-      },
-      chat: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      principal: {
-        enabled: false,
-        provider: 'local',
-        export: false,
-        scope: 'core',
-        required: false,
-      },
-      database: {
-        enabled: false,
-        provider: 'local',
-        export: false,
-        scope: 'core',
-        required: false,
-      },
-      http: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-      auth: { enabled: false, provider: 'local', export: false, scope: 'core', required: false },
-    },
-    coreResourceName: 'node-enviroment',
-  })
+    coreResourceName: 'node-environment',
+  } as any)
 
   console.log('✓ Runtime initialized successfully!\n')
 

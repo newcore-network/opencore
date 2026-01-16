@@ -269,7 +269,7 @@ export class Player extends BaseEntity implements Spatial {
    * Links a persistent Account ID to the current session.
    * Should be called after successful authentication.
    *
-   * @param accountID - The unique ID from the database.
+   * @param accountID - The unique ID from the persistent storage.
    */
   linkAccount(accountID: LinkedID): void {
     this.session.accountID = accountID

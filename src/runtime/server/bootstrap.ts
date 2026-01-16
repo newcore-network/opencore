@@ -2,10 +2,6 @@ import { IEngineEvents } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { loggers } from '../../kernel/logger'
-import {
-  registerDefaultBootstrapValidators,
-  runBootstrapValidatorsOrThrow,
-} from './bootstrap.validation'
 import { PrincipalProviderContract } from './contracts/index'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
@@ -24,7 +20,7 @@ const CORE_WAIT_TIMEOUT = 10_000
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
 
-  if (ctx.features.principal.enabled && ctx.features.principal.required) {
+  if (ctx.features.principal.enabled) {
     if (!GLOBAL_CONTAINER.isRegistered(PrincipalProviderContract as any)) {
       const errorMsg =
         'No Principal Provider configured. ' +
@@ -238,11 +234,6 @@ export async function initServer(options: ServerRuntimeOptions) {
   }
 
   await loadFrameworkControllers(ctx)
-
-  if (ctx.features.database.enabled) {
-    registerDefaultBootstrapValidators()
-    await runBootstrapValidatorsOrThrow()
-  }
 
   const scanner = GLOBAL_CONTAINER.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())

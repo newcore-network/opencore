@@ -129,7 +129,7 @@ export class CommandExportController implements InternalCommandsExports {
         args,
         player: {
           clientId: player.clientID,
-          accountId: player.accountID,
+          accountId: player.accountID || player.clientID.toString(),
           name: player.name,
         },
         playerRef: player,

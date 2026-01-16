@@ -20,73 +20,8 @@ describe('Node.js Runtime Bootstrap', () => {
   it('should initialize DI container with Node capabilities', async () => {
     await initServer({
       mode: 'CORE',
-      features: {
-        netEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        commands: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        exports: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        fiveMEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        players: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        sessionLifecycle: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        chat: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        principal: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        database: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-      },
       coreResourceName: 'node-test',
-    })
+    } as any)
 
     // Verify Node implementations are registered
     expect(GLOBAL_CONTAINER.isRegistered(INetTransport as any)).toBe(true)
@@ -126,79 +61,10 @@ describe('Node.js Runtime Bootstrap', () => {
       },
     })
 
-    // Note: This is a conceptual test - actual proxy implementation would require
-    // more sophisticated setup. The key assertion is that Node implementations
-    // don't call FiveM natives.
-
     await initServer({
       mode: 'CORE',
-      features: {
-        netEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        commands: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        exports: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        fiveMEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        players: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        sessionLifecycle: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        chat: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        principal: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        database: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-      },
       coreResourceName: 'node-test',
-    })
+    } as any)
 
     // Runtime should initialize without errors
     expect(GLOBAL_CONTAINER.isRegistered(INetTransport as any)).toBe(true)
@@ -209,73 +75,8 @@ describe('Node.js Runtime Bootstrap', () => {
 
     await initServer({
       mode: 'CORE',
-      features: {
-        netEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        commands: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        exports: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        fiveMEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        players: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        sessionLifecycle: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        chat: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        principal: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        database: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-      },
       coreResourceName: 'node-test',
-    })
+    } as any)
 
     const resourceInfo = GLOBAL_CONTAINER.resolve(IResourceInfo as any)
     if (resourceInfo instanceof IResourceInfo)
@@ -289,73 +90,8 @@ describe('Node.js Runtime Bootstrap', () => {
 
     await initServer({
       mode: 'CORE',
-      features: {
-        netEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        commands: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        exports: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        fiveMEvents: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        players: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        sessionLifecycle: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        chat: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        principal: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-        database: {
-          enabled: false,
-          provider: 'local' as const,
-          export: false,
-          scope: 'core' as const,
-          required: false,
-        },
-      },
       coreResourceName: 'node-test',
-    })
+    } as any)
 
     const resourceInfo = GLOBAL_CONTAINER.resolve(IResourceInfo as any)
     if (resourceInfo instanceof IResourceInfo)

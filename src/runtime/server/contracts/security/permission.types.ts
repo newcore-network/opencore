@@ -1,10 +1,10 @@
 /**
  * Represents the security identity of a user/player within the framework.
- * This interface bridges the gap between the Core framework and your specific database implementation.
+ * This interface bridges the gap between the Core framework and your specific implementation.
  */
 export interface Principal {
   /**
-   * Unique identifier for the user (e.g., database role ID).
+   * Unique identifier for the user (e.g., persistent role ID).
    */
   id: string
   /**

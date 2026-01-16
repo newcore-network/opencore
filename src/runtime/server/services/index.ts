@@ -1,6 +1,5 @@
 // Services
 
-export * from '../database'
 export * from './appearance.service'
 export { ChatService } from './chat.service'
 export { SessionRecoveryService } from './core/session-recovery.service'

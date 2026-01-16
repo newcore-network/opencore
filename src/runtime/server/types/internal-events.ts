@@ -2,7 +2,7 @@ import { Player } from '../entities'
 
 export interface PlayerSessionCreatedPayload {
   clientId: number
-  license: string
+  license: string | undefined
 }
 
 export interface PlayerSessionDestroyedPayload {

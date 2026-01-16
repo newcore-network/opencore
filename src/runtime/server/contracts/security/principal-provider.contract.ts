@@ -6,7 +6,7 @@ import { Principal } from './permission.types'
  * **Authorization**
  *
  * This abstract class defines how the Security Layer retrieves user permissions.
- * The Framework does not know about your database (SQL, Mongo, JSON or API); it relies on
+ * The Framework does not know about your persistence layer (SQL, Mongo, JSON or API); it relies on
  * your implementation of this provider to resolve a `Principal`.
  *
  * @example
