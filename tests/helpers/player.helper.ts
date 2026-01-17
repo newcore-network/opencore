@@ -1,4 +1,4 @@
-import type { Vector3 } from '@open-core/framework'
+import { Vector3 } from 'src/kernel'
 import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
 import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'

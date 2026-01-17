@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { SecurityError } from '@open-core/framework'
+import { SecurityError } from 'src/kernel'
 import { container } from 'tsyringe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Throttle } from '../../../../src/runtime/server/decorators/throttle'
