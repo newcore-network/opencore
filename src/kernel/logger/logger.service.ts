@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { createLoggerConfig, type LoggerConfig } from './logger.config'
 import { type LogContext, LogDomain, type LogEntry, LogLevel } from './logger.types'
 import { LogTransport } from './transports/transport.interface'
@@ -36,7 +36,7 @@ import { LogTransport } from './transports/transport.interface'
 export class LoggerService {
   private config: LoggerConfig
 
-  constructor(config?: Partial<LoggerConfig>) {
+  constructor(@inject('LoggerConfig') config?: Partial<LoggerConfig>) {
     this.config = createLoggerConfig(config ?? {})
   }
 

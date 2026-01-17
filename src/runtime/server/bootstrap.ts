@@ -1,4 +1,4 @@
-import { IEngineEvents } from '../../adapters'
+import { IEngineEvents, INetTransport } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { loggers } from '../../kernel/logger'
@@ -15,7 +15,7 @@ import { SessionRecoveryService } from './services/core/session-recovery.service
 import { registerServicesServer } from './services/services.register'
 import { registerSystemServer } from './system/processors.register'
 
-const CORE_WAIT_TIMEOUT = 10_000
+const CORE_WAIT_TIMEOUT = 10000
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
@@ -55,6 +55,10 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
 
   if (ctx.features.players.enabled && ctx.features.players.export && ctx.features.exports.enabled) {
     await import('./controllers/player-export.controller')
+  }
+
+  if (ctx.mode === 'CORE') {
+    await import('./controllers/ready.controller')
   }
 
   if (
@@ -119,123 +123,22 @@ export async function initServer(options: ServerRuntimeOptions) {
   }
   loggers.bootstrap.debug('Dependencies resolved. Proceeding with system boot.')
 
-  // Metadata scanning
+  // 1. Register Core Services (WorldContext, PlayerService, etc.)
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
+
+  // 2. Load Controllers (Framework & User controllers)
+  // This is where user services get registered if they are decorated with @injectable()
+  // and imported before init() or discovered here.
+  await loadFrameworkControllers(ctx)
+  loggers.bootstrap.debug('Controllers loaded')
+
+  // 3. Register System Processors (Command, NetEvent, etc.)
+  // These processors check if contracts are already registered before applying defaults.
   registerSystemServer(ctx)
   loggers.bootstrap.debug('System processors registered')
 
   checkProviders(ctx)
-
-  // In RESOURCE mode, verify CORE exports are available before loading controllers
-  if (ctx.mode === 'RESOURCE') {
-    const needsCoreExports =
-      ctx.features.players.provider === 'core' ||
-      ctx.features.commands.provider === 'core' ||
-      ctx.features.principal.provider === 'core'
-
-    if (needsCoreExports) {
-      const { coreResourceName } = ctx
-
-      loggers.bootstrap.debug(`Verifying CORE exports availability`, {
-        coreResourceName,
-        globalExportsKeys: Object.keys((globalThis as any).exports || {}),
-      })
-
-      // Build list of required exports
-      const requiredExports: string[] = []
-      if (ctx.features.commands.provider === 'core') {
-        requiredExports.push('registerCommand', 'executeCommand', 'getAllCommands')
-      }
-      if (ctx.features.players.provider === 'core') {
-        requiredExports.push(
-          'getPlayerId',
-          'getPlayerData',
-          'getAllPlayersData',
-          'getPlayerByAccountId',
-          'getPlayerCount',
-          'isPlayerOnline',
-          'getPlayerMeta',
-          'setPlayerMeta',
-          'getPlayerStates',
-          'hasPlayerState',
-          'addPlayerState',
-          'removePlayerState',
-        )
-      }
-      if (ctx.features.principal.provider === 'core') {
-        requiredExports.push(
-          'getPrincipal',
-          'getPrincipalByAccountId',
-          'refreshPrincipal',
-          'hasPermission',
-          'hasRank',
-          'hasAnyPermission',
-          'hasAllPermissions',
-          'getPermissions',
-          'getRank',
-          'getPrincipalName',
-          'getPrincipalMeta',
-        )
-      }
-
-      loggers.bootstrap.debug(`Checking CORE exports`, {
-        coreResourceName,
-        requiredExports,
-      })
-
-      // Access exports directly using FiveM's global exports object
-      const globalExports = (globalThis as any).exports
-      if (!globalExports) {
-        throw new Error(
-          `[OpenCore] FiveM 'exports' global not found. This should never happen in a FiveM environment.`,
-        )
-      }
-
-      const coreExports = globalExports[coreResourceName]
-
-      // Check each required export directly (can't use Object.keys on FiveM exports proxy)
-      const missingExports: string[] = []
-      for (const exportName of requiredExports) {
-        try {
-          const exportValue = coreExports?.[exportName]
-          if (typeof exportValue !== 'function') {
-            missingExports.push(exportName)
-            loggers.bootstrap.warn(`Export '${exportName}' is not a function`, {
-              exportName,
-              type: typeof exportValue,
-              value: exportValue,
-            })
-          }
-        } catch (error) {
-          missingExports.push(exportName)
-          loggers.bootstrap.warn(`Failed to access export '${exportName}'`, {
-            exportName,
-            error: error instanceof Error ? error.message : String(error),
-          })
-        }
-      }
-
-      if (missingExports.length > 0) {
-        const errorMsg =
-          `CORE resource '${coreResourceName}' is missing ${missingExports.length} required exports: ${missingExports.join(', ')}\n` +
-          `\n` +
-          `This usually means:\n` +
-          `  1. The CORE resource failed to initialize properly\n` +
-          `  2. The CORE resource doesn't have the 'exports' feature enabled\n` +
-          `  3. The CORE resource doesn't have the required features enabled (commands: ${ctx.features.commands.provider === 'core'})\n` +
-          `\n` +
-          `Verify in '${coreResourceName}/src/server/server.ts':\n` +
-          `  - mode: 'CORE'\n` +
-          `  - features.exports.enabled: true\n` +
-          `  - features.commands.enabled: true (if using commands)`
-        loggers.bootstrap.fatal(errorMsg)
-        throw new Error(`[OpenCore] ${errorMsg}`)
-      }
-    }
-  }
-
-  await loadFrameworkControllers(ctx)
 
   const scanner = GLOBAL_CONTAINER.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
@@ -252,9 +155,16 @@ export async function initServer(options: ServerRuntimeOptions) {
 
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 
-  if (ctx.mode === 'CORE' && GLOBAL_CONTAINER.isRegistered(IEngineEvents as any)) {
-    const engineInterface = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
-    engineInterface.emit('core:ready')
+  if (
+    ctx.mode === 'CORE' &&
+    GLOBAL_CONTAINER.isRegistered(IEngineEvents as any) &&
+    GLOBAL_CONTAINER.isRegistered(INetTransport as any)
+  ) {
+    const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents // server -> servers
+    const net = GLOBAL_CONTAINER.resolve(INetTransport as any) as INetTransport // server -> clients
+    engineEvents.emit('core:ready') // Broadcast to all Servers resources
+    net.emitNet('core:ready', 'all') // Broadcast to all Clients resources
+    loggers.bootstrap.debug(`'core:ready' events emmited to all clients and all servers`)
   }
 }
 
@@ -266,20 +176,44 @@ function createCoreDependency(coreName: string): Promise<void> {
     const cleanup = () => {
       resolved = true
       clearTimeout(timeout)
+      clearInterval(pollingInterval)
     }
 
+    // 1. Check if already ready via export (Polling)
+    const checkReady = () => {
+      if (resolved) return
+      try {
+        const globalExports = (globalThis as any).exports
+        const isReady = globalExports?.[coreName]?.isCoreReady?.()
+        if (isReady === true) {
+          loggers.bootstrap.debug(`Core '${coreName}' detected as already ready via export.`)
+          cleanup()
+          resolve()
+        }
+      } catch {
+        // Core might not be started yet, ignore
+      }
+    }
+
+    const pollingInterval = setInterval(checkReady, 500)
+    checkReady() // Initial check
+
+    // 2. Timeout protection
     const timeout = setTimeout(() => {
       if (!resolved) {
+        cleanup()
         reject(
           new Error(
-            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit 'core:ready' within ${CORE_WAIT_TIMEOUT}ms.`,
+            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit 'core:ready' or expose 'isCoreReady' within ${CORE_WAIT_TIMEOUT}ms.`,
           ),
         )
       }
     }, CORE_WAIT_TIMEOUT)
 
+    // 3. Listen for the event (for resources starting after/during CORE init)
     const onReady = () => {
       if (!resolved) {
+        loggers.bootstrap.debug(`Core '${coreName}' detected via 'core:ready' event.`)
         cleanup()
         resolve()
       }

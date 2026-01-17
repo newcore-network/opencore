@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { IResourceInfo } from '../../../adapters/contracts/IResourceInfo'
 import { loggers } from '../../../kernel/logger'
@@ -25,7 +25,6 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
  * because CORE→RESOURCE communication is server-to-server.
  * Event registration happens in constructor via adapter layer.
  */
-@injectable()
 @Controller()
 export class RemoteCommandExecutionController {
   constructor(

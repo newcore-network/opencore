@@ -1,3 +1,4 @@
+import { GLOBAL_CONTAINER } from '../di/container'
 import { getLogLevel, isClientEnvironment } from './logger.env'
 import { LoggerService } from './logger.service'
 import { LogDomain } from './logger.types'
@@ -28,29 +29,21 @@ function createTransport(): LogTransport {
   })
 }
 
-/**
- * Singleton logger instance for internal OpenCore framework use.
- *
- * @remarks
- * This logger is the primary source of truth for framework telemetry.
- * It is pre-configured with a dual-filtering system:
- *
- * 1. **Global Level**: Resolved from `opencore.config.ts` (build-time injection).
- * 2. **Environment-Aware Transport**: Uses `ConsoleTransport` (Server) or `SimpleConsoleTransport` (Client).
- *
- * Configuration:
- * - Set `logLevel` in `opencore.config.ts` to control log verbosity.
- * - Supported Values: `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`.
- * - Default: `INFO`.
- *
- * @internal
- */
-export const coreLogger = new LoggerService({
+const defaultLoggerConfig = {
   minLevel: getLogLevel(),
   defaultDomain: LogDomain.FRAMEWORK,
   defaultSource: 'Core',
   transports: [createTransport()],
-})
+}
+
+// Register for DI
+GLOBAL_CONTAINER.registerInstance('LoggerConfig', defaultLoggerConfig)
+GLOBAL_CONTAINER.registerSingleton(LoggerService)
+
+/**
+ * Singleton logger instance for internal OpenCore framework use.
+ */
+export const coreLogger = GLOBAL_CONTAINER.resolve(LoggerService)
 
 // Pre-configured child loggers for common framework components
 export const loggers = {

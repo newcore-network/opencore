@@ -1,6 +1,6 @@
-import { BaseEntity } from '@open-core/framework'
-import { WorldContext } from '@open-core/framework'
 import { inject, injectable } from 'tsyringe'
+import { BaseEntity } from '../../../core/entity'
+import { WorldContext } from '../../../core/world'
 import { IPlayerInfo } from '../../../../adapters'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
@@ -25,8 +25,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
   private readonly playerAdapters: PlayerAdapters
 
   constructor(
-    private readonly world: WorldContext,
-
+    @inject(WorldContext) private readonly world: WorldContext,
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,

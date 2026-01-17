@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { AppError, SecurityError } from '../../../kernel/error'
 import { loggers } from '../../../kernel/logger'
@@ -34,7 +34,6 @@ interface RemoteCommandEntry {
  * Maintains a registry of both local and remote commands, delegating
  * remote command execution back to the owning resource via net events.
  */
-@injectable()
 @Controller()
 export class CommandExportController implements InternalCommandsExports {
   private remoteCommands = new Map<string, RemoteCommandEntry>()
@@ -104,6 +103,27 @@ export class CommandExportController implements InternalCommandsExports {
       const localMeta = this.commandService.getCommandMeta(command)
       const appError = normalizeToAppError(error, 'server')
 
+      // If we have an error and it's not a remote command, try to find local meta
+      // to populate the error context properly for the observer.
+      const commandInfo = localMeta
+        ? {
+            command: localMeta.command,
+            description: localMeta.description,
+            usage: localMeta.usage,
+            isPublic: localMeta.isPublic,
+            methodName: localMeta.methodName,
+            expectsPlayer: localMeta.expectsPlayer,
+            paramNames: localMeta.paramNames,
+          }
+        : remoteEntry
+          ? {
+              command: remoteEntry.metadata.command,
+              description: remoteEntry.metadata.description,
+              usage: remoteEntry.metadata.usage,
+              isPublic: remoteEntry.metadata.isPublic,
+            }
+          : undefined
+
       const stage =
         error instanceof SecurityError
           ? 'security'
@@ -134,24 +154,7 @@ export class CommandExportController implements InternalCommandsExports {
         },
         playerRef: player,
         ownerResourceName: remoteEntry?.resourceName,
-        command: localMeta
-          ? {
-              command: localMeta.command,
-              description: localMeta.description,
-              usage: localMeta.usage,
-              isPublic: localMeta.isPublic,
-              methodName: localMeta.methodName,
-              expectsPlayer: localMeta.expectsPlayer,
-              paramNames: localMeta.paramNames,
-            }
-          : remoteEntry
-            ? {
-                command: remoteEntry.metadata.command,
-                description: remoteEntry.metadata.description,
-                usage: remoteEntry.metadata.usage,
-                isPublic: remoteEntry.metadata.isPublic,
-              }
-            : undefined,
+        command: commandInfo,
         commandMeta: localMeta,
       })
     }

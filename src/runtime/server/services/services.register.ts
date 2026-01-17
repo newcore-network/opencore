@@ -1,4 +1,5 @@
 import { GLOBAL_CONTAINER } from '../../../kernel/di/index'
+import { WorldContext } from '../../core/world'
 import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { RuntimeContext } from '../runtime'
 import { ChatService } from './chat.service'
@@ -27,6 +28,15 @@ import { RemotePrincipalService } from './remote/remote-principal.service'
  */
 export function registerServicesServer(ctx: RuntimeContext) {
   const { mode, features } = ctx
+
+  // ═══════════════════════════════════════════════════════════════
+  // PHASE 1: Register all service types FIRST (recipes only)
+  // ═══════════════════════════════════════════════════════════════
+
+  // WorldContext must be registered first as it has no dependencies
+  if (!GLOBAL_CONTAINER.isRegistered(WorldContext)) {
+    GLOBAL_CONTAINER.registerSingleton(WorldContext)
+  }
 
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {

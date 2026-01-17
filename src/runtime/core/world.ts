@@ -1,3 +1,4 @@
+import { injectable } from 'tsyringe'
 import { BaseEntity, EntityId } from './entity'
 
 function getKind(id: EntityId): string {
@@ -5,6 +6,7 @@ function getKind(id: EntityId): string {
   return i === -1 ? id : id.slice(0, i)
 }
 
+@injectable()
 export class WorldContext {
   private entities = new Map<EntityId, BaseEntity>()
   private readonly kindIndex = new Map<string, number>()

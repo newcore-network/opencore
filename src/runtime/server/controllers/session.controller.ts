@@ -1,3 +1,4 @@
+import { delay, inject } from 'tsyringe'
 import { loggers } from '../../../kernel/logger'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
 import { Controller } from '../decorators'
@@ -10,8 +11,11 @@ import { PlayerFullyConnectedPayload } from '../types/internal-events'
 @Controller()
 export class SessionController {
   constructor(
+    @inject(delay(() => PlayerSessionLifecyclePort as any))
     private readonly playerSessionLifecycle: PlayerSessionLifecyclePort,
+    @inject(delay(() => PlayerDirectoryPort as any))
     private readonly playerDirectory: PlayerDirectoryPort,
+    @inject(delay(() => PlayerPersistenceService as any))
     private readonly persistance: PlayerPersistenceService,
   ) {}
 

@@ -1,6 +1,10 @@
 import { ClassConstructor, GLOBAL_CONTAINER } from '../../kernel/di/index'
 import { loggers } from '../../kernel/logger'
-import { PlayerPersistenceContract, PrincipalProviderContract } from './contracts'
+import {
+  CommandErrorObserverContract,
+  PlayerPersistenceContract,
+  PrincipalProviderContract,
+} from './contracts'
 import { NetEventSecurityObserverContract } from './contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from './contracts/security/security-handler.contract'
 
@@ -24,4 +28,9 @@ export function setNetEventSecurityObserver(
 ) {
   GLOBAL_CONTAINER.registerSingleton(NetEventSecurityObserverContract as any, observer)
   loggers.bootstrap.info(`NetEvent Security Observer configured: ${observer.name}`)
+}
+
+export function setCommandErrorObserver(observer: ClassConstructor<CommandErrorObserverContract>) {
+  GLOBAL_CONTAINER.registerSingleton(CommandErrorObserverContract as any, observer)
+  loggers.bootstrap.info(`Command Security Observer configured: ${observer.name}`)
 }
