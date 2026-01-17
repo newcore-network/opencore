@@ -28,8 +28,8 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 @Controller()
 export class RemoteCommandExecutionController {
   constructor(
-    private commandService: CommandExecutionPort,
-    private playerDirectory: PlayerDirectoryPort,
+    @inject(CommandExecutionPort as any) private commandService: CommandExecutionPort,
+    @inject(PlayerDirectoryPort as any) private playerDirectory: PlayerDirectoryPort,
     @inject(CommandErrorObserverContract as any)
     private readonly commandErrorObserver: CommandErrorObserverContract,
     @inject(IEngineEvents as any) private engineEvents: IEngineEvents,
