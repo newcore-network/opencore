@@ -1,7 +1,7 @@
 import { injectAll, injectable } from 'tsyringe'
-import { GLOBAL_CONTAINER } from './container'
 import { loggers } from '../logger'
 import { type ClassConstructor } from './class-constructor'
+import { GLOBAL_CONTAINER } from './container'
 import { type DecoratorProcessor } from './decorator-processor'
 
 @injectable()

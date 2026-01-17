@@ -1,6 +1,5 @@
 // Framework modules
 
-export * from './bootstrap.validation'
 export { onFrameworkEvent } from './bus/internal-event.bus'
 
 // Configs

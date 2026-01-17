@@ -114,28 +114,41 @@ export interface FeatureContract {
 export type FrameworkFeatures = Record<FeatureName, FeatureContract>
 
 export interface DevModeConfig {
-  /** Enable dev mode */
+  /**
+   * Master switch for development mode.
+   * If false, no dev tools will be loaded.
+   */
   enabled: boolean
-  /** Hot reload configuration */
-  hotReload?: {
-    enabled: boolean
-    port: number
-    allowedResources?: string[]
-  }
-  /** CLI bridge configuration */
+  /**
+   * CLI bridge configuration for telemetry and logs.
+   * The bridge allows the OpenCore CLI to stream logs and inspect the framework state.
+   */
   bridge?: {
+    /** WebSocket URL of the bridge */
     url: string
+    /** Whether to connect automatically on startup */
     autoConnect: boolean
   }
-  /** Event interceptor configuration */
+  /**
+   * Event interceptor configuration for debugging.
+   * Captures and records incoming/outgoing network events and commands.
+   */
   interceptor?: {
+    /** Enable event interception */
     enabled: boolean
+    /** Whether to record a history of events in memory */
     recordHistory: boolean
+    /** Maximum number of events to keep in the history buffer */
     maxHistorySize: number
   }
-  /** Player simulator configuration */
+  /**
+   * Player simulator configuration.
+   * Allows creating virtual players for testing logic without game clients.
+   */
   simulator?: {
+    /** Enable player simulation features */
     enabled: boolean
+    /** Number of virtual players to connect automatically on startup */
     autoConnectPlayers: number
   }
 }
