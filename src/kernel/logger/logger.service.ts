@@ -226,8 +226,22 @@ export class LoggerService {
   // Internal
   // ─────────────────────────────────────────────────────────────────────────────
 
+  /**
+   * Internal logging logic.
+   *
+   * @remarks
+   * This method performs a two-stage filtering process:
+   * 1. **Global Filtering**: Messages below the `config.minLevel` are ignored immediately.
+   * 2. **Transport Filtering**: Each transport can have its own `minLevel`. The message
+   *    is only sent to transports where `level >= transport.minLevel`.
+   *
+   * @param level - Severity of the log
+   * @param message - Content to log
+   * @param context - Metadata
+   * @param error - Optional error object
+   */
   private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
-    // Check global minimum level
+    // Stage 1: Global minimum level filtering
     if (level < this.config.minLevel) return
 
     const entry: LogEntry = {
@@ -242,7 +256,7 @@ export class LoggerService {
       error,
     }
 
-    // Dispatch to all transports that accept this level
+    // Stage 2: Individual transport level filtering
     for (const transport of this.config.transports) {
       if (level >= transport.minLevel) {
         try {

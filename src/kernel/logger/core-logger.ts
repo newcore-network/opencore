@@ -31,22 +31,17 @@ function createTransport(): LogTransport {
 /**
  * Singleton logger instance for internal OpenCore framework use.
  *
- * This logger is pre-configured for framework-level logging and should only
- * be used by OpenCore internals. Resource developers should inject LoggerService
- * via DI instead.
+ * @remarks
+ * This logger is the primary source of truth for framework telemetry.
+ * It is pre-configured with a dual-filtering system:
+ *
+ * 1. **Global Level**: Resolved from `opencore.config.ts` (build-time injection).
+ * 2. **Environment-Aware Transport**: Uses `ConsoleTransport` (Server) or `SimpleConsoleTransport` (Client).
  *
  * Configuration:
- * - Set `logLevel` in opencore.config.ts to control log verbosity
- * - Values: TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
- * - Default: INFO
- *
- * @example
- * ```typescript
- * // opencore.config.ts
- * export default {
- *   logLevel: 'DEBUG',
- * }
- * ```
+ * - Set `logLevel` in `opencore.config.ts` to control log verbosity.
+ * - Supported Values: `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`.
+ * - Default: `INFO`.
  *
  * @internal
  */

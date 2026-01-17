@@ -4,59 +4,74 @@ type LOG_LEVEL = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL' | 'OFF'
 
 /**
  * Global log level constant.
- * This value is injected at build-time by the OpenCore CLI based on opencore.config.ts
+ * This value is injected at build-time by the OpenCore CLI based on `opencore.config.ts`.
  *
- * @example
- * ```typescript
- * // opencore.config.ts
- * export default {
- *   logLevel: 'DEBUG', // 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL' | 'OFF'
- * }
- * ```
- *
- * The CLI will replace `__OPENCORE_LOG_LEVEL__` with the configured value during build.
- * Default: 'INFO' for production-like behavior.
+ * @remarks
+ * The CLI uses string replacement during the build process to substitute `__OPENCORE_LOG_LEVEL__`
+ * with the literal value from the configuration.
  */
 declare const __OPENCORE_LOG_LEVEL__: LOG_LEVEL | undefined
+
+/**
+ * Global build target constant.
+ * Injected at build-time to identify the execution side.
+ */
 declare const __OPENCORE_TARGET__: 'client' | 'server' | undefined
 
 /**
- * Detects if we're running in a FiveM client environment.
- * Client has GetPlayerPed but not GetNumPlayerIndices (server-only native).
+ * Detects the current runtime environment side.
+ *
+ * @returns 'client' | 'server' | 'node'
  */
-export function isClientEnvironment(): boolean {
+export function detectEnvironmentSide(): 'client' | 'server' | 'node' {
   if (typeof __OPENCORE_TARGET__ !== 'undefined') {
-    return __OPENCORE_TARGET__ === 'client'
+    return __OPENCORE_TARGET__
   }
-  return (
+  if (
     typeof (globalThis as any).GetPlayerPed === 'function' &&
     typeof (globalThis as any).GetNumPlayerIndices !== 'function'
-  )
+  ) {
+    return 'client'
+  }
+  if (typeof (globalThis as any).GetNumPlayerIndices === 'function') {
+    return 'server'
+  }
+  return 'node'
 }
+
+/**
+ * Detects if we're running in a FiveM client environment.
+ */
+export function isClientEnvironment(): boolean {
+  return detectEnvironmentSide() === 'client'
+}
+
 /**
  * Detects if we're running in a FiveM server environment.
  */
 export function isServerEnvironment(): boolean {
-  return typeof (globalThis as any).GetNumPlayerIndices === 'function'
+  return detectEnvironmentSide() === 'server'
 }
 
 /**
  * Detects if we're running in a FiveM environment (client or server).
  */
 export function isFiveMEnvironment(): boolean {
-  return isClientEnvironment() || isServerEnvironment()
+  const side = detectEnvironmentSide()
+  return side === 'client' || side === 'server'
 }
 
 /**
- * Gets the configured log level.
+ * Gets the globally configured log level for the framework.
  *
- * The log level is determined at build-time from opencore.config.ts via the CLI.
- * If not configured, defaults to INFO.
+ * @remarks
+ * The log level is resolved in the following order:
+ * 1. Build-time injection (`__OPENCORE_LOG_LEVEL__`) via CLI.
+ * 2. Fallback to `INFO` level.
  *
- * @returns The configured LogLevel
+ * @returns The resolved {@link LogLevel}
  */
 export function getLogLevel(): LogLevel {
-  // Use build-time injected value, fallback to INFO
   const level = typeof __OPENCORE_LOG_LEVEL__ !== 'undefined' ? __OPENCORE_LOG_LEVEL__ : 'INFO'
   return parseLogLevel(level)
 }
