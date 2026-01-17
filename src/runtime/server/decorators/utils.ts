@@ -32,7 +32,7 @@ export function Service(options?: { scope?: BindingScope }) {
  *
  *
  * @remarks
- * A repository abstracts persistence operations (database, API, in-memory, or hybrid storage).
+ * A repository abstracts persistence operations (API, in-memory, or hybrid storage).
  * It is registered in the dependency injection container using the provided scope
  * (default: `singleton`).
  *

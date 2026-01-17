@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { di } from '../../../kernel/di/container'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { getRuntimeContext } from '../runtime'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 import {
@@ -23,7 +23,7 @@ export class StateInspectorService extends IDevModeInspector {
   private fiveMEventHandlers = new Map<string, HandlerInfo>()
 
   private get players(): PlayerDirectoryPort {
-    return di.resolve(PlayerDirectoryPort as any)
+    return GLOBAL_CONTAINER.resolve(PlayerDirectoryPort as any)
   }
 
   captureSnapshot(): RuntimeSnapshot {
@@ -66,7 +66,7 @@ export class StateInspectorService extends IDevModeInspector {
     // Note: This is a simplified implementation
     // The actual implementation depends on tsyringe internals
     try {
-      const container = di as any
+      const container = GLOBAL_CONTAINER as any
       if (container._registry) {
         for (const [token, registration] of container._registry) {
           const tokenName = typeof token === 'function' ? token.name : String(token)

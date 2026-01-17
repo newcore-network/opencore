@@ -20,15 +20,15 @@ import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/sh
  * **Persistence:**
  * The framework does NOT handle persistence internally.
  * After calling `applyAppearance`, you receive the validated data back.
- * You decide when and where to save it (database, file, etc.).
+ * You decide when and where to save it (persistent storage, file, etc.).
  *
  * @example
  * ```typescript
  * // Apply appearance to a player
  * const result = await appearanceService.applyAppearance(playerSrc, appearanceData)
  * if (result.success) {
- *   // Save to your database
- *   await myDatabase.saveAppearance(playerId, result.appearance)
+ *   // Save to your storage
+ *   await myStorage.saveAppearance(playerId, result.appearance)
  * }
  *
  * // Validate appearance without applying

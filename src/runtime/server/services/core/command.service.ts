@@ -1,6 +1,6 @@
 import { AppError } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
@@ -25,6 +25,16 @@ export class CommandService extends CommandExecutionPort {
     string,
     { meta: CommandMetadata; handler: (...args: any[]) => any; isPublic: boolean }
   >()
+
+  /**
+   * Returns decorator metadata for a registered command.
+   *
+   * @remarks
+   * Mainly used by controllers to enrich error observation (usage/description/etc.).
+   */
+  getCommandMeta(commandName: string): CommandMetadata | undefined {
+    return this.commands.get(commandName.toLowerCase())?.meta
+  }
 
   /**
    * Registers a command handler.
@@ -55,7 +65,8 @@ export class CommandService extends CommandExecutionPort {
    *
    * @remarks
    * **Security**: Commands require authentication by default unless marked with @Public().
-   * Unauthenticated attempts are blocked gracefully with player notification.
+   * Unauthenticated attempts are blocked by throwing an {@link AppError}.
+   * Higher-level controllers can observe the failure and decide how to notify the player.
    *
    * Argument parsing behavior depends on the schema:
    * - Zod object schema: maps raw args to parameter names.
@@ -84,9 +95,11 @@ export class CommandService extends CommandExecutionPort {
           command: commandName,
           clientId: player.clientID,
         })
-        player.emit('core:auth:required', { command: commandName })
-        player.send('You must be authenticated to use this command', 'error')
-        return
+        throw new AppError(
+          'AUTH:UNAUTHORIZED',
+          'You must be authenticated to use this command',
+          'client',
+        )
       }
     }
     return await validateAndExecuteCommand(meta, player, args, handler)

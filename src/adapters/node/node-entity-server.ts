@@ -1,6 +1,10 @@
 import { Vector3 } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { type EntityStateBag, IEntityServer } from '../contracts/server/IEntityServer'
+import {
+  type EntityStateBag,
+  IEntityServer,
+  type SetPositionOptions,
+} from '../contracts/server/IEntityServer'
 
 /**
  * Node.js mock implementation of server-side entity operations.
@@ -22,6 +26,16 @@ export class NodeEntityServer extends IEntityServer {
     return this.entities.get(handle)?.coords ?? { x: 0, y: 0, z: 0 }
   }
 
+  setPosition(handle: number, position: Vector3, _options?: SetPositionOptions): void {
+    const entity = this.entities.get(handle)
+    if (entity) {
+      entity.coords = { ...position }
+    }
+  }
+
+  /**
+   * @deprecated Use setPosition() for cross-platform compatibility.
+   */
   setCoords(handle: number, x: number, y: number, z: number): void {
     const entity = this.entities.get(handle)
     if (entity) {
@@ -83,22 +97,42 @@ export class NodeEntityServer extends IEntityServer {
     }
   }
 
-  // TODO
-  getHealth(_handle: number): number {
-    throw new Error('Method not implemented.')
-  }
-  setHealth(_handle: number, _health: number): void {
-    throw new Error('Method not implemented.')
-  }
-  getArmor(_handle: number): number {
-    throw new Error('Method not implemented.')
-  }
-  setArmor(_handle: number, _armor: number): void {
-    throw new Error('Method not implemented.')
+  getHealth(handle: number): number {
+    const bag = this.getStateBag(handle)
+    return (bag.get('health') as number) ?? 200
   }
 
-  // Test helper: Create a mock entity
+  setHealth(handle: number, health: number): void {
+    const bag = this.getStateBag(handle)
+    bag.set('health', health, true)
+  }
+
+  getArmor(handle: number): number {
+    const bag = this.getStateBag(handle)
+    return (bag.get('armor') as number) ?? 0
+  }
+
+  setArmor(handle: number, armor: number): void {
+    const bag = this.getStateBag(handle)
+    bag.set('armor', armor, true)
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Test Helpers
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Create a mock entity for testing.
+   */
   _createMockEntity(handle: number, model: number, coords: Vector3, heading = 0): void {
     this.entities.set(handle, { coords, heading, model, bucket: 0 })
+  }
+
+  /**
+   * Clear all mock entities.
+   */
+  _clearAll(): void {
+    this.entities.clear()
+    this.stateBags.clear()
   }
 }

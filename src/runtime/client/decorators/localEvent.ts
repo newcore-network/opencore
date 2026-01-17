@@ -1,7 +1,7 @@
 import { METADATA_KEYS } from '../system/metadata-client.keys'
 
 /**
- * Registers a method as a listener for a local (non-networked) client event.
+ * Registers a method as a listener for a local client event.
  *
  * @remarks
  * This decorator only stores metadata. During bootstrap, the framework binds the method to the

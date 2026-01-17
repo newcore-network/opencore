@@ -1,6 +1,6 @@
 import { AppError } from '../../../kernel'
-import { di } from '../../../kernel/di/container'
-import { loggers } from '../../../kernel/shared/logger'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
+import { loggers } from '../../../kernel/logger'
 import { Server } from '..'
 import { PrincipalPort } from '../services/ports/principal.port'
 
@@ -77,7 +77,7 @@ export function Guard(options: GuardOptions) {
         throw new Error('Guard Security Error: Context is not a player')
       }
 
-      const principal = di.resolve(PrincipalPort as any) as PrincipalPort
+      const principal = GLOBAL_CONTAINER.resolve(PrincipalPort as any) as PrincipalPort
       try {
         await principal.enforce(player, options)
       } catch (error) {

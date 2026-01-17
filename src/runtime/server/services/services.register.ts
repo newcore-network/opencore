@@ -1,12 +1,13 @@
-import { di } from '../../../kernel/di/index'
-import { DatabaseService } from '../database'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/index'
+import { WorldContext } from '../../core/world'
+import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { RuntimeContext } from '../runtime'
 import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
 import { PlayerService } from './core/player.service'
 import { LocalPrincipalService } from './core/principal.service'
 import { SessionRecoveryService } from './core/session-recovery.service'
-import { HttpService } from './http/http.service'
+import { DefaultPrincipalProvider } from './default/default-principal.provider'
 import { PlayerPersistenceService } from './persistence.service'
 import { CommandExecutionPort } from './ports/command-execution.port'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
@@ -20,47 +21,35 @@ import { RemotePrincipalService } from './remote/remote-principal.service'
  * Registers server runtime services in the dependency injection container.
  *
  * @remarks
- * This function enforces feature gating based on the runtime mode:
- * - In `RESOURCE` mode, some features require explicit grants (`resourceGrants`).
+ * This function handles service bindings based on the runtime mode:
  * - Service bindings may resolve to local implementations (CORE mode) or remote proxies.
  *
- * @param ctx - Runtime context containing mode, feature flags, and optional resource grants.
- *
- * @throws Error - If a forbidden feature is enabled in `RESOURCE` mode without the corresponding grant.
+ * @param ctx - Runtime context containing mode and feature flags.
  */
 export function registerServicesServer(ctx: RuntimeContext) {
-  const { mode, features, resourceGrants } = ctx
+  const { mode, features } = ctx
 
-  if (mode === 'RESOURCE') {
-    if (features.database.enabled && !resourceGrants?.database) {
-      throw new Error(
-        `[OpenCore] Feature 'database' is forbidden in RESOURCE mode unless resourceGrants.database=true`,
-      )
-    }
-    if (features.principal.enabled && !resourceGrants?.principal) {
-      throw new Error(
-        `[OpenCore] Feature 'principal' is forbidden in RESOURCE mode unless resourceGrants.principal=true`,
-      )
-    }
-    if (features.auth.enabled && !resourceGrants?.auth) {
-      throw new Error(
-        `[OpenCore] Feature 'auth' is forbidden in RESOURCE mode unless resourceGrants.auth=true`,
-      )
-    }
+  // ═══════════════════════════════════════════════════════════════
+  // PHASE 1: Register all service types FIRST (recipes only)
+  // ═══════════════════════════════════════════════════════════════
+
+  // WorldContext must be registered first as it has no dependencies
+  if (!GLOBAL_CONTAINER.isRegistered(WorldContext)) {
+    GLOBAL_CONTAINER.registerSingleton(WorldContext)
   }
 
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {
-      di.registerSingleton(PlayerService)
-      di.register(PlayerDirectoryPort as any, { useToken: PlayerService })
-      di.register(PlayerSessionLifecyclePort as any, { useToken: PlayerService })
+      GLOBAL_CONTAINER.registerSingleton(PlayerService)
+      GLOBAL_CONTAINER.register(PlayerDirectoryPort as any, { useToken: PlayerService })
+      GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, { useToken: PlayerService })
     } else {
-      di.registerSingleton(PlayerDirectoryPort as any, RemotePlayerService)
+      GLOBAL_CONTAINER.registerSingleton(PlayerDirectoryPort as any, RemotePlayerService)
     }
   }
 
   if (mode === 'RESOURCE' && features.players.enabled) {
-    di.register(PlayerSessionLifecyclePort as any, {
+    GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, {
       useFactory: () => {
         throw new Error('[OpenCore] PlayerSessionLifecyclePort is not available in RESOURCE mode')
       },
@@ -68,46 +57,39 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.sessionLifecycle.enabled && mode !== 'RESOURCE') {
-    di.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
-    di.registerSingleton(SessionRecoveryService, SessionRecoveryService)
+    GLOBAL_CONTAINER.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
+    GLOBAL_CONTAINER.registerSingleton(SessionRecoveryService, SessionRecoveryService)
   }
 
   if (features.principal.enabled) {
     if (features.principal.provider === 'local' || mode === 'CORE' || mode === 'STANDALONE') {
       // CORE/STANDALONE: Local principal service wraps user's PrincipalProviderContract
-      di.registerSingleton(LocalPrincipalService)
-      di.register(PrincipalPort as any, { useToken: LocalPrincipalService })
+      if (!GLOBAL_CONTAINER.isRegistered(PrincipalProviderContract as any)) {
+        GLOBAL_CONTAINER.registerSingleton(
+          PrincipalProviderContract as any,
+          DefaultPrincipalProvider,
+        )
+      }
+      GLOBAL_CONTAINER.registerSingleton(LocalPrincipalService)
+      GLOBAL_CONTAINER.register(PrincipalPort as any, { useToken: LocalPrincipalService })
     } else {
       // RESOURCE: Remote principal service delegates to CORE
-      di.registerSingleton(PrincipalPort as any, RemotePrincipalService)
+      GLOBAL_CONTAINER.registerSingleton(PrincipalPort as any, RemotePrincipalService)
     }
-  }
-
-  if (features.auth.enabled && features.auth.provider === 'core' && mode === 'RESOURCE') {
-    throw new Error(
-      "[OpenCore] Feature 'auth' with provider='core' in RESOURCE mode is not implemented yet (missing RemoteAuthProvider).",
-    )
-  }
-
-  if (features.database.enabled) {
-    di.registerSingleton(DatabaseService)
   }
 
   if (features.commands.enabled) {
     if (features.commands.provider === 'local' || mode === 'CORE') {
       // CORE/STANDALONE: local command execution
-      di.registerSingleton(CommandService)
-      di.register(CommandExecutionPort as any, { useToken: CommandService })
+      GLOBAL_CONTAINER.registerSingleton(CommandService)
+      GLOBAL_CONTAINER.register(CommandExecutionPort as any, { useToken: CommandService })
     } else {
       // RESOURCE: remote command execution (delegates to CORE)
-      di.registerSingleton(CommandExecutionPort as any, RemoteCommandService)
+      GLOBAL_CONTAINER.registerSingleton(CommandExecutionPort as any, RemoteCommandService)
     }
   }
 
-  if (features.http.enabled) {
-    di.registerSingleton(HttpService)
-  }
   if (features.chat.enabled) {
-    di.registerSingleton(ChatService)
+    GLOBAL_CONTAINER.registerSingleton(ChatService)
   }
 }

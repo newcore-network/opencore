@@ -1,12 +1,7 @@
-// Kernel - Core infrastructure and rules (engine-agnostic)
-
-export * from './di/class-constructor'
-export { di } from './di/container'
-// Dependency Injection
-export * from './di/decorator-processor'
-export * from './di/metadata.scanner'
-// Schema utilities (Zod helpers)
+// External to export
+export { GLOBAL_CONTAINER } from './di/container'
+export * from './error'
+export * from './logger'
 export * from './schema'
-
-// common
 export * from './shared'
+export * from './utils'

@@ -1,8 +1,15 @@
+// Node.js mock implementations for testing and standalone development
+export { NodeCapabilities } from './node-capabilities'
 export { NodeEngineEvents } from './node-engine-events'
 export { NodeEntityServer } from './node-entity-server'
 export { NodeExports } from './node-exports'
 export { NodeHasher } from './node-hasher'
 export { NodeNetTransport } from './node-net-transport'
+export { NodePedAppearanceServer } from './node-ped-appearance-server'
+// Platform adapter
+export { NodePlatform } from './node-platform'
 export { NodePlayerServer } from './node-player-server'
+export { NodePlayerInfo } from './node-playerinfo'
 export { NodeResourceInfo } from './node-resourceinfo'
+export { NodeTick } from './node-tick'
 export { NodeVehicleServer } from './node-vehicle-server'

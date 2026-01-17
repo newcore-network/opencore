@@ -1,12 +1,12 @@
 import { AppError } from '@open-core/framework'
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters/contracts/IExports'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
 import { getRuntimeContext } from '../../runtime'
-import { CoreCommandsExports } from '../../types/core-exports'
+import { InternalCommandsExports } from '../../types/core-exports'
 import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
 
 /**
@@ -40,6 +40,10 @@ interface CommandEntry {
 export class RemoteCommandService extends CommandExecutionPort {
   private commands = new Map<string, CommandEntry>()
 
+  getCommandMeta(commandName: string): CommandMetadata | undefined {
+    return this.commands.get(commandName.toLowerCase())?.meta
+  }
+
   constructor(@inject(IExports as any) private exportsService: IExports) {
     super()
   }
@@ -47,9 +51,9 @@ export class RemoteCommandService extends CommandExecutionPort {
   /**
    * Gets typed access to CORE resource exports.
    */
-  private get core(): CoreCommandsExports {
+  private get core(): InternalCommandsExports {
     const { coreResourceName } = getRuntimeContext()
-    const coreExports = this.exportsService.getResource<CoreCommandsExports>(coreResourceName)
+    const coreExports = this.exportsService.getResource<InternalCommandsExports>(coreResourceName)
 
     if (!coreExports) {
       throw new Error(

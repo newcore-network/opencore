@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe'
-import { coreLogger } from '../../../kernel/shared/logger'
+import { coreLogger } from '../../../kernel/logger'
 import { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
 import { VehicleService } from './vehicle.service'
 

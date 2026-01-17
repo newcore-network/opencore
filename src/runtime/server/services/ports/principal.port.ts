@@ -44,7 +44,7 @@ export abstract class PrincipalPort {
   /**
    * Gets Principal by account ID (works for offline players too).
    *
-   * @param accountId - Database account identifier
+   * @param accountId - Account identifier
    * @returns Principal data or null
    */
   abstract getPrincipalByAccountId(accountId: string): Promise<Principal | null>

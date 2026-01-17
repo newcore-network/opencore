@@ -1,7 +1,8 @@
+import { inject } from 'tsyringe'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import { CorePlayerExports, SerializedPlayerData } from '../types/core-exports'
+import { InternalPlayerExports, SerializedPlayerData } from '../types/core-exports'
 
 /**
  * Exports player directory functionality for RESOURCE mode access.
@@ -14,8 +15,8 @@ import { CorePlayerExports, SerializedPlayerData } from '../types/core-exports'
  * - Manage player state flags
  */
 @Controller()
-export class PlayerExportController implements CorePlayerExports {
-  constructor(private playerService: PlayerDirectoryPort) {}
+export class PlayerExportController implements InternalPlayerExports {
+  constructor(@inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort) {}
 
   // ═══════════════════════════════════════════════════════════════
   // Basic Player Queries

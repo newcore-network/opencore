@@ -1,10 +1,10 @@
 import { inject, injectable } from 'tsyringe'
-import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
-import { coreLogger } from '../../../kernel/shared/logger'
+import { coreLogger } from '../../../kernel/logger'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import {
   SerializedVehicleData,
@@ -366,7 +366,7 @@ export class VehicleService {
     const player = this.playerDirectory.getByClient(clientID)
     if (!player) return false
 
-    const playerPed = this.playerServer.getPed(player.clientIDStr)
+    const playerPed = this.playerServer.getPed(player.clientID.toString())
     if (!playerPed || playerPed === 0) return false
 
     const playerPos = this.entityServer.getCoords(playerPed)

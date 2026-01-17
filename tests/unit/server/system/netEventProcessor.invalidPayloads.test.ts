@@ -6,6 +6,7 @@ import { NodeEntityServer } from '../../../../src/adapters/node/node-entity-serv
 import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
 import { NodePlayerServer } from '../../../../src/adapters/node/node-player-server'
 import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
+import { WorldContext } from '../../../../src/runtime/core/world'
 import type { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
@@ -45,7 +46,13 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
-    const playerService = new PlayerService(playerInfo, playerServer, entityServer, netTransport)
+    const playerService = new PlayerService(
+      new WorldContext(),
+      playerInfo,
+      playerServer,
+      entityServer,
+      netTransport,
+    )
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
@@ -86,7 +93,13 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash even if handleViolation throws', async () => {
-    const playerService = new PlayerService(playerInfo, playerServer, entityServer, netTransport)
+    const playerService = new PlayerService(
+      new WorldContext(),
+      playerInfo,
+      playerServer,
+      entityServer,
+      netTransport,
+    )
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 

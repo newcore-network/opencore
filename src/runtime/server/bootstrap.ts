@@ -1,12 +1,8 @@
-import { IEngineEvents } from '../../adapters'
+import { IEngineEvents, INetTransport } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
-import { di, MetadataScanner } from '../../kernel/di/index'
-import { loggers } from '../../kernel/shared/logger'
-import {
-  registerDefaultBootstrapValidators,
-  runBootstrapValidatorsOrThrow,
-} from './bootstrap.validation'
-import { AuthProviderContract, PrincipalProviderContract } from './contracts/index'
+import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
+import { loggers } from '../../kernel/logger'
+import { PrincipalProviderContract } from './contracts/index'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
@@ -19,26 +15,16 @@ import { SessionRecoveryService } from './services/core/session-recovery.service
 import { registerServicesServer } from './services/services.register'
 import { registerSystemServer } from './system/processors.register'
 
-const CORE_WAIT_TIMEOUT = 10_000
+const CORE_WAIT_TIMEOUT = 10000
 
 function checkProviders(ctx: RuntimeContext): void {
   if (ctx.mode === 'RESOURCE') return
 
-  if (ctx.features.principal.enabled && ctx.features.principal.required) {
-    if (!di.isRegistered(PrincipalProviderContract as any)) {
+  if (ctx.features.principal.enabled) {
+    if (!GLOBAL_CONTAINER.isRegistered(PrincipalProviderContract as any)) {
       const errorMsg =
         'No Principal Provider configured. ' +
         "Please call 'Server.setPrincipalProvider(YourProvider)' before init(). This is required for authorization."
-      loggers.bootstrap.fatal(errorMsg)
-      throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
-    }
-  }
-
-  if (ctx.features.auth.enabled && ctx.features.auth.required) {
-    if (!di.isRegistered(AuthProviderContract as any)) {
-      const errorMsg =
-        'No Authentication Provider configured. ' +
-        "Please call 'Server.setAuthProvider(YourProvider)' before init(). This is required for authentication."
       loggers.bootstrap.fatal(errorMsg)
       throw new Error(`[OpenCore] CRITICAL: ${errorMsg}`)
     }
@@ -69,6 +55,10 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
 
   if (ctx.features.players.enabled && ctx.features.players.export && ctx.features.exports.enabled) {
     await import('./controllers/player-export.controller')
+  }
+
+  if (ctx.mode === 'CORE') {
+    await import('./controllers/ready.controller')
   }
 
   if (
@@ -107,8 +97,9 @@ export async function initServer(options: ServerRuntimeOptions) {
     scope: getFrameworkModeScope(ctx.mode),
   })
 
-  // Adapters
+  // Register platform-specific capabilities (adapters)
   await registerServerCapabilities()
+  loggers.bootstrap.debug('Platform capabilities registered')
 
   const dependenciesToWaitFor: Promise<any>[] = []
   if (ctx.mode === 'RESOURCE') {
@@ -132,130 +123,24 @@ export async function initServer(options: ServerRuntimeOptions) {
   }
   loggers.bootstrap.debug('Dependencies resolved. Proceeding with system boot.')
 
+  // 1. Register Core Services (WorldContext, PlayerService, etc.)
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
+
+  // 2. Load Controllers (Framework & User controllers)
+  // This is where user services get registered if they are decorated with @injectable()
+  // and imported before init() or discovered here.
+  await loadFrameworkControllers(ctx)
+  loggers.bootstrap.debug('Controllers loaded')
+
+  // 3. Register System Processors (Command, NetEvent, etc.)
+  // These processors check if contracts are already registered before applying defaults.
   registerSystemServer(ctx)
   loggers.bootstrap.debug('System processors registered')
 
   checkProviders(ctx)
 
-  // In RESOURCE mode, verify CORE exports are available before loading controllers
-  if (ctx.mode === 'RESOURCE') {
-    const needsCoreExports =
-      ctx.features.players.provider === 'core' ||
-      ctx.features.commands.provider === 'core' ||
-      ctx.features.principal.provider === 'core' ||
-      ctx.features.auth.provider === 'core'
-
-    if (needsCoreExports) {
-      const { coreResourceName } = ctx
-
-      loggers.bootstrap.debug(`Verifying CORE exports availability`, {
-        coreResourceName,
-        globalExportsKeys: Object.keys((globalThis as any).exports || {}),
-      })
-
-      // Build list of required exports
-      const requiredExports: string[] = []
-      if (ctx.features.commands.provider === 'core') {
-        requiredExports.push('registerCommand', 'executeCommand', 'getAllCommands')
-      }
-      if (ctx.features.players.provider === 'core') {
-        requiredExports.push(
-          'getPlayerId',
-          'getPlayerData',
-          'getAllPlayersData',
-          'getPlayerByAccountId',
-          'getPlayerCount',
-          'isPlayerOnline',
-          'getPlayerMeta',
-          'setPlayerMeta',
-          'getPlayerStates',
-          'hasPlayerState',
-          'addPlayerState',
-          'removePlayerState',
-        )
-      }
-      if (ctx.features.principal.provider === 'core') {
-        requiredExports.push(
-          'getPrincipal',
-          'getPrincipalByAccountId',
-          'refreshPrincipal',
-          'hasPermission',
-          'hasRank',
-          'hasAnyPermission',
-          'hasAllPermissions',
-          'getPermissions',
-          'getRank',
-          'getPrincipalName',
-          'getPrincipalMeta',
-        )
-      }
-
-      loggers.bootstrap.debug(`Checking CORE exports`, {
-        coreResourceName,
-        requiredExports,
-      })
-
-      // Access exports directly using FiveM's global exports object
-      const globalExports = (globalThis as any).exports
-      if (!globalExports) {
-        throw new Error(
-          `[OpenCore] FiveM 'exports' global not found. This should never happen in a FiveM environment.`,
-        )
-      }
-
-      const coreExports = globalExports[coreResourceName]
-
-      // Check each required export directly (can't use Object.keys on FiveM exports proxy)
-      const missingExports: string[] = []
-      for (const exportName of requiredExports) {
-        try {
-          const exportValue = coreExports?.[exportName]
-          if (typeof exportValue !== 'function') {
-            missingExports.push(exportName)
-            loggers.bootstrap.warn(`Export '${exportName}' is not a function`, {
-              exportName,
-              type: typeof exportValue,
-              value: exportValue,
-            })
-          }
-        } catch (error) {
-          missingExports.push(exportName)
-          loggers.bootstrap.warn(`Failed to access export '${exportName}'`, {
-            exportName,
-            error: error instanceof Error ? error.message : String(error),
-          })
-        }
-      }
-
-      if (missingExports.length > 0) {
-        const errorMsg =
-          `CORE resource '${coreResourceName}' is missing ${missingExports.length} required exports: ${missingExports.join(', ')}\n` +
-          `\n` +
-          `This usually means:\n` +
-          `  1. The CORE resource failed to initialize properly\n` +
-          `  2. The CORE resource doesn't have the 'exports' feature enabled\n` +
-          `  3. The CORE resource doesn't have the required features enabled (commands: ${ctx.features.commands.provider === 'core'})\n` +
-          `\n` +
-          `Verify in '${coreResourceName}/src/server/server.ts':\n` +
-          `  - mode: 'CORE'\n` +
-          `  - features.exports.enabled: true\n` +
-          `  - features.commands.enabled: true (if using commands)`
-        loggers.bootstrap.fatal(errorMsg)
-        throw new Error(`[OpenCore] ${errorMsg}`)
-      }
-    }
-  }
-
-  await loadFrameworkControllers(ctx)
-
-  if (ctx.features.database.enabled) {
-    registerDefaultBootstrapValidators()
-    await runBootstrapValidatorsOrThrow()
-  }
-
-  const scanner = di.resolve(MetadataScanner)
+  const scanner = GLOBAL_CONTAINER.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
 
   // Initialize DevMode if enabled
@@ -270,34 +155,65 @@ export async function initServer(options: ServerRuntimeOptions) {
 
   loggers.bootstrap.info('OpenCore Server initialized successfully')
 
-  if (ctx.mode === 'CORE' && di.isRegistered(IEngineEvents as any)) {
-    const engineInterface = di.resolve(IEngineEvents as any) as IEngineEvents
-    engineInterface.emit('core:ready')
+  if (
+    ctx.mode === 'CORE' &&
+    GLOBAL_CONTAINER.isRegistered(IEngineEvents as any) &&
+    GLOBAL_CONTAINER.isRegistered(INetTransport as any)
+  ) {
+    const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents // server -> servers
+    const net = GLOBAL_CONTAINER.resolve(INetTransport as any) as INetTransport // server -> clients
+    engineEvents.emit('core:ready') // Broadcast to all Servers resources
+    net.emitNet('core:ready', 'all') // Broadcast to all Clients resources
+    loggers.bootstrap.debug(`'core:ready' events emmited to all clients and all servers`)
   }
 }
 
 function createCoreDependency(coreName: string): Promise<void> {
   return new Promise((resolve, reject) => {
     let resolved = false
-    const engineEvents = di.resolve(IEngineEvents as any) as IEngineEvents
+    const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
 
     const cleanup = () => {
       resolved = true
       clearTimeout(timeout)
+      clearInterval(pollingInterval)
     }
 
+    // 1. Check if already ready via export (Polling)
+    const checkReady = () => {
+      if (resolved) return
+      try {
+        const globalExports = (globalThis as any).exports
+        const isReady = globalExports?.[coreName]?.isCoreReady?.()
+        if (isReady === true) {
+          loggers.bootstrap.debug(`Core '${coreName}' detected as already ready via export.`)
+          cleanup()
+          resolve()
+        }
+      } catch {
+        // Core might not be started yet, ignore
+      }
+    }
+
+    const pollingInterval = setInterval(checkReady, 500)
+    checkReady() // Initial check
+
+    // 2. Timeout protection
     const timeout = setTimeout(() => {
       if (!resolved) {
+        cleanup()
         reject(
           new Error(
-            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit 'core:ready' within ${CORE_WAIT_TIMEOUT}ms.`,
+            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit 'core:ready' or expose 'isCoreReady' within ${CORE_WAIT_TIMEOUT}ms.`,
           ),
         )
       }
     }, CORE_WAIT_TIMEOUT)
 
+    // 3. Listen for the event (for resources starting after/during CORE init)
     const onReady = () => {
       if (!resolved) {
+        loggers.bootstrap.debug(`Core '${coreName}' detected via 'core:ready' event.`)
         cleanup()
         resolve()
       }
@@ -343,7 +259,7 @@ async function dependencyResolver(
  */
 function runSessionRecovery(): void {
   try {
-    const recoveryService = di.resolve(SessionRecoveryService)
+    const recoveryService = GLOBAL_CONTAINER.resolve(SessionRecoveryService)
     const stats = recoveryService.recoverSessions()
 
     if (stats.recovered > 0) {
@@ -367,16 +283,15 @@ async function initDevMode(config: NonNullable<RuntimeContext['devMode']>): Prom
   const { PlayerSimulatorService } = await import('./devmode/player-simulator.service')
 
   // Register DevMode services
-  di.registerSingleton(EventInterceptorService, EventInterceptorService)
-  di.registerSingleton(StateInspectorService, StateInspectorService)
-  di.registerSingleton(PlayerSimulatorService, PlayerSimulatorService)
-  di.registerSingleton(DevModeService, DevModeService)
+  GLOBAL_CONTAINER.registerSingleton(EventInterceptorService, EventInterceptorService)
+  GLOBAL_CONTAINER.registerSingleton(StateInspectorService, StateInspectorService)
+  GLOBAL_CONTAINER.registerSingleton(PlayerSimulatorService, PlayerSimulatorService)
+  GLOBAL_CONTAINER.registerSingleton(DevModeService, DevModeService)
 
   // Enable DevMode
-  const devModeService = di.resolve(DevModeService)
+  const devModeService = GLOBAL_CONTAINER.resolve(DevModeService)
   await devModeService.enable({
     enabled: true,
-    hotReload: config.hotReload,
     bridge: config.bridge,
     interceptor: config.interceptor,
     simulator: config.simulator,

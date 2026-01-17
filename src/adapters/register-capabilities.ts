@@ -1,27 +1,45 @@
-import { di } from '../kernel/di/container'
-import { IEngineEvents } from './contracts/IEngineEvents'
-import { IEntityServer } from './contracts/server/IEntityServer'
-import { IExports } from './contracts/IExports'
-import { IHasher } from './contracts/IHasher'
-import { INetTransport } from './contracts/INetTransport'
-import { IPedAppearanceServer } from './contracts/server/IPedAppearanceServer'
-import { IPlayerInfo } from './contracts/IPlayerInfo'
-import { IPlayerServer } from './contracts/server/IPlayerServer'
-import { IResourceInfo } from './contracts/IResourceInfo'
-import { ITick } from './contracts/ITick'
-import { IVehicleServer } from './contracts/server/IVehicleServer'
+import { GLOBAL_CONTAINER } from '../kernel/di/container'
+import { FiveMPlatform } from './fivem/fivem-platform'
+import { NodePlatform } from './node/node-platform'
+import {
+  getCurrentPlatformName,
+  type PlatformAdapter,
+  platformRegistry,
+  registerPlatform,
+} from './platform/platform-registry'
 
-export type Platform = 'fivem' | 'node'
+// Re-export for convenience
+export { platformRegistry, registerPlatform, getCurrentPlatformName }
+export type { PlatformAdapter }
 
 /**
- * Detects the current runtime platform
+ * Supported platform types.
+ * @deprecated Use platformRegistry.getCurrent()?.name instead for dynamic platform detection.
  */
-function detectPlatform(): Platform {
-  // Check for FiveM-specific globals
-  if (typeof (globalThis as any).GetCurrentResourceName === 'function') {
-    return 'fivem'
-  }
-  return 'node'
+export type Platform = 'fivem' | 'node' | string
+
+// ─────────────────────────────────────────────────────────────────
+// Register built-in platforms
+// ─────────────────────────────────────────────────────────────────
+
+// Register FiveM platform (high priority)
+registerPlatform(FiveMPlatform)
+
+// Register Node.js fallback platform (low priority)
+registerPlatform(NodePlatform)
+
+// ─────────────────────────────────────────────────────────────────
+// Public API
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Detects the current runtime platform.
+ *
+ * @deprecated Use platformRegistry.detect() instead.
+ */
+export function detectPlatform(): Platform {
+  const detected = platformRegistry.detect()
+  return detected?.name ?? 'node'
 }
 
 /**
@@ -31,106 +49,51 @@ function detectPlatform(): Platform {
  * This function registers adapters needed by the SERVER runtime only.
  * Client-side adapters are registered separately via `registerClientCapabilities`.
  *
- * @param platform - Optional platform override. If not provided, platform is auto-detected.
+ * The function uses the Platform Registry to automatically detect and register
+ * the appropriate platform adapters. You can also force a specific platform
+ * by passing its name.
+ *
+ * @param platform - Optional platform name to force. If not provided, platform is auto-detected.
+ *
+ * @example
+ * ```typescript
+ * // Auto-detect platform
+ * await registerServerCapabilities()
+ *
+ * // Force a specific platform
+ * await registerServerCapabilities('fivem')
+ *
+ * // Register a custom platform before calling
+ * registerPlatform(MyCustomPlatform)
+ * await registerServerCapabilities('myplatform')
+ * ```
  */
 export async function registerServerCapabilities(platform?: Platform): Promise<void> {
-  const targetPlatform = platform ?? detectPlatform()
+  await platformRegistry.detectAndRegister(GLOBAL_CONTAINER, platform)
+}
 
-  if (targetPlatform === 'node') {
-    // Dynamically import Node.js implementations only when needed
-    const [
-      { NodeNetTransport },
-      { NodeEngineEvents },
-      { NodeExports },
-      { NodeResourceInfo },
-      { NodeTick },
-      { NodePlayerInfo },
-      { NodeEntityServer },
-      { NodeVehicleServer },
-      { NodePlayerServer },
-      { NodeHasher },
-      { NodePedAppearanceServer },
-    ] = await Promise.all([
-      import('./node/node-net-transport'),
-      import('./node/node-engine-events'),
-      import('./node/node-exports'),
-      import('./node/node-resourceinfo'),
-      import('./node/node-tick'),
-      import('./node/node-playerinfo'),
-      import('./node/node-entity-server'),
-      import('./node/node-vehicle-server'),
-      import('./node/node-player-server'),
-      import('./node/node-hasher'),
-      import('./node/node-ped-appearance-server'),
-    ])
+/**
+ * Check if a specific platform is currently active.
+ *
+ * @param name - Platform name to check
+ * @returns true if the platform is active
+ *
+ * @example
+ * ```typescript
+ * if (isPlatform('fivem')) {
+ *   // FiveM-specific code
+ * }
+ * ```
+ */
+export function isPlatform(name: string): boolean {
+  return platformRegistry.isCurrentPlatform(name)
+}
 
-    // Register Node.js implementations (server-side only)
-    if (!di.isRegistered(INetTransport as any))
-      di.registerSingleton(INetTransport as any, NodeNetTransport)
-    if (!di.isRegistered(IEngineEvents as any))
-      di.registerSingleton(IEngineEvents as any, NodeEngineEvents)
-    if (!di.isRegistered(IExports as any)) di.registerSingleton(IExports as any, NodeExports)
-    if (!di.isRegistered(IResourceInfo as any))
-      di.registerSingleton(IResourceInfo as any, NodeResourceInfo)
-    if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, NodeTick)
-    if (!di.isRegistered(IPlayerInfo as any))
-      di.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
-    if (!di.isRegistered(IEntityServer as any))
-      di.registerSingleton(IEntityServer as any, NodeEntityServer)
-    if (!di.isRegistered(IVehicleServer as any))
-      di.registerSingleton(IVehicleServer as any, NodeVehicleServer)
-    if (!di.isRegistered(IPlayerServer as any))
-      di.registerSingleton(IPlayerServer as any, NodePlayerServer)
-    if (!di.isRegistered(IHasher as any)) di.registerSingleton(IHasher as any, NodeHasher)
-    if (!di.isRegistered(IPedAppearanceServer as any))
-      di.registerSingleton(IPedAppearanceServer as any, NodePedAppearanceServer)
-  } else {
-    // Dynamically import FiveM implementations only when needed
-    const [
-      { FiveMNetTransport },
-      { FiveMEngineEvents },
-      { FiveMExports },
-      { FiveMResourceInfo },
-      { FiveMTick },
-      { FiveMPlayerInfo },
-      { FiveMEntityServer },
-      { FiveMVehicleServer },
-      { FiveMPlayerServer },
-      { FiveMHasher },
-      { FiveMPedAppearanceServerAdapter },
-    ] = await Promise.all([
-      import('./fivem/fivem-net-transport'),
-      import('./fivem/fivem-engine-events'),
-      import('./fivem/fivem-exports'),
-      import('./fivem/fivem-resourceinfo'),
-      import('./fivem/fivem-tick'),
-      import('./fivem/fivem-playerinfo'),
-      import('./fivem/fivem-entity-server'),
-      import('./fivem/fivem-vehicle-server'),
-      import('./fivem/fivem-player-server'),
-      import('./fivem/fivem-hasher'),
-      import('./fivem/fivem-ped-appearance-server'),
-    ])
-
-    // Register FiveM implementations (server-side only)
-    if (!di.isRegistered(INetTransport as any))
-      di.registerSingleton(INetTransport as any, FiveMNetTransport)
-    if (!di.isRegistered(IEngineEvents as any))
-      di.registerSingleton(IEngineEvents as any, FiveMEngineEvents)
-    if (!di.isRegistered(IExports as any)) di.registerSingleton(IExports as any, FiveMExports)
-    if (!di.isRegistered(IResourceInfo as any))
-      di.registerSingleton(IResourceInfo as any, FiveMResourceInfo)
-    if (!di.isRegistered(ITick as any)) di.registerSingleton(ITick as any, FiveMTick)
-    if (!di.isRegistered(IPlayerInfo as any))
-      di.registerSingleton(IPlayerInfo as any, FiveMPlayerInfo)
-    if (!di.isRegistered(IEntityServer as any))
-      di.registerSingleton(IEntityServer as any, FiveMEntityServer)
-    if (!di.isRegistered(IVehicleServer as any))
-      di.registerSingleton(IVehicleServer as any, FiveMVehicleServer)
-    if (!di.isRegistered(IPlayerServer as any))
-      di.registerSingleton(IPlayerServer as any, FiveMPlayerServer)
-    if (!di.isRegistered(IHasher as any)) di.registerSingleton(IHasher as any, FiveMHasher)
-    if (!di.isRegistered(IPedAppearanceServer as any))
-      di.registerSingleton(IPedAppearanceServer as any, FiveMPedAppearanceServerAdapter)
-  }
+/**
+ * Get the current platform adapter.
+ *
+ * @returns The current platform adapter or null if not initialized
+ */
+export function getCurrentPlatform(): PlatformAdapter | null {
+  return platformRegistry.getCurrent()
 }

@@ -1,6 +1,6 @@
 ## OpenCore Framework v0.3.0 ⚠️ BREAKING CHANGE
 
-> **This release introduces breaking changes.**
+> **This release introduces massive structural simplifications, a hard boundary between runtimes, and a robust telemetry/logging system.**
 > Backward compatibility with previous versions is **not guaranteed**.
 > Please read the notes carefully before upgrading.
 
@@ -8,52 +8,61 @@
 
 ### Highlights
 
+- **Dynamic Log Level Control (NEW)**  
+  The framework now supports granular log level control. You can configure the global `logLevel` during `Server.init()`, which overrides build-time defaults. Supported levels: `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`.
+
+- **Telemetry Bridge & State Inspection (NEW)**  
+  Refactored the DevMode bridge to focus on telemetry. The OpenCore CLI can now stream logs and capture real-time snapshots of the framework state (DI container, active sessions, registered commands) via a WebSocket/HTTP bridge.
+
+- **Offline Player Simulation (NEW)**  
+  Enhanced the `PlayerSimulatorService` to allow testing complex game logic without a running game client. Supports automatic connection of virtual players on startup.
+
+- **Zero-Config Feature System (NEW)**  
+  Features are now enabled by default and providers are auto-inferred based on the runtime mode (`CORE`, `RESOURCE`, or `STANDALONE`). Manual provider configuration and export flags have been removed from the public API.
+
+- **Universal Node.js Compatibility (NEW)**  
+  Refactored core services (`ChatService`, `SessionController`) to remove direct dependencies on FiveM globals, enabling full framework testing and simulation in pure Node.js.
+
+- **Authoritative DI & Bootstrap (IMPROVED)**  
+  Redesigned the Dependency Injection lifecycle to eliminate circular dependency issues. The framework now uses a two-phase bootstrap that ensures critical services (World, Players) are ready before controllers are resolved, removing the need for `delay()` in most use cases.
+
 - **Hard runtime separation (Client / Server)**  
-  OpenCore now enforces a strict boundary between client and server runtimes.  
-  Server-only code can no longer be accidentally bundled into client resources.
-
-- **Kernel-first public API**  
-  All runtime-agnostic logic has been consolidated into a single, safe `kernel` entrypoint exposed at the package root.
-
-- **Smaller and cleaner client bundles**  
-  Client bundles are significantly lighter after removing unintended server-side dependencies and Node-specific code.
+  OpenCore now enforces a strict boundary between client and server runtimes. Server-only code can no longer be accidentally bundled into client resources.
 
 ---
 
 ### 🚨 Breaking Changes
 
-- The package root (`@open-core/framework`) now **only exposes kernel (runtime-agnostic) APIs**.
-- Runtime-specific APIs **must** be imported explicitly:
-  - `@open-core/framework/client`
-  - `@open-core/framework/server`
-- Deep internal imports (e.g. `@open-core/framework/kernel/...`) are **no longer supported** and will fail at build time.
-- The generic `runtime/index.ts` entrypoint has been **removed** to prevent client/server graph leakage.
-- Internal utility and error module paths have changed and require updated imports.
-- Utils and Shared apis are deleted
+- **DevMode Refactor**:
+  - Removed internal **Hot-Reload** server. Resource reloading is now handled exclusively by the OpenCore CLI or platform-native tools (txAdmin).
+  - Removed `hotReload` property from `DevModeConfig`.
+- **Imports**: now you only have 3 ways to imports, `@open-core/framework`, `@open-core/framework/server`, `@open-core/framework/client`
+- **API Simplification**: `UserFeatureConfig` now only supports a `disabled` list. `provider` and `export` fields are removed.
+- **Initialization**: `Server.init()` options have been simplified. `resourceGrants` has been entirely removed.
+- **Package Exports**: The package root (`@open-core/framework`) now **only exposes kernel (runtime-agnostic) APIs**. Runtime-specific APIs **must** be imported via `@open-core/framework/client` or `@open-core/framework/server`.
+- **Database Removal**: The internal `database` feature has been removed.
+- **Logging Infrastructure**: `coreLogger` now uses a two-stage filtering system (Global vs. Transport). Environment detection is more strict.
 
 ---
 
 ### Changes
 
-- Reorganized package exports so the kernel is the main public entrypoint.
-- Removed separate `./shared` and `./utils` export subpaths.
-- Consolidated the former `utils` directory into `kernel/shared/utils`.
-- Moved error and security-related types into `kernel/shared/utils/error`.
-- Updated all internal framework imports to rely on the public kernel API instead of deep relative paths.
-- Introduced explicit `api.ts` barrel files for both client and server runtimes.
-- Reorganized adapter contract interfaces into `client` and `server` subdirectories.
-- Updated all FiveM and Node implementations, runtime services, entities, and tests to reflect the new contract structure.
-- Improved import ordering (external dependencies first).
-- Standardized file formatting across the codebase.
-
----
-
-### Fixes
-
-- Fixed a **critical bundler issue** where server-side code (including Node core modules) could be included in client bundles.
-- Prevented runtime leakage caused by overly broad barrel exports.
-- Enforced the package `exports` map to block invalid or unsupported subpath imports.
-- Ensured client builds are free of `node:*` imports and server-only services.
+- **Core Simplification**:
+  - Implemented `DefaultPrincipalProvider` for out-of-the-box `@Guard` support.
+  - Refactored `ChatService` and `SessionController` for better platform independence.
+  - Optimized `resolveRuntimeOptions` to build internal feature contracts automatically.
+  - **DI Stability**: Added explicit `@inject()` decorators to all interface-based dependencies to ensure reliable resolution across different bundlers.
+  - **Security**: Hardened `VehicleController` by removing client-authoritative entity creation and movement events.
+- **Logging & Telemetry**:
+  - Implemented `__OPENCORE_LOG_LEVEL__` build-time injection.
+  - Updated `LoggerService` with comprehensive TSDocs and dual-stage filtering logic.
+  - **DI-Ready Logger**: `LoggerService` is now fully integrated into the DI container with support for optional configurations via tokens.
+  - Refactored `DevModeService` to focus on state inspection and telemetry.
+- **Architectural Cleanup**:
+  - Reorganized package exports so the kernel is the main public entrypoint.
+  - Consolidated former `utils` into `kernel/shared/utils`.
+  - Introduced explicit `api.ts` barrel files for both client and server runtimes.
+  - **Bootstrap Reordering**: Controllers are now loaded and registered before system processors to allow user-defined service overrides.
 
 ---
 
@@ -61,19 +70,34 @@
 
 If you are upgrading from **v0.2.x**, you will need to:
 
-- Replace any deep internal imports with:
-```ts
-  import { X } from '@open-core/framework'
-```
-- Import runtime-specific APIs explicitly:
-```ts
-import { Client } from '@open-core/framework/client'
-import { Server } from '@open-core/framework/server'
-```
+1. **Update Server Initialization**:
+   ```ts
+   // Old
+   await Server.init({
+     mode: 'CORE',
+     features: { commands: { enabled: true, provider: 'local', export: true } },
+   })
 
-- Remove any reliance on shared runtime entrypoints or implicit client/server exposure.
+   // New (Sane defaults, dynamic logs)
+   await Server.init({ 
+     mode: 'CORE',
+     logLevel: 'DEBUG' // Optional
+   })
+   ```
+
+2. **Update Imports**:
+   ```ts
+   // Old
+   import { X } from '@open-core/framework/kernel/di'
+   
+   // New
+   import { X } from '@open-core/framework'
+   import { Server } from '@open-core/framework/server'
+   import { Client } from '@open-core/framework/client'
+   ```
+
+---
 
 ### Notes
 
-This release intentionally prioritizes correctness, safety, and long-term scalability over backward compatibility.
-It establishes hard architectural boundaries required for a stable and predictable framework as OpenCore continues to grow.
+This release establishes hard architectural boundaries and massive boilerplate reduction required for a stable, platform-agnostic multiplayer runtime as OpenCore grows.

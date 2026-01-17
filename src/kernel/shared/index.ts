@@ -1,3 +1,1 @@
-export * from './appearance'
-export * from './logger'
-export * from './utils'
+export * from './player-appearance.types'

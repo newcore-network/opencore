@@ -15,8 +15,7 @@
 
     "baseUrl": ".",
     "paths": {
-      "@open-core/framework": ["./src/kernel/index.ts"],
-      "@open-core/framework/*": ["./src/*"],
+      "@open-core/framework": ["./src/index.ts"],
       "@open-core/framework/client": ["./src/runtime/client"],
       "@open-core/framework/server": ["./src/runtime/server"]
     },

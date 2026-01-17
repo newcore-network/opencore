@@ -1,9 +1,11 @@
 import { inject, injectable } from 'tsyringe'
 import { IPlayerInfo } from '../../../../adapters'
-import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
+import { BaseEntity } from '../../../core/entity'
+import { WorldContext } from '../../../core/world'
 import { Player, type PlayerAdapters } from '../../entities'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
@@ -20,17 +22,10 @@ import { PlayerSession } from '../types/player-session.object'
  */
 @injectable()
 export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecyclePort {
-  /**
-   * Internal map storing active player sessions indexed by their FiveM client ID (source).
-   */
-  private playersByClient = new Map<number, Player>()
-
-  /**
-   * Cached adapters bundle for Player instances
-   */
   private readonly playerAdapters: PlayerAdapters
 
   constructor(
+    @inject(WorldContext) private readonly world: WorldContext,
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
@@ -42,6 +37,10 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
       entityServer: this.entityServer,
       netTransport: this.netTransport,
     }
+  }
+
+  private isPlayer(e: BaseEntity): e is Player {
+    return e.id.startsWith('player:')
   }
 
   /**
@@ -62,10 +61,10 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
     }
 
     const player = new Player(session, this.playerAdapters)
-    this.playersByClient.set(clientID, player)
+    this.world.add(player)
     loggers.session.debug('Player session bound', {
       clientID,
-      totalPlayers: this.playersByClient.size,
+      totalPlayers: this.world.sizeBy('player'),
     })
     return player
   }
@@ -79,10 +78,12 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @param clientID - The FiveM server ID of the player disconnecting.
    */
   unbind(clientID: number) {
-    this.playersByClient.delete(clientID)
+    const player = this.getByClient(clientID)
+    if (player) this.world.remove(player.id)
+
     loggers.session.debug('Player session unbound', {
       clientID,
-      totalPlayers: this.playersByClient.size,
+      totalPlayers: this.world.sizeBy('player'),
     })
   }
 
@@ -93,16 +94,25 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns The `Player` instance if found, or `null` if the session does not exist.
    */
   getByClient(clientID: number): Player | undefined {
-    return this.playersByClient.get(clientID)
+    return this.world.get<Player>(`player:${clientID}`)
   }
 
   getMany(clientIds: number[]): Player[] {
     const result: Player[] = []
     for (const id of clientIds) {
-      const player = this.playersByClient.get(id)
-      if (player) result.push(player)
+      const p = this.getByClient(id)
+      if (p) result.push(p)
     }
     return result
+  }
+
+  /**
+   * Returns a list of all currently active `Player` entities.
+   *
+   * @returns An array containing all connected players managed by this service.
+   */
+  getAll(): Player[] {
+    return this.world.find(this.isPlayer)
   }
 
   /**
@@ -112,8 +122,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns The bound Account ID (string/UUID) if the player is logged in, or `null` otherwise.
    */
   getPlayerId(clientID: number): string | undefined {
-    const player = this.playersByClient.get(clientID)
-    return player?.accountID
+    return this.getByClient(clientID)?.accountID
   }
 
   /**
@@ -125,9 +134,8 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @param value - The value to store.
    */
   setMeta(clientID: number, key: string, value: unknown) {
-    const player = this.playersByClient.get(clientID)
+    const player = this.getByClient(clientID)
     if (!player) return
-
     player.setMeta(key, value)
   }
 
@@ -140,17 +148,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns The value cast to type `T`, or `undefined` if the key or player doesn't exist.
    */
   async getMeta<T = unknown>(clientID: number, key: string): Promise<T | undefined> {
-    const player = this.playersByClient.get(clientID)
-    return await player?.getMeta<T>(key)
-  }
-
-  /**
-   * Returns a list of all currently active `Player` entities.
-   *
-   * @returns An array containing all connected players managed by this service.
-   */
-  getAll(): Player[] {
-    return Array.from(this.playersByClient.values())
+    return this.getByClient(clientID)?.getMeta<T>(key)
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -164,12 +162,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns The Player if found, or `undefined` if not online.
    */
   getByAccountId(accountId: string): Player | undefined {
-    for (const player of this.playersByClient.values()) {
-      if (player.accountID === accountId) {
-        return player
-      }
-    }
-    return undefined
+    return this.world.find(this.isPlayer).find((p) => p.accountID === accountId)
   }
 
   /**
@@ -178,7 +171,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns Player count.
    */
   getPlayerCount(): number {
-    return this.playersByClient.size
+    return this.world.sizeBy('player')
   }
 
   /**
@@ -188,11 +181,6 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @returns `true` if online, `false` otherwise.
    */
   isOnline(accountId: string): boolean {
-    for (const player of this.playersByClient.values()) {
-      if (player.accountID === accountId) {
-        return true
-      }
-    }
-    return false
+    return !!this.getByAccountId(accountId)
   }
 }

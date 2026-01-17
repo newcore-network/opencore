@@ -1,5 +1,6 @@
 import { injectable } from 'tsyringe'
 import { IPlayerServer } from '../contracts/server/IPlayerServer'
+import { type PlayerIdentifier, parseIdentifier } from '../contracts/types/identifier'
 
 /**
  * FiveM implementation of server-side player operations.
@@ -28,6 +29,9 @@ export class FiveMPlayerServer extends IPlayerServer {
     return undefined
   }
 
+  /**
+   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
+   */
   getIdentifiers(playerSrc: string): string[] {
     const identifiers: string[] = []
     const numIdentifiers = this.getNumIdentifiers(playerSrc)
@@ -36,6 +40,20 @@ export class FiveMPlayerServer extends IPlayerServer {
       const identifier = GetPlayerIdentifier(playerSrc, i)
       if (identifier) {
         identifiers.push(identifier)
+      }
+    }
+
+    return identifiers
+  }
+
+  getPlayerIdentifiers(playerSrc: string): PlayerIdentifier[] {
+    const rawIdentifiers = this.getIdentifiers(playerSrc)
+    const identifiers: PlayerIdentifier[] = []
+
+    for (const raw of rawIdentifiers) {
+      const parsed = parseIdentifier(raw)
+      if (parsed) {
+        identifiers.push(parsed)
       }
     }
 
@@ -60,6 +78,10 @@ export class FiveMPlayerServer extends IPlayerServer {
 
   setRoutingBucket(playerSrc: string, bucket: number): void {
     SetPlayerRoutingBucket(playerSrc, bucket)
+  }
+
+  getRoutingBucket(playerSrc: string): number {
+    return GetPlayerRoutingBucket(playerSrc)
   }
 
   getConnectedPlayers(): string[] {

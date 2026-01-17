@@ -3,7 +3,7 @@ import z from 'zod'
 import { AppError, SecurityError } from '../../../../'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
-import { coreLogger, loggers } from '../../../../kernel/shared/logger'
+import { coreLogger, loggers } from '../../../../kernel/logger'
 import {
   type NetEventInvalidPayloadContext,
   type NetEventInvalidPayloadReason,
@@ -23,7 +23,7 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    private playerService: PlayerDirectoryPort,
+    @inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
@@ -58,7 +58,6 @@ export class NetEventProcessor implements DecoratorProcessor {
           event: metadata.eventName,
           clientId: clientId,
         })
-        player.emit('core:auth:required', { event: metadata.eventName })
         return
       }
 

@@ -1,12 +1,12 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports, IPlayerInfo } from '../../../../adapters'
-import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
-import { loggers } from '../../../../kernel/shared/logger'
+import { loggers } from '../../../../kernel/logger'
 import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import { CorePlayerExports, SerializedPlayerData } from '../../types/core-exports'
+import { InternalPlayerExports, SerializedPlayerData } from '../../types/core-exports'
 import { PlayerDirectoryPort } from '../ports/player-directory.port'
 
 /**
@@ -43,9 +43,9 @@ export class RemotePlayerService extends PlayerDirectoryPort {
   /**
    * Gets typed access to CORE resource exports.
    */
-  private get core(): CorePlayerExports {
+  private get core(): InternalPlayerExports {
     const { coreResourceName } = getRuntimeContext()
-    const coreExports = this.exportsService.getResource<CorePlayerExports>(coreResourceName)
+    const coreExports = this.exportsService.getResource<InternalPlayerExports>(coreResourceName)
 
     if (!coreExports) {
       throw new Error(
