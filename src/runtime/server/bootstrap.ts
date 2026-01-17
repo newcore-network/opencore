@@ -358,7 +358,6 @@ async function initDevMode(config: NonNullable<RuntimeContext['devMode']>): Prom
   const devModeService = GLOBAL_CONTAINER.resolve(DevModeService)
   await devModeService.enable({
     enabled: true,
-    hotReload: config.hotReload,
     bridge: config.bridge,
     interceptor: config.interceptor,
     simulator: config.simulator,

@@ -1,6 +1,6 @@
 import { Vector3 } from '@open-core/framework'
 import { injectable } from 'tsyringe'
-import { loggers, PlayerAppearance } from '../../../kernel/shared'
+import { loggers, PlayerAppearance } from '@open-core/framework'
 import { AppearanceService } from './appearance.service'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))

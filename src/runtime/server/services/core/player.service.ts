@@ -1,5 +1,5 @@
-import { BaseEntity } from '@open-core/framework/runtime/core/entity'
-import { WorldContext } from '@open-core/framework/runtime/core/world'
+import { BaseEntity } from '@open-core/framework'
+import { WorldContext } from '@open-core/framework'
 import { inject, injectable } from 'tsyringe'
 import { IPlayerInfo } from '../../../../adapters'
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
