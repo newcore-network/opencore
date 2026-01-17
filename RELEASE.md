@@ -23,6 +23,9 @@
 - **Universal Node.js Compatibility (NEW)**  
   Refactored core services (`ChatService`, `SessionController`) to remove direct dependencies on FiveM globals, enabling full framework testing and simulation in pure Node.js.
 
+- **Authoritative DI & Bootstrap (IMPROVED)**  
+  Redesigned the Dependency Injection lifecycle to eliminate circular dependency issues. The framework now uses a two-phase bootstrap that ensures critical services (World, Players) are ready before controllers are resolved, removing the need for `delay()` in most use cases.
+
 - **Hard runtime separation (Client / Server)**  
   OpenCore now enforces a strict boundary between client and server runtimes. Server-only code can no longer be accidentally bundled into client resources.
 
@@ -48,14 +51,18 @@
   - Implemented `DefaultPrincipalProvider` for out-of-the-box `@Guard` support.
   - Refactored `ChatService` and `SessionController` for better platform independence.
   - Optimized `resolveRuntimeOptions` to build internal feature contracts automatically.
+  - **DI Stability**: Added explicit `@inject()` decorators to all interface-based dependencies to ensure reliable resolution across different bundlers.
+  - **Security**: Hardened `VehicleController` by removing client-authoritative entity creation and movement events.
 - **Logging & Telemetry**:
   - Implemented `__OPENCORE_LOG_LEVEL__` build-time injection.
   - Updated `LoggerService` with comprehensive TSDocs and dual-stage filtering logic.
+  - **DI-Ready Logger**: `LoggerService` is now fully integrated into the DI container with support for optional configurations via tokens.
   - Refactored `DevModeService` to focus on state inspection and telemetry.
 - **Architectural Cleanup**:
   - Reorganized package exports so the kernel is the main public entrypoint.
   - Consolidated former `utils` into `kernel/shared/utils`.
   - Introduced explicit `api.ts` barrel files for both client and server runtimes.
+  - **Bootstrap Reordering**: Controllers are now loaded and registered before system processors to allow user-defined service overrides.
 
 ---
 
