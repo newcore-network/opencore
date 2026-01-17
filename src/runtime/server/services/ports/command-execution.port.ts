@@ -39,6 +39,14 @@ export abstract class CommandExecutionPort {
   abstract execute(player: Player, commandName: string, args: string[]): Promise<void>
 
   /**
+   * Returns metadata for a command if registered in this runtime.
+   *
+   * @remarks
+   * Used to enrich error observation (usage/description/etc.).
+   */
+  abstract getCommandMeta(commandName: string): CommandMetadata | undefined
+
+  /**
    * Returns all registered commands.
    */
   abstract getAllCommands(): CommandInfo[]

@@ -1,9 +1,9 @@
 import { container } from 'tsyringe'
-import { Server } from '../../..'
-import { SecurityError } from '../../../kernel/utils/error/security.error'
+import { SecurityError } from '../../../kernel/error/security.error'
+import { SecurityAction } from '../../../kernel/error/security.types'
+import { Server } from '..'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
-import { SecurityAction } from '../types/security.types'
 
 export interface ThrottleOptions {
   /**

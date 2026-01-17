@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
-import { di } from '../../../kernel/di/container'
-import { loggers } from '../../../kernel/shared/logger'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
+import { loggers } from '../../../kernel/logger'
 import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
 import { SimulatedPlayer, SimulatedPlayerOptions } from './types'
 
@@ -17,11 +17,11 @@ export class PlayerSimulatorService {
   private clientIdCounter = 90000 // Start high to avoid conflicts with real players
 
   private get transport(): INetTransport {
-    return di.resolve(INetTransport as any)
+    return GLOBAL_CONTAINER.resolve(INetTransport as any)
   }
 
   private get sessionLifecycle(): PlayerSessionLifecyclePort {
-    return di.resolve(PlayerSessionLifecyclePort as any)
+    return GLOBAL_CONTAINER.resolve(PlayerSessionLifecyclePort as any)
   }
 
   /**

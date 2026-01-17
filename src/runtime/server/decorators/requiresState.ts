@@ -1,5 +1,5 @@
-import { Server } from '../../..'
-import { AppError } from '../../../kernel/utils'
+import { AppError } from '../../../kernel/error/app.error'
+import { Server } from '..'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**

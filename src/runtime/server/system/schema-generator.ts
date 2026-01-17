@@ -1,5 +1,5 @@
 import z from 'zod'
-import { AppError } from '../../../kernel/utils'
+import { AppError } from '../../../'
 import { Player } from '../entities/player'
 
 function typeToZodSchema(type: any): z.ZodType | undefined {

@@ -1,56 +1,46 @@
 import { injectable } from 'tsyringe'
-import { di } from '../../../kernel/di/container'
-import { loggers } from '../../../kernel/shared/logger'
+import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
+import { loggers } from '../../../kernel/logger'
 import {
   createDevTransport,
   detectEnvironment,
   isWebSocketTransport,
   startDevTransport,
   stopDevTransport,
-} from '../../../kernel/shared/logger/transports/dev-transport.factory'
-import { LogTransport } from '../../../kernel/shared/logger/transports/transport.interface'
+} from '../../../kernel/logger/transports/dev-transport.factory'
+import { LogTransport } from '../../../kernel/logger/transports/transport.interface'
 import { EventInterceptorService } from './event-interceptor.service'
-import { HotReloadServer } from './hot-reload.server'
 import { PlayerSimulatorService } from './player-simulator.service'
 import { StateInspectorService } from './state-inspector.service'
 import { BridgeMessage, DevEvent, DevModeOptions, RuntimeSnapshot } from './types'
 
-// Safe wrapper for FiveM ExecuteCommand (no-op in Node.js)
-function safeExecuteCommand(command: string): void {
-  if (typeof ExecuteCommand === 'function') {
-    ExecuteCommand(command)
-  } else {
-    loggers.bootstrap.warn('[DevMode] ExecuteCommand not available (not running in FiveM)')
-  }
-}
-
 /**
  * Main DevMode service that orchestrates all development tools.
  *
- * Provides a unified interface for:
- * - Hot reload server for automatic resource restarting
- * - Event interception and recording
- * - Runtime state inspection
- * - Player simulation
- * - Log streaming to external tools
+ * @remarks
+ * Provides a unified interface for internal framework debugging and telemetry.
+ * It coordinates:
+ * - Event interception and recording (Net, Commands, etc)
+ * - Runtime state inspection (DI, Players, Services)
+ * - Player simulation for offline logic testing
+ * - Telemetry bridge for external CLI integration
  */
 @injectable()
 export class DevModeService {
   private enabled = false
   private options: DevModeOptions | null = null
-  private hotReloadServer: HotReloadServer | null = null
   private logTransport: LogTransport | null = null
 
   private get interceptor(): EventInterceptorService {
-    return di.resolve(EventInterceptorService)
+    return GLOBAL_CONTAINER.resolve(EventInterceptorService)
   }
 
   private get inspector(): StateInspectorService {
-    return di.resolve(StateInspectorService)
+    return GLOBAL_CONTAINER.resolve(StateInspectorService)
   }
 
   private get simulator(): PlayerSimulatorService {
-    return di.resolve(PlayerSimulatorService)
+    return GLOBAL_CONTAINER.resolve(PlayerSimulatorService)
   }
 
   /**
@@ -67,17 +57,10 @@ export class DevModeService {
     this.enabled = true
 
     loggers.bootstrap.info('[DevMode] Enabling development mode...', {
-      hotReload: options.hotReload?.enabled,
       bridge: options.bridge?.autoConnect,
       interceptor: options.interceptor?.enabled,
       simulator: options.simulator?.enabled,
     })
-
-    // Start hot reload server
-    if (options.hotReload?.enabled) {
-      this.hotReloadServer = new HotReloadServer(options.hotReload)
-      this.hotReloadServer.start()
-    }
 
     // Configure event interceptor
     if (options.interceptor) {
@@ -104,12 +87,6 @@ export class DevModeService {
     if (!this.enabled) return
 
     loggers.bootstrap.info('[DevMode] Disabling development mode...')
-
-    // Stop hot reload server
-    if (this.hotReloadServer) {
-      this.hotReloadServer.stop()
-      this.hotReloadServer = null
-    }
 
     // Disconnect log transport
     if (this.logTransport) {
@@ -323,10 +300,6 @@ export class DevModeService {
         this.handleRemoteCommand(message.payload as { name: string; args: unknown[] })
         break
 
-      case 'reload':
-        this.handleRemoteReload(message.payload as { resource: string })
-        break
-
       default:
         loggers.bootstrap.debug('[DevMode] Unknown bridge message type', { type: message.type })
     }
@@ -366,10 +339,5 @@ export class DevModeService {
       default:
         loggers.bootstrap.warn('[DevMode] Unknown remote command', { name: command.name })
     }
-  }
-
-  private handleRemoteReload(payload: { resource: string }): void {
-    loggers.bootstrap.info(`[DevMode] Remote reload requested for: ${payload.resource}`)
-    safeExecuteCommand(`restart ${payload.resource}`)
   }
 }

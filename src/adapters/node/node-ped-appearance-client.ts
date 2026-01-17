@@ -1,5 +1,5 @@
 import { HeadBlendData } from '../../kernel/shared'
-import { IPedAppearanceClient } from '../contracts/IPedAppearanceClient'
+import { IPedAppearanceClient } from '../contracts/client/IPedAppearanceClient'
 
 /**
  * Node.js stub implementation of client-side ped appearance adapter.

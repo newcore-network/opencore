@@ -1,4 +1,4 @@
-import { loggers } from '../../../kernel/shared/logger'
+import { loggers } from '../../../kernel/logger'
 import { InternalEventMap } from '../types/internal-events'
 
 type InternalEventName = keyof InternalEventMap

@@ -1,4 +1,4 @@
-import { IPedAppearanceServer } from '../contracts/IPedAppearanceServer'
+import { IPedAppearanceServer } from '../contracts/server/IPedAppearanceServer'
 
 /**
  * FiveM implementation of server-side ped appearance adapter.

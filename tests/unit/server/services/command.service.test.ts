@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import { describe, expect, it, vi } from 'vitest'
-import { AppError } from '../../../../src/kernel/utils'
-import { Player } from '../../../../src/runtime/server'
+import { AppError } from '../../../../src/kernel'
 import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
+import { Player } from '../../../../src/runtime/server/entities'
 import { CommandService } from '../../../../src/runtime/server/services/core/command.service'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
 
@@ -137,22 +137,13 @@ describe('CommandService - Authentication', () => {
 
     // Create player without accountID (unauthenticated)
     const fakePlayer = createTestPlayer({ clientID: 1 })
-    fakePlayer.emit = vi.fn()
-    fakePlayer.send = vi.fn()
 
-    await service.execute(fakePlayer, 'spawn', ['car'])
+    await expect(service.execute(fakePlayer, 'spawn', ['car'])).rejects.toThrow(
+      'You must be authenticated to use this command',
+    )
 
     // Handler should not be called
     expect(handler).not.toHaveBeenCalled()
-
-    // Should emit auth required event
-    expect(fakePlayer.emit).toHaveBeenCalledWith('core:auth:required', { command: 'spawn' })
-
-    // Should send error message
-    expect(fakePlayer.send).toHaveBeenCalledWith(
-      'You must be authenticated to use this command',
-      'error',
-    )
   })
 
   it('should allow authenticated player on non-public command', async () => {

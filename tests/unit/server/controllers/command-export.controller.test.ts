@@ -1,7 +1,7 @@
-import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
-import { AppError } from '../../../../src/kernel/utils'
+import { AppError } from '../../../../src/kernel/error'
+import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
 import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
 import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
@@ -15,6 +15,7 @@ describe('CommandExportController', () => {
   let mockEngineEvents: IEngineEvents
   let mockAccessControl: any
   let mockRateLimiter: any
+  let mockCommandErrorObserver: CommandErrorObserverContract
 
   beforeEach(() => {
     // Create mock services
@@ -22,6 +23,7 @@ describe('CommandExportController', () => {
       register: vi.fn(),
       execute: vi.fn(),
       getAllCommands: vi.fn(() => []),
+      getCommandMeta: vi.fn(() => undefined),
     } as any
 
     mockPlayerDirectory = {
@@ -44,11 +46,16 @@ describe('CommandExportController', () => {
       checkLimit: vi.fn().mockReturnValue(true),
     }
 
+    mockCommandErrorObserver = {
+      onError: vi.fn(),
+    } as any
+
     controller = new CommandExportController(
       mockCommandService,
       mockPlayerDirectory,
       mockAccessControl,
       mockRateLimiter,
+      mockCommandErrorObserver,
       mockEngineEvents,
     )
 
@@ -397,6 +404,7 @@ describe('CommandExportController', () => {
         mockPlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockCommandErrorObserver,
         mockEngineEvents,
       )
 

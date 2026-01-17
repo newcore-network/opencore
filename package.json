@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "Secure, Event-Driven, OOP Engine for FiveM. Stop scripting, start engineering.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,9 +20,9 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "types": "./dist/kernel/index.d.ts",
+      "import": "./dist/kernel/index.js",
+      "require": "./dist/kernel/index.js"
     },
     "./server": {
       "types": "./dist/runtime/server/index.d.ts",
@@ -33,16 +33,6 @@
       "types": "./dist/runtime/client/index.d.ts",
       "import": "./dist/runtime/client/index.js",
       "require": "./dist/runtime/client/index.js"
-    },
-    "./shared": {
-      "types": "./dist/kernel/shared/index.d.ts",
-      "import": "./dist/kernel/shared/index.js",
-      "require": "./dist/kernel/shared/index.js"
-    },
-    "./utils": {
-      "types": "./dist/kernel/utils/index.d.ts",
-      "import": "./dist/kernel/utils/index.js",
-      "require": "./dist/kernel/utils/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -55,7 +45,7 @@
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "npx vitest run --project unit --project integration --project e2e",
     "test:ci": "npx vitest run --project unit --project integration",
     "test:watch": "npx vitest --project unit --project integration --project e2e",
@@ -90,8 +80,10 @@
     "@citizenfx/server": "2.0.22443-1",
     "@types/node": "^25.0.3",
     "@vitest/coverage-v8": "^4.0.16",
+    "dependency-cruiser": "^17.3.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
+    "graphviz": "^0.0.9",
     "tinybench": "^2.9.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

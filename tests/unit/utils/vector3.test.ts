@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Vec3, type Vector3 } from '../../../src/kernel/utils/vector3'
+import { Vec3, type Vector3 } from '../../../src/kernel'
 
 describe('Vec3', () => {
   describe('create()', () => {

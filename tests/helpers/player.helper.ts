@@ -1,9 +1,14 @@
-import { type EntityStateBag, IEntityServer } from '../../src/adapters/contracts/IEntityServer'
 import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
 import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
-import { IPlayerServer } from '../../src/adapters/contracts/IPlayerServer'
-import type { Vector3 } from '../../src/kernel/utils'
+import {
+  type EntityStateBag,
+  IEntityServer,
+  type SetPositionOptions,
+} from '../../src/adapters/contracts/server/IEntityServer'
+import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer'
+import type { PlayerIdentifier } from '../../src/adapters/contracts/types/identifier'
+import { Vector3 } from '../../src/kernel'
 import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
 import type { PlayerSession } from '../../src/runtime/server/services/types/player-session.object'
 
@@ -15,7 +20,7 @@ export class MockPlayerInfo extends IPlayerInfo {
     return `TestPlayer${clientId}`
   }
 
-  getPlayerPosition(_clientId: number): Vector3 | undefined {
+  getPlayerPosition(_clientId: number): Vector3 {
     return { x: 0, y: 0, z: 0 }
   }
 }
@@ -26,6 +31,7 @@ export class MockPlayerInfo extends IPlayerInfo {
 export class MockPlayerServer extends IPlayerServer {
   private connectedPlayers: string[] = []
   private playerIdentifiers: Map<string, Record<string, string>> = new Map()
+  private routingBuckets: Map<string, number> = new Map()
 
   getPed(_playerSrc: string): number {
     return 1
@@ -42,6 +48,17 @@ export class MockPlayerServer extends IPlayerServer {
     const identifiers = this.playerIdentifiers.get(playerSrc)
     if (!identifiers) return []
     return Object.entries(identifiers).map(([type, value]) => `${type}:${value}`)
+  }
+
+  getPlayerIdentifiers(playerSrc: string): PlayerIdentifier[] {
+    const identifiers = this.playerIdentifiers.get(playerSrc)
+    if (!identifiers) return []
+
+    return Object.entries(identifiers).map(([type, value]) => ({
+      type,
+      value,
+      raw: `${type}:${value}`,
+    }))
   }
 
   getNumIdentifiers(playerSrc: string): number {
@@ -62,6 +79,10 @@ export class MockPlayerServer extends IPlayerServer {
 
   setRoutingBucket(_playerSrc: string, _bucket: number): void {}
 
+  getRoutingBucket(playerSrc: string): number {
+    return this.routingBuckets.get(playerSrc) ?? 0
+  }
+
   getConnectedPlayers(): string[] {
     return [...this.connectedPlayers]
   }
@@ -75,9 +96,14 @@ export class MockPlayerServer extends IPlayerServer {
     this.playerIdentifiers.set(playerSrc, identifiers)
   }
 
+  _setRoutingBucket(playerSrc: string, bucket: number): void {
+    this.routingBuckets.set(playerSrc, bucket)
+  }
+
   _reset(): void {
     this.connectedPlayers = []
     this.playerIdentifiers.clear()
+    this.routingBuckets.clear()
   }
 }
 
@@ -103,6 +129,8 @@ export class MockEntityServer extends IEntityServer {
     _ragdollFlag?: boolean,
     _clearArea?: boolean,
   ): void {}
+
+  setPosition(_handle: number, _position: Vector3, _options?: SetPositionOptions): void {}
 
   getHeading(_handle: number): number {
     return 0
@@ -149,7 +177,10 @@ export class MockEntityServer extends IEntityServer {
  * Mock implementation of INetTransport for testing.
  */
 export class MockNetTransport extends INetTransport {
-  onNet(_eventName: string, _handler: (...args: any[]) => void): void {}
+  onNet(
+    _eventName: string,
+    _handler: (ctx: { clientId: number }, ...args: any[]) => void | Promise<void>,
+  ): void {}
 
   emitNet(_eventName: string, _target: NetTarget, ..._args: any[]): void {}
 }

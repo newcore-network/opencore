@@ -1,6 +1,7 @@
-import { injectable } from 'tsyringe'
-import { Server } from '../../..'
-import { RGB } from '../../../kernel/utils'
+import { inject, injectable } from 'tsyringe'
+import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { RGB } from '../../../kernel/utils/rgb'
+import { Server } from '..'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
 
 /**
@@ -11,7 +12,10 @@ import { PlayerDirectoryPort } from './ports/player-directory.port'
  */
 @injectable()
 export class ChatService {
-  constructor(private readonly playerDirectory: PlayerDirectoryPort) {}
+  constructor(
+    private readonly playerDirectory: PlayerDirectoryPort,
+    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+  ) {}
   /**
    * Broadcast a chat message to all connected players.
    *
@@ -20,7 +24,7 @@ export class ChatService {
    * @param color - Message color (RGB). Defaults to white.
    */
   broadcast(message: string, author: string = 'SYSTEM', color: RGB = { r: 255, g: 255, b: 255 }) {
-    emitNet('core:chat:message', -1, {
+    this.netTransport.emitNet('core:chat:message', 'all', {
       args: [author, message],
       color: color,
     })
@@ -40,7 +44,7 @@ export class ChatService {
     author: string = 'Private',
     color: RGB = { r: 200, g: 200, b: 200 },
   ) {
-    emitNet('core:chat:addMessage', player.clientID, {
+    this.netTransport.emitNet('core:chat:addMessage', player.clientID, {
       args: [author, message],
       color: color,
     })
@@ -52,7 +56,7 @@ export class ChatService {
    * @param player - Target player.
    */
   clearChat(player: Server.Player) {
-    emitNet('core:chat:clear', player.clientID)
+    this.netTransport.emitNet('core:chat:clear', player.clientID)
   }
 
   /**
@@ -69,12 +73,10 @@ export class ChatService {
     author: string = 'SYSTEM',
     color: RGB = { r: 255, g: 255, b: 255 },
   ) {
-    players.forEach((p) => {
-      const targetId = typeof p === 'number' ? p : p.clientID
-      emitNet('core:chat:addMessage', targetId, {
-        args: [author, message],
-        color: color,
-      })
+    const targetIds = players.map((p) => (typeof p === 'number' ? p : p.clientID))
+    this.netTransport.emitNet('core:chat:addMessage', targetIds, {
+      args: [author, message],
+      color: color,
     })
   }
 
@@ -127,6 +129,6 @@ export class ChatService {
    * Clear chat for all connected players.
    */
   clearChatAll() {
-    emitNet('core:chat:clear', -1)
+    this.netTransport.emitNet('core:chat:clear', 'all')
   }
 }

@@ -1,6 +1,10 @@
 import { injectable } from 'tsyringe'
-import { Vector3 } from '../../kernel/utils'
-import { type EntityStateBag, IEntityServer } from '../contracts/IEntityServer'
+import { Vector3 } from '../../kernel/utils/vector3'
+import {
+  type EntityStateBag,
+  IEntityServer,
+  type SetPositionOptions,
+} from '../contracts/server/IEntityServer'
 
 /**
  * FiveM implementation of server-side entity operations.
@@ -16,6 +20,30 @@ export class FiveMEntityServer extends IEntityServer {
     return { x: coords[0], y: coords[1], z: coords[2] }
   }
 
+  setPosition(handle: number, position: Vector3, options?: SetPositionOptions): void {
+    const keepAlive = options?.keepAlive ?? false
+    const clearArea = options?.clearArea ?? true
+    const platformOpts = options?.platformOptions ?? {}
+
+    // Extract FiveM-specific flags from platformOptions
+    const deadFlag = (platformOpts.deadFlag as boolean) ?? false
+    const ragdollFlag = (platformOpts.ragdollFlag as boolean) ?? false
+
+    SetEntityCoords(
+      handle,
+      position.x,
+      position.y,
+      position.z,
+      keepAlive,
+      deadFlag,
+      ragdollFlag,
+      clearArea,
+    )
+  }
+
+  /**
+   * @deprecated Use setPosition() for cross-platform compatibility.
+   */
   setCoords(
     handle: number,
     x: number,

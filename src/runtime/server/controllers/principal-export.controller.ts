@@ -1,5 +1,5 @@
 import { inject } from 'tsyringe'
-import { AppError } from '../../../kernel/utils'
+import { AppError } from '../../../kernel/error/app.error'
 import { Principal, PrincipalProviderContract } from '../contracts/index'
 import { Export } from '../decorators/export'
 import { GuardOptions } from '../decorators/guard'
@@ -19,6 +19,7 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 @Controller()
 export class PrincipalExportController {
   constructor(
+    @inject(PlayerDirectoryPort as any)
     private readonly playerService: PlayerDirectoryPort,
     @inject(PrincipalProviderContract as any)
     private readonly principalProvider: PrincipalProviderContract,

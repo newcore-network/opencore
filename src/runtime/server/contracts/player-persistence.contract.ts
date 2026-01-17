@@ -43,24 +43,22 @@ export const DEFAULT_PERSISTENCE_CONFIG: PersistenceConfig = {
  *   }
  *
  *   async onSessionLoad(player: Player): Promise<void> {
- *     const data = await this.db.single('SELECT * FROM players WHERE license = ?', [player.license])
- *     if (data) {
- *       player.setMeta('money', data.money)
- *       player.setMeta('job', data.job)
- *     }
- *   }
- *
- *   async onSessionSave(player: Player): Promise<void> {
- *     await this.db.execute(
- *       'UPDATE players SET money = ?, job = ? WHERE license = ?',
- *       [player.getMeta('money'), player.getMeta('job'), player.license]
- *     )
- *   }
- *
- *   async onAutoSave(player: Player): Promise<void> {
- *     // Can delegate to onSessionSave or implement lighter save logic
- *     await this.onSessionSave(player)
- *   }
+    // Example: fetch data from your own storage
+    // const data = await myStorage.find(player.license)
+    // if (data) {
+    //   player.setMeta('money', data.money)
+    // }
+  }
+
+  async onSessionSave(player: Player): Promise<void> {
+    // Example: save data to your own storage
+    // await myStorage.save(player.license, { money: player.getMeta('money') })
+  }
+
+  async onAutoSave(player: Player): Promise<void> {
+    // Can delegate to onSessionSave or implement lighter save logic
+    await this.onSessionSave(player)
+  }
  * }
  * ```
  */

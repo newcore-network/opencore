@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe'
-import { coreLogger, LogDomain } from '../../kernel/shared/logger'
+import { coreLogger, LogDomain } from '../../kernel/logger'
 
 const nuiLogger = coreLogger.child('NUI', LogDomain.CLIENT)
 

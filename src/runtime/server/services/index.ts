@@ -1,11 +1,8 @@
 // Services
 
-export * from '../database'
 export * from './appearance.service'
 export { ChatService } from './chat.service'
-export { ConfigService } from './config.service'
 export { SessionRecoveryService } from './core/session-recovery.service'
-export { type HttpOptions, HttpService } from './http/http.service'
 export * from './parallel'
 export { PlayerPersistenceService } from './persistence.service'
 export * from './ports/command-execution.port'

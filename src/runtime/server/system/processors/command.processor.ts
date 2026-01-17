@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/index'
 import { CommandMetadata } from '../../decorators/command'
 import { GuardOptions } from '../../decorators/guard'
@@ -19,7 +19,7 @@ import { METADATA_KEYS } from '../metadata-server.keys'
 export class CommandProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.COMMAND
 
-  constructor(private commandService: CommandExecutionPort) {}
+  constructor(@inject(CommandExecutionPort as any) private commandService: CommandExecutionPort) {}
 
   process(target: any, methodName: string, metadata: CommandMetadata) {
     const handler = target[methodName].bind(target)

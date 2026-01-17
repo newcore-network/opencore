@@ -1,4 +1,4 @@
-import { IPedAppearanceServer } from '../contracts/IPedAppearanceServer'
+import { IPedAppearanceServer } from '../contracts/server/IPedAppearanceServer'
 
 /**
  * Node.js stub implementation of server-side ped appearance adapter.

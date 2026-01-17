@@ -1,44 +1,56 @@
-import { loggers } from '../../../kernel/shared'
+import { inject } from 'tsyringe'
+import { loggers } from '../../../kernel/logger'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
 import { Controller } from '../decorators'
-import { OnFiveMEvent } from '../decorators/onFiveMEvent'
+import { OnRuntimeEvent } from '../decorators/onRuntimeEvent'
 import { PlayerDirectoryPort } from '../services'
 import { PlayerPersistenceService } from '../services/persistence.service'
 import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
+import { PlayerFullyConnectedPayload } from '../types/internal-events'
 
 @Controller()
 export class SessionController {
   constructor(
+    @inject(PlayerSessionLifecyclePort as any)
     private readonly playerSessionLifecycle: PlayerSessionLifecyclePort,
+    @inject(PlayerDirectoryPort as any)
     private readonly playerDirectory: PlayerDirectoryPort,
+    @inject(PlayerPersistenceService as any)
     private readonly persistance: PlayerPersistenceService,
   ) {}
 
-  @OnFiveMEvent('playerJoining')
-  public async onPlayerJoining(): Promise<void> {
-    const clientId = Number(source)
-    const license = GetPlayerIdentifier(clientId.toString(), 0) ?? undefined
-    const player = this.playerSessionLifecycle.bind(clientId, { license })
+  @OnRuntimeEvent('playerJoining')
+  public async onPlayerJoining(
+    clientId: number,
+    identifiers?: Record<string, string>,
+  ): Promise<void> {
+    const player = this.playerSessionLifecycle.bind(clientId, {
+      license: identifiers?.license,
+      ...identifiers,
+    })
 
     loggers.session.info(`Player session created`, {
       clientId,
-      license: license ?? 'none',
+      license: identifiers?.license ?? 'none',
     })
 
     await this.persistance.handleSessionLoad(player)
 
-    emitFrameworkEvent('internal:playerSessionCreated', { clientId, license })
+    emitFrameworkEvent('internal:playerSessionCreated', {
+      clientId,
+      license: identifiers?.license,
+    })
 
     setImmediate(() => {
       const currentPlayer = this.playerDirectory.getByClient(clientId)
       if (!currentPlayer) return
-      emitFrameworkEvent('internal:playerFullyConnected', { player: currentPlayer })
+      const payload: PlayerFullyConnectedPayload = { player: currentPlayer }
+      emitFrameworkEvent('internal:playerFullyConnected', payload)
     })
   }
 
-  @OnFiveMEvent('playerDropped')
-  public async onPlayerDropped(): Promise<void> {
-    const clientId = Number(source)
+  @OnRuntimeEvent('playerDropped')
+  public async onPlayerDropped(clientId: number): Promise<void> {
     const player = this.playerDirectory.getByClient(clientId)
 
     if (player) {

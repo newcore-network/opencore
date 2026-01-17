@@ -31,35 +31,52 @@ export interface DevEvent {
 
 /**
  * Message sent through the DevMode bridge.
+ *
+ * @remarks
+ * The bridge acts as a telemetry and control tunnel between the OpenCore runtime
+ * and the external CLI. It allows for real-time log streaming and state inspection.
  */
 export interface BridgeMessage {
-  type: 'log' | 'event' | 'state' | 'command' | 'reload' | 'ping' | 'pong'
+  /**
+   * Message type:
+   * - 'log': Real-time server log streaming
+   * - 'event': Notification of a captured event (net, command, etc)
+   * - 'state': Runtime state snapshot response
+   * - 'command': Control command from CLI (e.g. trigger simulation)
+   * - 'ping'/'pong': Connection heartbeat
+   */
+  type: 'log' | 'event' | 'state' | 'command' | 'ping' | 'pong'
+  /** Data associated with the message */
   payload: unknown
 }
 
 /**
  * Snapshot of the runtime state.
+ *
+ * @remarks
+ * Used by the CLI to visualize the current state of the framework without
+ * requiring game access.
  */
 export interface RuntimeSnapshot {
   /** Capture timestamp */
   timestamp: number
-  /** Current framework mode */
+  /** Current framework mode (CORE, RESOURCE, STANDALONE) */
   mode: FrameworkMode
-  /** Enabled features */
+  /** Enabled features and their status */
   features: Record<string, boolean>
-  /** Player information */
+  /** Player information (simulated and real) */
   players: {
     count: number
     ids: number[]
   }
-  /** Registered handlers */
+  /** Registered handlers for discovery */
   handlers: {
     commands: string[]
     netEvents: string[]
     exports: string[]
     fiveMEvents: string[]
   }
-  /** DI container info */
+  /** DI container information */
   diContainer: {
     registrations: number
     singletons: string[]
@@ -67,66 +84,83 @@ export interface RuntimeSnapshot {
 }
 
 /**
- * Hot reload configuration.
- */
-export interface HotReloadOptions {
-  /** Enable hot reload server */
-  enabled: boolean
-  /** HTTP port for reload endpoint */
-  port: number
-  /** Resources allowed to trigger reload (empty = all) */
-  allowedResources?: string[]
-}
-
-/**
  * Bridge configuration for CLI connection.
+ *
+ * @remarks
+ * The bridge enables advanced development features like log streaming to CLI
+ * and state inspection. It does NOT handle resource restarts (txAdmin handles that).
  */
 export interface BridgeOptions {
-  /** WebSocket URL to connect to */
+  /**
+   * WebSocket URL of the OpenCore CLI bridge.
+   * @defaultValue 'ws://localhost:3848'
+   */
   url: string
-  /** Auto-connect on dev mode start */
+  /**
+   * Whether to connect to the bridge automatically on startup.
+   * @defaultValue false
+   */
   autoConnect: boolean
-  /** Reconnect on disconnect */
+  /** Whether to attempt reconnection if connection is lost */
   reconnect?: boolean
-  /** Reconnect interval in milliseconds */
+  /** Delay between reconnection attempts in milliseconds */
   reconnectInterval?: number
 }
 
 /**
  * Event interceptor configuration.
+ *
+ * @remarks
+ * The interceptor captures and records all incoming/outgoing events (Net, Commands, etc.)
+ * for debugging purposes.
  */
 export interface InterceptorOptions {
   /** Enable event interception */
   enabled: boolean
-  /** Record event history */
+  /** Whether to keep a history of events in memory */
   recordHistory: boolean
-  /** Maximum events to keep in history */
+  /** Maximum number of events to keep in the history buffer */
   maxHistorySize: number
 }
 
 /**
  * Player simulator configuration.
+ *
+ * @remarks
+ * The simulator allows for creating "virtual" players that the framework
+ * treats as real, enabling testing of permissions, economy, and logic without game clients.
  */
 export interface SimulatorOptions {
-  /** Enable player simulation */
+  /** Enable player simulation features */
   enabled: boolean
-  /** Number of players to auto-connect on start */
+  /** Number of virtual players to connect automatically on startup */
   autoConnectPlayers: number
 }
 
 /**
  * Main DevMode configuration.
+ *
+ * @remarks
+ * Development mode provides tools for debugging, inspection, and simulation.
+ * It is dynamically loaded and should be disabled in production.
  */
 export interface DevModeOptions {
-  /** Enable dev mode */
+  /**
+   * Master switch for development mode.
+   * If false, no dev tools will be loaded.
+   */
   enabled: boolean
-  /** Hot reload configuration */
-  hotReload?: HotReloadOptions
-  /** Bridge configuration */
+  /**
+   * CLI Bridge configuration for telemetry and logs.
+   */
   bridge?: BridgeOptions
-  /** Interceptor configuration */
+  /**
+   * Event interceptor for debugging network/command flow.
+   */
   interceptor?: InterceptorOptions
-  /** Simulator configuration */
+  /**
+   * Virtual player simulator for offline testing.
+   */
   simulator?: SimulatorOptions
 }
 
@@ -168,13 +202,10 @@ export interface SimulatedPlayer {
 
 /**
  * Default DevMode configuration.
+ * Centered on telemetry and simulation, delegating resource management to CLI/txAdmin.
  */
 export const DEFAULT_DEVMODE_OPTIONS: DevModeOptions = {
   enabled: false,
-  hotReload: {
-    enabled: true,
-    port: 3847,
-  },
   bridge: {
     url: 'ws://localhost:3848',
     autoConnect: false,

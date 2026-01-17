@@ -327,11 +327,6 @@ describe('NetEventProcessor Node Runtime Flow', () => {
 
       // Handler should NOT be called
       expect(instance.handlerCalled).toBe(false)
-
-      // Player should receive auth required event
-      expect(unauthenticatedPlayer.emit).toHaveBeenCalledWith('core:auth:required', {
-        event: 'secure:action',
-      })
     })
 
     it('should allow authenticated player on non-public handler', async () => {

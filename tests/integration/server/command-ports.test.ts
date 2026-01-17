@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../src/adapters/contracts/IEngineEvents'
+import type { CommandErrorObserverContract } from '../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../src/runtime/server/controllers/command-export.controller'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
 import { Player } from '../../../src/runtime/server/entities/player'
@@ -23,6 +24,7 @@ describe('Command Ports Integration', () => {
     let playerDirectory: PlayerDirectoryPort
     let exportController: CommandExportController
     let mockEngineEvents: IEngineEvents
+    let mockCommandErrorObserver: CommandErrorObserverContract
 
     beforeEach(() => {
       commandService = new CommandService()
@@ -52,11 +54,16 @@ describe('Command Ports Integration', () => {
         emit: vi.fn(),
       } as any
 
+      mockCommandErrorObserver = {
+        onError: vi.fn(),
+      } as any
+
       exportController = new CommandExportController(
         commandService,
         playerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        mockCommandErrorObserver,
         mockEngineEvents,
       )
 
@@ -206,6 +213,7 @@ describe('Command Ports Integration', () => {
         corePlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        { onError: vi.fn() } as any,
         mockEngineEvents,
       )
 
@@ -241,6 +249,7 @@ describe('Command Ports Integration', () => {
         register: vi.fn(),
         execute: vi.fn(),
         getAllCommands: vi.fn(() => []),
+        getCommandMeta: vi.fn(() => undefined),
       }
 
       // Consumer code doesn't know if it's local or remote
@@ -313,6 +322,7 @@ describe('Command Ports Integration', () => {
         corePlayerDirectory,
         mockAccessControl,
         mockRateLimiter,
+        { onError: vi.fn() } as any,
         mockEngineEvents,
       )
 

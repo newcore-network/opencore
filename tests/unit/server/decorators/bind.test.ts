@@ -115,24 +115,24 @@ describe('@Bind decorator', () => {
 
     it('should work with manual registration for dependencies', () => {
       @Bind()
-      class DatabaseService {
-        query() {
-          return 'query-result'
+      class MockService {
+        getData() {
+          return 'result'
         }
       }
 
       // Manually inject dependency since DI requires runtime metadata
-      const db = container.resolve(DatabaseService)
+      const mockInstance = container.resolve(MockService)
 
       class UserService {
-        constructor(private db: DatabaseService) {}
+        constructor(private mock: MockService) {}
         getUsers() {
-          return this.db.query()
+          return this.mock.getData()
         }
       }
 
-      const userService = new UserService(db)
-      expect(userService.getUsers()).toBe('query-result')
+      const userService = new UserService(mockInstance)
+      expect(userService.getUsers()).toBe('result')
     })
 
     it('should allow manual singleton sharing pattern', () => {

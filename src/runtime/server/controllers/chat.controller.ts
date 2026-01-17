@@ -1,4 +1,5 @@
-import { RGB } from '../../../kernel/utils'
+import { inject } from 'tsyringe'
+import { RGB } from '../../../kernel/utils/rgb'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { ChatService } from '../services/chat.service'
@@ -8,7 +9,7 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
-    private readonly playerDirectory: PlayerDirectoryPort,
+    @inject(PlayerDirectoryPort as any) private readonly playerDirectory: PlayerDirectoryPort,
   ) {}
 
   @Export()

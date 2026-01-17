@@ -1,4 +1,4 @@
-import { Vector3 } from '../../../kernel/utils'
+import { Vector3 } from '../../../kernel/utils/vector3'
 
 interface PlayerSessionMeta {
   playerId?: string

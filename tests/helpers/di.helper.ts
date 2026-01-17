@@ -6,7 +6,7 @@ import { container } from 'tsyringe'
  * Call this in beforeEach to ensure test isolation.
  */
 export function resetContainer(): void {
-  container.clearInstances()
+  container.reset()
 }
 
 /**

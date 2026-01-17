@@ -1,4 +1,4 @@
-import { di } from '../../../../kernel/di/container'
+import { GLOBAL_CONTAINER } from '../../../../kernel/di/container'
 import { PrincipalProviderContract } from '../../contracts'
 import { _mode } from '../../core'
 import { getRuntimeContext } from '../../runtime'
@@ -104,7 +104,7 @@ function getCoreExports(): CoreExports {
  * @returns An instance of PlayerServiceContract
  */
 function getPlayerService(): PlayerDirectoryPort {
-  return di.resolve(PlayerDirectoryPort as any) as PlayerDirectoryPort
+  return GLOBAL_CONTAINER.resolve(PlayerDirectoryPort as any) as PlayerDirectoryPort
 }
 
 /**
@@ -112,5 +112,5 @@ function getPlayerService(): PlayerDirectoryPort {
  * @returns An instance of PrincipalProviderContract
  */
 function getPrincipalProvider(): PrincipalProviderContract {
-  return di.resolve(PrincipalProviderContract as any) as PrincipalProviderContract
+  return GLOBAL_CONTAINER.resolve(PrincipalProviderContract as any) as PrincipalProviderContract
 }

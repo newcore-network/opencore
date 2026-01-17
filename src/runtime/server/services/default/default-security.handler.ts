@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
-import { loggers } from '../../../../kernel/shared/logger'
-import { SecurityError } from '../../../../kernel/utils/error/security.error'
+import { SecurityError } from '../../../../kernel/error/security.error'
+import { loggers } from '../../../../kernel/logger'
 import { SecurityHandlerContract } from '../../contracts/security/security-handler.contract'
 import { Player } from '../../entities'
 
