@@ -1,5 +1,5 @@
-import { Vector3 } from '@open-core/framework'
 import { injectable } from 'tsyringe'
+import { Vector3 } from '../../../kernel/utils/vector3'
 
 export interface TextUIOptions {
   /** Font (0-8) */

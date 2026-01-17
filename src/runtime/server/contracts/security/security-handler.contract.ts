@@ -1,4 +1,4 @@
-import { SecurityError } from '@open-core/framework'
+import { SecurityError } from '../../../../kernel/error/security.error'
 import { Server } from '../../'
 
 export abstract class SecurityHandlerContract {

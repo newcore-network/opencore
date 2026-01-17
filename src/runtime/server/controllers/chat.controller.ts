@@ -1,5 +1,5 @@
-import { RGB } from '@open-core/framework'
 import { inject } from 'tsyringe'
+import { RGB } from '../../../kernel/utils/rgb'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { ChatService } from '../services/chat.service'

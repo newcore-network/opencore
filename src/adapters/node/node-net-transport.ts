@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events'
-import { loggers } from '@open-core/framework'
 import { injectable } from 'tsyringe'
+import { loggers } from '../../kernel/logger'
 import { INetTransport, NetEventContext, NetTarget } from '../contracts/INetTransport'
 
 /**

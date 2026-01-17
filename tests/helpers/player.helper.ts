@@ -1,4 +1,3 @@
-import { Vector3 } from 'src/kernel'
 import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
 import { INetTransport } from '../../src/adapters/contracts/INetTransport'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
@@ -9,6 +8,7 @@ import {
 } from '../../src/adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer'
 import type { PlayerIdentifier } from '../../src/adapters/contracts/types/identifier'
+import { Vector3 } from '../../src/kernel'
 import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
 import type { PlayerSession } from '../../src/runtime/server/services/types/player-session.object'
 

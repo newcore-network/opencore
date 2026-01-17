@@ -1,4 +1,4 @@
-import { HeadBlendData } from '@open-core/framework'
+import { HeadBlendData } from '../../../kernel/shared/player-appearance.types'
 
 /**
  * Client-side ped appearance operations adapter.

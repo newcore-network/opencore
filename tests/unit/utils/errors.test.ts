@@ -1,5 +1,5 @@
-import { AppError, isAppError, SecurityError } from 'src/kernel'
 import { describe, expect, it } from 'vitest'
+import { AppError, isAppError, SecurityError } from '../../../src/kernel'
 
 describe('AppError', () => {
   describe('constructor', () => {

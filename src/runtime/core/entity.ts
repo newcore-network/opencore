@@ -255,9 +255,9 @@ export abstract class BaseEntity {
   restore(snapshot: Partial<EntitySnapshot>): void {
     if (snapshot.states) {
       this.clearStates()
-      snapshot.states.forEach((s) => {
+      for (const s of snapshot.states) {
         this.add(s)
-      })
+      }
     }
     if (snapshot.meta) {
       this.meta = { ...snapshot.meta }

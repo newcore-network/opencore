@@ -1,6 +1,6 @@
-import { RGB } from '@open-core/framework'
 import { inject, injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { RGB } from '../../../kernel/utils/rgb'
 import { Server } from '..'
 import { PlayerDirectoryPort } from './ports/player-directory.port'
 

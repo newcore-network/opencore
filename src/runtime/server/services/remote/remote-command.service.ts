@@ -1,6 +1,6 @@
-import { AppError } from '@open-core/framework'
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters/contracts/IExports'
+import { AppError } from '../../../../kernel/error/app.error'
 import { loggers } from '../../../../kernel/logger'
 import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'

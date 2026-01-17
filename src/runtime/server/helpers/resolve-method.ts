@@ -1,4 +1,4 @@
-import { AppError } from '@open-core/framework'
+import { AppError } from '../../../kernel/error/app.error'
 import { loggers } from '../../../kernel/logger'
 
 export function resolveMethod(

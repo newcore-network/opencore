@@ -1,5 +1,5 @@
-import { AppError } from '@open-core/framework'
 import { inject } from 'tsyringe'
+import { AppError } from '../../../kernel/error/app.error'
 import { Principal, PrincipalProviderContract } from '../contracts/index'
 import { Export } from '../decorators/export'
 import { GuardOptions } from '../decorators/guard'

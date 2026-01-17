@@ -1,4 +1,4 @@
-import { Vector3 } from '@open-core/framework'
+import { Vector3 } from '../../../kernel/utils/vector3'
 
 interface PlayerSessionMeta {
   playerId?: string

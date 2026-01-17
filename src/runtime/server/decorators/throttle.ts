@@ -1,5 +1,5 @@
-import { SecurityError } from '@open-core/framework'
 import { container } from 'tsyringe'
+import { SecurityError } from '../../../kernel/error/security.error'
 import { SecurityAction } from '../../../kernel/error/security.types'
 import { Server } from '..'
 import { RateLimiterService } from '../services/rate-limiter.service'

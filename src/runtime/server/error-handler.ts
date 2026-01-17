@@ -1,4 +1,5 @@
-import { AppError, ErrorOrigin, isAppError } from '@open-core/framework'
+import { AppError, isAppError } from '../../kernel/error/app.error'
+import { ErrorOrigin } from '../../kernel/error/common.error-codes'
 import { loggers } from '../../kernel/logger'
 
 import { CommandMetadata } from './decorators/command'
