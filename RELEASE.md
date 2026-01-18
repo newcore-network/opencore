@@ -5,7 +5,7 @@
 ### Highlights
 
 - **Hot-Reload Stability**: Fixed critical race condition that caused resources to hang during hot-reload
-- **Command System Reliability**: Improved command registration and execution flow with better error handling (Now Array types means spreed operator in commands and netEvents parameters handler, string[] === rest of the arguments)
+- **Command System Reliability**: Improved command registration and execution flow with better error handling (Now Array types means spreed operator in commands and netEvents parameters handler, string[] === rest of the arguments, and supporting spreed operator as string[])
 - **Bidirectional Core Detection**: Enhanced core ready detection mechanism for late-starting resources
 
 ---

@@ -13,7 +13,9 @@ function typeToZodSchema(type: any): z.ZodType | undefined {
     case Boolean:
       return z.coerce.boolean()
     case Array:
-      return z.array(z.any())
+      // Command/event arguments are always strings, so Array means string[]
+      // This enables spread operator support: handler(player: Player, ...args: string[])
+      return z.array(z.string())
     case Object:
       return undefined
   }

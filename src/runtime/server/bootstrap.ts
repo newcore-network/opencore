@@ -1,7 +1,7 @@
 import { IEngineEvents, INetTransport } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
-import { loggers } from '../../kernel/logger'
+import { getLogLevel, loggers, LogLevelLabels } from '../../kernel/logger'
 import { PrincipalProviderContract } from './contracts/index'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
@@ -174,6 +174,9 @@ export async function initServer(options: ServerRuntimeOptions) {
 
     loggers.bootstrap.info(`'core:ready' logic initialized and broadcasted`)
   }
+
+  const logLevelLabel = LogLevelLabels[getLogLevel()]
+  loggers.bootstrap.info(`LogLevel Setted: ${logLevelLabel}`)
 }
 
 function createCoreDependency(coreName: string): Promise<void> {
