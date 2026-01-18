@@ -3,10 +3,8 @@ import { AppError } from '../../../kernel'
 import { CommandMetadata } from '../decorators/command'
 import { Player } from '../entities'
 import { generateSchemaFromTypes } from '../system/schema-generator'
+import { processTupleSchema } from './process-tuple-schema'
 
-/**
- * Centraliza validación de argumentos de comandos.
- */
 export async function validateAndExecuteCommand(
   meta: CommandMetadata,
   player: Player,
@@ -16,7 +14,6 @@ export async function validateAndExecuteCommand(
   const paramNames = meta.expectsPlayer ? meta.paramNames.slice(1) : meta.paramNames
   let schema: z.ZodTypeAny | undefined = meta.schema
 
-  // Caso: comando sin player → no espera argumentos
   if (!meta.expectsPlayer) {
     if (args.length > 0) {
       throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
@@ -26,7 +23,6 @@ export async function validateAndExecuteCommand(
     return await handler()
   }
 
-  // Autogenerar esquema si no lo definieron
   if (!schema) {
     schema = generateSchemaFromTypes(meta.paramTypes)
 
@@ -42,7 +38,6 @@ export async function validateAndExecuteCommand(
     }
   }
 
-  // OBJETO schema
   if (schema instanceof z.ZodObject) {
     const keys = Object.keys(schema.shape)
 
@@ -84,17 +79,7 @@ export async function validateAndExecuteCommand(
 
   // TUPLA schema
   if (schema instanceof z.ZodTuple) {
-    const items = schema.description ? [] : ((schema as any)._def.items as z.ZodTypeAny[])
-    let processedArgs = [...args]
-    if (args.length > items.length) {
-      const lastItem = items[items.length - 1]
-
-      if (lastItem instanceof z.ZodArray) {
-        const positional = args.slice(0, items.length - 1)
-        const restArray = args.slice(items.length - 1)
-        processedArgs = [...positional, restArray] as any
-      }
-    }
+    const processedArgs = processTupleSchema(schema, args)
 
     const validated = await schema.parseAsync(processedArgs).catch(() => {
       throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
