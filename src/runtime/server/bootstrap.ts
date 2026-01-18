@@ -160,47 +160,80 @@ export async function initServer(options: ServerRuntimeOptions) {
     GLOBAL_CONTAINER.isRegistered(IEngineEvents as any) &&
     GLOBAL_CONTAINER.isRegistered(INetTransport as any)
   ) {
-    const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents // server -> servers
-    const net = GLOBAL_CONTAINER.resolve(INetTransport as any) as INetTransport // server -> clients
-    engineEvents.emit('core:ready') // Broadcast to all Servers resources
-    net.emitNet('core:ready', 'all') // Broadcast to all Clients resources
-    loggers.bootstrap.debug(`'core:ready' events emmited to all clients and all servers`)
+    const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
+    const net = GLOBAL_CONTAINER.resolve(INetTransport as any) as INetTransport
+
+    // 1. Broadast to resources already running
+    engineEvents.emit('core:ready')
+    net.emitNet('core:ready', 'all')
+
+    // 2. Listen for 'core:request-ready' for resources starting late (hot-reload)
+    engineEvents.on('core:request-ready', () => {
+      engineEvents.emit('core:ready')
+    })
+
+    loggers.bootstrap.info(`'core:ready' logic initialized and broadcasted`)
   }
 }
 
 function createCoreDependency(coreName: string): Promise<void> {
+  loggers.bootstrap.debug(`Setting up detection mechanisms for Core '${coreName}'...`)
   return new Promise((resolve, reject) => {
     let resolved = false
+    let pollingInterval: ReturnType<typeof setInterval> | undefined
+    let timeout: ReturnType<typeof setTimeout> | undefined
     const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
 
     const cleanup = () => {
       resolved = true
-      clearTimeout(timeout)
-      clearInterval(pollingInterval)
+      if (timeout) clearTimeout(timeout)
+      if (pollingInterval) clearInterval(pollingInterval)
     }
 
-    // 1. Check if already ready via export (Polling)
+    // 1. Register listener FIRST (before any requests)
+    const onReady = () => {
+      if (!resolved) {
+        loggers.bootstrap.debug(`Core '${coreName}' detected via 'core:ready' event!`)
+        cleanup()
+        resolve()
+      }
+    }
+    engineEvents.on('core:ready', onReady)
+    loggers.bootstrap.debug(`Listening for 'core:ready' event from Core`)
+
+    // 2. Check if already ready via export (Polling)
     const checkReady = () => {
       if (resolved) return
       try {
         const globalExports = (globalThis as any).exports
         const isReady = globalExports?.[coreName]?.isCoreReady?.()
+        loggers.bootstrap.debug(`Polling isCoreReady export: ${isReady}`)
         if (isReady === true) {
-          loggers.bootstrap.debug(`Core '${coreName}' detected as already ready via export.`)
+          loggers.bootstrap.debug(`Core '${coreName}' detected via isCoreReady export!`)
           cleanup()
           resolve()
         }
-      } catch {
-        // Core might not be started yet, ignore
+      } catch (e) {
+        loggers.bootstrap.debug(`Export check failed: ${e}`)
       }
     }
 
-    const pollingInterval = setInterval(checkReady, 500)
+    pollingInterval = setInterval(checkReady, 500)
     checkReady() // Initial check
 
-    // 2. Timeout protection
-    const timeout = setTimeout(() => {
+    // 3. Request status (for hot-reload cases where Core is already up)
+    // This is sent AFTER registering the listener so we can receive the response
+    if (!resolved) {
+      loggers.bootstrap.debug(`Requesting Core status via 'core:request-ready' event`)
+      engineEvents.emit('core:request-ready')
+    }
+
+    // 4. Timeout protection
+    timeout = setTimeout(() => {
       if (!resolved) {
+        loggers.bootstrap.warn(
+          `Timeout waiting for Core '${coreName}' after ${CORE_WAIT_TIMEOUT}ms`,
+        )
         cleanup()
         reject(
           new Error(
@@ -209,17 +242,6 @@ function createCoreDependency(coreName: string): Promise<void> {
         )
       }
     }, CORE_WAIT_TIMEOUT)
-
-    // 3. Listen for the event (for resources starting after/during CORE init)
-    const onReady = () => {
-      if (!resolved) {
-        loggers.bootstrap.debug(`Core '${coreName}' detected via 'core:ready' event.`)
-        cleanup()
-        resolve()
-      }
-    }
-
-    engineEvents.on('core:ready', onReady)
   })
 }
 

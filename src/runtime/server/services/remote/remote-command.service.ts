@@ -75,6 +75,12 @@ export class RemoteCommandService extends CommandExecutionPort {
    */
   register(metadata: CommandMetadata, handler: (...args: any[]) => any): void {
     const commandKey = metadata.command.toLowerCase()
+    const resourceName = GetCurrentResourceName()
+
+    loggers.command.debug(`Registering command locally`, {
+      command: metadata.command,
+      resource: resourceName,
+    })
 
     // Store handler with full metadata locally (for schema validation)
     this.commands.set(commandKey, {
@@ -83,14 +89,23 @@ export class RemoteCommandService extends CommandExecutionPort {
     })
 
     // Register metadata with CORE (security only, schema is not serializable)
-    this.core.registerCommand({
-      command: metadata.command,
-      description: metadata.description,
-      usage: metadata.usage,
-      isPublic: metadata.isPublic ?? false,
-      resourceName: GetCurrentResourceName(),
-      security: metadata.security,
-    })
+    try {
+      this.core.registerCommand({
+        command: metadata.command,
+        description: metadata.description,
+        usage: metadata.usage,
+        isPublic: metadata.isPublic ?? false,
+        resourceName,
+        security: metadata.security,
+      })
+    } catch (e) {
+      loggers.command.error(`Failed to register command with CORE`, {
+        command: metadata.command,
+        resource: resourceName,
+        error: e,
+      })
+      return
+    }
 
     const publicFlag = metadata.isPublic ? ' [Public]' : ''
     const schemaFlag = metadata.schema ? ' [Validated]' : ''
