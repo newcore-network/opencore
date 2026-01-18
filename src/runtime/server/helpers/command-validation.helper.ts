@@ -84,7 +84,19 @@ export async function validateAndExecuteCommand(
 
   // TUPLA schema
   if (schema instanceof z.ZodTuple) {
-    const validated = await schema.parseAsync(args).catch(() => {
+    const items = schema.description ? [] : ((schema as any)._def.items as z.ZodTypeAny[])
+    let processedArgs = [...args]
+    if (args.length > items.length) {
+      const lastItem = items[items.length - 1]
+
+      if (lastItem instanceof z.ZodArray) {
+        const positional = args.slice(0, items.length - 1)
+        const restArray = args.slice(items.length - 1)
+        processedArgs = [...positional, restArray] as any
+      }
+    }
+
+    const validated = await schema.parseAsync(processedArgs).catch(() => {
       throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
         usage: meta.usage,
       })

@@ -3,14 +3,7 @@ import { Export } from '../decorators/export'
 
 @Controller()
 export class ReadyController {
-  private isReady = false
-
-  constructor() {
-    // Set ready after a small tick to ensure bootstrap finishes
-    setTimeout(() => {
-      this.isReady = true
-    }, 0)
-  }
+  private isReady = true
 
   @Export()
   isCoreReady(): boolean {

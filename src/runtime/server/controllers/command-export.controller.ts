@@ -177,10 +177,25 @@ export class CommandExportController implements InternalCommandsExports {
   registerCommand(metadata: CommandRegistrationDto): void {
     const commandKey = metadata.command.toLowerCase()
 
-    if (this.remoteCommands.has(commandKey)) {
+    const existing = this.remoteCommands.get(commandKey)
+    if (existing) {
+      // Allow re-registration from the same resource (hot-reload scenario)
+      if (existing.resourceName === metadata.resourceName) {
+        loggers.command.debug(
+          `Re-registering command '${metadata.command}' from same resource (hot-reload)`,
+          { command: metadata.command, resource: metadata.resourceName },
+        )
+        // Update the entry with new metadata
+        this.remoteCommands.set(commandKey, {
+          metadata,
+          resourceName: metadata.resourceName,
+        })
+        return
+      }
+
       loggers.command.warn(`Remote command '${metadata.command}' already registered`, {
         command: metadata.command,
-        existingResource: this.remoteCommands.get(commandKey)?.resourceName,
+        existingResource: existing.resourceName,
         newResource: metadata.resourceName,
       })
       return

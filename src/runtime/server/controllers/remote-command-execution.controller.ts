@@ -85,6 +85,12 @@ export class RemoteCommandExecutionController {
     commandName: string,
     args: string[],
   ): Promise<void> {
+    loggers.command.debug(`Received command execution request`, {
+      command: commandName,
+      clientID,
+      args,
+    })
+
     const player = this.playerDirectory.getByClient(clientID)
 
     if (!player) {
@@ -95,8 +101,18 @@ export class RemoteCommandExecutionController {
       return
     }
 
+    loggers.command.debug(`Executing command for player`, {
+      command: commandName,
+      playerName: player.name,
+      clientID,
+    })
+
     try {
       await this.commandService.execute(player, commandName, args)
+      loggers.command.debug(`Command executed successfully`, {
+        command: commandName,
+        clientID,
+      })
     } catch (error) {
       // Do not notify the player here. Report through the global observer.
       const runtime = getRuntimeContext()
