@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ClassConstructor } from '../../../kernel/di/class-constructor'
 import { Player } from '../entities/player'
-import { getParameterNames } from '../helpers/function-helper'
+import { getParameterNames, getSpreadParameterIndices } from '../helpers/function-helper'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 import { SecurityMetadata } from '../types/core-exports'
 
@@ -38,6 +38,8 @@ export interface CommandMetadata extends CommandConfig {
   isPublic?: boolean
   /** Security metadata for remote validation */
   security?: SecurityMetadata
+  /** True if the last parameter uses the spread operator (...args) */
+  hasSpreadParam?: boolean
 }
 
 type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)
@@ -148,6 +150,9 @@ export function Command(configOrName: string | CommandConfig, schema?: z.ZodType
     }
 
     const paramNames = getParameterNames(descriptor.value)
+    const spreadIndices = getSpreadParameterIndices(descriptor.value)
+    const hasSpreadParam = spreadIndices.length > 0 && spreadIndices[spreadIndices.length - 1]
+
     const metadata: CommandMetadata = {
       ...config,
       methodName: propertyKey,
@@ -155,6 +160,7 @@ export function Command(configOrName: string | CommandConfig, schema?: z.ZodType
       paramTypes,
       paramNames,
       expectsPlayer,
+      hasSpreadParam,
     }
 
     Reflect.defineMetadata(METADATA_KEYS.COMMAND, metadata, target, propertyKey)

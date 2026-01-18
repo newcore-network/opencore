@@ -87,7 +87,22 @@ export async function validateAndExecuteCommand(
       })
     })
 
-    return await handler(player, ...(validated as unknown[]))
+    const finalArgs = validated as unknown[]
+
+    // If the handler uses spread operator (...args), flatten the last array argument
+    // so the handler receives individual arguments instead of a single array.
+    if (
+      meta.hasSpreadParam &&
+      finalArgs.length > 0 &&
+      Array.isArray(finalArgs[finalArgs.length - 1])
+    ) {
+      const positional = finalArgs.slice(0, finalArgs.length - 1)
+      const rest = finalArgs[finalArgs.length - 1] as unknown[]
+      return await handler(player, ...positional, ...rest)
+    }
+
+    // For regular array parameters (args: string[]), pass as-is
+    return await handler(player, ...finalArgs)
   }
 
   // fallback
