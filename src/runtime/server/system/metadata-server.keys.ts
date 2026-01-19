@@ -9,4 +9,7 @@ export const METADATA_KEYS = {
   PUBLIC: 'decorator:meta:public',
   THROTTLE: 'decorator:throttle',
   REQUIRES_STATE: 'decorator:requires_state',
+  BINARY_SERVICE: 'decorator:meta:binary_service',
+  BINARY_SERVICE_NAME: 'decorator:meta:binary_service_name',
+  BINARY_CALL: 'decorator:meta:binary_call',
 }

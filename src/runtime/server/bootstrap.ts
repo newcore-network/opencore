@@ -3,6 +3,7 @@ import { registerServerCapabilities } from '../../adapters/register-capabilities
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { PrincipalProviderContract } from './contracts/index'
+import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binary-service'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
@@ -11,8 +12,10 @@ import {
   setRuntimeContext,
   validateRuntimeOptions,
 } from './runtime'
+import { BinaryProcessManager } from './services/binary/binary-process.manager'
 import { SessionRecoveryService } from './services/core/session-recovery.service'
 import { registerServicesServer } from './services/services.register'
+import { METADATA_KEYS } from './system/metadata-server.keys'
 import { registerSystemServer } from './system/processors.register'
 
 const CORE_WAIT_TIMEOUT = 10000
@@ -142,6 +145,23 @@ export async function initServer(options: ServerRuntimeOptions) {
 
   const scanner = GLOBAL_CONTAINER.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
+
+  const binaryServices = getServerBinaryServiceRegistry()
+  for (const serviceClass of binaryServices) {
+    const metadata = Reflect.getMetadata(METADATA_KEYS.BINARY_SERVICE, serviceClass) as
+      | BinaryServiceMetadata
+      | undefined
+    if (!metadata) continue
+    const manager = GLOBAL_CONTAINER.resolve(BinaryProcessManager)
+    try {
+      manager.register(metadata, metadata.serviceClass)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      loggers.bootstrap.error(`[BinaryService] Failed to register ${metadata.name}`, {
+        error: message,
+      })
+    }
+  }
 
   // Initialize DevMode if enabled
   if (ctx.devMode?.enabled) {

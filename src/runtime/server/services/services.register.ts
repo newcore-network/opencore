@@ -2,6 +2,7 @@ import { GLOBAL_CONTAINER } from '../../../kernel/di/index'
 import { WorldContext } from '../../core/world'
 import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { RuntimeContext } from '../runtime'
+import { BinaryProcessManager } from './binary/binary-process.manager'
 import { ChatService } from './chat.service'
 import { CommandService } from './core/command.service'
 import { PlayerService } from './core/player.service'
@@ -91,5 +92,9 @@ export function registerServicesServer(ctx: RuntimeContext) {
 
   if (features.chat.enabled) {
     GLOBAL_CONTAINER.registerSingleton(ChatService)
+  }
+
+  if (!GLOBAL_CONTAINER.isRegistered(BinaryProcessManager)) {
+    GLOBAL_CONTAINER.registerSingleton(BinaryProcessManager)
   }
 }
