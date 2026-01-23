@@ -1,30 +1,32 @@
-## OpenCore Framework v0.3.2 
+## OpenCore Framework v0.4.0
 
 ---
 
 ### Highlights
 
-- **Command Parameter Intelligence**: The framework now correctly differentiates between TypeScript's spread operator (`...args: string[]`) and direct array parameters (`args: string[]`).
-- **Improved Reflection**: Added source-code analysis to overcome TypeScript's reflection limitations (`design:paramtypes` ambiguity).
+- **Native Binary Isolation**: Introduced a robust system to execute heavy or sensitive logic in isolated operating system processes, outside the FiveM runtime.
+- **Language-Agnostic Services**: Binary services can be implemented in any language (Go, Rust, C++, etc.) that supports standard I/O (stdin/stdout).
+- **Asynchronous Proxy Pattern**: Methods decorated with `@BinaryCall` are automatically transformed into asynchronous proxies, making external execution feel like native TypeScript.
 
 ---
 
-### Fixes
+### New Features
 
-- **Spread Operator Handling**: Fixed an issue where using `...args` would sometimes result in arguments being joined by commas or passed incorrectly.
-- **Array Parameter Support**: Resolved "join is not a function" errors when using `args: string[]` by ensuring the full array is passed as a single argument.
-- **Argument Consistency**: Ensured that single-word and multi-word inputs are handled consistently across both `Command` and `OnNet` (NetEvents) systems.
+- **@BinaryService Decorator**: New decorator to declare and manage the lifecycle of external binary processes.
+- **@BinaryCall Decorator**: New decorator to mark class methods as remote actions to be executed by the associated binary.
+- **BinaryProcessManager**: A centralized runtime service that handles process spawning, JSON-RPC communication, and automatic timeout management.
+- **Enhanced Observability**: Added detailed debug logging for service registration, process lifecycle events, and RPC call/response cycles.
 
 ---
 
 ### Internal Changes
 
-- Added `getSpreadParameterIndices` to `function-helper.ts` for runtime parameter inspection.
-- Updated `CommandMetadata` to track `hasSpreadParam`.
-- Refined `validateAndExecuteCommand` to implement conditional argument flattening.
+- **JSON-RPC Over Stdin/Stdout**: Implemented a lightweight protocol for bidirectional communication between OpenCore and external binaries.
+- **Platform-Specific Resolution**: Automated resolution of binary executables based on the host operating system (Windows/Linux).
+- **Graceful Error Handling**: Comprehensive error propagation from external processes back to the TypeScript runtime, including stderr capture.
 
 ---
 
 ### Notes
 
-This release ensures that the framework respects the intended TypeScript parameter types, providing a more intuitive and reliable experience for building complex command handlers and event listeners.
+This release marks a significant milestone in OpenCore's architecture, providing developers with the tools to build high-performance, isolated systems that leverage native code while maintaining the ease of use of the framework's decorator-based DI system.

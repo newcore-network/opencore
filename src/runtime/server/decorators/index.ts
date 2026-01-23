@@ -1,3 +1,5 @@
+export * from './binary-call'
+export * from './binary-service'
 export * from './bind'
 export { Command, CommandConfig } from './command'
 export { Controller } from './controller'
