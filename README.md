@@ -21,16 +21,6 @@ License: MPL-2.0
 
 [Discord Community](https://discord.gg/99g3FgvkPs) | [Website](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
 
-## Scope
-
-This package (`@open-core/framework`) contains transversal infrastructure only.
-
-- Controllers, services, decorators, and processors
-- Session/lifecycle primitives and contracts
-- Adapters and capability registration
-
-Gameplay logic must live in separate resources/modules.
-
 ## Installation
 
 ```bash
@@ -46,13 +36,11 @@ The package exposes subpath entry points:
 - `@open-core/framework` (root)
 - `@open-core/framework/server`
 - `@open-core/framework/client`
-- `@open-core/framework/shared`
-- `@open-core/framework/utils`
 
 Most projects will import the `Server`/`Client` namespaces:
 
 ```ts
-import { Server } from '@open-core/framework'
+import { Server } from '@open-core/framework/server'
 ```
 
 ## Architecture
