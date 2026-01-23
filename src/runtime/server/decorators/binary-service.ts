@@ -5,8 +5,13 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
 import { Bind } from './bind'
 
 export interface BinaryServiceOptions {
+  /** Logical identifier of the service inside OpenCore. This name is used to route binary calls and must be unique per resource. */
   name: string
+  /** Logical binary filename (without extension). The framework resolves the correct executable automatically depending on the platform */
   binary: string
+  /**
+   * Default timeout for binary calls in milliseconds. If the binary does not respond within this time, the call is rejected automatically.
+   */
   timeoutMs?: number
 }
 
@@ -62,11 +67,14 @@ function assertValidServiceName(name: string): void {
 }
 
 /**
- * Declares a persistent external binary service managed by the framework.
+ * Declares a native external binary service managed by OpenCore.
+ * A BinaryService represents a persistent operating system process executed outside the FiveM runtime, allowing heavy or sensitive logic to run in complete isolation while being consumed from TypeScript as normal asynchronous methods.
+ * Binary services communicate with OpenCore using a simple JSON-based RPC protocol over stdin / stdout.
  *
  * @remarks
  * - The binary name is logical (no extensions). The framework resolves platform-specific files.
  * - A single process is spawned and kept alive for the resource lifecycle.
+ * - This system is language-agnostic and can be implemented in any language capable of reading from standard input and writing to standard output.
  */
 export function BinaryService(options: BinaryServiceOptions): (target: ClassConstructor) => void {
   return (target: ClassConstructor) => {
