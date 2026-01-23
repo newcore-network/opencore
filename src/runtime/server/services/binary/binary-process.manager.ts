@@ -68,6 +68,10 @@ export class BinaryProcessManager {
     }
 
     this.services.set(options.name, entry)
+    loggers.bootstrap.debug(`[BinaryService] Registered service`, {
+      name: options.name,
+      binary: options.binary,
+    })
 
     const instance = this.resolveServiceInstance(serviceClass)
     this.applyBinaryProxies(instance, options)
@@ -83,6 +87,10 @@ export class BinaryProcessManager {
     }
 
     entry.binaryPath = binaryPath
+    loggers.bootstrap.debug(`[BinaryService] Resolved binary path`, {
+      name: options.name,
+      path: binaryPath,
+    })
     this.spawnProcess(entry)
   }
 
@@ -99,11 +107,18 @@ export class BinaryProcessManager {
     const id = uuid()
     const payload = JSON.stringify({ id, action, params })
 
+    loggers.bootstrap.debug(`[BinaryService] Calling action`, { service: serviceName, action, id })
     await this.writeLine(entry, payload)
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         entry.pending.delete(id)
+        loggers.bootstrap.error(`[BinaryService] Call timeout`, {
+          service: serviceName,
+          action,
+          id,
+          timeoutMs: timeoutMs ?? entry.timeoutMs,
+        })
         reject(
           new AppError(
             'COMMON:UNKNOWN',
@@ -156,11 +171,15 @@ export class BinaryProcessManager {
     const platform = process.platform
     const filename = platform === 'win32' ? `${binary}.exe` : binary
 
-    const platformPath = path.join(resourceRoot, 'bin', platform, filename)
-    if (fs.existsSync(platformPath)) return platformPath
+    const paths = [
+      path.join(resourceRoot, 'bin', platform, filename),
+      path.join(resourceRoot, 'bin', filename),
+      path.join(resourceRoot, filename),
+    ]
 
-    const flatPath = path.join(resourceRoot, 'bin', filename)
-    if (fs.existsSync(flatPath)) return flatPath
+    for (const p of paths) {
+      if (fs.existsSync(p)) return p
+    }
 
     return null
   }
@@ -178,6 +197,7 @@ export class BinaryProcessManager {
 
     entry.process = child
     entry.status = 'online'
+    loggers.bootstrap.debug(`[BinaryService] Process spawned`, { name: entry.name, pid: child.pid })
 
     child.stdout.on('data', (chunk: Buffer) => this.handleStdout(entry, chunk))
     child.stderr.on('data', (chunk: Buffer) => {
@@ -254,14 +274,24 @@ export class BinaryProcessManager {
     if (!pending) {
       loggers.bootstrap.warn(`[BinaryService] ${entry.name} response without pending request`, {
         id: response.id,
+        status: response.status,
       })
       return
     }
 
+    loggers.bootstrap.debug(`[BinaryService] Received response`, {
+      service: entry.name,
+      id: response.id,
+      status: response.status,
+    })
     entry.pending.delete(response.id)
     if (pending.timeout) clearTimeout(pending.timeout)
 
     if (response.status === 'ok') {
+      loggers.bootstrap.debug(`[BinaryService] Call success`, {
+        service: entry.name,
+        id: response.id,
+      })
       pending.resolve(response.result)
       return
     }
@@ -273,6 +303,12 @@ export class BinaryProcessManager {
           ? response.error
           : 'Binary call failed'
 
+    loggers.bootstrap.error(`[BinaryService] Call error response`, {
+      service: entry.name,
+      id: response.id,
+      error: response.error,
+      message,
+    })
     pending.reject(new AppError('COMMON:UNKNOWN', message, 'external', response.error))
   }
 
