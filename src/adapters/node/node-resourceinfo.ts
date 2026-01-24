@@ -14,4 +14,8 @@ export class NodeResourceInfo implements IResourceInfo {
   getCurrentResourceName(): string {
     return process.env.RESOURCE_NAME || 'default'
   }
+
+  getCurrentResourcePath(): string {
+    return process.env.RESOURCE_PATH || process.cwd()
+  }
 }

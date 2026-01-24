@@ -19,17 +19,7 @@ It is not a gamemode or RP framework. It provides:
 
 License: MPL-2.0
 
-[Discord Community](https://discord.gg/99g3FgvkPs) | [Website](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
-
-## Scope
-
-This package (`@open-core/framework`) contains transversal infrastructure only.
-
-- Controllers, services, decorators, and processors
-- Session/lifecycle primitives and contracts
-- Adapters and capability registration
-
-Gameplay logic must live in separate resources/modules.
+[Discord Community](https://discord.gg/99g3FgvkPs) | [Docs](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
 
 ## Installation
 
@@ -46,13 +36,11 @@ The package exposes subpath entry points:
 - `@open-core/framework` (root)
 - `@open-core/framework/server`
 - `@open-core/framework/client`
-- `@open-core/framework/shared`
-- `@open-core/framework/utils`
 
 Most projects will import the `Server`/`Client` namespaces:
 
 ```ts
-import { Server } from '@open-core/framework'
+import { Server } from '@open-core/framework/server'
 ```
 
 ## Architecture
@@ -81,11 +69,7 @@ Initialize the server runtime:
 import { Server } from '@open-core/framework/server'
 
 await Server.init({
-  mode: 'STANDALONE',
-  features: {
-    commands: { enabled: true },
-    netEvents: { enabled: true },
-  },
+  mode: 'CORE'
 })
 ```
 
@@ -95,7 +79,6 @@ Some features require providers (depending on your mode and configuration). Conf
 import { Server } from '@open-core/framework/server'
 
 Server.setPrincipalProvider(MyPrincipalProvider)
-Server.setAuthProvider(MyAuthProvider)
 Server.setSecurityHandler(MySecurityHandler)
 Server.setPersistenceProvider(MyPlayerPersistence)
 Server.setNetEventSecurityObserver(MyNetEventSecurityObserver)

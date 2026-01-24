@@ -9,4 +9,16 @@ export class FiveMResourceInfo extends IResourceInfo {
     }
     return 'default'
   }
+
+  getCurrentResourcePath(): string {
+    const fn = (globalThis as any).GetResourcePath
+    if (typeof fn === 'function') {
+      const name = this.getCurrentResourceName()
+      if (name) {
+        const path = fn(name)
+        if (typeof path === 'string' && path.trim()) return path
+      }
+    }
+    return process.cwd()
+  }
 }

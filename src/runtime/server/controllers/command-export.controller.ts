@@ -86,6 +86,8 @@ export class CommandExportController implements InternalCommandsExports {
         loggers.command.warn(`Rejected suspicious command: ${command}`, {
           playerId: player.clientID,
           playerName: player.name,
+          accountID: player.accountID,
+          args: args,
         })
         return
       }
