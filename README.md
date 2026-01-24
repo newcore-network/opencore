@@ -19,7 +19,7 @@ It is not a gamemode or RP framework. It provides:
 
 License: MPL-2.0
 
-[Discord Community](https://discord.gg/99g3FgvkPs) | [Website](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
+[Discord Community](https://discord.gg/99g3FgvkPs) | [Docs](https://opencorejs.dev) | [OpenCore CLI](https://github.com/newcore-network/opencore-cli)
 
 ## Installation
 
@@ -69,11 +69,7 @@ Initialize the server runtime:
 import { Server } from '@open-core/framework/server'
 
 await Server.init({
-  mode: 'STANDALONE',
-  features: {
-    commands: { enabled: true },
-    netEvents: { enabled: true },
-  },
+  mode: 'CORE'
 })
 ```
 
@@ -83,7 +79,6 @@ Some features require providers (depending on your mode and configuration). Conf
 import { Server } from '@open-core/framework/server'
 
 Server.setPrincipalProvider(MyPrincipalProvider)
-Server.setAuthProvider(MyAuthProvider)
 Server.setSecurityHandler(MySecurityHandler)
 Server.setPersistenceProvider(MyPlayerPersistence)
 Server.setNetEventSecurityObserver(MyNetEventSecurityObserver)
