@@ -69,4 +69,6 @@ export const loggers = {
   nui: coreLogger.client('NUI'),
   /** Spawn service (client) */
   spawn: coreLogger.client('Spawn'),
+  /** */
+  api: coreLogger.framework('API'),
 }

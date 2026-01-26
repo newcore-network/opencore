@@ -2,12 +2,12 @@ import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { INetTransport } from '../../../../src/adapters/contracts/INetTransport'
 import { Player } from '../../../../src/runtime/server/entities/player'
-import { ChannelService } from '../../../../src/runtime/server/services/channel.service'
+import { Channels } from '../../../../src/runtime/server/apis/channel.api'
 import { Players } from '../../../../src/runtime/server/ports/player-directory'
 import { ChannelType } from '../../../../src/runtime/server/types/channel.types'
 
 describe('ChannelService', () => {
-  let channelService: ChannelService
+  let channelService: Channels
   let mockPlayerDirectory: Players
   let mockNetTransport: INetTransport
   let mockPlayer1: Player
@@ -47,7 +47,7 @@ describe('ChannelService', () => {
       onNet: vi.fn(),
     } as any
 
-    channelService = new ChannelService(mockPlayerDirectory, mockNetTransport)
+    channelService = new Channels(mockPlayerDirectory, mockNetTransport)
   })
 
   describe('Channel Creation', () => {

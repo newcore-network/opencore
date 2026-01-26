@@ -1,6 +1,6 @@
 import { Controller, Command, OnNet, Guard } from '../src/runtime/server/decorators'
 import { Server } from '../src/runtime/server'
-import { ChannelService } from '../src/runtime/server/services/channel.service'
+import { Channels } from '../src/runtime/server/apis/channel.api'
 import { Players } from '../src/runtime/server/ports/player-directory'
 import { ChannelType } from '../src/runtime/server/types/channel.types'
 
@@ -9,7 +9,7 @@ export class RadioController {
   private playerFrequencies = new Map<number, number>()
 
   constructor(
-    private readonly channelService: ChannelService,
+    private readonly channelService: Channels,
     private readonly playerDirectory: Players,
   ) {}
 
@@ -70,7 +70,7 @@ export class PhoneController {
   private activeCalls = new Map<number, string>()
 
   constructor(
-    private readonly channelService: ChannelService,
+    private readonly channelService: Channels,
     private readonly playerDirectory: Players,
   ) {}
 
@@ -147,7 +147,7 @@ export class PhoneController {
 
 @Controller()
 export class ProximityController {
-  constructor(private readonly channelService: ChannelService) {}
+  constructor(private readonly channelService: Channels) {}
 
   @Command('me')
   actionMessage(player: Server.Player, ...action: string[]) {
@@ -246,7 +246,7 @@ export class TeamController {
   private playerTeams = new Map<number, string>()
 
   constructor(
-    private readonly channelService: ChannelService,
+    private readonly channelService: Channels,
     private readonly playerDirectory: Players,
   ) {}
 
@@ -331,7 +331,7 @@ export class TeamController {
 
 @Controller()
 export class AdminController {
-  constructor(private readonly channelService: ChannelService) {}
+  constructor(private readonly channelService: Channels) {}
 
   @Command('a')
   @Guard({ permission: 'admin' })

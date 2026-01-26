@@ -7,7 +7,7 @@ import { ChannelMetadata, ChannelType, IChannelValidator } from '../types/channe
 import { Players } from '../ports/player-directory'
 
 @injectable()
-export class ChannelService {
+export class Channels {
   private channels: Map<string, Channel> = new Map()
   private validator?: IChannelValidator
 

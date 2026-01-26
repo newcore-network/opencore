@@ -3,8 +3,8 @@ import { WorldContext } from '../../core/world'
 import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { RuntimeContext } from '../runtime'
 import { BinaryProcessManager } from '../system/managers/binary-process.manager'
-import { ChannelService } from './channel.service'
-import { ChatService } from './chat.service'
+import { Channels } from '../apis/channel.api'
+import { Chat } from '../apis'
 import { LocalCommandImplementation } from '../implementations/local/command.local'
 import { LocalPlayerImplementation } from '../implementations/local/player.local'
 import { LocalPrincipalService } from '../implementations/local/principal.local'
@@ -96,8 +96,8 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.chat.enabled) {
-    GLOBAL_CONTAINER.registerSingleton(ChannelService)
-    GLOBAL_CONTAINER.registerSingleton(ChatService)
+    GLOBAL_CONTAINER.registerSingleton(Channels)
+    GLOBAL_CONTAINER.registerSingleton(Chat)
   }
 
   if (!GLOBAL_CONTAINER.isRegistered(BinaryProcessManager)) {

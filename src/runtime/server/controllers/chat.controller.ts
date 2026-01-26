@@ -2,13 +2,13 @@ import { inject } from 'tsyringe'
 import { RGB } from '../../../kernel/utils/rgb'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { ChatService } from '../services/chat.service'
+import { Chat } from '../apis'
 import { Players } from '../ports/player-directory'
 
 @Controller()
 export class ChatController {
   constructor(
-    private readonly chatService: ChatService,
+    private readonly chatService: Chat,
     @inject(Players as any) private readonly playerDirectory: Players,
   ) {}
 
