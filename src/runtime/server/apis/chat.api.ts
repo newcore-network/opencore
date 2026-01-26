@@ -13,14 +13,10 @@ import { Channels } from './channel.api'
  */
 @injectable()
 export class Chat {
-  private _globalChannel: ReturnType<Channels['createGlobalChannel']> | undefined
-
   constructor(
     @inject(INetTransport as any) private readonly netTransport: INetTransport,
     private readonly channelService: Channels,
-  ) {
-    this._globalChannel = this.channelService.createGlobalChannel()
-  }
+  ) {}
   /**
    * Broadcast a chat message to all connected players.
    *

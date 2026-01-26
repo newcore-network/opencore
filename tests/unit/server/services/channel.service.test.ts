@@ -69,44 +69,6 @@ describe('ChannelService', () => {
       }).toThrow("Channel with id 'test-channel' already exists")
     })
 
-    it('should create global channel', () => {
-      const channel = channelService.createGlobalChannel()
-
-      expect(channel.id).toBe('global')
-      expect(channel.type).toBe(ChannelType.GLOBAL)
-      expect(channel.isPersistent).toBe(true)
-    })
-
-    it('should create radio channel with frequency', () => {
-      const channel = channelService.createRadioChannel(123.4, 5000)
-
-      expect(channel.id).toBe('radio:123.4')
-      expect(channel.type).toBe(ChannelType.RADIO)
-      expect(channel.metadata.frequency).toBe(123.4)
-      expect(channel.metadata.maxRange).toBe(5000)
-    })
-
-    it('should create phone channel', () => {
-      const channel = channelService.createPhoneChannel('caller1', 'receiver1')
-
-      expect(channel.id).toBe('phone:caller1:receiver1')
-      expect(channel.type).toBe(ChannelType.PHONE)
-    })
-
-    it('should create team channel', () => {
-      const channel = channelService.createTeamChannel('team-alpha')
-
-      expect(channel.id).toBe('team:team-alpha')
-      expect(channel.type).toBe(ChannelType.TEAM)
-    })
-
-    it('should create admin channel', () => {
-      const channel = channelService.createAdminChannel()
-
-      expect(channel.id).toBe('admin')
-      expect(channel.type).toBe(ChannelType.ADMIN)
-    })
-
     it('should create private channel with players', () => {
       const channel = channelService.createPrivate([mockPlayer1, mockPlayer2], {
         type: ChannelType.PHONE,
@@ -297,13 +259,6 @@ describe('ChannelService', () => {
   })
 
   describe('Query Methods', () => {
-    beforeEach(() => {
-      channelService.createRadioChannel(100)
-      channelService.createRadioChannel(200)
-      channelService.createTeamChannel('alpha')
-      channelService.createAdminChannel()
-    })
-
     it('should get channels by type', () => {
       const radioChannels = channelService.getChannelsByType(ChannelType.RADIO)
 
@@ -330,16 +285,12 @@ describe('ChannelService', () => {
 
   describe('Cleanup', () => {
     it('should clear all channels', () => {
-      channelService.createRadioChannel(100)
-      channelService.createTeamChannel('alpha')
-
       channelService.clear()
 
       expect(channelService.getAllChannels()).toHaveLength(0)
     })
 
     it('should clear only non-persistent channels', () => {
-      channelService.createRadioChannel(100)
       channelService.createPrivate([mockPlayer1], { type: ChannelType.PHONE })
 
       channelService.clearNonPersistent()

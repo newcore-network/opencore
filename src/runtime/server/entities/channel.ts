@@ -1,5 +1,6 @@
 import { Player } from './player'
 import { ChannelMetadata, ChannelSubscription, ChannelType } from '../types/channel.types'
+import { loggers } from 'src/kernel'
 
 export class Channel {
   private subscribers: Map<number, ChannelSubscription> = new Map()
@@ -12,10 +13,12 @@ export class Channel {
 
   subscribe(player: Player, subscriptionMetadata?: Record<string, unknown>): boolean {
     if (this.maxSubscribers && this.subscribers.size >= this.maxSubscribers) {
+      this.debugLog('It has already reached its subscriber limit')
       return false
     }
 
     if (this.subscribers.has(player.clientID)) {
+      this.debugLog('already subscribed')
       return false
     }
 
@@ -25,14 +28,18 @@ export class Channel {
       metadata: subscriptionMetadata,
     })
 
+    this.debugLog(`player ${player.id} has subscribed to channel ${this.id}`)
+
     return true
   }
 
   unsubscribe(player: Player): boolean {
+    this.debugLog(`player ${player.id} has unsubscribed from channel ${this.id}`)
     return this.subscribers.delete(player.clientID)
   }
 
   isSubscribed(player: Player): boolean {
+    this.debugLog(`player ${player.id} already subscribed to channel ${this.id}`)
     return this.subscribers.has(player.clientID)
   }
 
@@ -71,5 +78,9 @@ export class Channel {
         subscribedAt: sub.subscribedAt,
       })),
     }
+  }
+
+  private debugLog(msg: string) {
+    loggers.api.debug(`ChannelService: ${msg}`)
   }
 }

@@ -60,6 +60,10 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
     await import('./controllers/player-export.controller')
   }
 
+  if (ctx.features.chat.enabled && ctx.features.exports.enabled && ctx.mode === 'CORE') {
+    await import('./controllers/channel-export.controller')
+  }
+
   if (ctx.mode === 'CORE') {
     await import('./controllers/ready.controller')
   }

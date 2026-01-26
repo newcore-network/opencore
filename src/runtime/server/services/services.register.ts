@@ -18,6 +18,7 @@ import { Principal } from '../ports/principal.port'
 import { RemoteCommandImplementation } from '../implementations/remote/command.remote'
 import { RemotePlayerImplementation } from '../implementations/remote/player.remote'
 import { RemotePrincipalImplementation } from '../implementations/remote/principal.remote'
+import { RemoteChannelImplementation } from '../implementations/remote/channel.remote'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -96,7 +97,13 @@ export function registerServicesServer(ctx: RuntimeContext) {
   }
 
   if (features.chat.enabled) {
-    GLOBAL_CONTAINER.registerSingleton(Channels)
+    if (mode === 'RESOURCE') {
+      // RESOURCE: remote channel management (delegates to CORE)
+      GLOBAL_CONTAINER.registerSingleton(Channels, RemoteChannelImplementation)
+    } else {
+      // CORE/STANDALONE: local channel management
+      GLOBAL_CONTAINER.registerSingleton(Channels)
+    }
     GLOBAL_CONTAINER.registerSingleton(Chat)
   }
 

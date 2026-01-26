@@ -6,7 +6,7 @@ export enum ChannelType {
   PROXIMITY = 'proximity',
   RADIO = 'radio',
   PHONE = 'phone',
-  TEAM = 'team',
+  GROUP = 'group',
   ADMIN = 'admin',
   CUSTOM = 'custom',
 }
