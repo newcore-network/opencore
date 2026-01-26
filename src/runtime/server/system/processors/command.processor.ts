@@ -4,8 +4,8 @@ import { CommandMetadata } from '../../decorators/command'
 import { GuardOptions } from '../../decorators/guard'
 import { StateRequirement } from '../../decorators/requiresState'
 import { ThrottleOptions } from '../../decorators/throttle'
-import { CommandExecutionPort } from '../../services/ports/command-execution.port'
-import { SecurityMetadata } from '../../types/core-exports'
+import { CommandExecutionPort } from '../../ports/internal/command-execution.port'
+import { SecurityMetadata } from '../../types/core-exports.types'
 import { METADATA_KEYS } from '../metadata-server.keys'
 
 /**

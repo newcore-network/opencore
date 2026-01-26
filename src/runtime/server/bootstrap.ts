@@ -12,8 +12,8 @@ import {
   setRuntimeContext,
   validateRuntimeOptions,
 } from './runtime'
-import { BinaryProcessManager } from './services/binary/binary-process.manager'
-import { SessionRecoveryService } from './services/core/session-recovery.service'
+import { BinaryProcessManager } from './system/managers/binary-process.manager'
+import { SessionRecoveryService } from './services/session-recovery.local'
 import { registerServicesServer } from './services/services.register'
 import { METADATA_KEYS } from './system/metadata-server.keys'
 import { registerSystemServer } from './system/processors.register'

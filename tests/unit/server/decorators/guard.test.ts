@@ -2,7 +2,7 @@ import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Guard, type GuardOptions } from '../../../../src/runtime/server/decorators/guard'
-import { PrincipalPort } from '../../../../src/runtime/server/services/ports/principal.port'
+import { Principal } from '../../../../src/runtime/server/ports/principal.port'
 
 // Mock player type
 interface MockPlayer {
@@ -153,7 +153,7 @@ describe('@Guard decorator', () => {
         hasPermission: vi.fn().mockResolvedValue(true),
       }
 
-      container.registerInstance(PrincipalPort as any, mockPrincipal as any)
+      container.registerInstance(Principal as any, mockPrincipal as any)
     })
 
     it('should throw when first argument is null', async () => {
@@ -205,7 +205,7 @@ describe('@Guard decorator', () => {
         enforce: vi.fn().mockResolvedValue(undefined),
       }
 
-      container.registerInstance(PrincipalPort as any, mockPrincipal as any)
+      container.registerInstance(Principal as any, mockPrincipal as any)
     })
 
     it('should call original method after guard passes', async () => {

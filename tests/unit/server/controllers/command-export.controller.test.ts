@@ -3,15 +3,15 @@ import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEv
 import { AppError } from '../../../../src/kernel/error'
 import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
-import type { CommandExecutionPort } from '../../../../src/runtime/server/services/ports/command-execution.port'
-import type { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports'
+import type { CommandExecutionPort } from '../../../../src/runtime/server/ports/command-execution.port'
+import type { Players } from '../../../../src/runtime/server/ports/player-directory'
+import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports.types'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
 
 describe('CommandExportController', () => {
   let controller: CommandExportController
   let mockCommandService: CommandExecutionPort
-  let mockPlayerDirectory: PlayerDirectoryPort
+  let mockPlayerDirectory: Players
   let mockEngineEvents: IEngineEvents
   let mockAccessControl: any
   let mockRateLimiter: any

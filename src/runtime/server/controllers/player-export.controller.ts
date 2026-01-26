@@ -1,8 +1,9 @@
 import { inject } from 'tsyringe'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import { InternalPlayerExports, SerializedPlayerData } from '../types/core-exports'
+import { Players } from '../ports/player-directory'
+import { InternalPlayerExports, SerializedPlayerData } from '../types/core-exports.types'
+import { LinkedID } from '../services'
 
 /**
  * Exports player directory functionality for RESOURCE mode access.
@@ -16,15 +17,15 @@ import { InternalPlayerExports, SerializedPlayerData } from '../types/core-expor
  */
 @Controller()
 export class PlayerExportController implements InternalPlayerExports {
-  constructor(@inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort) {}
+  constructor(@inject(Players as any) private playerService: Players) {}
 
   // ═══════════════════════════════════════════════════════════════
   // Basic Player Queries
   // ═══════════════════════════════════════════════════════════════
 
   @Export()
-  getPlayerId(clientID: number): string | undefined {
-    return this.playerService.getPlayerId(clientID)
+  getPlayerId(clientID: number): LinkedID | undefined {
+    return this.playerService.getAccountLinked(clientID)
   }
 
   @Export()

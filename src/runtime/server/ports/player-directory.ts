@@ -1,4 +1,5 @@
-import { Player } from '../../entities'
+import { Player } from '../entities'
+import { LinkedID } from '../services'
 
 /**
  * Core port that provides access to active player sessions.
@@ -17,7 +18,7 @@ import { Player } from '../../entities'
  * - **CORE/STANDALONE**: Data is local and authoritative
  * - **RESOURCE**: Data is fetched from CORE via exports
  */
-export abstract class PlayerDirectoryPort {
+export abstract class Players {
   /**
    * Returns the {@link Player} associated with a given FiveM client ID.
    *
@@ -50,7 +51,7 @@ export abstract class PlayerDirectoryPort {
    * @param clientID - The FiveM server client ID (`source`).
    * @returns The linked account ID, or `undefined` if none is associated.
    */
-  abstract getPlayerId(clientID: number): string | undefined
+  abstract getAccountLinked(clientID: number): LinkedID | undefined
 
   /**
    * Retrieves a metadata value associated with a player session.
@@ -93,7 +94,7 @@ export abstract class PlayerDirectoryPort {
    * @param accountId - The persistent account identifier.
    * @returns The corresponding {@link Player} instance, or `undefined` if not online.
    */
-  getByAccountId?(accountId: string): Player | undefined
+  abstract getByAccountId(accountId: string): Player | undefined
 
   /**
    * Returns the current number of connected players.
@@ -104,7 +105,7 @@ export abstract class PlayerDirectoryPort {
    *
    * @returns The number of currently connected players.
    */
-  getPlayerCount?(): number
+  abstract getPlayerCount(): number
 
   /**
    * Checks if a player with the given account ID is currently online.
@@ -116,5 +117,5 @@ export abstract class PlayerDirectoryPort {
    * @param accountId - The persistent account identifier.
    * @returns `true` if the player is online, `false` otherwise.
    */
-  isOnline?(accountId: string): boolean
+  abstract isOnline(accountId: string): boolean
 }

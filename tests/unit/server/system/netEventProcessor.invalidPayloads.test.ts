@@ -9,7 +9,7 @@ import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
 import { WorldContext } from '../../../../src/runtime/core/world'
 import type { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
-import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
+import { LocalPlayerImplementation } from '../../../../src/runtime/server/implementations/local/player.local'
 import { NetEventProcessor } from '../../../../src/runtime/server/system/processors/netEvent.processor'
 import { registeredNetEvents } from '../../../mocks/citizenfx'
 
@@ -46,7 +46,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
-    const playerService = new PlayerService(
+    const playerService = new LocalPlayerImplementation(
       new WorldContext(),
       playerInfo,
       playerServer,
@@ -93,7 +93,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash even if handleViolation throws', async () => {
-    const playerService = new PlayerService(
+    const playerService = new LocalPlayerImplementation(
       new WorldContext(),
       playerInfo,
       playerServer,

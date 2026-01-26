@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/logger'
-import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
+import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
 import { SimulatedPlayer, SimulatedPlayerOptions } from './types'
 
 /**

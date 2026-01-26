@@ -3,18 +3,18 @@ import { loggers } from '../../../kernel/logger'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
 import { Controller } from '../decorators'
 import { OnRuntimeEvent } from '../decorators/onRuntimeEvent'
-import { PlayerDirectoryPort } from '../services'
 import { PlayerPersistenceService } from '../services/persistence.service'
-import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
-import { PlayerFullyConnectedPayload } from '../types/internal-events'
+import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
+import { PlayerFullyConnectedPayload } from '../types/framework-events.types'
+import { Players } from '../ports/player-directory'
 
 @Controller()
 export class SessionController {
   constructor(
     @inject(PlayerSessionLifecyclePort as any)
     private readonly playerSessionLifecycle: PlayerSessionLifecyclePort,
-    @inject(PlayerDirectoryPort as any)
-    private readonly playerDirectory: PlayerDirectoryPort,
+    @inject(Players as any)
+    private readonly playerDirectory: Players,
     @inject(PlayerPersistenceService as any)
     private readonly persistance: PlayerPersistenceService,
   ) {}

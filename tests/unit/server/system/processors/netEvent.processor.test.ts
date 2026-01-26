@@ -5,7 +5,7 @@ import type { NetEventSecurityObserverContract } from '../../../../../src/runtim
 import type { SecurityHandlerContract } from '../../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../../../src/runtime/server/decorators/onNet'
 import type { Player } from '../../../../../src/runtime/server/entities'
-import type { PlayerDirectoryPort } from '../../../../../src/runtime/server/services/ports/player-directory.port'
+import type { Players } from '../../../../../src/runtime/server/ports/player-directory'
 import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
 import { NetEventProcessor } from '../../../../../src/runtime/server/system/processors/netEvent.processor'
 
@@ -19,7 +19,7 @@ class MockNetTransport extends INetTransport {
 }
 
 describe('NetEventProcessor', () => {
-  let mockPlayerService: PlayerDirectoryPort
+  let mockPlayerService: Players
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
   let mockTransport: MockNetTransport

@@ -2,20 +2,27 @@ import { inject, injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { RGB } from '../../../kernel/utils/rgb'
 import { Server } from '..'
-import { PlayerDirectoryPort } from './ports/player-directory.port'
+import { ChannelService } from './channel.service'
+import { Players } from '../ports/player-directory'
 
 /**
  * Service for sending chat messages to players.
  *
  * @remarks
  * This service emits framework chat events over the network.
+ * Internally uses ChannelService for advanced channel-based communication.
  */
 @injectable()
 export class ChatService {
+  private _globalChannel: ReturnType<ChannelService['createGlobalChannel']> | undefined
+
   constructor(
-    private readonly playerDirectory: PlayerDirectoryPort,
+    private readonly _playerDirectory: Players,
     @inject(INetTransport as any) private readonly netTransport: INetTransport,
-  ) {}
+    private readonly channelService: ChannelService,
+  ) {
+    this._globalChannel = this.channelService.createGlobalChannel()
+  }
   /**
    * Broadcast a chat message to all connected players.
    *
@@ -28,6 +35,15 @@ export class ChatService {
       args: [author, message],
       color: color,
     })
+  }
+
+  /**
+   * Get the ChannelService instance for advanced channel operations.
+   *
+   * @returns The ChannelService instance.
+   */
+  getChannelService(): ChannelService {
+    return this.channelService
   }
 
   /**
@@ -96,23 +112,11 @@ export class ChatService {
     author: string = playerFrom.name,
     color: RGB = { r: 255, g: 255, b: 255 },
   ) {
-    const originPos = playerFrom.getPosition()
-    if (!originPos) return
+    const channel = this.channelService.createProximityChannel(playerFrom, radius)
+    if (!channel) return
 
-    const allPlayers = this.playerDirectory.getAll()
-    const nearbyPlayers = allPlayers.filter((p) => {
-      const pos = p.getPosition()
-      if (!pos) return false
-
-      const dx = originPos.x - pos.x
-      const dy = originPos.y - pos.y
-      const dz = originPos.z - pos.z
-      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
-
-      return distance <= radius
-    })
-
-    this.sendMany(nearbyPlayers, message, author, color)
+    this.channelService.broadcast(channel.id, playerFrom, message, author, color)
+    this.channelService.delete(channel.id)
   }
 
   /**

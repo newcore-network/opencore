@@ -6,8 +6,8 @@ import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServ
 import { loggers } from '../../../../kernel/logger'
 import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
-import { InternalPlayerExports, SerializedPlayerData } from '../../types/core-exports'
-import { PlayerDirectoryPort } from '../ports/player-directory.port'
+import { InternalPlayerExports, SerializedPlayerData } from '../../types/core-exports.types'
+import { Players } from '../../ports/player-directory'
 
 /**
  * Player service implementation for `RESOURCE` mode.
@@ -18,7 +18,7 @@ import { PlayerDirectoryPort } from '../ports/player-directory.port'
  * ensuring RESOURCE mode has access to accurate player information.
  */
 @injectable()
-export class RemotePlayerService extends PlayerDirectoryPort {
+export class RemotePlayerImplementation extends Players {
   /**
    * Cached adapters bundle for Player instances
    */
@@ -129,7 +129,7 @@ export class RemotePlayerService extends PlayerDirectoryPort {
     }
   }
 
-  getPlayerId(clientID: number): string | undefined {
+  getAccountLinked(clientID: number): string | undefined {
     return this.core.getPlayerId(clientID)
   }
 

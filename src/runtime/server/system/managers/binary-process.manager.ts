@@ -11,12 +11,18 @@ import { GLOBAL_CONTAINER } from '../../../../kernel/di/container'
 import { AppError } from '../../../../kernel/error/app.error'
 import { loggers } from '../../../../kernel/logger'
 import { BinaryServiceOptions } from '../../decorators/binary-service'
-import { METADATA_KEYS } from '../../system/metadata-server.keys'
-import type { BinaryCallMetadata } from './binary.types'
+import { METADATA_KEYS } from '../metadata-server.keys'
 
 const DEFAULT_TIMEOUT_MS = 15000
 
 type BinaryStatus = 'online' | 'offline' | 'missing'
+
+interface BinaryCallMetadata {
+  methodName: string
+  action: string
+  timeoutMs?: number
+  service?: string
+}
 
 interface PendingRequest {
   resolve: (value: unknown) => void

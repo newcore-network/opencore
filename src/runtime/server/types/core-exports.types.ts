@@ -1,8 +1,9 @@
-import { Principal } from '../contracts/security/permission.types'
+import { PrincipalType } from './principal.type'
 import { GuardOptions } from '../decorators/guard'
 import { StateRequirement } from '../decorators/requiresState'
 import { ThrottleOptions } from '../decorators/throttle'
-import { CommandInfo } from '../services/ports/command-execution.port'
+import { CommandInfo } from '../ports/internal/command-execution.port'
+import { LinkedID } from './linked-id'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Player Serialization Types
@@ -97,7 +98,7 @@ export interface InternalPrincipalExports {
    * @param source - FiveM client/server ID
    * @returns Principal data or null if not authenticated
    */
-  getPrincipal(source: number): Promise<Principal | null>
+  getPrincipal(source: number): Promise<PrincipalType | null>
 
   /**
    * Gets Principal by account ID (works for offline players too).
@@ -105,7 +106,7 @@ export interface InternalPrincipalExports {
    * @param accountId - Account identifier
    * @returns Principal data or null
    */
-  getPrincipalByAccountId(accountId: string): Promise<Principal | null>
+  getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null>
 
   /**
    * Forces a refresh of the player's permissions from persistence.
@@ -243,7 +244,7 @@ export interface InternalPlayerExports {
    * @param clientID - FiveM client/server ID
    * @returns Account ID or undefined if not linked
    */
-  getPlayerId(clientID: number): string | undefined
+  getPlayerId(clientID: number): LinkedID | undefined
 
   /**
    * Retrieves session metadata for a player.

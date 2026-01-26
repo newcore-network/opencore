@@ -7,9 +7,9 @@ import { loggers } from '../../../../kernel/logger'
 import { BaseEntity } from '../../../core/entity'
 import { WorldContext } from '../../../core/world'
 import { Player, type PlayerAdapters } from '../../entities'
-import { PlayerDirectoryPort } from '../ports/player-directory.port'
-import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
-import { PlayerSession } from '../types/player-session.object'
+import { Players } from '../../ports/player-directory'
+import { PlayerSessionLifecyclePort } from '../../ports/internal/player-session-lifecycle.port'
+import { PlayerSession } from '../../types/player-session.types'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.
@@ -18,10 +18,10 @@ import { PlayerSession } from '../types/player-session.object'
  *
  * @remarks
  * This service is used as a singleton in the dependency container.
- * It exposes the operations defined by {@link PlayerDirectoryPort} and {@link PlayerSessionLifecyclePort}.
+ * It exposes the operations defined by {@link Players} and {@link PlayerSessionLifecyclePort}.
  */
 @injectable()
-export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecyclePort {
+export class LocalPlayerImplementation implements Players, PlayerSessionLifecyclePort {
   private readonly playerAdapters: PlayerAdapters
 
   constructor(
@@ -121,7 +121,7 @@ export class PlayerService implements PlayerDirectoryPort, PlayerSessionLifecycl
    * @param clientID - The FiveM server ID to look up.
    * @returns The bound Account ID (string/UUID) if the player is logged in, or `null` otherwise.
    */
-  getPlayerId(clientID: number): string | undefined {
+  getAccountLinked(clientID: number): string | undefined {
     return this.getByClient(clientID)?.accountID
   }
 

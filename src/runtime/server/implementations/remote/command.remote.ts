@@ -6,8 +6,8 @@ import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
 import { getRuntimeContext } from '../../runtime'
-import { InternalCommandsExports } from '../../types/core-exports'
-import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
+import { InternalCommandsExports } from '../../types/core-exports.types'
+import { CommandExecutionPort, type CommandInfo } from '../../ports/internal/command-execution.port'
 
 /**
  * Stored command entry with full metadata for local validation.
@@ -37,7 +37,7 @@ interface CommandEntry {
  * - RESOURCE validates: Zod schema (not serializable, must be local)
  */
 @injectable()
-export class RemoteCommandService extends CommandExecutionPort {
+export class RemoteCommandImplementation extends CommandExecutionPort {
   private commands = new Map<string, CommandEntry>()
 
   getCommandMeta(commandName: string): CommandMetadata | undefined {

@@ -1,5 +1,5 @@
 import { Player } from '../../entities'
-import { PlayerSession } from '../types/player-session.object'
+import { PlayerSession } from '../../services'
 
 /**
  * Core port responsible for managing the lifecycle of player sessions.

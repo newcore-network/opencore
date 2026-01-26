@@ -5,9 +5,9 @@ import type { CommandErrorObserverContract } from '../../../src/runtime/server/c
 import { CommandExportController } from '../../../src/runtime/server/controllers/command-export.controller'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
 import { Player } from '../../../src/runtime/server/entities/player'
-import { CommandService } from '../../../src/runtime/server/services/core/command.service'
-import type { CommandExecutionPort } from '../../../src/runtime/server/services/ports/command-execution.port'
-import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
+import { LocalCommandImplementation } from '../../../src/runtime/server/implementations/local/command.local'
+import type { CommandExecutionPort } from '../../../src/runtime/server/ports/command-execution.port'
+import type { Players } from '../../../src/runtime/server/ports/player-directory'
 import { createMockPlayerAdapters } from '../../helpers'
 
 // Mock getRuntimeContext
@@ -20,14 +20,14 @@ vi.mock('../../../src/runtime/server/runtime', () => ({
 
 describe('Command Ports Integration', () => {
   describe('CORE Mode - Local command execution', () => {
-    let commandService: CommandService
-    let playerDirectory: PlayerDirectoryPort
+    let commandService: LocalCommandImplementation
+    let playerDirectory: Players
     let exportController: CommandExportController
     let mockEngineEvents: IEngineEvents
     let mockCommandErrorObserver: CommandErrorObserverContract
 
     beforeEach(() => {
-      commandService = new CommandService()
+      commandService = new LocalCommandImplementation()
 
       playerDirectory = {
         getByClient: vi.fn((clientID) => {
@@ -182,8 +182,8 @@ describe('Command Ports Integration', () => {
   describe('CORE routing to RESOURCE', () => {
     it('should register remote command and emit event when executed', async () => {
       // Setup CORE side
-      const coreCommandService = new CommandService()
-      const corePlayerDirectory: PlayerDirectoryPort = {
+      const coreCommandService = new LocalCommandImplementation()
+      const corePlayerDirectory: Players = {
         getByClient: vi.fn((clientID) => {
           return new Player(
             { clientID, accountID: 'test-account', meta: {} },
@@ -271,7 +271,7 @@ describe('Command Ports Integration', () => {
       expect(mockPort.register).toHaveBeenCalled()
 
       // Works with local implementation
-      const localService = new CommandService()
+      const localService = new LocalCommandImplementation()
       consumer(localService)
 
       // Verify both were called
@@ -280,15 +280,15 @@ describe('Command Ports Integration', () => {
   })
 
   describe('RESOURCE → CORE security validation', () => {
-    let coreCommandService: CommandService
-    let corePlayerDirectory: PlayerDirectoryPort
+    let coreCommandService: LocalCommandImplementation
+    let corePlayerDirectory: Players
     let coreExportController: any
     let mockAccessControl: any
     let mockRateLimiter: any
     let mockEngineEvents: IEngineEvents
 
     beforeEach(() => {
-      coreCommandService = new CommandService()
+      coreCommandService = new LocalCommandImplementation()
       corePlayerDirectory = {
         getByClient: vi.fn((clientID) => {
           const player = new Player(

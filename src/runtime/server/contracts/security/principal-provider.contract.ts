@@ -1,6 +1,6 @@
 import { Server } from '../..'
-import { LinkedID } from '../../services/types/linked-id'
-import { Principal } from './permission.types'
+import { LinkedID } from '../../types/linked-id'
+import { PrincipalType } from '../../types/principal.type'
 
 /**
  * **Authorization**
@@ -25,7 +25,7 @@ export abstract class PrincipalProviderContract {
    * @param player - The active Server Player entity.
    * @returns A Promise resolving to the `Principal` data, or `null` if the player is not authenticated.
    */
-  abstract getPrincipal(player: Server.Player): Promise<Principal | null>
+  abstract getPrincipal(player: Server.Player): Promise<PrincipalType | null>
 
   /**
    * Forces a refresh of the player's permissions from the persistence layer.
@@ -42,5 +42,5 @@ export abstract class PrincipalProviderContract {
    * @param linkedID - The unique linked ID (Account ID).
    * @returns The Principal data or null.
    */
-  abstract getPrincipalByLinkedID(linkedID: LinkedID): Promise<Principal | null>
+  abstract getPrincipalByLinkedID(linkedID: LinkedID): Promise<PrincipalType | null>
 }

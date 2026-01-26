@@ -2,7 +2,7 @@
  * Represents the security identity of a user/player within the framework.
  * This interface bridges the gap between the Core framework and your specific implementation.
  */
-export interface Principal {
+export interface PrincipalType {
   /**
    * Unique identifier for the user (e.g., persistent role ID).
    */

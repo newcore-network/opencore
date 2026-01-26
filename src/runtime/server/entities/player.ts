@@ -6,9 +6,9 @@ import type { PlayerIdentifier } from '../../../adapters/contracts/types/identif
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
-import { LinkedID } from '../services/types/linked-id'
-import { PlayerSession } from '../services/types/player-session.object'
-import { SerializedPlayerData } from '../types/core-exports'
+import { LinkedID } from '../types/linked-id'
+import { PlayerSession } from '../types/player-session.types'
+import { SerializedPlayerData } from '../types/core-exports.types'
 
 /**
  * Adapter bundle for player operations.

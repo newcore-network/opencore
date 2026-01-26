@@ -8,15 +8,15 @@ import { OnNet } from '../decorators/onNet'
 import { Player } from '../entities'
 import { normalizeToAppError } from '../helpers/normalize-app-error'
 import { getRuntimeContext } from '../runtime'
-import { CommandExecutionPort, type CommandInfo } from '../services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
-import { PrincipalPort } from '../services/ports/principal.port'
+import { CommandExecutionPort, type CommandInfo } from '../ports/internal/command-execution.port'
+import { Players } from '../ports/player-directory'
+import { Principal } from '../ports/principal.port'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import {
   CommandRegistrationDto,
   InternalCommandsExports,
   SecurityMetadata,
-} from '../types/core-exports'
+} from '../types/core-exports.types'
 
 /**
  * Command entry for resource-owned commands.
@@ -40,8 +40,8 @@ export class CommandExportController implements InternalCommandsExports {
 
   constructor(
     private commandService: CommandExecutionPort,
-    private playerDirectory: PlayerDirectoryPort,
-    private principalPort: PrincipalPort,
+    private playerDirectory: Players,
+    private principalPort: Principal,
     private rateLimiter: RateLimiterService,
     @inject(CommandErrorObserverContract as any)
     private readonly commandErrorObserver: CommandErrorObserverContract,

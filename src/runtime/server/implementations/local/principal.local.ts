@@ -1,10 +1,10 @@
 import { injectable } from 'tsyringe'
 import { AppError } from '../../../../kernel/error/app.error'
 import { PrincipalProviderContract } from '../../contracts'
-import { Principal } from '../../contracts/security/permission.types'
+import { PrincipalType } from '../../types/principal.type'
 import { GuardOptions } from '../../decorators/guard'
 import { Player } from '../../entities'
-import { PrincipalPort } from '../ports/principal.port'
+import { Principal } from '../../ports/principal.port'
 
 /**
  * Local principal service for CORE/STANDALONE mode.
@@ -14,7 +14,7 @@ import { PrincipalPort } from '../ports/principal.port'
  * convenience methods for permission checking. All operations are performed locally.
  */
 @injectable()
-export class LocalPrincipalService extends PrincipalPort {
+export class LocalPrincipalService extends Principal {
   constructor(private readonly provider: PrincipalProviderContract) {
     super()
   }
@@ -23,11 +23,11 @@ export class LocalPrincipalService extends PrincipalPort {
   // Principal Queries
   // ═══════════════════════════════════════════════════════════════
 
-  async getPrincipal(player: Player): Promise<Principal | null> {
+  async getPrincipal(player: Player): Promise<PrincipalType | null> {
     return await this.provider.getPrincipal(player)
   }
 
-  async getPrincipalByAccountId(accountId: string): Promise<Principal | null> {
+  async getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null> {
     return await this.provider.getPrincipalByLinkedID(accountId)
   }
 

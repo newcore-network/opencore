@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { getRuntimeContext } from '../runtime'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { Players } from '../ports/player-directory'
 import {
   type DIRegistration,
   type HandlerInfo,
@@ -22,8 +22,8 @@ export class StateInspectorService extends IDevModeInspector {
   private exportHandlers = new Map<string, HandlerInfo>()
   private fiveMEventHandlers = new Map<string, HandlerInfo>()
 
-  private get players(): PlayerDirectoryPort {
-    return GLOBAL_CONTAINER.resolve(PlayerDirectoryPort as any)
+  private get players(): Players {
+    return GLOBAL_CONTAINER.resolve(Players as any)
   }
 
   captureSnapshot(): RuntimeSnapshot {

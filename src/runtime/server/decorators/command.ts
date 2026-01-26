@@ -3,7 +3,7 @@ import { ClassConstructor } from '../../../kernel/di/class-constructor'
 import { Player } from '../entities/player'
 import { getParameterNames, getSpreadParameterIndices } from '../helpers/function-helper'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
-import { SecurityMetadata } from '../types/core-exports'
+import { SecurityMetadata } from '../types/core-exports.types'
 
 export interface CommandConfig {
   /**

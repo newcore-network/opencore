@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe'
-import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
-import { loggers } from '../../../../kernel/logger'
-import { emitFrameworkEvent } from '../../bus/internal-event.bus'
-import { PlayerDirectoryPort } from '../ports/player-directory.port'
-import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
+import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import { loggers } from '../../../kernel/logger'
+import { emitFrameworkEvent } from '../bus/internal-event.bus'
+import { Players } from '../ports/player-directory'
+import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
 
 /**
  * Service responsible for recovering player sessions after resource restarts.
@@ -28,7 +28,7 @@ import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.po
 export class SessionRecoveryService {
   constructor(
     private readonly playerServer: IPlayerServer,
-    private readonly playerDirectory: PlayerDirectoryPort,
+    private readonly playerDirectory: Players,
     private readonly playerSessionLifecycle: PlayerSessionLifecyclePort,
   ) {}
 

@@ -10,7 +10,7 @@ import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer
 import type { PlayerIdentifier } from '../../src/adapters/contracts/types/identifier'
 import { Vector3 } from '../../src/kernel'
 import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
-import type { PlayerSession } from '../../src/runtime/server/services/types/player-session.object'
+import type { PlayerSession } from '../../src/runtime/server/types/player-session.types'
 
 /**
  * Mock implementation of IPlayerInfo for testing.

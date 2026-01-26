@@ -1,6 +1,6 @@
-import { Principal } from '../../contracts/security/permission.types'
-import { GuardOptions } from '../../decorators/guard'
-import { Player } from '../../entities'
+import { PrincipalType } from '../types/principal.type'
+import { GuardOptions } from '../decorators/guard'
+import { Player } from '../entities'
 
 /**
  * Core port that provides access to player authorization and permissions.
@@ -28,7 +28,7 @@ import { Player } from '../../entities'
  * }
  * ```
  */
-export abstract class PrincipalPort {
+export abstract class Principal {
   // ═══════════════════════════════════════════════════════════════
   // Principal Queries
   // ═══════════════════════════════════════════════════════════════
@@ -39,7 +39,7 @@ export abstract class PrincipalPort {
    * @param player - The player entity
    * @returns Principal data or null if not authenticated
    */
-  abstract getPrincipal(player: Player): Promise<Principal | null>
+  abstract getPrincipal(player: Player): Promise<PrincipalType | null>
 
   /**
    * Gets Principal by account ID (works for offline players too).
@@ -47,7 +47,7 @@ export abstract class PrincipalPort {
    * @param accountId - Account identifier
    * @returns Principal data or null
    */
-  abstract getPrincipalByAccountId(accountId: string): Promise<Principal | null>
+  abstract getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null>
 
   /**
    * Forces a refresh of the player's permissions from persistence.

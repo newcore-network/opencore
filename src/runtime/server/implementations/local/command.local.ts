@@ -4,7 +4,7 @@ import { loggers } from '../../../../kernel/logger'
 import { CommandMetadata } from '../../decorators/command'
 import { Player } from '../../entities'
 import { validateAndExecuteCommand } from '../../helpers/command-validation.helper'
-import { CommandExecutionPort, type CommandInfo } from '../ports/command-execution.port'
+import { CommandExecutionPort, type CommandInfo } from '../../ports/internal/command-execution.port'
 
 /**
  * Local command execution service (CORE/STANDALONE modes).
@@ -20,7 +20,7 @@ import { CommandExecutionPort, type CommandInfo } from '../ports/command-executi
  * - Coerces argument types before invoking handlers
  */
 @injectable()
-export class CommandService extends CommandExecutionPort {
+export class LocalCommandImplementation extends CommandExecutionPort {
   private commands = new Map<
     string,
     { meta: CommandMetadata; handler: (...args: any[]) => any; isPublic: boolean }

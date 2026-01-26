@@ -11,7 +11,7 @@ import {
   VehicleCreateOptions,
   VehicleSpawnResult,
 } from '../types/vehicle.types'
-import { PlayerDirectoryPort } from './ports/player-directory.port'
+import { Players } from '../ports/player-directory'
 
 /**
  * Server-side service for managing vehicle entities.
@@ -39,7 +39,7 @@ export class VehicleService {
   private readonly vehicleAdapters: VehicleAdapters
 
   constructor(
-    @inject(PlayerDirectoryPort as any) private readonly playerDirectory: PlayerDirectoryPort,
+    @inject(Players as any) private readonly playerDirectory: Players,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
     @inject(IHasher as any) private readonly hasher: IHasher,

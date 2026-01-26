@@ -9,12 +9,6 @@ export interface PlayerSessionDestroyedPayload {
   clientId: number
 }
 
-export interface TransferCompletedPayload {
-  playerId: number
-  amount: number
-  targetId: number
-}
-
 export interface PlayerFullyConnectedPayload {
   player: Player
 }
@@ -25,10 +19,9 @@ export interface PlayerSessionRecoveredPayload {
   license: string | undefined
 }
 
-export type InternalEventMap = {
+export type FrameworkEventsMap = {
   'internal:playerSessionCreated': PlayerSessionCreatedPayload
   'internal:playerSessionDestroyed': PlayerSessionDestroyedPayload
-  'internal:transfer:completed': TransferCompletedPayload
   'internal:playerFullyConnected': PlayerFullyConnectedPayload
   'internal:playerSessionRecovered': PlayerSessionRecoveredPayload
 }

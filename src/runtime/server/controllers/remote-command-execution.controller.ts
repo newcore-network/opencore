@@ -6,8 +6,8 @@ import { CommandErrorObserverContract } from '../contracts/security/command-erro
 import { Controller } from '../decorators'
 import { normalizeToAppError } from '../helpers/normalize-app-error'
 import { getRuntimeContext } from '../runtime'
-import { CommandExecutionPort } from '../services/ports/command-execution.port'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { CommandExecutionPort } from '../ports/internal/command-execution.port'
+import { Players } from '../ports/player-directory'
 
 /**
  * Controller for executing remote commands in RESOURCE mode.
@@ -29,7 +29,7 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 export class RemoteCommandExecutionController {
   constructor(
     @inject(CommandExecutionPort as any) private commandService: CommandExecutionPort,
-    @inject(PlayerDirectoryPort as any) private playerDirectory: PlayerDirectoryPort,
+    @inject(Players as any) private playerDirectory: Players,
     @inject(CommandErrorObserverContract as any)
     private readonly commandErrorObserver: CommandErrorObserverContract,
     @inject(IEngineEvents as any) private engineEvents: IEngineEvents,

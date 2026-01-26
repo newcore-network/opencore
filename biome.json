@@ -15,7 +15,12 @@
   },
 
   "assist": {
-    "enabled": true
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "off"
+      }
+    }
   },
 
   "linter": {

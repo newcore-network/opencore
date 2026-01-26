@@ -14,7 +14,7 @@ import { NetEventOptions } from '../../decorators'
 import { Player } from '../../entities'
 import { processTupleSchema } from '../../helpers/process-tuple-schema'
 import { resolveMethod } from '../../helpers/resolve-method'
-import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
+import { Players } from '../../ports/player-directory'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
 
@@ -24,7 +24,7 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    @inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort,
+    @inject(Players as any) private playerService: Players,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,

@@ -1,10 +1,10 @@
 import { inject } from 'tsyringe'
 import { AppError } from '../../../kernel/error/app.error'
-import { Principal, PrincipalProviderContract } from '../contracts/index'
+import { PrincipalType, PrincipalProviderContract } from '../contracts/index'
 import { Export } from '../decorators/export'
 import { GuardOptions } from '../decorators/guard'
 import { Controller } from '../decorators/index'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { Players } from '../ports/player-directory'
 
 /**
  * Exports principal/permission functionality for RESOURCE mode access.
@@ -19,8 +19,8 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 @Controller()
 export class PrincipalExportController {
   constructor(
-    @inject(PlayerDirectoryPort as any)
-    private readonly playerService: PlayerDirectoryPort,
+    @inject(Players as any)
+    private readonly playerService: Players,
     @inject(PrincipalProviderContract as any)
     private readonly principalProvider: PrincipalProviderContract,
   ) {}
@@ -33,7 +33,7 @@ export class PrincipalExportController {
    * Gets the full Principal object for a player.
    */
   @Export()
-  async getPrincipal(source: number): Promise<Principal | null> {
+  async getPrincipal(source: number): Promise<PrincipalType | null> {
     const player = this.playerService.getByClient(source)
     if (!player) return null
     return await this.principalProvider.getPrincipal(player)
@@ -43,7 +43,7 @@ export class PrincipalExportController {
    * Gets Principal by account ID (works for offline players too).
    */
   @Export()
-  async getPrincipalByAccountId(accountId: string): Promise<Principal | null> {
+  async getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null> {
     return await this.principalProvider.getPrincipalByLinkedID(accountId)
   }
 

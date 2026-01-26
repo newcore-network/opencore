@@ -7,7 +7,7 @@ import type { SecurityHandlerContract } from '../../../src/runtime/server/contra
 import { OnNet } from '../../../src/runtime/server/decorators/onNet'
 import { Public } from '../../../src/runtime/server/decorators/public'
 import type { Player } from '../../../src/runtime/server/entities'
-import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
+import type { Players } from '../../../src/runtime/server/ports/player-directory'
 import { METADATA_KEYS } from '../../../src/runtime/server/system/metadata-server.keys'
 import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 
@@ -45,7 +45,7 @@ function waitForEventProcessing(): Promise<void> {
 
 describe('NetEventProcessor Node Runtime Flow', () => {
   let transport: NodeNetTransport
-  let mockPlayerService: PlayerDirectoryPort
+  let mockPlayerService: Players
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
   let processor: NetEventProcessor

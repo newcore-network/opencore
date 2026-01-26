@@ -2,15 +2,15 @@ import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { IPlayerServer } from '../../../../src/adapters/contracts/server/IPlayerServer'
 import { Player } from '../../../../src/runtime/server/entities/player'
-import { SessionRecoveryService } from '../../../../src/runtime/server/services/core/session-recovery.service'
-import { PlayerDirectoryPort } from '../../../../src/runtime/server/services/ports/player-directory.port'
-import { PlayerSessionLifecyclePort } from '../../../../src/runtime/server/services/ports/player-session-lifecycle.port'
+import { SessionRecoveryService } from '../../../../src/runtime/server/services/session-recovery.local'
+import { Players } from '../../../../src/runtime/server/ports/player-directory'
+import { PlayerSessionLifecyclePort } from '../../../../src/runtime/server/ports/player-session-lifecycle.port'
 import { createMockPlayerAdapters, MockPlayerServer } from '../../../helpers/player.helper'
 
 describe('SessionRecoveryService', () => {
   let recoveryService: SessionRecoveryService
   let mockPlayerServer: MockPlayerServer
-  let mockPlayerDirectory: PlayerDirectoryPort
+  let mockPlayerDirectory: Players
   let mockPlayerSessionLifecycle: PlayerSessionLifecyclePort
   let boundPlayers: Map<number, Player>
 
@@ -30,7 +30,7 @@ describe('SessionRecoveryService', () => {
       getByAccountId: vi.fn(),
       getPlayerCount: vi.fn(() => boundPlayers.size),
       isOnline: vi.fn(),
-    } as unknown as PlayerDirectoryPort
+    } as unknown as Players
 
     // Mock PlayerSessionLifecycle
     mockPlayerSessionLifecycle = {
