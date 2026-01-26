@@ -2,8 +2,8 @@ import { injectable } from 'tsyringe'
 import {
   type NetEventInvalidPayloadContext,
   NetEventSecurityObserverContract,
-} from '../../contracts/security/net-event-security-observer.contract'
-import { Player } from '../../entities/player'
+} from '../contracts/security/net-event-security-observer.contract'
+import { Player } from '../entities/player'
 
 /**
  * Default net-event security observer.
