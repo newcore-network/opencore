@@ -3,7 +3,7 @@ import { RGB } from '../../../kernel/utils/rgb'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { Chat } from '../apis'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 
 @Controller()
 export class ChatController {

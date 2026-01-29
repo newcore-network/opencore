@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { coreLogger } from '../../../kernel/logger'
 import { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
-import { VehicleService } from './vehicle.service'
+import { Vehicles } from './vehicles.api'
 
 /**
  * Service for handling vehicle modifications with validation.
@@ -16,8 +16,8 @@ import { VehicleService } from './vehicle.service'
  * - Audit logging
  */
 @injectable()
-export class VehicleModificationService {
-  constructor(@inject(VehicleService) private readonly vehicleService: VehicleService) {}
+export class VehicleModification {
+  constructor(@inject(Vehicles) private readonly vehicleService: Vehicles) {}
 
   /**
    * Applies modifications to a vehicle with validation.

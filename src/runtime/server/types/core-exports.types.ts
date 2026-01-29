@@ -1,4 +1,4 @@
-import { PrincipalType } from './principal.type'
+import { Principal } from './principal.type'
 import { GuardOptions } from '../decorators/guard'
 import { StateRequirement } from '../decorators/requiresState'
 import { ThrottleOptions } from '../decorators/throttle'
@@ -98,7 +98,7 @@ export interface InternalPrincipalExports {
    * @param source - FiveM client/server ID
    * @returns Principal data or null if not authenticated
    */
-  getPrincipal(source: number): Promise<PrincipalType | null>
+  getPrincipal(source: number): Promise<Principal | null>
 
   /**
    * Gets Principal by account ID (works for offline players too).
@@ -106,7 +106,7 @@ export interface InternalPrincipalExports {
    * @param accountId - Account identifier
    * @returns Principal data or null
    */
-  getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null>
+  getPrincipalByAccountId(accountId: string): Promise<Principal | null>
 
   /**
    * Forces a refresh of the player's permissions from persistence.

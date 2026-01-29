@@ -7,7 +7,7 @@ import { loggers } from '../../../../kernel/logger'
 import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { InternalPlayerExports, SerializedPlayerData } from '../../types/core-exports.types'
-import { Players } from '../../ports/player-directory'
+import { Players } from '../../ports/players.api-port'
 
 /**
  * Player service implementation for `RESOURCE` mode.

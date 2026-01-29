@@ -1,4 +1,4 @@
-import { PrincipalType } from '../types/principal.type'
+import { Principal } from '../types/principal.type'
 import { GuardOptions } from '../decorators/guard'
 import { Player } from '../entities'
 
@@ -28,7 +28,7 @@ import { Player } from '../entities'
  * }
  * ```
  */
-export abstract class Principal {
+export abstract class Authorization {
   // ═══════════════════════════════════════════════════════════════
   // Principal Queries
   // ═══════════════════════════════════════════════════════════════
@@ -39,7 +39,7 @@ export abstract class Principal {
    * @param player - The player entity
    * @returns Principal data or null if not authenticated
    */
-  abstract getPrincipal(player: Player): Promise<PrincipalType | null>
+  abstract getPrincipal(player: Player): Promise<Principal | null>
 
   /**
    * Gets Principal by account ID (works for offline players too).
@@ -47,7 +47,7 @@ export abstract class Principal {
    * @param accountId - Account identifier
    * @returns Principal data or null
    */
-  abstract getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null>
+  abstract getPrincipalByAccountId(accountId: string): Promise<Principal | null>
 
   /**
    * Forces a refresh of the player's permissions from persistence.

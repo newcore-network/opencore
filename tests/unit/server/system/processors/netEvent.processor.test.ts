@@ -5,7 +5,7 @@ import type { NetEventSecurityObserverContract } from '../../../../../src/runtim
 import type { SecurityHandlerContract } from '../../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../../../src/runtime/server/decorators/onNet'
 import type { Player } from '../../../../../src/runtime/server/entities'
-import type { Players } from '../../../../../src/runtime/server/ports/player-directory'
+import type { Players } from '../../../../../src/runtime/server/ports/players.api-port'
 import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
 import { NetEventProcessor } from '../../../../../src/runtime/server/system/processors/netEvent.processor'
 

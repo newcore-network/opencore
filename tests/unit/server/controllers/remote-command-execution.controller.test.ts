@@ -5,7 +5,7 @@ import type { IResourceInfo } from '../../../../src/adapters/contracts/IResource
 import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
 import type { CommandExecutionPort } from '../../../../src/runtime/server/ports/command-execution.port'
-import type { Players } from '../../../../src/runtime/server/ports/player-directory'
+import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { createTestPlayer } from '../../../helpers'
 
 vi.mock('../../../../src/runtime/server/runtime', () => ({

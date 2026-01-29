@@ -6,7 +6,7 @@ import { OnRuntimeEvent } from '../decorators/onRuntimeEvent'
 import { PlayerPersistenceService } from '../services/persistence.service'
 import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
 import { PlayerFullyConnectedPayload } from '../types/framework-events.types'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 
 @Controller()
 export class SessionController {

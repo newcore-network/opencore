@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../kernel/logger'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
 
 /**

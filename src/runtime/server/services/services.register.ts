@@ -12,9 +12,9 @@ import { SessionRecoveryService } from './session-recovery.local'
 import { DefaultPrincipalProvider } from '../default/default-principal.provider'
 import { PlayerPersistenceService } from './persistence.service'
 import { CommandExecutionPort } from '../ports/internal/command-execution.port'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
-import { Principal } from '../ports/principal.port'
+import { Authorization } from '../ports/authorization.api-port'
 import { RemoteCommandImplementation } from '../implementations/remote/command.remote'
 import { RemotePlayerImplementation } from '../implementations/remote/player.remote'
 import { RemotePrincipalImplementation } from '../implementations/remote/principal.remote'
@@ -76,10 +76,10 @@ export function registerServicesServer(ctx: RuntimeContext) {
         )
       }
       GLOBAL_CONTAINER.registerSingleton(LocalPrincipalService)
-      GLOBAL_CONTAINER.register(Principal as any, { useToken: LocalPrincipalService })
+      GLOBAL_CONTAINER.register(Authorization as any, { useToken: LocalPrincipalService })
     } else {
       // RESOURCE: Remote principal service delegates to CORE
-      GLOBAL_CONTAINER.registerSingleton(Principal as any, RemotePrincipalImplementation)
+      GLOBAL_CONTAINER.registerSingleton(Authorization as any, RemotePrincipalImplementation)
     }
   }
 

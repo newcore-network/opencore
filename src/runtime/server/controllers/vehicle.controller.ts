@@ -1,7 +1,7 @@
 import { inject } from 'tsyringe'
 import { Controller, OnNet } from '../decorators'
 import { Player } from '../entities/player'
-import { VehicleService } from '../services/vehicle.service'
+import { Vehicles } from '../apis/vehicles.api'
 
 /**
  * Controller for handling vehicle-related network events.
@@ -11,7 +11,7 @@ import { VehicleService } from '../services/vehicle.service'
  */
 @Controller()
 export class VehicleController {
-  constructor(@inject(VehicleService) private readonly vehicleService: VehicleService) {}
+  constructor(@inject(Vehicles) private readonly vehicleService: Vehicles) {}
   /**
    * Handles client request to get vehicle data.
    */

@@ -1,7 +1,7 @@
 import { inject } from 'tsyringe'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 import { InternalPlayerExports, SerializedPlayerData } from '../types/core-exports.types'
 import { LinkedID } from '../services'
 

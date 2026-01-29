@@ -7,7 +7,7 @@ import { loggers } from '../../../../kernel/logger'
 import { BaseEntity } from '../../../core/entity'
 import { WorldContext } from '../../../core/world'
 import { Player, type PlayerAdapters } from '../../entities'
-import { Players } from '../../ports/player-directory'
+import { Players } from '../../ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../../ports/internal/player-session-lifecycle.port'
 import { PlayerSession } from '../../types/player-session.types'
 

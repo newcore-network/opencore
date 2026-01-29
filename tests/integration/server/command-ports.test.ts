@@ -7,7 +7,7 @@ import type { CommandMetadata } from '../../../src/runtime/server/decorators/com
 import { Player } from '../../../src/runtime/server/entities/player'
 import { LocalCommandImplementation } from '../../../src/runtime/server/implementations/local/command.local'
 import type { CommandExecutionPort } from '../../../src/runtime/server/ports/command-execution.port'
-import type { Players } from '../../../src/runtime/server/ports/player-directory'
+import type { Players } from '../../../src/runtime/server/ports/players.api-port'
 import { createMockPlayerAdapters } from '../../helpers'
 
 // Mock getRuntimeContext

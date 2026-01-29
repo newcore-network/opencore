@@ -7,7 +7,7 @@ import { Controller } from '../decorators'
 import { normalizeToAppError } from '../helpers/normalize-app-error'
 import { getRuntimeContext } from '../runtime'
 import { CommandExecutionPort } from '../ports/internal/command-execution.port'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 
 /**
  * Controller for executing remote commands in RESOURCE mode.

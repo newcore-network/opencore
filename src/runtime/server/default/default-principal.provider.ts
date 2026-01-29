@@ -1,6 +1,6 @@
 import { injectable } from 'tsyringe'
 import { Server } from '../services'
-import { PrincipalType } from '../types/principal.type'
+import { Principal } from '../types/principal.type'
 import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { LinkedID } from '../types/linked-id'
 
@@ -10,7 +10,7 @@ import { LinkedID } from '../types/linked-id'
  */
 @injectable()
 export class DefaultPrincipalProvider extends PrincipalProviderContract {
-  async getPrincipal(player: Server.Player): Promise<PrincipalType | null> {
+  async getPrincipal(player: Server.Player): Promise<Principal | null> {
     return {
       id: player.accountID || player.clientID.toString(),
       permissions: [],
@@ -22,7 +22,7 @@ export class DefaultPrincipalProvider extends PrincipalProviderContract {
     // No-op
   }
 
-  async getPrincipalByLinkedID(linkedID: LinkedID): Promise<PrincipalType | null> {
+  async getPrincipalByLinkedID(linkedID: LinkedID): Promise<Principal | null> {
     return {
       id: String(linkedID),
       permissions: [],

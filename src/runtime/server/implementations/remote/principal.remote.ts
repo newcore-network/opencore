@@ -1,11 +1,11 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters'
-import { PrincipalType } from '../../types/principal.type'
+import { Principal } from '../../types/principal.type'
 import { GuardOptions } from '../../decorators/guard'
 import { Player } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { InternalPrincipalExports } from '../../types/core-exports.types'
-import { Principal } from '../../ports/principal.port'
+import { Authorization } from '../../ports/authorization.api-port'
 
 /**
  * Principal service implementation for `RESOURCE` mode.
@@ -16,7 +16,7 @@ import { Principal } from '../../ports/principal.port'
  * transparent usage regardless of whether running in CORE or RESOURCE mode.
  */
 @injectable()
-export class RemotePrincipalImplementation extends Principal {
+export class RemotePrincipalImplementation extends Authorization {
   constructor(@inject(IExports as any) private readonly exportsService: IExports) {
     super()
   }
@@ -42,11 +42,11 @@ export class RemotePrincipalImplementation extends Principal {
   // Principal Queries
   // ═══════════════════════════════════════════════════════════════
 
-  async getPrincipal(player: Player): Promise<PrincipalType | null> {
+  async getPrincipal(player: Player): Promise<Principal | null> {
     return await this.core.getPrincipal(player.clientID)
   }
 
-  async getPrincipalByAccountId(accountId: string): Promise<PrincipalType | null> {
+  async getPrincipalByAccountId(accountId: string): Promise<Principal | null> {
     return await this.core.getPrincipalByAccountId(accountId)
   }
 

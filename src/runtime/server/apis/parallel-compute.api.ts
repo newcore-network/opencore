@@ -15,7 +15,7 @@
 
 import { injectable } from 'tsyringe'
 import { v4 as uuid } from 'uuid'
-import { Vector3 } from '../../../../kernel'
+import { Vector3 } from '../../../kernel'
 import {
   ParallelComputeMetrics,
   ParallelTask,
@@ -23,8 +23,17 @@ import {
   TaskResult,
   WorkerMessage,
   WorkerPoolConfig,
-} from './types'
-import { WorkerPool } from './worker-pool'
+} from '../services/parallel/types'
+export {
+  ParallelComputeMetrics,
+  ParallelTask,
+  ParallelTaskOptions,
+  TaskResult,
+  WorkerMessage,
+  WorkerPoolConfig,
+} from '../services/parallel/types'
+import { WorkerPool } from '../services/parallel/worker-pool'
+export { WorkerPool } from '../services/parallel/worker-pool'
 
 const DEFAULT_WORKER_THRESHOLD = 10000
 
@@ -32,7 +41,7 @@ const DEFAULT_WORKER_THRESHOLD = 10000
  * Service for managing parallel computation
  */
 @injectable()
-export class ParallelComputeService {
+export class ParallelCompute {
   private pool: WorkerPool | null = null
   private metrics: ParallelComputeMetrics = {
     totalTasks: 0,
@@ -288,14 +297,14 @@ export class ParallelComputeService {
 // Standalone Functions (no DI required)
 // ─────────────────────────────────────────────────────────────────────────────
 
-let globalService: ParallelComputeService | null = null
+let globalService: ParallelCompute | null = null
 
 /**
  * Get or create the global ParallelCompute service instance
  */
-export function getParallelComputeService(): ParallelComputeService {
+export function getParallelComputeService(): ParallelCompute {
   if (!globalService) {
-    globalService = new ParallelComputeService()
+    globalService = new ParallelCompute()
   }
   return globalService
 }

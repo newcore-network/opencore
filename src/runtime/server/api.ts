@@ -6,8 +6,8 @@ export { init } from './core'
 export * from './apis'
 export * from './decorators'
 export * from './contracts'
-export * from './ports/player-directory'
-export * from './ports/principal.port'
+export * from './ports/players.api-port'
+export * from './ports/authorization.api-port'
 
 // DevMode (development tools)
 export * from './devmode'

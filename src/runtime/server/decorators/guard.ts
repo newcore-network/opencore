@@ -2,7 +2,7 @@ import { AppError } from '../../../kernel'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/logger'
 import { Server } from '..'
-import { Principal } from '../ports/principal.port'
+import { Authorization } from '../ports/authorization.api-port'
 
 export interface GuardOptions {
   /**
@@ -23,7 +23,7 @@ export interface GuardOptions {
  * @remarks
  * `@Guard()` protects a method by enforcing rank and/or permission requirements before executing it.
  *
- * Requirements are evaluated through {@link Principal}, which determines whether the
+ * Requirements are evaluated through {@link Authorization}, which determines whether the
  * player (first argument of the method) is authorized to perform the action.
  *
  * Notes:
@@ -77,7 +77,7 @@ export function Guard(options: GuardOptions) {
         throw new Error('Guard Security Error: Context is not a player')
       }
 
-      const principal = GLOBAL_CONTAINER.resolve(Principal as any) as Principal
+      const principal = GLOBAL_CONTAINER.resolve(Authorization as any) as Authorization
       try {
         await principal.enforce(player, options)
       } catch (error) {

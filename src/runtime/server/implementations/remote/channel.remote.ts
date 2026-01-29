@@ -7,7 +7,7 @@ import { Channel } from '../../entities/channel'
 import { Player } from '../../entities/player'
 import { getRuntimeContext } from '../../runtime'
 import { ChannelMetadata, ChannelType, IChannelValidator } from '../../types/channel.types'
-import { Players } from '../../ports/player-directory'
+import { Players } from '../../ports/players.api-port'
 
 /**
  * Channel exports interface from CORE.

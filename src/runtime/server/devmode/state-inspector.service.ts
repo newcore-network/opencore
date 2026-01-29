@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { getRuntimeContext } from '../runtime'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 import {
   type DIRegistration,
   type HandlerInfo,

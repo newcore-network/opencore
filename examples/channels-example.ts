@@ -1,7 +1,7 @@
 import { Controller, Command, OnNet, Guard } from '../src/runtime/server/decorators'
 import { Server } from '../src/runtime/server'
 import { Channels } from '../src/runtime/server/apis/channel.api'
-import { Players } from '../src/runtime/server/ports/player-directory'
+import { Players } from '../src/runtime/server/ports/players.api-port'
 import { ChannelType } from '../src/runtime/server/types/channel.types'
 
 @Controller()

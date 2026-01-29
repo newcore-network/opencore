@@ -11,7 +11,7 @@ import {
   VehicleCreateOptions,
   VehicleSpawnResult,
 } from '../types/vehicle.types'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 
 /**
  * Server-side service for managing vehicle entities.
@@ -27,7 +27,7 @@ import { Players } from '../ports/player-directory'
  * Uses CreateVehicleServerSetter for server-authoritative spawning.
  */
 @injectable()
-export class VehicleService {
+export class Vehicles {
   /**
    * Internal registry of all managed vehicles indexed by Network ID
    */

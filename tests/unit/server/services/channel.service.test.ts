@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { INetTransport } from '../../../../src/adapters/contracts/INetTransport'
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { Channels } from '../../../../src/runtime/server/apis/channel.api'
-import { Players } from '../../../../src/runtime/server/ports/player-directory'
+import { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { ChannelType } from '../../../../src/runtime/server/types/channel.types'
 
 describe('ChannelService', () => {

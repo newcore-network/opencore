@@ -4,7 +4,7 @@ import { RGB } from '../../../kernel/utils/rgb'
 import { Controller, Export } from '../decorators'
 import { OnRuntimeEvent } from '../decorators/onRuntimeEvent'
 import { Channels } from '../apis/channel.api'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 import { ChannelMetadata, ChannelType } from '../types/channel.types'
 
 /**

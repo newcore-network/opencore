@@ -4,7 +4,7 @@ import { RGB } from '../../../kernel/utils/rgb'
 import { Channel } from '../entities/channel'
 import { Player } from '../entities/player'
 import { ChannelMetadata, ChannelType, IChannelValidator } from '../types/channel.types'
-import { Players } from '../ports/player-directory'
+import { Players } from '../ports/players.api-port'
 
 /**
  * Service for managing communication channels between players.

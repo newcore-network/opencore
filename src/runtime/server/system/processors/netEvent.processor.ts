@@ -14,7 +14,7 @@ import { NetEventOptions } from '../../decorators'
 import { Player } from '../../entities'
 import { processTupleSchema } from '../../helpers/process-tuple-schema'
 import { resolveMethod } from '../../helpers/resolve-method'
-import { Players } from '../../ports/player-directory'
+import { Players } from '../../ports/players.api-port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
 

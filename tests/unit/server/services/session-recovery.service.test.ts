@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { IPlayerServer } from '../../../../src/adapters/contracts/server/IPlayerServer'
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { SessionRecoveryService } from '../../../../src/runtime/server/services/session-recovery.local'
-import { Players } from '../../../../src/runtime/server/ports/player-directory'
+import { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../../../../src/runtime/server/ports/player-session-lifecycle.port'
 import { createMockPlayerAdapters, MockPlayerServer } from '../../../helpers/player.helper'
 

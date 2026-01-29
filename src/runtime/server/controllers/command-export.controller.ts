@@ -9,8 +9,8 @@ import { Player } from '../entities'
 import { normalizeToAppError } from '../helpers/normalize-app-error'
 import { getRuntimeContext } from '../runtime'
 import { CommandExecutionPort, type CommandInfo } from '../ports/internal/command-execution.port'
-import { Players } from '../ports/player-directory'
-import { Principal } from '../ports/principal.port'
+import { Players } from '../ports/players.api-port'
+import { Authorization } from '../ports/authorization.api-port'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import {
   CommandRegistrationDto,
@@ -41,7 +41,7 @@ export class CommandExportController implements InternalCommandsExports {
   constructor(
     private commandService: CommandExecutionPort,
     private playerDirectory: Players,
-    private principalPort: Principal,
+    private principalPort: Authorization,
     private rateLimiter: RateLimiterService,
     @inject(CommandErrorObserverContract as any)
     private readonly commandErrorObserver: CommandErrorObserverContract,
