@@ -1,18 +1,3 @@
-/**
- * ParallelCompute Service
- *
- * Provides an ergonomic API for parallel computation.
- * Uses native `node:worker_threads` to run CPU-bound work off the main thread.
- *
- * Automatically decides whether to run synchronously or in a worker
- * based on estimated computational cost.
- *
- * Requirements/limitations:
- * - The compute function is serialized with `Function#toString()`.
- * - The compute function must be pure (no closures / no external references).
- * - Inputs/outputs must be structured-cloneable.
- */
-
 import { injectable } from 'tsyringe'
 import { v4 as uuid } from 'uuid'
 import { Vector3 } from '../../../kernel'
@@ -23,17 +8,8 @@ import {
   TaskResult,
   WorkerMessage,
   WorkerPoolConfig,
-} from '../services/parallel/types'
-export {
-  ParallelComputeMetrics,
-  ParallelTask,
-  ParallelTaskOptions,
-  TaskResult,
-  WorkerMessage,
-  WorkerPoolConfig,
-} from '../services/parallel/types'
+} from '../types/parallel.types'
 import { WorkerPool } from '../services/parallel/worker-pool'
-export { WorkerPool } from '../services/parallel/worker-pool'
 
 const DEFAULT_WORKER_THRESHOLD = 10000
 
