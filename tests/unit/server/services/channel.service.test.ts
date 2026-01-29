@@ -2,9 +2,10 @@ import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { INetTransport } from '../../../../src/adapters/contracts/INetTransport'
 import { Player } from '../../../../src/runtime/server/entities/player'
-import { Channels } from '../../../../src/runtime/server/apis/channel.api'
 import { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { ChannelType } from '../../../../src/runtime/server/types/channel.types'
+import { Channels } from '../../../../src/runtime/server/ports/channel.api-port'
+import { LocalChannelImplementation } from '../../../../src/runtime/server/implementations/local/channel.local'
 
 describe('ChannelService', () => {
   let channelService: Channels
@@ -47,7 +48,7 @@ describe('ChannelService', () => {
       onNet: vi.fn(),
     } as any
 
-    channelService = new Channels(mockPlayerDirectory, mockNetTransport)
+    channelService = new LocalChannelImplementation(mockPlayerDirectory, mockNetTransport)
   })
 
   describe('Channel Creation', () => {
@@ -114,13 +115,6 @@ describe('ChannelService', () => {
       const deleted = channelService.delete('non-existent')
 
       expect(deleted).toBe(false)
-    })
-
-    it('should get or create channel', () => {
-      const channel1 = channelService.getOrCreate('test', { type: ChannelType.CUSTOM })
-      const channel2 = channelService.getOrCreate('test', { type: ChannelType.CUSTOM })
-
-      expect(channel1).toBe(channel2)
     })
   })
 

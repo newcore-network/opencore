@@ -1,6 +1,6 @@
 import { Player } from './player'
 import { ChannelMetadata, ChannelSubscription, ChannelType } from '../types/channel.types'
-import { loggers } from 'src/kernel'
+import { loggers } from '../../../kernel/logger'
 
 export class Channel {
   private subscribers: Map<number, ChannelSubscription> = new Map()

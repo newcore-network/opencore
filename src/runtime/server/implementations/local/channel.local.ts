@@ -1,4 +1,4 @@
-import { INetTransport } from 'src/adapters'
+import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { RGB } from 'src/kernel'
 import { inject } from 'tsyringe'
 import { Channel, Player } from '../../entities'

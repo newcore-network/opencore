@@ -100,16 +100,6 @@ export class Player extends BaseEntity implements Spatial {
   // ─────────────────────────────────────────────────────────────────
 
   /**
-   * Retrieves all platform identifiers associated with the player.
-   *
-   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
-   * @returns An array of identifier strings (e.g., `['steam:11000...', 'license:2332...']`).
-   */
-  getIdentifiers(): string[] {
-    return this.adapters.playerServer.getIdentifiers(this.clientID.toString())
-  }
-
-  /**
    * Retrieves all identifiers as structured objects.
    *
    * @returns An array of PlayerIdentifier objects with type, value, and raw fields.

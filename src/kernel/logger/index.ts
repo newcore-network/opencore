@@ -1,5 +1,3 @@
-// Types
-
 // Core Logger (internal framework use)
 export { coreLogger, loggers } from './core-logger'
 export type { LoggerConfig } from './logger.config'
