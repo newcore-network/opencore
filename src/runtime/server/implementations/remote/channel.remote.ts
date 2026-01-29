@@ -2,24 +2,18 @@ import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters/contracts/IExports'
 import { loggers } from '../../../../kernel/logger'
 import { RGB } from '../../../../kernel/utils/rgb'
-import { Channels } from '../../apis/channel.api'
 import { Channel } from '../../entities/channel'
 import { Player } from '../../entities/player'
 import { getRuntimeContext } from '../../runtime'
 import { ChannelMetadata, ChannelType, IChannelValidator } from '../../types/channel.types'
 import { Players } from '../../ports/players.api-port'
+import { Channels } from '../../api'
 
 /**
  * Channel exports interface from CORE.
  */
 interface CoreChannelExports {
   createChannel(
-    channelId: string,
-    metadata: ChannelMetadata,
-    maxSubscribers?: number,
-    resourceName?: string,
-  ): boolean
-  getOrCreateChannel(
     channelId: string,
     metadata: ChannelMetadata,
     maxSubscribers?: number,
@@ -74,9 +68,9 @@ export class RemoteChannelImplementation extends Channels {
 
   constructor(
     @inject(IExports as any) private exportsService: IExports,
-    playerDirectory: Players,
+    private readonly players: Players,
   ) {
-    super(playerDirectory, null as any)
+    super()
     this.resourceName = GetCurrentResourceName()
   }
 
@@ -108,11 +102,6 @@ export class RemoteChannelImplementation extends Channels {
       throw new Error(`Failed to create channel '${id}' in CORE`)
     }
     loggers.api.debug(`Channel '${id}' created in CORE from resource '${this.resourceName}'`)
-    return new Channel(id, metadata, maxSubscribers)
-  }
-
-  getOrCreate(id: string, metadata: ChannelMetadata, maxSubscribers?: number): Channel {
-    this.core.getOrCreateChannel(id, metadata, maxSubscribers, this.resourceName)
     return new Channel(id, metadata, maxSubscribers)
   }
 
@@ -149,9 +138,7 @@ export class RemoteChannelImplementation extends Channels {
 
   getSubscribers(channelId: string): Player[] {
     const clientIDs = this.core.getChannelSubscribers(channelId)
-    return clientIDs
-      .map((id) => this['playerDirectory'].getByClient(id))
-      .filter((p) => p !== undefined)
+    return clientIDs.map((id) => this.players.getByClient(id)).filter((p) => p !== undefined)
   }
 
   // ═══════════════════════════════════════════════════════════════

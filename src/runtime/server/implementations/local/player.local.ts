@@ -10,6 +10,7 @@ import { Player, type PlayerAdapters } from '../../entities'
 import { Players } from '../../ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../../ports/internal/player-session-lifecycle.port'
 import { PlayerSession } from '../../types/player-session.types'
+import { LinkedID } from '../../services'
 
 /**
  * Service responsible for managing the lifecycle of player sessions.
@@ -121,7 +122,7 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
    * @param clientID - The FiveM server ID to look up.
    * @returns The bound Account ID (string/UUID) if the player is logged in, or `null` otherwise.
    */
-  getAccountLinked(clientID: number): string | undefined {
+  getAccountLinked(clientID: number): LinkedID | undefined {
     return this.getByClient(clientID)?.accountID
   }
 

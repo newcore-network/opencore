@@ -2,8 +2,8 @@ import { injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/logger'
-import { PlayerSessionLifecyclePort } from '../ports/player-session-lifecycle.port'
 import { SimulatedPlayer, SimulatedPlayerOptions } from './types'
+import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
 
 /**
  * Service for simulating player connections during development.

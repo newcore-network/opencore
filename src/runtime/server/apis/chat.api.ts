@@ -2,7 +2,7 @@ import { inject, injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { RGB } from '../../../kernel/utils/rgb'
 import { Server } from '..'
-import { Channels } from './channel.api'
+import { Channels } from '../api'
 
 /**
  * Service for sending chat messages to players.

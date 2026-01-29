@@ -1,9 +1,9 @@
 import { AppError } from '../../../kernel/error'
 import { loggers } from '../../../kernel/logger'
 import { RGB } from '../../../kernel/utils/rgb'
+import { Channels } from '../api'
 import { Controller, Export } from '../decorators'
 import { OnRuntimeEvent } from '../decorators/onRuntimeEvent'
-import { Channels } from '../apis/channel.api'
 import { Players } from '../ports/players.api-port'
 import { ChannelMetadata, ChannelType } from '../types/channel.types'
 
@@ -70,37 +70,6 @@ export class ChannelExportController {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       loggers.api.warn(`Failed to create channel '${channelId}': ${message}`)
-      return false
-    }
-  }
-
-  /**
-   * Gets or creates a channel in CORE.
-   *
-   * Exported as: `exports[coreResourceName].getOrCreateChannel`
-   */
-  @Export()
-  getOrCreateChannel(
-    channelId: string,
-    metadata: ChannelMetadata,
-    maxSubscribers?: number,
-    resourceName?: string,
-  ): boolean {
-    try {
-      this.channels.getOrCreate(channelId, metadata, maxSubscribers)
-
-      if (resourceName && !this.remoteChannels.has(channelId)) {
-        this.remoteChannels.set(channelId, {
-          channelId,
-          resourceName,
-          metadata,
-        })
-      }
-
-      return true
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      loggers.api.warn(`Failed to get/create channel '${channelId}': ${message}`)
       return false
     }
   }

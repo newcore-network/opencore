@@ -1,5 +1,4 @@
 export * from './appearance.api'
-export * from './channel.api'
 export * from './chat.api'
 export * from './parallel-compute.api'
 export * from './vehicle-modification.api'

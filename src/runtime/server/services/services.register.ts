@@ -3,7 +3,6 @@ import { WorldContext } from '../../core/world'
 import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { RuntimeContext } from '../runtime'
 import { BinaryProcessManager } from '../system/managers/binary-process.manager'
-import { Channels } from '../apis/channel.api'
 import { Chat } from '../apis'
 import { LocalCommandImplementation } from '../implementations/local/command.local'
 import { LocalPlayerImplementation } from '../implementations/local/player.local'
@@ -19,6 +18,8 @@ import { RemoteCommandImplementation } from '../implementations/remote/command.r
 import { RemotePlayerImplementation } from '../implementations/remote/player.remote'
 import { RemotePrincipalImplementation } from '../implementations/remote/principal.remote'
 import { RemoteChannelImplementation } from '../implementations/remote/channel.remote'
+import { Channels } from '../api'
+import { LocalChannelImplementation } from '../implementations/local/channel.local'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -99,10 +100,10 @@ export function registerServicesServer(ctx: RuntimeContext) {
   if (features.chat.enabled) {
     if (mode === 'RESOURCE') {
       // RESOURCE: remote channel management (delegates to CORE)
-      GLOBAL_CONTAINER.registerSingleton(Channels, RemoteChannelImplementation)
+      GLOBAL_CONTAINER.registerSingleton(Channels as any, RemoteChannelImplementation)
     } else {
       // CORE/STANDALONE: local channel management
-      GLOBAL_CONTAINER.registerSingleton(Channels)
+      GLOBAL_CONTAINER.registerSingleton(Channels as any, LocalChannelImplementation)
     }
     GLOBAL_CONTAINER.registerSingleton(Chat)
   }

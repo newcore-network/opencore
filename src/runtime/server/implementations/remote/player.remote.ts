@@ -8,6 +8,7 @@ import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { InternalPlayerExports, SerializedPlayerData } from '../../types/core-exports.types'
 import { Players } from '../../ports/players.api-port'
+import { LinkedID } from '../../services'
 
 /**
  * Player service implementation for `RESOURCE` mode.
@@ -129,7 +130,7 @@ export class RemotePlayerImplementation extends Players {
     }
   }
 
-  getAccountLinked(clientID: number): string | undefined {
+  getAccountLinked(clientID: number): LinkedID | undefined {
     return this.core.getPlayerId(clientID)
   }
 
