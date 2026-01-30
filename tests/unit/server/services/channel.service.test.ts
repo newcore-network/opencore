@@ -49,6 +49,11 @@ describe('ChannelService', () => {
     } as any
 
     channelService = new LocalChannelImplementation(mockPlayerDirectory, mockNetTransport)
+
+    channelService.create(`radio:100`, { type: ChannelType.RADIO })
+    channelService.create(`radio:101`, { type: ChannelType.RADIO })
+    channelService.create(`team:alpha`, { type: ChannelType.GROUP })
+    channelService.create(`team:omega`, { type: ChannelType.GROUP })
   })
 
   describe('Channel Creation', () => {
@@ -258,6 +263,7 @@ describe('ChannelService', () => {
 
       expect(radioChannels).toHaveLength(2)
       expect(radioChannels.every((ch) => ch.type === ChannelType.RADIO)).toBe(true)
+      expect(radioChannels.every((ch) => ch.id.startsWith('radio:'))).toBe(true)
     })
 
     it('should get channels by player', () => {
