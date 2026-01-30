@@ -138,7 +138,9 @@ export async function initServer(options: ServerRuntimeOptions) {
   // This is where user services get registered if they are decorated with @injectable()
   // and imported before init() or discovered here.
   await loadFrameworkControllers(ctx)
-  loggers.bootstrap.debug('Controllers loaded')
+  loggers.bootstrap.debug('Frameworks Controllers loaded')
+  await tryImportAutoLoad()
+  loggers.bootstrap.debug('User Controllers loaded')
 
   // 3. Register System Processors (Command, NetEvent, etc.)
   // These processors check if contracts are already registered before applying defaults.
@@ -295,6 +297,18 @@ async function dependencyResolver(
       loggers.bootstrap.fatal('Failed to execute onReady hook', { error: msg })
       throw new Error(`[OpenCore] onReady hook failed: ${msg}`)
     }
+  }
+}
+
+async function tryImportAutoLoad() {
+  try {
+    await import('./.opencore/autoload.server.controllers')
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('Cannot find module')) {
+      loggers.bootstrap.warn(`[Bootstrap] No server controllers autoload file found, skipping.`)
+      return
+    }
+    throw err
   }
 }
 
