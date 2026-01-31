@@ -109,6 +109,18 @@ async function bootstrapServices(mode: ClientMode) {
   }
 }
 
+async function tryImportAutoLoad() {
+  try {
+    await import('./.opencore/autoload.client.controllers')
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('Cannot find module')) {
+      loggers.bootstrap.debug(`[Bootstrap] No client controllers autoload file found, skipping.`)
+      return
+    }
+    throw err
+  }
+}
+
 /**
  * Initialize the client core framework
  *
@@ -128,6 +140,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   if (existingContext?.isInitialized) {
     // If already initialized, only scan controllers for this resource
     if (mode === 'RESOURCE' || mode === 'STANDALONE') {
+      await tryImportAutoLoad()
       const scanner = di.resolve(MetadataScanner)
       scanner.scan(getClientControllerRegistry(resourceName))
       loggers.bootstrap.info(`Resource "${resourceName}" controllers registered`)
@@ -169,6 +182,8 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     await import('./controllers/appearance.controller')
     await import('./controllers/player-sync.controller')
   }
+
+  await tryImportAutoLoad()
 
   // Scan and register controllers
   const scanner = di.resolve(MetadataScanner)

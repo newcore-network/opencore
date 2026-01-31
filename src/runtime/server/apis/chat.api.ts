@@ -1,8 +1,8 @@
 import { inject, injectable } from 'tsyringe'
 import { INetTransport } from '../../../adapters/contracts/INetTransport'
 import { RGB } from '../../../kernel/utils/rgb'
-import { Server } from '..'
-import { Channels } from '../api'
+import { Player } from '../entities/player'
+import { Players } from '../ports/players.api-port'
 
 /**
  * Service for sending chat messages to players.
@@ -15,7 +15,7 @@ import { Channels } from '../api'
 export class Chat {
   constructor(
     @inject(INetTransport as any) private readonly netTransport: INetTransport,
-    private readonly channelService: Channels,
+    private readonly players: Players,
   ) {}
   /**
    * Broadcast a chat message to all connected players.
@@ -32,15 +32,6 @@ export class Chat {
   }
 
   /**
-   * Get the ChannelService instance for advanced channel operations.
-   *
-   * @returns The ChannelService instance.
-   */
-  getChannelService(): Channels {
-    return this.channelService
-  }
-
-  /**
    * Send a private chat message to a single player.
    *
    * @param player - Target player.
@@ -49,7 +40,7 @@ export class Chat {
    * @param color - Message color (RGB).
    */
   sendPrivate(
-    player: Server.Player,
+    player: Player,
     message: string,
     author: string = 'Private',
     color: RGB = { r: 200, g: 200, b: 200 },
@@ -65,7 +56,7 @@ export class Chat {
    *
    * @param player - Target player.
    */
-  clearChat(player: Server.Player) {
+  clearChat(player: Player) {
     this.netTransport.emitNet('core:chat:clear', player.clientID)
   }
 
@@ -78,7 +69,7 @@ export class Chat {
    * @param color - Message color (RGB).
    */
   sendMany(
-    players: (Server.Player | number)[],
+    players: (Player | number)[],
     message: string,
     author: string = 'SYSTEM',
     color: RGB = { r: 255, g: 255, b: 255 },
@@ -100,17 +91,29 @@ export class Chat {
    * @param color - Message color (RGB).
    */
   sendNearby(
-    playerFrom: Server.Player,
+    playerFrom: Player,
     message: string,
     radius: number,
     author: string = playerFrom.name,
     color: RGB = { r: 255, g: 255, b: 255 },
   ) {
-    const channel = this.channelService.createProximityChannel(playerFrom, radius)
-    if (!channel) return
+    const originPos = playerFrom.getPosition()
+    if (!originPos) return
 
-    this.channelService.broadcast(channel.id, playerFrom, message, author, color)
-    this.channelService.delete(channel.id)
+    const allPlayers = this.players.getAll()
+    const nearbyPlayers = allPlayers.filter((p) => {
+      const pos = p.getPosition()
+      if (!pos) return false
+
+      const dx = originPos.x - pos.x
+      const dy = originPos.y - pos.y
+      const dz = originPos.z - pos.z
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+      return distance <= radius
+    })
+
+    this.sendMany(nearbyPlayers, message, author, color)
   }
 
   /**

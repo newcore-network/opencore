@@ -21,5 +21,4 @@ export * from './runtime'
 export * from './setup'
 
 // Types
-export type * from './types/framework-events.types'
-export type * from './types'
+export * from './types'

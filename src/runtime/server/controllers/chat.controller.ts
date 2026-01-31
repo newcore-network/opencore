@@ -2,7 +2,7 @@ import { inject } from 'tsyringe'
 import { RGB } from '../../../kernel/utils/rgb'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
-import { Chat } from '../apis'
+import { Chat } from '../apis/chat.api'
 import { Players } from '../ports/players.api-port'
 
 @Controller()

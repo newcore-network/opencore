@@ -1,11 +1,12 @@
 import { INetTransport } from '../../../../adapters/contracts/INetTransport'
 import { RGB } from 'src/kernel'
-import { inject } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Channel, Player } from '../../entities'
 import { Channels } from '../../ports/channel.api-port'
 import { IChannelValidator, ChannelMetadata, ChannelType } from '../../types'
 import { Players } from '../../ports/players.api-port'
 
+@injectable()
 export class LocalChannelImplementation extends Channels {
   private channels: Map<string, Channel> = new Map()
   private validator?: IChannelValidator
