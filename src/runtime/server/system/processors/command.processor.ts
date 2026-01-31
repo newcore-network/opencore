@@ -57,9 +57,12 @@ export class CommandProcessor implements DecoratorProcessor {
           }
         : undefined
 
+    const normalizedCommand = metadata.command.trim().replace(/^\/+/, '')
+
     // Enrich metadata with isPublic flag and security
     const enrichedMetadata: CommandMetadata = {
       ...metadata,
+      command: normalizedCommand,
       isPublic: isPublic ?? false,
       security,
     }
