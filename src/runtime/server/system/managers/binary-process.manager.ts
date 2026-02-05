@@ -10,7 +10,7 @@ import { IResourceInfo } from '../../../../adapters/contracts/IResourceInfo'
 import { GLOBAL_CONTAINER } from '../../../../kernel/di/container'
 import { AppError } from '../../../../kernel/error/app.error'
 import { loggers } from '../../../../kernel/logger'
-import { BinaryServiceOptions } from '../../decorators/binary-service'
+import { BinaryServiceOptions } from '../../decorators/binaryService'
 import { METADATA_KEYS } from '../metadata-server.keys'
 
 const DEFAULT_TIMEOUT_MS = 15000

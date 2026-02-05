@@ -3,7 +3,7 @@ import { registerServerCapabilities } from '../../adapters/register-capabilities
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { PrincipalProviderContract } from './contracts/index'
-import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binary-service'
+import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binaryService'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
