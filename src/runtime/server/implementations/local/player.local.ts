@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IPlayerInfo } from '../../../../adapters'
-import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
@@ -30,13 +30,13 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
-    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+    @inject(EventsAPI as any) private readonly events: EventsAPI,
   ) {
     this.playerAdapters = {
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
       entityServer: this.entityServer,
-      netTransport: this.netTransport,
+      events: this.events,
     }
   }
 

@@ -2,6 +2,7 @@ export const METADATA_KEYS = {
   CONTROLLER: 'decorator:meta:controller',
   COMMAND: 'decorator:meta:command',
   NET_EVENT: 'decorator:meta:net_event',
+  NET_RPC: 'decorator:meta:net_rpc',
   TICK: 'decorator:meta:tick',
   INTERNAL_EVENT: 'decorator:meta:internal_event',
   RUNTIME_EVENT: 'decorator:meta:runtime_event',

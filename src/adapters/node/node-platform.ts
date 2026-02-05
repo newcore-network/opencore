@@ -2,7 +2,6 @@ import type { DependencyContainer } from 'tsyringe'
 import { IEngineEvents } from '../contracts/IEngineEvents'
 import { IExports } from '../contracts/IExports'
 import { IHasher } from '../contracts/IHasher'
-import { INetTransport } from '../contracts/INetTransport'
 import { IPlatformCapabilities } from '../contracts/IPlatformCapabilities'
 import { IPlayerInfo } from '../contracts/IPlayerInfo'
 import { IResourceInfo } from '../contracts/IResourceInfo'
@@ -11,6 +10,9 @@ import { IEntityServer } from '../contracts/server/IEntityServer'
 import { IPedAppearanceServer } from '../contracts/server/IPedAppearanceServer'
 import { IPlayerServer } from '../contracts/server/IPlayerServer'
 import { IVehicleServer } from '../contracts/server/IVehicleServer'
+import { EventsAPI } from '../contracts/transport/events.api'
+import { MessagingTransport } from '../contracts/transport/messaging.transport'
+import { RpcAPI } from '../contracts/transport/rpc.api'
 import type { PlatformAdapter } from '../platform/platform-registry'
 
 /**
@@ -29,7 +31,7 @@ export const NodePlatform: PlatformAdapter = {
   async register(container: DependencyContainer): Promise<void> {
     // Dynamically import Node.js mock implementations
     const [
-      { NodeNetTransport },
+      { NodeMessagingTransport },
       { NodeEngineEvents },
       { NodeExports },
       { NodeResourceInfo },
@@ -42,7 +44,7 @@ export const NodePlatform: PlatformAdapter = {
       { NodePedAppearanceServer },
       { NodeCapabilities },
     ] = await Promise.all([
-      import('./node-net-transport'),
+      import('./transport/adapter'),
       import('./node-engine-events'),
       import('./node-exports'),
       import('./node-resourceinfo'),
@@ -59,8 +61,13 @@ export const NodePlatform: PlatformAdapter = {
     // Register all Node.js mock implementations
     if (!container.isRegistered(IPlatformCapabilities as any))
       container.registerSingleton(IPlatformCapabilities as any, NodeCapabilities)
-    if (!container.isRegistered(INetTransport as any))
-      container.registerSingleton(INetTransport as any, NodeNetTransport)
+
+    if (!container.isRegistered(MessagingTransport as any)) {
+      const transport = new NodeMessagingTransport('server')
+      container.registerInstance(MessagingTransport as any, transport)
+      container.registerInstance(EventsAPI as any, transport.events)
+      container.registerInstance(RpcAPI as any, transport.rpc)
+    }
     if (!container.isRegistered(IEngineEvents as any))
       container.registerSingleton(IEngineEvents as any, NodeEngineEvents)
     if (!container.isRegistered(IExports as any))

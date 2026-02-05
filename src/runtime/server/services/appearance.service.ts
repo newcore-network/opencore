@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe'
-import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
@@ -43,7 +43,7 @@ export class AppearanceService {
   constructor(
     @inject(IPedAppearanceServer as any) private readonly pedAdapter: IPedAppearanceServer,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
-    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+    @inject(EventsAPI as any) private readonly events: EventsAPI,
   ) {}
 
   /**
@@ -78,7 +78,7 @@ export class AppearanceService {
     this.applyServerSideAppearance(ped, appearance)
 
     // Emit event to client for client-only natives
-    this.netTransport.emitNet('opencore:appearance:apply', parseInt(playerSrc, 10), appearance)
+    this.events.emit('opencore:appearance:apply', parseInt(playerSrc, 10), appearance)
 
     return { success: true, appearance }
   }
@@ -121,7 +121,7 @@ export class AppearanceService {
     this.pedAdapter.setDefaultComponentVariation(ped)
 
     // Notify client to reset client-only appearance elements
-    this.netTransport.emitNet('opencore:appearance:reset', parseInt(playerSrc, 10))
+    this.events.emit('opencore:appearance:reset', parseInt(playerSrc, 10))
 
     return true
   }

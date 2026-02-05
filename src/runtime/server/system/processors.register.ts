@@ -10,6 +10,7 @@ import { CommandProcessor } from './processors/command.processor'
 import { ExportProcessor } from './processors/export.processor'
 import { InternalEventProcessor } from './processors/internalEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
+import { OnRpcProcessor } from './processors/onRpc.processor'
 import { RuntimeEventProcessor } from './processors/runtimeEvent.processor'
 import { TickProcessor } from './processors/tick.processor'
 
@@ -18,6 +19,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
 
   if (features.netEvents.enabled) {
     GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: NetEventProcessor })
+    GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: OnRpcProcessor })
 
     if (!GLOBAL_CONTAINER.isRegistered(SecurityHandlerContract as any)) {
       GLOBAL_CONTAINER.registerSingleton(SecurityHandlerContract as any, DefaultSecurityHandler)

@@ -8,11 +8,11 @@ export abstract class IEngineEvents {
   abstract on(eventName: string, handler?: (...args: any[]) => void): void
 
   /**
-   * Emits a local (server-side) event.
+   * Emits a local event.
    *
    * @remarks
    * This is for server-to-server communication (between resources).
-   * For client-server communication, use INetTransport instead.
+   * For client-server communication, use EventsAPI instead.
    *
    * @param eventName - The event name to emit
    * @param args - Arguments to pass to event handlers

@@ -1,4 +1,4 @@
-import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { RGB } from 'src/kernel'
 import { inject, injectable } from 'tsyringe'
 import { Channel, Player } from '../../entities'
@@ -13,7 +13,7 @@ export class LocalChannelImplementation extends Channels {
 
   constructor(
     private readonly playerDirectory: Players,
-    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+    @inject(EventsAPI as any) private readonly events: EventsAPI,
   ) {
     super()
   }
@@ -116,7 +116,7 @@ export class LocalChannelImplementation extends Channels {
       return
     }
 
-    this.netTransport.emitNet('core:chat:addMessage', targetIds, {
+    this.events.emit('core:chat:addMessage', targetIds, {
       args: [author ?? sender.name, message],
       color: color,
     })
@@ -140,7 +140,7 @@ export class LocalChannelImplementation extends Channels {
       return
     }
 
-    this.netTransport.emitNet('core:chat:addMessage', targetIds, {
+    this.events.emit('core:chat:addMessage', targetIds, {
       args: [author, message],
       color: color,
     })

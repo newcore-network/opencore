@@ -1,5 +1,6 @@
-import { IEngineEvents, INetTransport } from '../../adapters'
+import { IEngineEvents } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
+import { EventsAPI } from '../../adapters/contracts/transport/events.api'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { PrincipalProviderContract } from './contracts/index'
@@ -184,14 +185,14 @@ export async function initServer(options: ServerRuntimeOptions) {
   if (
     ctx.mode === 'CORE' &&
     GLOBAL_CONTAINER.isRegistered(IEngineEvents as any) &&
-    GLOBAL_CONTAINER.isRegistered(INetTransport as any)
+    GLOBAL_CONTAINER.isRegistered(EventsAPI as any)
   ) {
     const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
-    const net = GLOBAL_CONTAINER.resolve(INetTransport as any) as INetTransport
+    const events = GLOBAL_CONTAINER.resolve(EventsAPI as any) as EventsAPI
 
     // 1. Broadast to resources already running
     engineEvents.emit('core:ready')
-    net.emitNet('core:ready', 'all')
+    events.emit('core:ready', 'all')
 
     // 2. Listen for 'core:request-ready' for resources starting late (hot-reload)
     engineEvents.on('core:request-ready', () => {

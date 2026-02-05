@@ -1,5 +1,5 @@
 import { IPlayerInfo } from '../../../adapters'
-import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import type { PlayerIdentifier } from '../../../adapters/contracts/types/identifier'
@@ -18,7 +18,7 @@ export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
   entityServer: IEntityServer
-  netTransport: INetTransport
+  events: EventsAPI
 }
 
 /**
@@ -137,7 +137,7 @@ export class Player extends BaseEntity implements Spatial {
    * @param args - Data to send to the client.
    */
   emit(eventName: string, ...args: any[]): void {
-    this.adapters.netTransport.emitNet(eventName, this.clientID, ...args)
+    this.adapters.events.emit(eventName, this.clientID, ...args)
   }
 
   /**

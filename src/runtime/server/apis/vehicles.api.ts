@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
-import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
@@ -44,7 +44,7 @@ export class Vehicles {
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
     @inject(IHasher as any) private readonly hasher: IHasher,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
-    @inject(INetTransport as any) private readonly netTransport: INetTransport,
+    @inject(EventsAPI as any) private readonly events: EventsAPI,
   ) {
     this.vehicleAdapters = {
       entityServer: this.entityServer,
@@ -161,7 +161,7 @@ export class Vehicles {
         totalVehicles: this.vehiclesByNetworkId.size,
       })
 
-      this.netTransport.emitNet('opencore:vehicle:created', -1, vehicle.serialize())
+      this.events.emit('opencore:vehicle:created', 'all', vehicle.serialize())
 
       return {
         networkId,
@@ -216,7 +216,7 @@ export class Vehicles {
       ownership,
     })
     if (result.success) {
-      this.netTransport.emitNet('opencore:vehicle:warpInto', clientID, result.networkId, -1)
+      this.events.emit('opencore:vehicle:warpInto', clientID, result.networkId, -1)
     }
     return result
   }
@@ -315,7 +315,7 @@ export class Vehicles {
       totalVehicles: this.vehiclesByNetworkId.size,
     })
 
-    this.netTransport.emitNet('opencore:vehicle:deleted', -1, networkId)
+    this.events.emit('opencore:vehicle:deleted', 'all', networkId)
 
     return true
   }
