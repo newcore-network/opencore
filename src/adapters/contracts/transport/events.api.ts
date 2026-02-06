@@ -1,5 +1,8 @@
 import { EventContext } from './context'
 
+/**
+ * broadcast and listen to events without relying on runtime. The adapter will be used.
+ */
 export abstract class EventsAPI {
   /**
    * Listen to an event.
