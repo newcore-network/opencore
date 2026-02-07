@@ -32,6 +32,12 @@ Benchmarks targeting internal building blocks:
 - **CoreEventBus** – event dispatch with variable handlers
 - **Decorators** – metadata definition & read overhead
 - **ParallelCompute** – sync vs parallel compute utilities
+- **BinaryService** – JSON serialization, buffer splitting, pending request management, event dispatch
+- **SchemaGenerator** – automatic Zod schema generation from TypeScript types, tuple processing
+- **EntitySystem** – state management, metadata CRUD, snapshot/restore
+- **AppearanceValidation** – ped appearance data validation at varying complexity
+- **EventInterceptor** – DevMode circular buffer, filtering, statistics, listener notification
+- **RuntimeConfig** – runtime options resolution and validation across modes
 
 ### Load Benchmarks (Vitest)
 
@@ -45,6 +51,8 @@ FiveM-like load simulation with increasing concurrency:
 - **Pipeline** – full execution chain
 - **Player Lifecycle** – bind / unbind / link operations
 - **Stress Tests** – mixed scenarios with ticks, commands and events
+- **BinaryService** – serialization throughput, response parsing, buffer splitting, pending request lifecycle
+- **RPC Processor** – schema generation, validation pipeline, concurrent RPCs, error paths
 
 ---
 
