@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { emitFrameworkEvent } from '../../src/runtime/server/bus/core-event-bus'
 import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 import { Player } from '../../src/runtime/server/entities/player'
-import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
-import { CommandService } from '../../src/runtime/server/services/command.service'
-import type { Principal } from '../../src/runtime/server/templates/security/permission.types'
-import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
+import { LocalCommandImplementation } from '../../src/runtime/server/implementations/local/command.local'
+import { LocalPrincipalService } from '../../src/runtime/server/implementations/local/principal.local'
+import type { Principal } from '../../src/runtime/server/types/principal.type'
+import { PrincipalProviderContract } from '../../src/runtime/server/contracts/security/principal-provider.contract'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
@@ -33,12 +32,10 @@ class MockPrincipalProvider extends PrincipalProviderContract {
 }
 
 let eventBusEmissions = 0
-const originalEmitCoreEvent = emitFrameworkEvent
 
 class TestService {
   async processTransfer(player: any, amount: number, targetId: number) {
     const result = { success: true, amount, targetId }
-    emitFrameworkEvent('core:transfer:completed', { playerId: player.clientID, amount, targetId })
     eventBusEmissions++
     return result
   }
@@ -74,8 +71,8 @@ const simpleSchema = z.tuple([z.coerce.number(), z.coerce.string()])
 const transferSchema = z.tuple([z.coerce.number().min(1), z.coerce.number().min(1)])
 
 describe('Pipeline Load Benchmarks', () => {
-  let commandService: CommandService
-  let accessControl: AccessControlService
+  let commandService: LocalCommandImplementation
+  let accessControl: LocalPrincipalService
   let testService: TestService
   let principalProvider: MockPrincipalProvider
 
@@ -84,8 +81,8 @@ describe('Pipeline Load Benchmarks', () => {
     eventBusEmissions = 0
 
     principalProvider = new MockPrincipalProvider()
-    commandService = new CommandService()
-    accessControl = new AccessControlService(principalProvider)
+    commandService = new LocalCommandImplementation()
+    accessControl = new LocalPrincipalService(principalProvider)
     testService = new TestService()
 
     const simpleController = new SimpleCommandController()
@@ -135,7 +132,7 @@ describe('Pipeline Load Benchmarks', () => {
       schema: undefined,
     }
     commandService.register(guardedMeta, async (player: any, arg1: string) => {
-      await accessControl.enforce(player, { minRank: 1 })
+      await accessControl.enforce(player, { rank: 1 })
       return guardedController.handleCommand(player, arg1)
     })
 
@@ -153,7 +150,7 @@ describe('Pipeline Load Benchmarks', () => {
       schema: transferSchema,
     }
     commandService.register(fullMeta, async (player: any, amount: number, targetId: number) => {
-      await accessControl.enforce(player, { minRank: 1 })
+      await accessControl.enforce(player, { rank: 1 })
       return fullController.handleCommand(player, amount, targetId)
     })
   })
@@ -284,7 +281,7 @@ describe('Pipeline Load Benchmarks', () => {
         stageTimings.zodValidation.push(zodEnd - zodStart)
 
         const guardStart = performance.now()
-        await accessControl.enforce(player, { minRank: 1 })
+        await accessControl.enforce(player, { rank: 1 })
         const guardEnd = performance.now()
         stageTimings.guardCheck.push(guardEnd - guardStart)
 

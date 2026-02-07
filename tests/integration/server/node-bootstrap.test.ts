@@ -1,9 +1,15 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { IEngineEvents, IExports, INetTransport, IResourceInfo, ITick } from '../../../src/adapters'
+import {
+  IEngineEvents,
+  IExports,
+  IResourceInfo,
+  ITick,
+  MessagingTransport,
+} from '../../../src/adapters'
 import { NodeEngineEvents } from '../../../src/adapters/node/node-engine-events'
 import { NodeExports } from '../../../src/adapters/node/node-exports'
-import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
+import { NodeMessagingTransport } from '../../../src/adapters/node/transport/adapter'
 import { NodeResourceInfo } from '../../../src/adapters/node/node-resourceinfo'
 import { NodeTick } from '../../../src/adapters/node/node-tick'
 import { GLOBAL_CONTAINER } from '../../../src/kernel/di/container'
@@ -29,20 +35,20 @@ describe('Node.js Runtime Bootstrap', () => {
     await initServer(options)
 
     // Verify Node implementations are registered
-    expect(GLOBAL_CONTAINER.isRegistered(INetTransport as any)).toBe(true)
+    expect(GLOBAL_CONTAINER.isRegistered(MessagingTransport as any)).toBe(true)
     expect(GLOBAL_CONTAINER.isRegistered(IExports as any)).toBe(true)
     expect(GLOBAL_CONTAINER.isRegistered(IEngineEvents as any)).toBe(true)
     expect(GLOBAL_CONTAINER.isRegistered(IResourceInfo as any)).toBe(true)
     expect(GLOBAL_CONTAINER.isRegistered(ITick as any)).toBe(true)
 
     // Verify correct implementations
-    const netTransport = GLOBAL_CONTAINER.resolve(INetTransport as any)
+    const messagingTransport = GLOBAL_CONTAINER.resolve(MessagingTransport as any)
     const exports = GLOBAL_CONTAINER.resolve(IExports as any)
     const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any)
     const resourceInfo = GLOBAL_CONTAINER.resolve(IResourceInfo as any)
     const tick = GLOBAL_CONTAINER.resolve(ITick as any)
 
-    expect(netTransport).toBeInstanceOf(NodeNetTransport)
+    expect(messagingTransport).toBeInstanceOf(NodeMessagingTransport)
     expect(exports).toBeInstanceOf(NodeExports)
     expect(engineEvents).toBeInstanceOf(NodeEngineEvents)
     expect(resourceInfo).toBeInstanceOf(NodeResourceInfo)
@@ -61,7 +67,7 @@ describe('Node.js Runtime Bootstrap', () => {
     await initServer(options)
 
     // Runtime should initialize without errors
-    expect(GLOBAL_CONTAINER.isRegistered(INetTransport as any)).toBe(true)
+    expect(GLOBAL_CONTAINER.isRegistered(MessagingTransport as any)).toBe(true)
   })
 
   it('should use environment variable for resource name in Node', async () => {

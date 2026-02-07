@@ -1,5 +1,5 @@
-import type { NetTarget } from '../../src/adapters/contracts/INetTransport'
-import { INetTransport } from '../../src/adapters/contracts/INetTransport'
+import { EventsAPI } from '../../src/adapters/contracts/transport/events.api'
+import type { EventContext } from '../../src/adapters/contracts/transport/context'
 import { IPlayerInfo } from '../../src/adapters/contracts/IPlayerInfo'
 import {
   type EntityStateBag,
@@ -174,15 +174,12 @@ export class MockEntityServer extends IEntityServer {
 }
 
 /**
- * Mock implementation of INetTransport for testing.
+ * Mock implementation of EventsAPI for testing.
  */
-export class MockNetTransport extends INetTransport {
-  onNet(
-    _eventName: string,
-    _handler: (ctx: { clientId: number }, ...args: any[]) => void | Promise<void>,
-  ): void {}
+export class MockEventsAPI extends EventsAPI {
+  on(_event: string, _handler: (ctx: EventContext, ...args: any[]) => void | Promise<void>): void {}
 
-  emitNet(_eventName: string, _target: NetTarget, ..._args: any[]): void {}
+  emit(_event: string, _targetOrArg?: number | number[] | 'all' | any, ..._args: any[]): void {}
 }
 
 /**
@@ -191,7 +188,7 @@ export class MockNetTransport extends INetTransport {
 export const mockPlayerInfo = new MockPlayerInfo()
 export const mockPlayerServer = new MockPlayerServer()
 export const mockEntityServer = new MockEntityServer()
-export const mockNetTransport = new MockNetTransport()
+export const mockEventsAPI = new MockEventsAPI()
 
 /**
  * Creates a mock PlayerAdapters bundle for testing.
@@ -201,7 +198,7 @@ export function createMockPlayerAdapters(): PlayerAdapters {
     playerInfo: mockPlayerInfo,
     playerServer: mockPlayerServer,
     entityServer: mockEntityServer,
-    netTransport: mockNetTransport,
+    events: mockEventsAPI,
   }
 }
 

@@ -1,25 +1,28 @@
-import { container } from 'tsyringe'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { IPlayerInfo } from '../../src/adapters'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
-import { resetContainer } from '../../tests/helpers/di.helper'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
+import { LocalPlayerImplementation } from '../../src/runtime/server/implementations/local/player.local'
+import { WorldContext } from '../../src/runtime/core/world'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { PlayerFactory } from '../utils/player-factory'
 
 describe('Player Lifecycle Load Benchmarks', () => {
-  let playerService: PlayerService
+  let playerService: LocalPlayerImplementation
 
   beforeEach(() => {
-    resetContainer()
     resetCitizenFxMocks()
 
-    container.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
-    container.registerSingleton(PlayerService, PlayerService)
-
-    playerService = container.resolve(PlayerService)
+    playerService = new LocalPlayerImplementation(
+      new WorldContext(),
+      new NodePlayerInfo(),
+      new NodePlayerServer(),
+      new NodeEntityServer(),
+      new NodeEvents(),
+    )
   })
 
   const scenarios = getAllScenarios()
@@ -44,12 +47,13 @@ describe('Player Lifecycle Load Benchmarks', () => {
         stageTimings.bind.push(bindEnd - bindStart)
 
         const linkStart = performance.now()
-        playerService.linkAccount(clientID, `account-${clientID}`)
+        const p = playerService.getByClient(clientID)
+        if (p) p.linkAccount(`account-${clientID}`)
         const linkEnd = performance.now()
         stageTimings.linkAccount.push(linkEnd - linkStart)
 
         const unbindStart = performance.now()
-        playerService.unbindByClient(clientID)
+        playerService.unbind(clientID)
         const unbindEnd = performance.now()
         stageTimings.unbind.push(unbindEnd - unbindStart)
 
@@ -112,7 +116,8 @@ describe('Player Lifecycle Load Benchmarks', () => {
         const player = playerService.bind(clientID, {
           license: `license:test-${clientID}`,
         })
-        playerService.linkAccount(clientID, `account-${clientID}`)
+        const p = playerService.getByClient(clientID)
+        if (p) p.linkAccount(`account-${clientID}`)
 
         const end = performance.now()
         timings.push(end - start)
@@ -134,7 +139,7 @@ describe('Player Lifecycle Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (let i = 0; i < playerCount; i++) {
-        playerService.unbindByClient(i + 1)
+        playerService.unbind(i + 1)
       }
     })
 
@@ -145,7 +150,8 @@ describe('Player Lifecycle Load Benchmarks', () => {
         const player = playerService.bind(clientID, {
           license: `license:test-${clientID}`,
         })
-        playerService.linkAccount(clientID, `account-${clientID}`)
+        const p = playerService.getByClient(clientID)
+        if (p) p.linkAccount(`account-${clientID}`)
         players.push({ clientID, player })
       }
 
@@ -153,7 +159,7 @@ describe('Player Lifecycle Load Benchmarks', () => {
 
       const promises = players.map(async ({ clientID }) => {
         const start = performance.now()
-        playerService.unbindByClient(clientID)
+        playerService.unbind(clientID)
         const end = performance.now()
         timings.push(end - start)
       })
@@ -184,14 +190,15 @@ describe('Player Lifecycle Load Benchmarks', () => {
           const player = playerService.bind(clientID, {
             license: `license:test-${clientID}`,
           })
-          playerService.linkAccount(clientID, `account-${clientID}`)
+          const p = playerService.getByClient(clientID)
+          if (p) p.linkAccount(`account-${clientID}`)
           players.push({ clientID, player })
         }
         const connectEnd = performance.now()
 
         const disconnectStart = performance.now()
         for (const { clientID } of players) {
-          playerService.unbindByClient(clientID)
+          playerService.unbind(clientID)
         }
         const disconnectEnd = performance.now()
 
@@ -222,10 +229,11 @@ describe('Player Lifecycle Load Benchmarks', () => {
             })
           },
           onAuthenticate: async (p) => {
-            playerService.linkAccount(p.clientID, `account-${p.clientID}`)
+            const bound = playerService.getByClient(p.clientID)
+            if (bound) bound.linkAccount(`account-${p.clientID}`)
           },
           onDisconnect: async (p) => {
-            playerService.unbindByClient(p.clientID)
+            playerService.unbind(p.clientID)
           },
         })
 

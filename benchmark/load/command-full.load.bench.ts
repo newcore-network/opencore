@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { FiveMNetTransport } from '../../src/adapters/fivem/fivem-net-transport'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
-import { CommandNetworkController } from '../../src/runtime/server/controllers/command.controller'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
 import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 import { Player } from '../../src/runtime/server/entities/player'
-import { CommandService } from '../../src/runtime/server/services/command.service'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
-import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/services/default/default-net-event-security-observer'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { LocalCommandImplementation } from '../../src/runtime/server/implementations/local/command.local'
+import { LocalPlayerImplementation } from '../../src/runtime/server/implementations/local/player.local'
+import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/default/default-net-event-security-observer'
+import { DefaultSecurityHandler } from '../../src/runtime/server/default/default-security.handler'
 import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
+import { WorldContext } from '../../src/runtime/core/world'
 import {
   registeredCommands,
   registeredNetEvents,
@@ -40,9 +42,8 @@ class TestController {
 const validatedSchema = z.tuple([z.coerce.number(), z.coerce.string()])
 
 describe('Command Full Load Benchmarks', () => {
-  let commandService: CommandService
-  let commandController: CommandNetworkController
-  let playerService: PlayerService
+  let commandService: LocalCommandImplementation
+  let playerService: LocalPlayerImplementation
   let netEventProcessor: NetEventProcessor
   let testController: TestController
 
@@ -51,19 +52,23 @@ describe('Command Full Load Benchmarks', () => {
     registeredCommands.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    const playerInfo = new NodePlayerInfo()
-    playerService = new PlayerService(playerInfo)
-    commandService = new CommandService()
+    const nodeEvents = new NodeEvents()
+    playerService = new LocalPlayerImplementation(
+      new WorldContext(),
+      new NodePlayerInfo(),
+      new NodePlayerServer(),
+      new NodeEntityServer(),
+      nodeEvents,
+    )
+    commandService = new LocalCommandImplementation()
     const observer = new DefaultNetEventSecurityObserver()
-    const netTransport = new FiveMNetTransport()
     netEventProcessor = new NetEventProcessor(
       playerService,
       securityHandler,
       observer,
-      netTransport,
+      nodeEvents,
     )
     testController = new TestController()
-    commandController = new CommandNetworkController(commandService)
 
     const metaSimple: CommandMetadata = {
       command: 'simple',
@@ -103,11 +108,6 @@ describe('Command Full Load Benchmarks', () => {
       schema: undefined,
     }
     commandService.register(metaGuarded, testController.guardedCommand.bind(testController))
-
-    netEventProcessor.process(commandController, 'onCommandReceived', {
-      eventName: 'core:execute-command',
-      paramTypes: [Player, String, Array],
-    })
   })
 
   const scenarios = getAllScenarios()
@@ -118,7 +118,8 @@ describe('Command Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []
@@ -128,11 +129,6 @@ describe('Command Full Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          const handler = registeredCommands.get('simple')
-          if (handler) {
-            handler(player.clientID, ['arg1'])
-          }
-
           await commandService.execute(player, 'simple', ['arg1'])
 
           const end = performance.now()
@@ -160,7 +156,8 @@ describe('Command Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []
@@ -196,7 +193,8 @@ describe('Command Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []
@@ -234,7 +232,8 @@ describe('Command Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []

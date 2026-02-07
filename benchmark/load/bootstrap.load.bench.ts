@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
 import { Command } from '../../src/runtime/server/decorators/command'
 import { Controller } from '../../src/runtime/server/decorators/controller'
-import { CommandService } from '../../src/runtime/server/services/command.service'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { LocalCommandImplementation } from '../../src/runtime/server/implementations/local/command.local'
 import { CommandProcessor } from '../../src/runtime/server/system/processors/command.processor'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
@@ -45,13 +44,13 @@ class TestController3 {
 }
 
 describe('Bootstrap Load Benchmarks', () => {
-  let commandService: CommandService
+  let commandService: LocalCommandImplementation
   let processor: CommandProcessor
 
   beforeEach(() => {
     resetCitizenFxMocks()
 
-    commandService = new CommandService()
+    commandService = new LocalCommandImplementation()
     processor = new CommandProcessor(commandService)
   })
 

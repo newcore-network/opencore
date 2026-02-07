@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Player } from '../../src/runtime/server/entities/player'
-import { AccessControlService } from '../../src/runtime/server/services/access-control.service'
-import type { Principal } from '../../src/runtime/server/templates/security/permission.types'
-import { PrincipalProviderContract } from '../../src/runtime/server/templates/security/principal-provider.contract'
+import { LocalPrincipalService } from '../../src/runtime/server/implementations/local/principal.local'
+import type { Principal } from '../../src/runtime/server/types/principal.type'
+import { PrincipalProviderContract } from '../../src/runtime/server/contracts/security/principal-provider.contract'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { getAllScenarios, getRealisticRankDistribution } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
@@ -29,14 +29,14 @@ class MockPrincipalProvider extends PrincipalProviderContract {
 }
 
 describe('Guards Load Benchmarks', () => {
-  let accessControl: AccessControlService
+  let accessControl: LocalPrincipalService
   let principalProvider: MockPrincipalProvider
 
   beforeEach(() => {
     resetCitizenFxMocks()
 
     principalProvider = new MockPrincipalProvider()
-    accessControl = new AccessControlService(principalProvider)
+    accessControl = new LocalPrincipalService(principalProvider)
   })
 
   const scenarios = getAllScenarios()
@@ -143,7 +143,7 @@ describe('Guards Load Benchmarks', () => {
       const promises = players.map(async (player) => {
         const start = performance.now()
         try {
-          await accessControl.enforce(player, { minRank: 3, permission: 'user.basic' })
+          await accessControl.enforce(player, { rank: 3, permission: 'user.basic' })
           const end = performance.now()
           timings.push(end - start)
           successCount++

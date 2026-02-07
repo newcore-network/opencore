@@ -1,16 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { FiveMNetTransport } from '../../src/adapters/fivem/fivem-net-transport'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
-import { CommandNetworkController } from '../../src/runtime/server/controllers/command.controller'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
 import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 import { Player } from '../../src/runtime/server/entities/player'
-;
-import { CommandService } from '../../src/runtime/server/services/command.service'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
-import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/services/default/default-net-event-security-observer'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { LocalCommandImplementation } from '../../src/runtime/server/implementations/local/command.local'
+import { LocalPlayerImplementation } from '../../src/runtime/server/implementations/local/player.local'
+import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/default/default-net-event-security-observer'
+import { DefaultSecurityHandler } from '../../src/runtime/server/default/default-security.handler'
 import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
+import { WorldContext } from '../../src/runtime/core/world'
 import {
   registeredCommands,
   registeredNetEvents,
@@ -18,7 +19,9 @@ import {
 } from '../../tests/mocks/citizenfx'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { PlayerFactory } from '../utils/player-factory'
-import { TickSimulator } from '../utils/tick-simulator'(global as any).setTick = (handler: () => void | Promise<void>) => {}
+import { TickSimulator } from '../utils/tick-simulator'
+
+;(global as any).setTick = (handler: () => void | Promise<void>) => {}
 
 class StressTestController {
   private commandCount = 0
@@ -46,10 +49,9 @@ const eventSchema = z.object({
 })
 
 describe('Stress Test Load Benchmarks', () => {
-  let commandService: CommandService
-  let playerService: PlayerService
+  let commandService: LocalCommandImplementation
+  let playerService: LocalPlayerImplementation
   let netEventProcessor: NetEventProcessor
-  let commandController: CommandNetworkController
   let testController: StressTestController
   let tickSimulator: TickSimulator
 
@@ -59,18 +61,22 @@ describe('Stress Test Load Benchmarks', () => {
     registeredNetEvents.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    const playerInfo = new NodePlayerInfo()
-    playerService = new PlayerService(playerInfo)
-    commandService = new CommandService()
+    const nodeEvents = new NodeEvents()
+    playerService = new LocalPlayerImplementation(
+      new WorldContext(),
+      new NodePlayerInfo(),
+      new NodePlayerServer(),
+      new NodeEntityServer(),
+      nodeEvents,
+    )
+    commandService = new LocalCommandImplementation()
     const observer = new DefaultNetEventSecurityObserver()
-    const netTransport = new FiveMNetTransport()
     netEventProcessor = new NetEventProcessor(
       playerService,
       securityHandler,
       observer,
-      netTransport,
+      nodeEvents,
     )
-    commandController = new CommandNetworkController(commandService)
     testController = new StressTestController()
     tickSimulator = new TickSimulator()
 
@@ -93,11 +99,6 @@ describe('Stress Test Load Benchmarks', () => {
       paramTypes: [Object],
     })
 
-    netEventProcessor.process(commandController, 'onCommandReceived', {
-      eventName: 'core:execute-command',
-      paramTypes: [Player, String, Array],
-    })
-
     for (let i = 0; i < 10; i++) {
       tickSimulator.register(`stress-tick-${i}`, () => {
         const sum = 1 + 1
@@ -113,7 +114,8 @@ describe('Stress Test Load Benchmarks', () => {
       playerService.bind(player.clientID, {
         license: `license:test-${player.clientID}`,
       })
-      playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+      const p = playerService.getByClient(player.clientID)
+      if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
     }
 
     const commandTimings: number[] = []
@@ -205,7 +207,7 @@ describe('Stress Test Load Benchmarks', () => {
     console.log(`[STRESS] Total throughput: ${totalThroughput.toFixed(2)} ops/sec`)
 
     for (const player of players) {
-      playerService.unbindByClient(player.clientID)
+      playerService.unbind(player.clientID)
     }
   })
 
@@ -217,7 +219,8 @@ describe('Stress Test Load Benchmarks', () => {
       playerService.bind(player.clientID, {
         license: `license:test-${player.clientID}`,
       })
-      playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+      const p = playerService.getByClient(player.clientID)
+      if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
     }
 
     const sequentialTimings: number[] = []
@@ -272,7 +275,7 @@ describe('Stress Test Load Benchmarks', () => {
     console.log(`[STRESS] Speedup: ${speedup.toFixed(2)}x`)
 
     for (const player of players) {
-      playerService.unbindByClient(player.clientID)
+      playerService.unbind(player.clientID)
     }
   })
 
@@ -284,7 +287,8 @@ describe('Stress Test Load Benchmarks', () => {
       playerService.bind(player.clientID, {
         license: `license:test-${player.clientID}`,
       })
-      playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+      const p = playerService.getByClient(player.clientID)
+      if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
     }
 
     const batchSizes = [50, 100, 200, 300, 400, 500]
@@ -335,7 +339,7 @@ describe('Stress Test Load Benchmarks', () => {
     }
 
     for (const player of players) {
-      playerService.unbindByClient(player.clientID)
+      playerService.unbind(player.clientID)
     }
   })
 
@@ -347,7 +351,8 @@ describe('Stress Test Load Benchmarks', () => {
       playerService.bind(player.clientID, {
         license: `license:test-${player.clientID}`,
       })
-      playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+      const p = playerService.getByClient(player.clientID)
+      if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
     }
 
     const timings: number[] = []
@@ -372,7 +377,7 @@ describe('Stress Test Load Benchmarks', () => {
 
       ...players.slice(200, 300).map(async (player) => {
         playerService.setMeta(player.clientID, 'stress-test', { value: Date.now() })
-        playerService.getMeta(player.clientID, 'stress-test')
+        await playerService.getMeta(player.clientID, 'stress-test')
       }),
 
       ...Array.from({ length: 10 }, async () => {
@@ -392,7 +397,7 @@ describe('Stress Test Load Benchmarks', () => {
     console.log(`  └─ Throughput: ${(allPromises.length / totalTime) * 1000} ops/sec`)
 
     for (const player of players) {
-      playerService.unbindByClient(player.clientID)
+      playerService.unbind(player.clientID)
     }
   })
 })

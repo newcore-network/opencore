@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
+import { NodeEvents } from '../../../src/adapters/node/transport/node.events'
 import type { NetEventSecurityObserverContract } from '../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../src/runtime/server/decorators/onNet'
@@ -44,15 +44,15 @@ function waitForEventProcessing(): Promise<void> {
 }
 
 describe('NetEventProcessor Node Runtime Flow', () => {
-  let transport: NodeNetTransport
+  let transport: NodeEvents
   let mockPlayerService: Players
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
   let processor: NetEventProcessor
 
   beforeEach(() => {
-    // Create fresh Node transport (no FiveM globals)
-    transport = new NodeNetTransport()
+    // Create fresh Node events transport (no FiveM globals)
+    transport = new NodeEvents()
 
     // Create mock services
     mockPlayerService = {

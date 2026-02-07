@@ -37,6 +37,18 @@ interface BinaryResponse {
   error?: unknown
 }
 
+interface BinaryEventMessage {
+  type: 'event'
+  event: string
+  data?: unknown
+}
+
+interface BinaryEventHandlerMetadata {
+  methodName: string
+  event: string
+  service?: string
+}
+
 interface BinaryServiceEntry {
   name: string
   binary: string
@@ -45,6 +57,7 @@ interface BinaryServiceEntry {
   binaryPath?: string
   process?: ChildProcessWithoutNullStreams
   pending: Map<string, PendingRequest>
+  eventHandlers: Map<string, (data?: unknown) => void>
   buffer: string
   serviceClass: new (...args: any[]) => any
 }
@@ -69,6 +82,7 @@ export class BinaryProcessManager {
       timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       status: 'offline',
       pending: new Map(),
+      eventHandlers: new Map(),
       buffer: '',
       serviceClass,
     }
@@ -81,6 +95,7 @@ export class BinaryProcessManager {
 
     const instance = this.resolveServiceInstance(serviceClass)
     this.applyBinaryProxies(instance, options)
+    this.registerEventHandlers(entry, instance, options)
 
     const binaryPath = this.resolveBinaryPath(options.binary)
     if (!binaryPath) {
@@ -250,10 +265,10 @@ export class BinaryProcessManager {
   }
 
   private handleResponse(entry: BinaryServiceEntry, rawLine: string): void {
-    let response: BinaryResponse | null = null
+    let parsed: any = null
 
     try {
-      response = JSON.parse(rawLine) as BinaryResponse
+      parsed = JSON.parse(rawLine)
     } catch (error: unknown) {
       if (error instanceof Error) {
         loggers.bootstrap.warn(`[BinaryService] ${entry.name} invalid JSON response`, {
@@ -268,6 +283,13 @@ export class BinaryProcessManager {
       }
       return
     }
+
+    if (parsed?.type === 'event') {
+      this.dispatchEvent(entry, parsed as BinaryEventMessage)
+      return
+    }
+
+    const response = parsed as BinaryResponse
 
     if (!response?.id) {
       loggers.bootstrap.warn(`[BinaryService] ${entry.name} response missing id`, {
@@ -323,6 +345,61 @@ export class BinaryProcessManager {
       if (pending.timeout) clearTimeout(pending.timeout)
       pending.reject(new AppError('COMMON:UNKNOWN', reason, 'external'))
       entry.pending.delete(id)
+    }
+  }
+
+  private registerEventHandlers(
+    entry: BinaryServiceEntry,
+    instance: any,
+    options: BinaryServiceOptions,
+  ): void {
+    const proto = Object.getPrototypeOf(instance)
+    const methodNames = Object.getOwnPropertyNames(proto).filter(
+      (name) => name !== 'constructor' && typeof instance[name] === 'function',
+    )
+
+    for (const methodName of methodNames) {
+      const metadata = Reflect.getMetadata(METADATA_KEYS.BINARY_EVENT, proto, methodName) as
+        | BinaryEventHandlerMetadata
+        | undefined
+
+      if (!metadata) continue
+
+      const targetService = metadata.service ?? options.name
+      if (targetService !== entry.name) continue
+
+      entry.eventHandlers.set(metadata.event, instance[methodName].bind(instance))
+      loggers.bootstrap.debug(`[BinaryService] Registered event handler`, {
+        service: entry.name,
+        event: metadata.event,
+        method: methodName,
+      })
+    }
+  }
+
+  private dispatchEvent(entry: BinaryServiceEntry, message: BinaryEventMessage): void {
+    const handler = entry.eventHandlers.get(message.event)
+
+    if (!handler) {
+      loggers.bootstrap.warn(`[BinaryService] ${entry.name} received unhandled event`, {
+        event: message.event,
+      })
+      return
+    }
+
+    loggers.bootstrap.debug(`[BinaryService] Dispatching event`, {
+      service: entry.name,
+      event: message.event,
+    })
+
+    try {
+      handler(message.data)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      loggers.bootstrap.error(`[BinaryService] ${entry.name} event handler error`, {
+        event: message.event,
+        error: errorMessage,
+      })
     }
   }
 

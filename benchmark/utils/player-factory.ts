@@ -1,8 +1,17 @@
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
-import { Player } from '../../src/runtime/server/entities/player'
-import type { LinkedID, PlayerSession } from '../../src/runtime/server/services/core/player.service'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
+import { Player, type PlayerAdapters } from '../../src/runtime/server/entities/player'
+import type { LinkedID } from '../../src/runtime/server/types/linked-id'
+import type { PlayerSession } from '../../src/runtime/server/types/player-session.types'
 
-const playerInfo = new NodePlayerInfo()
+const playerAdapters: PlayerAdapters = {
+  playerInfo: new NodePlayerInfo(),
+  playerServer: new NodePlayerServer(),
+  entityServer: new NodeEntityServer(),
+  events: new NodeEvents(),
+}
 
 export interface PlayerConfig {
   clientID: number
@@ -26,7 +35,7 @@ export class PlayerFactory {
       meta: config?.meta ?? {},
     }
 
-    const player = new Player(session, playerInfo)
+    const player = new Player(session, playerAdapters)
 
     if (config?.states) {
       for (const state of config.states) {

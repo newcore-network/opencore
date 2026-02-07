@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { INetTransport } from '../../../../src/adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../../src/adapters/contracts/transport/events.api'
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { ChannelType } from '../../../../src/runtime/server/types/channel.types'
@@ -10,7 +10,7 @@ import { LocalChannelImplementation } from '../../../../src/runtime/server/imple
 describe('ChannelService', () => {
   let channelService: Channels
   let mockPlayerDirectory: Players
-  let mockNetTransport: INetTransport
+  let mockEventsAPI: EventsAPI
   let mockPlayer1: Player
   let mockPlayer2: Player
   let mockPlayer3: Player
@@ -43,12 +43,12 @@ describe('ChannelService', () => {
       setMeta: vi.fn(),
     } as any
 
-    mockNetTransport = {
-      emitNet: vi.fn(),
-      onNet: vi.fn(),
+    mockEventsAPI = {
+      emit: vi.fn(),
+      on: vi.fn(),
     } as any
 
-    channelService = new LocalChannelImplementation(mockPlayerDirectory, mockNetTransport)
+    channelService = new LocalChannelImplementation(mockPlayerDirectory, mockEventsAPI)
 
     channelService.create(`radio:100`, { type: ChannelType.RADIO })
     channelService.create(`radio:101`, { type: ChannelType.RADIO })
@@ -184,7 +184,7 @@ describe('ChannelService', () => {
     it('should broadcast message to channel subscribers', () => {
       channelService.broadcast('test-channel', mockPlayer1, 'Hello everyone!')
 
-      expect(mockNetTransport.emitNet).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
+      expect(mockEventsAPI.emit).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
         args: ['Player1', 'Hello everyone!'],
         color: { r: 255, g: 255, b: 255 },
       })
@@ -197,7 +197,7 @@ describe('ChannelService', () => {
         b: 200,
       })
 
-      expect(mockNetTransport.emitNet).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
+      expect(mockEventsAPI.emit).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
         args: ['CustomAuthor', 'Test message'],
         color: { r: 100, g: 150, b: 200 },
       })
@@ -206,7 +206,7 @@ describe('ChannelService', () => {
     it('should broadcast system message', () => {
       channelService.broadcastSystem('test-channel', 'System announcement')
 
-      expect(mockNetTransport.emitNet).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
+      expect(mockEventsAPI.emit).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
         args: ['SYSTEM', 'System announcement'],
         color: { r: 0, g: 191, b: 255 },
       })
@@ -216,7 +216,7 @@ describe('ChannelService', () => {
       channelService.create('empty-channel', { type: ChannelType.CUSTOM })
       channelService.broadcast('empty-channel', mockPlayer1, 'Test')
 
-      expect(mockNetTransport.emitNet).not.toHaveBeenCalled()
+      expect(mockEventsAPI.emit).not.toHaveBeenCalled()
     })
 
     it('should throw error when broadcasting to non-existent channel', () => {
@@ -331,7 +331,7 @@ describe('ChannelService', () => {
       channelService.broadcast('test', mockPlayer1, 'Test')
 
       expect(validator.canBroadcast).toHaveBeenCalledWith(mockPlayer1, 'test')
-      expect(mockNetTransport.emitNet).not.toHaveBeenCalled()
+      expect(mockEventsAPI.emit).not.toHaveBeenCalled()
     })
   })
 })

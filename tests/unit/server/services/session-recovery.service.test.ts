@@ -4,7 +4,7 @@ import { IPlayerServer } from '../../../../src/adapters/contracts/server/IPlayer
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { SessionRecoveryService } from '../../../../src/runtime/server/services/session-recovery.local'
 import { Players } from '../../../../src/runtime/server/ports/players.api-port'
-import { PlayerSessionLifecyclePort } from '../../../../src/runtime/server/ports/player-session-lifecycle.port'
+import { PlayerSessionLifecyclePort } from '../../../../src/runtime/server/ports/internal/player-session-lifecycle.port'
 import { createMockPlayerAdapters, MockPlayerServer } from '../../../helpers/player.helper'
 
 describe('SessionRecoveryService', () => {

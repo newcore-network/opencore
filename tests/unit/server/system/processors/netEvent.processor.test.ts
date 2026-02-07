@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { INetTransport, type NetEventContext } from '../../../../../src/adapters'
+import { EventsAPI } from '../../../../../src/adapters/contracts/transport/events.api'
+import type { EventContext } from '../../../../../src/adapters/contracts/transport/context'
 import type { NetEventSecurityObserverContract } from '../../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../../../src/runtime/server/decorators/onNet'
@@ -9,20 +10,17 @@ import type { Players } from '../../../../../src/runtime/server/ports/players.ap
 import { METADATA_KEYS } from '../../../../../src/runtime/server/system/metadata-server.keys'
 import { NetEventProcessor } from '../../../../../src/runtime/server/system/processors/netEvent.processor'
 
-class MockNetTransport extends INetTransport {
-  onNet(
-    _eventName: string,
-    _handler: (ctx: NetEventContext, ...args: any[]) => void | Promise<void>,
-  ): void {}
+class MockEventsAPI extends EventsAPI {
+  on(_event: string, _handler: (ctx: EventContext, ...args: any[]) => void | Promise<void>): void {}
 
-  emitNet(_eventName: string, _target: number | 'all', ..._args: any[]): void {}
+  emit(_event: string, _targetOrArg?: number | number[] | 'all' | any, ..._args: any[]): void {}
 }
 
 describe('NetEventProcessor', () => {
   let mockPlayerService: Players
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
-  let mockTransport: MockNetTransport
+  let mockEvents: MockEventsAPI
   let processor: NetEventProcessor
 
   beforeEach(() => {
@@ -38,18 +36,18 @@ describe('NetEventProcessor', () => {
       onInvalidPayload: vi.fn(),
     } as any
 
-    mockTransport = new MockNetTransport()
+    mockEvents = new MockEventsAPI()
 
     processor = new NetEventProcessor(
       mockPlayerService,
       mockSecurityHandler,
       mockObserver,
-      mockTransport,
+      mockEvents,
     )
   })
 
-  it('should register event using INetTransport', () => {
-    const onNetSpy = vi.spyOn(mockTransport, 'onNet')
+  it('should register event using EventsAPI', () => {
+    const onSpy = vi.spyOn(mockEvents, 'on')
 
     class TestController {
       @OnNet('test:event')
@@ -66,11 +64,11 @@ describe('NetEventProcessor', () => {
 
     processor.process(instance, 'handleTest', metadata)
 
-    expect(onNetSpy).toHaveBeenCalledWith('test:event', expect.any(Function))
+    expect(onSpy).toHaveBeenCalledWith('test:event', expect.any(Function))
   })
 
   it('should use context.clientId instead of global source', async () => {
-    const onNetSpy = vi.spyOn(mockTransport, 'onNet')
+    const onSpy = vi.spyOn(mockEvents, 'on')
 
     const mockPlayer = {
       clientID: 123,
@@ -102,8 +100,8 @@ describe('NetEventProcessor', () => {
 
     processor.process(instance, 'handleTest', metadata)
 
-    expect(onNetSpy).toHaveBeenCalled()
-    const registeredHandler = onNetSpy.mock.calls[0][1]
+    expect(onSpy).toHaveBeenCalled()
+    const registeredHandler = onSpy.mock.calls[0][1]
 
     await registeredHandler({ clientId: 123 })
 
