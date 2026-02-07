@@ -46,13 +46,14 @@ describe('Command Full Load Benchmarks', () => {
   let playerService: LocalPlayerImplementation
   let netEventProcessor: NetEventProcessor
   let testController: TestController
+  let nodeEvents: NodeEvents
 
   beforeEach(() => {
     resetCitizenFxMocks()
     registeredCommands.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    const nodeEvents = new NodeEvents()
+    nodeEvents = new NodeEvents()
     playerService = new LocalPlayerImplementation(
       new WorldContext(),
       new NodePlayerInfo(),
@@ -240,17 +241,10 @@ describe('Command Full Load Benchmarks', () => {
       let successCount = 0
       let errorCount = 0
 
-      const netEventHandler = registeredNetEvents.get('core:execute-command')
-
       for (const player of players) {
         const start = performance.now()
         try {
-          if (netEventHandler) {
-            ;(global as any).source = player.clientID
-            await netEventHandler('simple', ['arg1'])
-          } else {
-            await commandService.execute(player, 'simple', ['arg1'])
-          }
+          nodeEvents.simulateClientEvent('core:execute-command', player.clientID, 'simple', ['arg1'])
 
           const end = performance.now()
           timings.push(end - start)

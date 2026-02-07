@@ -1,18 +1,18 @@
 import { Bench } from 'tinybench'
-import { emitCoreEvent, onCoreEvent } from '../../src/runtime/server/bus/core-event-bus'
-import type { CoreEventMap } from '../../src/runtime/server/types/core-events'
+import { onFrameworkEvent } from '../../src/runtime/server/api'
+import { emitFrameworkEvent } from '../../src/runtime/server/bus/internal-event.bus'
 
 export async function runEventBusBenchmark(): Promise<Bench> {
   const bench = new Bench({ time: 1000 })
 
   bench.add('EventBus - Register handler', async () => {
-    const unsubscribe = onCoreEvent('core:playerSessionCreated', () => {})
+    const unsubscribe = onFrameworkEvent('internal:playerSessionCreated', () => {})
     unsubscribe()
   })
 
   bench.add('EventBus - Emit to 1 handler', async () => {
-    const unsubscribe = onCoreEvent('core:playerSessionCreated', () => {})
-    emitCoreEvent('core:playerSessionCreated', { clientId: 1, license: 'test' })
+    const unsubscribe = onFrameworkEvent('internal:playerSessionCreated', () => {})
+    emitFrameworkEvent('internal:playerSessionCreated', { clientId: 1, license: 'test' })
     unsubscribe()
   })
 
@@ -20,12 +20,12 @@ export async function runEventBusBenchmark(): Promise<Bench> {
     const unsubscribes: (() => void)[] = []
     for (let i = 0; i < 10; i++) {
       unsubscribes.push(
-        onCoreEvent('core:playerSessionCreated', () => {
+        onFrameworkEvent('internal:playerSessionCreated', () => {
           // Handler
         }),
       )
     }
-    emitCoreEvent('core:playerSessionCreated', { clientId: 1, license: 'test' })
+    emitFrameworkEvent('internal:playerSessionCreated', { clientId: 1, license: 'test' })
     unsubscribes.forEach((unsub) => unsub())
   })
 
@@ -33,19 +33,19 @@ export async function runEventBusBenchmark(): Promise<Bench> {
     const unsubscribes: (() => void)[] = []
     for (let i = 0; i < 100; i++) {
       unsubscribes.push(
-        onCoreEvent('core:playerSessionCreated', () => {
+        onFrameworkEvent('internal:playerSessionCreated', () => {
           // Handler
         }),
       )
     }
-    emitCoreEvent('core:playerSessionCreated', { clientId: 1, license: 'test' })
+    emitFrameworkEvent('internal:playerSessionCreated', { clientId: 1, license: 'test' })
     unsubscribes.forEach((unsub) => unsub())
   })
 
   bench.add('EventBus - 100 emissions to 1 handler', async () => {
-    const unsubscribe = onCoreEvent('core:playerSessionCreated', () => {})
+    const unsubscribe = onFrameworkEvent('internal:playerSessionCreated', () => {})
     for (let i = 0; i < 100; i++) {
-      emitCoreEvent('core:playerSessionCreated', { clientId: i, license: 'test' })
+      emitFrameworkEvent('internal:playerSessionCreated', { clientId: i, license: 'test' })
     }
     unsubscribe()
   })
@@ -53,21 +53,21 @@ export async function runEventBusBenchmark(): Promise<Bench> {
   bench.add('EventBus - Multiple event types', async () => {
     const unsubscribes: (() => void)[] = []
     unsubscribes.push(
-      onCoreEvent('core:playerSessionCreated', () => {}),
-      onCoreEvent('core:playerSessionDestroyed', () => {}),
+      onFrameworkEvent('internal:playerSessionCreated', () => {}),
+      onFrameworkEvent('internal:playerSessionDestroyed', () => {}),
     )
-    emitCoreEvent('core:playerSessionCreated', { clientId: 1, license: 'test' })
-    emitCoreEvent('core:playerSessionDestroyed', { clientId: 1 })
+    emitFrameworkEvent('internal:playerSessionCreated', { clientId: 1, license: 'test' })
+    emitFrameworkEvent('internal:playerSessionDestroyed', { clientId: 1 })
     unsubscribes.forEach((unsub) => unsub())
   })
 
   bench.add('EventBus - Handler with work', async () => {
     let sum = 0
-    const unsubscribe = onCoreEvent('core:playerSessionCreated', (payload) => {
+    const unsubscribe = onFrameworkEvent('internal:playerSessionCreated', (payload) => {
       sum += payload.clientId
     })
     for (let i = 0; i < 100; i++) {
-      emitCoreEvent('core:playerSessionCreated', { clientId: i, license: 'test' })
+      emitFrameworkEvent('internal:playerSessionCreated', { clientId: i, license: 'test' })
     }
     unsubscribe()
   })

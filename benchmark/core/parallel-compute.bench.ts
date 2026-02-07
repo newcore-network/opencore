@@ -5,14 +5,13 @@ import {
   filterByDistance,
   findClosest,
   initParallelCompute,
-  ParallelComputeService,
   shutdownParallelCompute,
   sortByDistance,
-  type Vector3Like,
-} from '../../src/runtime/server/services/parallel'
+} from '../../src/runtime/server/apis/parallel-compute.api'
+import { Vector3 } from '../../src'
 
 // Generate test entities
-function generateEntities(count: number): Vector3Like[] {
+function generateEntities(count: number): Vector3[] {
   return Array.from({ length: count }, () => ({
     x: Math.random() * 1000,
     y: Math.random() * 1000,
@@ -20,7 +19,7 @@ function generateEntities(count: number): Vector3Like[] {
   }))
 }
 
-const testPosition: Vector3Like = { x: 500, y: 500, z: 50 }
+const testPosition: Vector3 = { x: 500, y: 500, z: 50 }
 
 // Custom compute task for benchmarking
 const heavyCompute = defineTask<number[], number>({

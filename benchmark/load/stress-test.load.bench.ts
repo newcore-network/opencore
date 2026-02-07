@@ -14,7 +14,6 @@ import { NetEventProcessor } from '../../src/runtime/server/system/processors/ne
 import { WorldContext } from '../../src/runtime/core/world'
 import {
   registeredCommands,
-  registeredNetEvents,
   resetCitizenFxMocks,
 } from '../../tests/mocks/citizenfx'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
@@ -54,14 +53,14 @@ describe('Stress Test Load Benchmarks', () => {
   let netEventProcessor: NetEventProcessor
   let testController: StressTestController
   let tickSimulator: TickSimulator
+  let nodeEvents: NodeEvents
 
   beforeEach(() => {
     resetCitizenFxMocks()
     registeredCommands.clear()
-    registeredNetEvents.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    const nodeEvents = new NodeEvents()
+    nodeEvents = new NodeEvents()
     playerService = new LocalPlayerImplementation(
       new WorldContext(),
       new NodePlayerInfo(),
@@ -141,14 +140,10 @@ describe('Stress Test Load Benchmarks', () => {
     )
 
     const eventPromises = players.flatMap((player) => {
-      const handler = registeredNetEvents.get('stress:event')
-      if (!handler) return []
-
       return Array.from({ length: eventsPerPlayer }, async () => {
         const start = performance.now()
         try {
-          ;(global as any).source = player.clientID
-          await handler({
+          nodeEvents.simulateClientEvent('stress:event', player.clientID, {
             action: 'test',
             amount: 100,
           })
@@ -364,11 +359,7 @@ describe('Stress Test Load Benchmarks', () => {
       }),
 
       ...players.slice(100, 200).map(async (player) => {
-        const handler = registeredNetEvents.get('stress:event')
-        if (handler) {
-          ;(global as any).source = player.clientID
-          await handler({ action: 'test', amount: 100 })
-        }
+        nodeEvents.simulateClientEvent('stress:event', player.clientID, { action: 'test', amount: 100 })
       }),
 
       ...Array.from({ length: 50 }, async () => {
