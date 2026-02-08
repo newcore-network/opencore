@@ -44,7 +44,7 @@ export class Vehicles {
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
     @inject(IHasher as any) private readonly hasher: IHasher,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
-    @inject(EventsAPI as any) private readonly events: EventsAPI,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {
     this.vehicleAdapters = {
       entityServer: this.entityServer,

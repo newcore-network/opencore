@@ -16,7 +16,7 @@ export class PlayerSimulatorService {
   private simulatedPlayers = new Map<number, SimulatedPlayerData>()
   private clientIdCounter = 90000 // Start high to avoid conflicts with real players
 
-  private get events(): EventsAPI {
+  private get events(): EventsAPI<'server'> {
     return GLOBAL_CONTAINER.resolve(EventsAPI as any)
   }
 

@@ -20,9 +20,9 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/kernel/index.d.ts",
-      "import": "./dist/kernel/index.js",
-      "require": "./dist/kernel/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
     },
     "./server": {
       "types": "./dist/runtime/server/index.d.ts",

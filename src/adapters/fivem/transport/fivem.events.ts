@@ -1,7 +1,8 @@
 import { EventsAPI } from '../../contracts/transport/events.api'
 import { RuntimeContext } from '../../contracts/transport/context'
+import { Player } from '../../../runtime/server/entities/player'
 
-export class FiveMEvents extends EventsAPI {
+export class FiveMEvents extends EventsAPI<RuntimeContext> {
   constructor(private readonly context: RuntimeContext) {
     super()
   }
@@ -13,21 +14,26 @@ export class FiveMEvents extends EventsAPI {
     })
   }
 
-  emit(event: string, targetOrArg?: number | number[] | 'all' | any, ...args: any[]): void {
-    if (this.context === 'server') {
-      const target = targetOrArg ?? 'all'
-
-      if (target === 'all') {
-        emitNet(event, -1, ...args)
-      } else if (Array.isArray(target)) {
-        for (const id of target) {
-          emitNet(event, id, ...args)
-        }
-      } else {
-        emitNet(event, target, ...args)
-      }
-    } else {
+  emit(event: string, ...args: any[]): void {
+    if (this.context !== 'server') {
       emitNet(event, ...args)
+      return
     }
+    const [target, ...payload] = args
+    const send = (id: number) => emitNet(event, id, ...payload)
+
+    if (target === 'all') {
+      send(-1)
+      return
+    }
+    if (Array.isArray(target)) {
+      target.forEach(send)
+      return
+    }
+    if (target instanceof Player) {
+      send(target.clientID)
+      return
+    }
+    send(target)
   }
 }

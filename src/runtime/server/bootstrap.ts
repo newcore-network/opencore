@@ -188,7 +188,7 @@ export async function initServer(options: ServerRuntimeOptions) {
     GLOBAL_CONTAINER.isRegistered(EventsAPI as any)
   ) {
     const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
-    const events = GLOBAL_CONTAINER.resolve(EventsAPI as any) as EventsAPI
+    const events = GLOBAL_CONTAINER.resolve(EventsAPI as any) as EventsAPI<'server'>
 
     // 1. Broadast to resources already running
     engineEvents.emit('core:ready')

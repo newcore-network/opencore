@@ -30,7 +30,7 @@ export class RemotePlayerImplementation extends Players {
     @inject(IExports as any) private readonly exportsService: IExports,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
-    @inject(EventsAPI as any) private readonly events: EventsAPI,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {
     super()
     this.playerAdapters = {

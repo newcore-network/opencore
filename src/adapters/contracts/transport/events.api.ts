@@ -1,9 +1,14 @@
-import { EventContext } from './context'
+import { EventContext, RuntimeContext } from './context'
+import { Player } from '../../../runtime/server/entities/player'
+
+type EmitArgs<C extends RuntimeContext> = C extends 'server'
+  ? [target: Player | number | number[] | 'all', ...args: any[]]
+  : [...args: any[]]
 
 /**
  * broadcast and listen to events without relying on runtime. The adapter will be used.
  */
-export abstract class EventsAPI {
+export abstract class EventsAPI<C extends RuntimeContext> {
   /**
    * Listen to an event.
    *
@@ -19,11 +24,21 @@ export abstract class EventsAPI {
 
   /**
    * Emit an event.
-   *
+   *  SERVER → CLIENT
    * Server:
    *   - sends to client(s)
    * Client:
    *   - sends to server, targetOrArg will be ignored
    */
-  abstract emit(event: string, targetOrArg?: number | number[] | 'all' | any, ...args: any[]): void
+  abstract emit(event: string, target: Player | number | number[] | 'all', ...args: any[]): void
+
+  /**
+   * Emit an event.
+   *  CLIENT → SERVER
+   * Server:
+   *   - sends to client(s)
+   * Client:
+   *   - sends to server, targetOrArg will be ignored
+   */
+  abstract emit(event: string, ...args: EmitArgs<C>): void
 }

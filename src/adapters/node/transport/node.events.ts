@@ -1,10 +1,11 @@
 import { EventEmitter } from 'node:events'
 import { EventsAPI } from '../../contracts/transport/events.api'
 import { loggers } from '../../../kernel/logger'
+import { RuntimeContext } from '../../contracts/transport/context'
 
 type NodeTarget = number | number[] | 'all'
 
-export class NodeEvents extends EventsAPI {
+export class NodeEvents extends EventsAPI<RuntimeContext> {
   private readonly emitter = new EventEmitter()
 
   on(

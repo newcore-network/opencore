@@ -43,7 +43,7 @@ export class AppearanceService {
   constructor(
     @inject(IPedAppearanceServer as any) private readonly pedAdapter: IPedAppearanceServer,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
-    @inject(EventsAPI as any) private readonly events: EventsAPI,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {}
 
   /**

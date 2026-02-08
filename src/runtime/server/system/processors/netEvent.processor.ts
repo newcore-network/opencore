@@ -28,7 +28,7 @@ export class NetEventProcessor implements DecoratorProcessor {
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
-    @inject(EventsAPI as any) private events: EventsAPI,
+    @inject(EventsAPI as any) private events: EventsAPI<'server'>,
   ) {}
 
   process(instance: any, methodName: string, metadata: NetEventOptions) {

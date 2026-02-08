@@ -18,7 +18,7 @@ export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
   entityServer: IEntityServer
-  events: EventsAPI
+  events: EventsAPI<'server'>
 }
 
 /**

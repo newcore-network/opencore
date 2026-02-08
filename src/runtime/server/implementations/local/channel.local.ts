@@ -13,7 +13,7 @@ export class LocalChannelImplementation extends Channels {
 
   constructor(
     private readonly playerDirectory: Players,
-    @inject(EventsAPI as any) private readonly events: EventsAPI,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {
     super()
   }

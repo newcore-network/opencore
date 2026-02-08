@@ -30,7 +30,7 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
-    @inject(EventsAPI as any) private readonly events: EventsAPI,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {
     this.playerAdapters = {
       playerInfo: this.playerInfo,

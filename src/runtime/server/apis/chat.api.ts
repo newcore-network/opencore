@@ -14,7 +14,7 @@ import { Players } from '../ports/players.api-port'
 @injectable()
 export class Chat {
   constructor(
-    @inject(EventsAPI as any) private readonly events: EventsAPI,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
     private readonly players: Players,
   ) {}
   /**
