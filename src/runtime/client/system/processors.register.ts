@@ -6,7 +6,7 @@ import { KeyMappingProcessor } from './processors/key.processor'
 import { LocalEventProcessor } from './processors/localEvent.processor'
 import { ClientNetEventProcessor } from './processors/netEvent.processor'
 import { ClientOnRpcProcessor } from './processors/onRpc.processor'
-import { NuiProcessor } from './processors/nui.processor'
+import { ViewProcessor } from './processors/view.processor'
 import {
   ResourceStartProcessor,
   ResourceStopProcessor,
@@ -17,7 +17,7 @@ export function registerSystemClient() {
   // Core processors
   di.register('DecoratorProcessor', { useClass: KeyMappingProcessor })
   di.register('DecoratorProcessor', { useClass: TickProcessor })
-  di.register('DecoratorProcessor', { useClass: NuiProcessor })
+  di.register('DecoratorProcessor', { useClass: ViewProcessor })
   di.register('DecoratorProcessor', { useClass: ClientNetEventProcessor })
   di.register('DecoratorProcessor', { useClass: ClientOnRpcProcessor })
 

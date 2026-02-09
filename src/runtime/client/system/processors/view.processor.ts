@@ -4,8 +4,8 @@ import { loggers } from '../../../../kernel/logger'
 import { METADATA_KEYS } from '../metadata-client.keys'
 
 @injectable()
-export class NuiProcessor implements DecoratorProcessor {
-  readonly metadataKey = METADATA_KEYS.NUI
+export class ViewProcessor implements DecoratorProcessor {
+  readonly metadataKey = METADATA_KEYS.VIEW
 
   process(target: any, methodName: string, metadata: { eventName: string }) {
     const handler = target[methodName].bind(target)

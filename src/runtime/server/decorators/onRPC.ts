@@ -30,6 +30,15 @@ type ServerNetHandlerRPC<TArgs extends any[] = any[]> = (
   ...args: TArgs
 ) => Promise<any>
 
+type RpcHandlerSignatureError =
+  '❌ @OnRPC handlers must be async and return a Promise'
+
+
+type EnsureValidRpcHandler<T> =
+  T extends (...args: any[]) => Promise<any>
+    ? T
+    : RpcHandlerSignatureError
+
 /**
  * Register an RPC handler.
  *
@@ -80,7 +89,9 @@ export function OnRPC<TArgs extends any[]>(
   eventName: string,
   schemaOrOptions?: z.ZodType | Pick<RpcHandlerOptions, 'schema'>,
 ) {
-  return <H extends ServerNetHandlerRPC<TArgs>>(
+  return <
+    H extends EnsureValidRpcHandler<ServerNetHandlerRPC<TArgs>>
+  >(
     target: any,
     propertyKey: string,
     _descriptor: TypedPropertyDescriptor<H>,
