@@ -6,9 +6,9 @@ import { CommandExportController } from '../../../src/runtime/server/controllers
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
 import { Player } from '../../../src/runtime/server/entities/player'
 import { LocalCommandImplementation } from '../../../src/runtime/server/implementations/local/command.local'
-import type { CommandExecutionPort } from '../../../src/runtime/server/ports/command-execution.port'
 import type { Players } from '../../../src/runtime/server/ports/players.api-port'
 import { createMockPlayerAdapters } from '../../helpers'
+import { CommandExecutionPort } from 'src/runtime/server/ports/internal/command-execution.port'
 
 // Mock getRuntimeContext
 vi.mock('../../../src/runtime/server/runtime', () => ({

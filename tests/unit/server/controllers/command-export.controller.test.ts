@@ -3,10 +3,10 @@ import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEv
 import { AppError } from '../../../../src/kernel/error'
 import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
-import type { CommandExecutionPort } from '../../../../src/runtime/server/ports/command-execution.port'
 import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports.types'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
+import { CommandExecutionPort } from 'src/runtime/server/services'
 
 describe('CommandExportController', () => {
   let controller: CommandExportController

@@ -10,7 +10,7 @@ import { LocalChannelImplementation } from '../../../../src/runtime/server/imple
 describe('ChannelService', () => {
   let channelService: Channels
   let mockPlayerDirectory: Players
-  let mockEventsAPI: EventsAPI
+  let mockEventsAPI: EventsAPI<'server'>
   let mockPlayer1: Player
   let mockPlayer2: Player
   let mockPlayer3: Player

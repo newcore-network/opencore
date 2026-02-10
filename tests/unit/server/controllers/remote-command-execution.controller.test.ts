@@ -4,9 +4,9 @@ import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEv
 import type { IResourceInfo } from '../../../../src/adapters/contracts/IResourceInfo'
 import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
-import type { CommandExecutionPort } from '../../../../src/runtime/server/ports/command-execution.port'
 import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { createTestPlayer } from '../../../helpers'
+import { CommandExecutionPort } from 'src/runtime/server/services'
 
 vi.mock('../../../../src/runtime/server/runtime', () => ({
   getRuntimeContext: vi.fn(() => ({ mode: 'RESOURCE' })),

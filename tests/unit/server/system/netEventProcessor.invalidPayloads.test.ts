@@ -22,7 +22,7 @@ const observer: NetEventSecurityObserverContract = {
   onInvalidPayload: vi.fn().mockResolvedValue(undefined),
 }
 
-const eventsAbstract: EventsAPI = {
+const eventsAbstract: EventsAPI<'server'> = {
   on: vi
     .fn()
     .mockImplementation(
