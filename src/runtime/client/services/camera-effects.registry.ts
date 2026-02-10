@@ -114,6 +114,13 @@ export class CameraEffectsRegistry {
   }
 
   /**
+   * Returns true when a preset id exists in the registry.
+   */
+  hasPreset(presetId: string): boolean {
+    return this.presets.has(presetId)
+  }
+
+  /**
    * Registers the framework default effect set.
    */
   registerBuiltins(): void {
@@ -181,6 +188,31 @@ export class CameraEffectsRegistry {
         if (!p.text) return
         ctx.drawSubtitle(String(p.text))
       },
+    })
+
+    this.definePreset({
+      id: 'dramatic_intro',
+      effects: [
+        { id: 'fadeIn', params: { ms: 700 }, fromMs: 0, toMs: 700 },
+        { id: 'letterbox', params: { top: 0.12, bottom: 0.12, alpha: 240 } },
+        { id: 'timecycle', params: { name: 'MP_corona_switch', strength: 0.45 } },
+      ],
+    })
+
+    this.definePreset({
+      id: 'action_chase',
+      effects: [
+        { id: 'camShake', params: { type: 'HAND_SHAKE', amplitude: 0.5 } },
+        { id: 'letterbox', params: { top: 0.08, bottom: 0.08, alpha: 220 } },
+      ],
+    })
+
+    this.definePreset({
+      id: 'dialog_scene',
+      effects: [
+        { id: 'letterbox', params: { top: 0.1, bottom: 0.1, alpha: 225 } },
+        { id: 'timecycle', params: { name: 'cinema', strength: 0.2 } },
+      ],
     })
   }
 }

@@ -120,6 +120,55 @@ export interface CinematicResult {
 }
 
 /**
+ * Structured validation error thrown when a cinematic definition is invalid.
+ */
+export class CinematicValidationError extends Error {
+  constructor(public readonly issues: string[]) {
+    super(
+      [
+        'Invalid cinematic definition:',
+        ...issues.map((issue, index) => `  ${index + 1}. ${issue}`),
+      ].join('\n'),
+    )
+    this.name = 'CinematicValidationError'
+  }
+}
+
+/**
+ * Payload for shot lifecycle events.
+ */
+export interface CinematicShotEventPayload {
+  shotIndex: number
+  totalShots: number
+  shotId?: string
+  kind: 'wait' | 'motion'
+  plannedDurationMs: number
+}
+
+/**
+ * Payload for effect activation events.
+ */
+export interface CinematicEffectEventPayload {
+  effectId: string
+  shotIndex: number
+  shotId?: string
+}
+
+/**
+ * Event payload mapping for strongly typed subscriptions.
+ */
+export interface CinematicEventPayloadMap {
+  shotStart: CinematicShotEventPayload
+  shotEnd: CinematicShotEventPayload
+  effectApplied: CinematicEffectEventPayload
+  paused: undefined
+  resumed: undefined
+  completed: CinematicResult
+  cancelled: CinematicResult
+  interrupted: CinematicResult
+}
+
+/**
  * Runtime events emitted by cinematic handles.
  */
 export type CinematicEventName =
@@ -130,8 +179,9 @@ export type CinematicEventName =
   | 'resumed'
   | 'completed'
   | 'cancelled'
+  | 'interrupted'
 
-type CinematicEventHandler = (payload?: unknown) => void
+type CinematicEventHandler<TPayload> = (payload: TPayload) => void
 
 interface ResolvedNode {
   position: Vector3
@@ -160,7 +210,7 @@ interface CinematicRuntimeState {
  * Mutable control handle for a running cinematic.
  */
 export class CinematicHandle {
-  private listeners = new Map<CinematicEventName, Set<CinematicEventHandler>>()
+  private listeners = new Map<CinematicEventName, Set<CinematicEventHandler<unknown>>>()
 
   constructor(
     private runtime: CinematicRuntimeState,
@@ -175,7 +225,7 @@ export class CinematicHandle {
     if (this.runtime.paused) return
     this.runtime.paused = true
     this.runtime.pauseStartedAt = GetGameTimer()
-    this.emit('paused')
+    this.emit('paused', undefined)
   }
 
   /**
@@ -185,7 +235,7 @@ export class CinematicHandle {
     if (!this.runtime.paused) return
     this.runtime.paused = false
     this.runtime.pauseStartedAt = null
-    this.emit('resumed')
+    this.emit('resumed', undefined)
   }
 
   /**
@@ -194,7 +244,6 @@ export class CinematicHandle {
   cancel(): void {
     this.runtime.cancelled = true
     this.runtime.interruptStatus = 'cancelled'
-    this.emit('cancelled')
   }
 
   /**
@@ -255,23 +304,29 @@ export class CinematicHandle {
   /**
    * Subscribes to runtime handle events.
    */
-  on(eventName: CinematicEventName, handler: CinematicEventHandler): () => void {
-    const handlers = this.listeners.get(eventName) ?? new Set<CinematicEventHandler>()
-    handlers.add(handler)
+  on<TEventName extends CinematicEventName>(
+    eventName: TEventName,
+    handler: CinematicEventHandler<CinematicEventPayloadMap[TEventName]>,
+  ): () => void {
+    const handlers = this.listeners.get(eventName) ?? new Set<CinematicEventHandler<unknown>>()
+    handlers.add(handler as CinematicEventHandler<unknown>)
     this.listeners.set(eventName, handlers)
     return () => {
-      handlers.delete(handler)
+      handlers.delete(handler as CinematicEventHandler<unknown>)
     }
   }
 
   /**
    * Emits an event to handle subscribers.
    */
-  emit(eventName: CinematicEventName, payload?: unknown): void {
+  emit<TEventName extends CinematicEventName>(
+    eventName: TEventName,
+    payload: CinematicEventPayloadMap[TEventName],
+  ): void {
     const handlers = this.listeners.get(eventName)
     if (!handlers || handlers.size === 0) return
     for (const handler of handlers.values()) {
-      handler(payload)
+      ;(handler as CinematicEventHandler<CinematicEventPayloadMap[TEventName]>)(payload)
     }
   }
 }
@@ -309,6 +364,8 @@ export class Cinematic {
    * Starts a cinematic and returns a mutable runtime handle immediately.
    */
   start(definition: CinematicDefinition, options: CinematicStartOptions = {}): CinematicHandle {
+    this.validateDefinition(definition)
+
     if (this.activeRuntime) {
       this.activeRuntime.cancelled = true
       this.activeRuntime.interruptStatus = 'interrupted'
@@ -334,8 +391,31 @@ export class Cinematic {
     this.camera.setActive(runtime.camHandle, true)
     this.camera.render(true, { ease: true, easeTimeMs: 250 })
 
-    const resultPromise = this.run(runtime)
+    let resolveResult: ((result: CinematicResult) => void) | null = null
+    let rejectResult: ((error: unknown) => void) | null = null
+
+    const resultPromise = new Promise<CinematicResult>((resolve, reject) => {
+      resolveResult = resolve
+      rejectResult = reject
+    })
+
     const handle = new CinematicHandle(runtime, resultPromise)
+
+    void this.run(runtime, handle)
+      .then((result) => {
+        if (result.status === 'completed') {
+          handle.emit('completed', result)
+        } else if (result.status === 'interrupted') {
+          handle.emit('interrupted', result)
+        } else {
+          handle.emit('cancelled', result)
+        }
+
+        resolveResult?.(result)
+      })
+      .catch((error) => {
+        rejectResult?.(error)
+      })
 
     return handle
   }
@@ -374,7 +454,10 @@ export class Cinematic {
     this.effects.register(effect)
   }
 
-  private async run(runtime: CinematicRuntimeState): Promise<CinematicResult> {
+  private async run(
+    runtime: CinematicRuntimeState,
+    handle: CinematicHandle,
+  ): Promise<CinematicResult> {
     const ped = PlayerPedId()
 
     try {
@@ -387,21 +470,33 @@ export class Cinematic {
         }
 
         const shot = runtime.definition.shots[shotIndex]
+        const plannedDurationMs = shot.waitMs ?? shot.durationMs ?? 0
+        const shotPayload: CinematicShotEventPayload = {
+          shotIndex,
+          totalShots: runtime.definition.shots.length,
+          shotId: shot.id,
+          kind: shot.waitMs ? 'wait' : 'motion',
+          plannedDurationMs,
+        }
+        handle.emit('shotStart', shotPayload)
 
         if (shot.waitMs && shot.waitMs > 0) {
           await this.waitStep(runtime, shot.waitMs)
+          handle.emit('shotEnd', shotPayload)
           shotIndex += 1
           continue
         }
 
         const durationMs = shot.durationMs ?? 0
         if (durationMs <= 0) {
+          handle.emit('shotEnd', shotPayload)
           shotIndex += 1
           continue
         }
 
         const nodes = await this.resolveShotNodes(shot, runtime.definition.anchors ?? {})
         if (nodes.length === 0) {
+          handle.emit('shotEnd', shotPayload)
           shotIndex += 1
           continue
         }
@@ -410,7 +505,8 @@ export class Cinematic {
         const shotEffects = shot.effects ?? []
         const effects = this.buildRuntimeEffects([...globalEffects, ...shotEffects])
 
-        await this.runShot(runtime, shot, nodes, effects, durationMs)
+        await this.runShot(runtime, handle, shotIndex, shot, nodes, effects, durationMs)
+        handle.emit('shotEnd', shotPayload)
         shotIndex += 1
       }
 
@@ -501,6 +597,8 @@ export class Cinematic {
 
   private async runShot(
     runtime: CinematicRuntimeState,
+    handle: CinematicHandle,
+    shotIndex: number,
     shot: CinematicShot,
     nodes: ResolvedNode[],
     effects: RuntimeEffect[],
@@ -552,7 +650,16 @@ export class Cinematic {
         this.camera.stopPointing(runtime.camHandle)
       }
 
-      await this.updateEffects(runtime, effects, elapsedMs, deltaMs, durationMs)
+      await this.updateEffects(
+        runtime,
+        handle,
+        shotIndex,
+        shot.id,
+        effects,
+        elapsedMs,
+        deltaMs,
+        durationMs,
+      )
 
       if (elapsedMs >= durationMs) {
         await this.finalizeEffects(runtime, effects, 'completed', durationMs)
@@ -585,6 +692,9 @@ export class Cinematic {
 
   private async updateEffects(
     runtime: CinematicRuntimeState,
+    handle: CinematicHandle,
+    shotIndex: number,
+    shotId: string | undefined,
     effects: RuntimeEffect[],
     elapsedMs: number,
     deltaMs: number,
@@ -600,6 +710,11 @@ export class Cinematic {
 
       if (isActive && !effect.active && effect.definition.setup) {
         await effect.definition.setup(ctx, effect.params)
+        handle.emit('effectApplied', {
+          effectId: effect.ref.id,
+          shotIndex,
+          shotId,
+        })
       }
 
       if (isActive && effect.definition.update) {
@@ -743,7 +858,7 @@ export class Cinematic {
       case 'anchor': {
         const anchor = anchors[input.name]
         if (!anchor) {
-          return { x: 0, y: 0, z: 0 }
+          throw new Error(`Unknown cinematic anchor "${input.name}"`)
         }
         return {
           x: anchor.x + (input.offset?.x ?? 0),
@@ -753,6 +868,177 @@ export class Cinematic {
       }
       case 'resolver':
         return input.resolve()
+    }
+  }
+
+  private validateDefinition(definition: CinematicDefinition): void {
+    const issues: string[] = []
+
+    if (!Array.isArray(definition.shots) || definition.shots.length === 0) {
+      issues.push('`shots` must contain at least one shot.')
+    }
+
+    const seenShotIds = new Set<string>()
+
+    for (let index = 0; index < definition.shots.length; index += 1) {
+      const shot = definition.shots[index]
+      const label = `Shot #${index + 1}`
+
+      if (shot.id) {
+        if (seenShotIds.has(shot.id)) {
+          issues.push(`${label} has duplicated id "${shot.id}".`)
+        }
+        seenShotIds.add(shot.id)
+      }
+
+      const isWait = typeof shot.waitMs === 'number'
+      const hasMotion =
+        typeof shot.durationMs === 'number' || !!shot.from || !!shot.to || !!shot.path
+
+      if (!isWait && !hasMotion) {
+        issues.push(`${label} must define either waitMs or camera motion data.`)
+      }
+
+      if (isWait) {
+        if (!Number.isFinite(shot.waitMs) || (shot.waitMs ?? 0) <= 0) {
+          issues.push(`${label} waitMs must be a positive number.`)
+        }
+        if (shot.from || shot.to || shot.path || shot.durationMs) {
+          issues.push(`${label} cannot mix waitMs with from/to/path/durationMs.`)
+        }
+      } else {
+        if (!Number.isFinite(shot.durationMs) || (shot.durationMs ?? 0) <= 0) {
+          issues.push(`${label} durationMs must be a positive number for motion shots.`)
+        }
+
+        const hasPath = !!shot.path && shot.path.length > 0
+        const hasFromTo = !!shot.from || !!shot.to
+
+        if (!hasPath && !hasFromTo) {
+          issues.push(`${label} must define path or from/to.`)
+        }
+
+        if (shot.path && shot.path.length === 0) {
+          issues.push(`${label} path cannot be empty.`)
+        }
+
+        if (shot.path && hasFromTo) {
+          issues.push(`${label} cannot define both path and from/to.`)
+        }
+      }
+
+      if (shot.lookAt && Array.isArray(shot.lookAt) && shot.lookAt.length === 0) {
+        issues.push(`${label} lookAt array cannot be empty.`)
+      }
+
+      this.validatePositionNode(shot.from, definition.anchors ?? {}, `${label}.from`, issues)
+      this.validatePositionNode(shot.to, definition.anchors ?? {}, `${label}.to`, issues)
+      for (let pathIndex = 0; pathIndex < (shot.path?.length ?? 0); pathIndex += 1) {
+        this.validatePositionNode(
+          shot.path?.[pathIndex],
+          definition.anchors ?? {},
+          `${label}.path[${pathIndex}]`,
+          issues,
+        )
+      }
+
+      const lookTargets = shot.lookAt
+        ? Array.isArray(shot.lookAt)
+          ? shot.lookAt
+          : [shot.lookAt]
+        : []
+      for (let lookIndex = 0; lookIndex < lookTargets.length; lookIndex += 1) {
+        this.validatePositionNode(
+          lookTargets[lookIndex],
+          definition.anchors ?? {},
+          `${label}.lookAt[${lookIndex}]`,
+          issues,
+        )
+      }
+
+      this.validateEffects(shot.effects ?? [], `${label}.effects`, issues)
+    }
+
+    const presets = definition.effectPresets ?? []
+    for (const preset of presets) {
+      if (!this.effects.hasPreset(preset)) {
+        issues.push(`Unknown effect preset "${preset}".`)
+      }
+    }
+
+    this.validateEffects(definition.effects ?? [], 'effects', issues)
+
+    if (issues.length > 0) {
+      throw new CinematicValidationError(issues)
+    }
+  }
+
+  private validateEffects(effects: CameraEffectReference[], scope: string, issues: string[]): void {
+    for (let index = 0; index < effects.length; index += 1) {
+      const effect = effects[index]
+      const label = `${scope}[${index}]`
+
+      if (!effect.id || typeof effect.id !== 'string') {
+        issues.push(`${label}.id must be a non-empty string.`)
+        continue
+      }
+
+      if (!this.effects.has(effect.id)) {
+        issues.push(`${label} references unknown effect "${effect.id}".`)
+      }
+
+      if (effect.fromMs !== undefined && (!Number.isFinite(effect.fromMs) || effect.fromMs < 0)) {
+        issues.push(`${label}.fromMs must be a number >= 0.`)
+      }
+
+      if (effect.toMs !== undefined && (!Number.isFinite(effect.toMs) || effect.toMs < 0)) {
+        issues.push(`${label}.toMs must be a number >= 0.`)
+      }
+
+      if (
+        effect.fromMs !== undefined &&
+        effect.toMs !== undefined &&
+        Number.isFinite(effect.fromMs) &&
+        Number.isFinite(effect.toMs) &&
+        effect.toMs < effect.fromMs
+      ) {
+        issues.push(`${label}.toMs must be greater than or equal to fromMs.`)
+      }
+    }
+  }
+
+  private validatePositionNode(
+    node: PositionInput | undefined,
+    anchors: Record<string, Vector3>,
+    scope: string,
+    issues: string[],
+  ): void {
+    if (!node) return
+
+    if (node.type === 'anchor' && !anchors[node.name]) {
+      issues.push(`${scope} references unknown anchor "${node.name}".`)
+    }
+
+    if (node.type === 'coords') {
+      if (!Number.isFinite(node.x) || !Number.isFinite(node.y) || !Number.isFinite(node.z)) {
+        issues.push(`${scope} coords must be finite numbers.`)
+      }
+    }
+
+    if (node.type === 'entity' || node.type === 'entityBone') {
+      if (!Number.isFinite(node.entity) || node.entity < 0) {
+        issues.push(`${scope}.entity must be a valid entity handle number.`)
+      }
+    }
+
+    if (node.type === 'entityBone') {
+      if (!Number.isFinite(node.bone)) {
+        issues.push(`${scope}.bone must be a finite number.`)
+      }
+    }
+
+    if (node.type === 'resolver' && typeof node.resolve !== 'function') {
+      issues.push(`${scope}.resolve must be a function.`)
     }
   }
 
