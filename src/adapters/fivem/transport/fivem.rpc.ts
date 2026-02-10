@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { v4 as uuid } from 'uuid'
 import { RpcAPI, type RpcTarget } from '../../contracts/transport/rpc.api'
 import type { RuntimeContext } from '../../contracts/transport/context'
 
@@ -112,7 +112,7 @@ export class FiveMRpc extends RpcAPI {
     input: { kind: 'call' | 'notify'; name: string; args: unknown[] },
     target?: RpcTarget,
   ): Promise<TResult> {
-    const id = randomUUID()
+    const id = uuid()
 
     if (this.context === 'server' && target === 'all') {
       return Promise.reject(new Error('FiveMRpc: target=all is not supported for call/notify'))
