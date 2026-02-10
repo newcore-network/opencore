@@ -176,7 +176,7 @@ export class MockEntityServer extends IEntityServer {
 /**
  * Mock implementation of EventsAPI for testing.
  */
-export class MockEventsAPI extends EventsAPI {
+export class MockEventsAPI extends EventsAPI<'server'> {
   on(_event: string, _handler: (ctx: EventContext, ...args: any[]) => void | Promise<void>): void {}
 
   emit(_event: string, _targetOrArg?: number | number[] | 'all' | any, ..._args: any[]): void {}

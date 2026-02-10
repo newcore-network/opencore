@@ -12,6 +12,9 @@ import { getClientControllerRegistry } from './decorators'
 import { playerClientLoader } from './player/player.loader'
 import {
   BlipService,
+  Camera,
+  CameraEffectsRegistry,
+  Cinematic,
   MarkerService,
   NotificationService,
   PedService,
@@ -79,6 +82,9 @@ function registerServices() {
   di.registerSingleton(ProgressService, ProgressService)
   di.registerSingleton(MarkerService, MarkerService)
   di.registerSingleton(BlipService, BlipService)
+  di.registerSingleton(Camera, Camera)
+  di.registerSingleton(CameraEffectsRegistry, CameraEffectsRegistry)
+  di.registerSingleton(Cinematic, Cinematic)
   di.registerSingleton(VehicleClientService, VehicleClientService)
   di.registerSingleton(VehicleService, VehicleService)
   di.registerSingleton(PedService, PedService)
