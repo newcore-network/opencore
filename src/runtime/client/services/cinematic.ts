@@ -8,6 +8,7 @@ import {
   type EffectTeardownReason,
 } from './camera-effects.registry'
 import { type CameraRotation, Camera } from './camera'
+import { SceneBuilder, type SceneBuildable } from './cinematic-builder'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -361,9 +362,20 @@ export class Cinematic {
   }
 
   /**
+   * Creates a fluent cinematic scene builder bound to this service.
+   */
+  scene(id?: string): SceneBuilder {
+    return new SceneBuilder({
+      id,
+      start: (scene, options) => this.start(scene, options),
+    })
+  }
+
+  /**
    * Starts a cinematic and returns a mutable runtime handle immediately.
    */
-  start(definition: CinematicDefinition, options: CinematicStartOptions = {}): CinematicHandle {
+  start(scene: SceneBuildable, options: CinematicStartOptions = {}): CinematicHandle {
+    const definition = scene.build()
     this.validateDefinition(definition)
 
     if (this.activeRuntime) {
@@ -424,10 +436,10 @@ export class Cinematic {
    * Starts and awaits a cinematic timeline until completion.
    */
   async play(
-    definition: CinematicDefinition,
+    scene: SceneBuildable,
     options: CinematicStartOptions = {},
   ): Promise<CinematicResult> {
-    const handle = this.start(definition, options)
+    const handle = this.start(scene, options)
     return handle.result
   }
 

@@ -15,7 +15,7 @@ import { Players } from '../ports/players.api-port'
 export class Chat {
   constructor(
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
-    private readonly players: Players,
+    @inject(Players as any) private readonly players: Players,
   ) {}
   /**
    * Broadcast a chat message to all connected players.

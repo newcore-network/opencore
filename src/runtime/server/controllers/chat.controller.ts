@@ -8,8 +8,8 @@ import { Players } from '../ports/players.api-port'
 @Controller()
 export class ChatController {
   constructor(
-    private readonly chatService: Chat,
-    @inject(Players as any) private readonly playerDirectory: Players,
+    @inject(Chat) private readonly chat: Chat,
+    @inject(Players as any) private readonly players: Players,
   ) {}
 
   @Export()
@@ -18,16 +18,16 @@ export class ChatController {
     author: string = 'SYSTEM',
     color: RGB = { r: 255, g: 255, b: 255 },
   ) {
-    this.chatService.broadcast(message, author, color)
+    this.chat.broadcast(message, author, color)
   }
 
   @Export()
   coreSendPrivate(targetId: number, message: string, author: string = 'Private') {
-    const player = this.playerDirectory.getByClient(targetId)
+    const player = this.players.getByClient(targetId)
     if (!player) {
       throw new Error(`Player with client ID ${targetId} not found`)
     }
-    this.chatService.sendPrivate(player, message, author)
+    this.chat.sendPrivate(player, message, author)
   }
 
   @Export()
@@ -37,9 +37,9 @@ export class ChatController {
     author: string = 'Private',
     color?: RGB,
   ) {
-    const players = this.playerDirectory.getMany(targets)
+    const players = this.players.getMany(targets)
     for (let i = 0; i < players.length; i++) {
-      this.chatService.sendPrivate(players[i], message, author, color)
+      this.chat.sendPrivate(players[i], message, author, color)
     }
   }
 }

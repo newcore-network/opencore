@@ -1,6 +1,7 @@
 export * from './blip.service'
 export * from './camera'
 export * from './camera-effects.registry'
+export * from './cinematic-builder'
 export * from './cinematic'
 export * from './marker.service'
 export * from './notification.service'
