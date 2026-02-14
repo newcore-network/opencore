@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NodeRpc } from '../../../src/adapters/node/transport/node.rpc'
 
 describe('NodeRpc', () => {
-  let rpc: NodeRpc
+  let rpc: NodeRpc<'server'>
 
   beforeEach(() => {
     rpc = new NodeRpc('server')
@@ -20,7 +20,7 @@ describe('NodeRpc', () => {
     it('should register a handler and return its result via call()', async () => {
       rpc.on('math:add', async (_ctx, a: number, b: number) => a + b)
 
-      const result = await rpc.call<number>('math:add', [3, 7])
+      const result = await rpc.call<number>('math:add', 1, 3, 7)
       expect(result).toBe(10)
     })
 
@@ -32,7 +32,7 @@ describe('NodeRpc', () => {
         return 'pong'
       })
 
-      await rpc.call('ping')
+      await rpc.call('ping', 1)
       expect(receivedRequestId).toBeDefined()
       expect(typeof receivedRequestId).toBe('string')
       expect(receivedRequestId!.length).toBeGreaterThan(0)
@@ -46,9 +46,9 @@ describe('NodeRpc', () => {
         return true
       })
 
-      await rpc.call('track')
-      await rpc.call('track')
-      await rpc.call('track')
+      await rpc.call('track', 1)
+      await rpc.call('track', 1)
+      await rpc.call('track', 1)
 
       expect(ids.length).toBe(3)
       expect(new Set(ids).size).toBe(3)
@@ -57,14 +57,14 @@ describe('NodeRpc', () => {
     it('should return undefined when handler returns nothing', async () => {
       rpc.on('void:handler', async () => {})
 
-      const result = await rpc.call('void:handler')
+      const result = await rpc.call('void:handler', 1)
       expect(result).toBeUndefined()
     })
 
     it('should handle synchronous handlers', async () => {
       rpc.on('sync', (_ctx) => 42)
 
-      const result = await rpc.call<number>('sync')
+      const result = await rpc.call<number>('sync', 1)
       expect(result).toBe(42)
     })
 
@@ -75,7 +75,7 @@ describe('NodeRpc', () => {
         receivedArgs = args
       })
 
-      await rpc.call('args:test', ['hello', 123, true, { key: 'value' }])
+      await rpc.call('args:test', 1, 'hello', 123, true, { key: 'value' })
 
       expect(receivedArgs).toEqual(['hello', 123, true, { key: 'value' }])
     })
@@ -87,7 +87,7 @@ describe('NodeRpc', () => {
         receivedArgs = args
       })
 
-      await rpc.call('no:args')
+      await rpc.call('no:args', 1)
       expect(receivedArgs).toEqual([])
     })
   })
@@ -97,7 +97,7 @@ describe('NodeRpc', () => {
   // ═══════════════════════════════════════════════════════════════════════════
   describe('Error handling', () => {
     it('should throw when calling an unregistered handler', async () => {
-      await expect(rpc.call('nonexistent')).rejects.toThrow(
+      await expect(rpc.call('nonexistent', 1)).rejects.toThrow(
         "NodeRpc: no handler registered for 'nonexistent'",
       )
     })
@@ -107,7 +107,7 @@ describe('NodeRpc', () => {
         throw new Error('handler exploded')
       })
 
-      await expect(rpc.call('fail')).rejects.toThrow('handler exploded')
+      await expect(rpc.call('fail', 1)).rejects.toThrow('handler exploded')
     })
 
     it('should propagate typed errors', async () => {
@@ -123,7 +123,7 @@ describe('NodeRpc', () => {
       })
 
       try {
-        await rpc.call('typed:fail')
+        await rpc.call('typed:fail', 1)
         expect.unreachable('should have thrown')
       } catch (err: any) {
         expect(err).toBeInstanceOf(CustomError)
@@ -144,13 +144,13 @@ describe('NodeRpc', () => {
         return 'this value is ignored by notify'
       })
 
-      const result = await rpc.notify('side:effect')
+      const result = await rpc.notify('side:effect', 1)
       expect(result).toBeUndefined()
       expect(called).toBe(true)
     })
 
     it('should silently succeed when no handler is registered', async () => {
-      await expect(rpc.notify('missing')).resolves.toBeUndefined()
+      await expect(rpc.notify('missing', 1)).resolves.toBeUndefined()
     })
 
     it('should pass args to the handler', async () => {
@@ -160,38 +160,63 @@ describe('NodeRpc', () => {
         receivedArgs = args
       })
 
-      await rpc.notify('notify:args', ['a', 'b'])
+      await rpc.notify('notify:args', 1, 'a', 'b')
       expect(receivedArgs).toEqual(['a', 'b'])
     })
   })
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // call/notify with target overloads
+  // Strict target behavior in server context
   // ═══════════════════════════════════════════════════════════════════════════
-  describe('Target overloads', () => {
-    it('should accept target as second argument in call()', async () => {
+  describe('Target behavior', () => {
+    it('should accept numeric target in call()', async () => {
       rpc.on('targeted', async (_ctx, msg: string) => `got: ${msg}`)
 
-      const result = await rpc.call<string>('targeted', 42, ['hello'])
+      const result = await rpc.call<string>('targeted', 42, 'hello')
       expect(result).toBe('got: hello')
     })
 
-    it('should accept target as second argument in notify()', async () => {
+    it('should accept numeric target in notify()', async () => {
       let called = false
 
       rpc.on('targeted:notify', async () => {
         called = true
       })
 
-      await rpc.notify('targeted:notify', 42, [])
+      await rpc.notify('targeted:notify', 42)
       expect(called).toBe(true)
     })
 
-    it('should accept "all" as target', async () => {
+    it('should throw when target is missing in call()', async () => {
       rpc.on('broadcast', async () => 'ok')
 
-      const result = await rpc.call<string>('broadcast', 'all', [])
-      expect(result).toBe('ok')
+      expect(() => (rpc as any).call('broadcast')).toThrow(
+        "NodeRpc: missing target for 'call' 'broadcast' in server context",
+      )
+    })
+
+    it('should throw when target is missing in notify()', async () => {
+      expect(() => (rpc as any).notify('targeted:notify')).toThrow(
+        "NodeRpc: missing target for 'notify' 'targeted:notify' in server context",
+      )
+    })
+
+    it('should reject "all" target for call()', async () => {
+      rpc.on('broadcast', async () => 'ok')
+
+      expect(() => (rpc as any).call('broadcast', 'all')).toThrow(
+        "NodeRpc: target=all is not supported for call 'broadcast'",
+      )
+    })
+
+    it('should accept "all" target for notify()', async () => {
+      let called = false
+      rpc.on('broadcast:notify', async () => {
+        called = true
+      })
+
+      await rpc.notify('broadcast:notify', 'all')
+      expect(called).toBe(true)
     })
   })
 
@@ -203,7 +228,7 @@ describe('NodeRpc', () => {
       rpc.on('replace:me', async () => 'first')
       rpc.on('replace:me', async () => 'second')
 
-      const result = await rpc.call<string>('replace:me')
+      const result = await rpc.call<string>('replace:me', 1)
       expect(result).toBe('second')
     })
   })
@@ -213,7 +238,7 @@ describe('NodeRpc', () => {
   // ═══════════════════════════════════════════════════════════════════════════
   describe('Client context', () => {
     it('should work in client context', async () => {
-      const clientRpc = new NodeRpc('client')
+      const clientRpc = new NodeRpc<'client'>('client')
 
       clientRpc.on('client:ping', async () => 'pong')
 

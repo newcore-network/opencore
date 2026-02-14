@@ -47,12 +47,12 @@ function buildMeta(
 }
 
 describe('OnRpcProcessor – Server RPC Flow', () => {
-  let rpc: NodeRpc
+  let rpc: NodeRpc<'server'>
   let mockPlayerService: Players
   let processor: OnRpcProcessor
 
   beforeEach(() => {
-    rpc = new NodeRpc('server')
+    rpc = new NodeRpc<'server'>('server')
 
     mockPlayerService = {
       getByClient: vi.fn(),

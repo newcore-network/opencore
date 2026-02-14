@@ -1,4 +1,4 @@
-import { EventContext } from './context'
+import { EventContext, RuntimeContext } from './context'
 
 export interface RpcContext extends EventContext {
   /**
@@ -15,6 +15,15 @@ export interface RpcContext extends EventContext {
  * Some transports/environments may ignore the target (e.g. in-process Node adapters).
  */
 export type RpcTarget = number | number[] | 'all'
+export type RpcCallTarget = number | number[]
+
+type RpcCallArgs<C extends RuntimeContext> = C extends 'server'
+  ? [target: RpcCallTarget, ...args: any[]]
+  : [...args: any[]]
+
+type RpcNotifyArgs<C extends RuntimeContext> = C extends 'server'
+  ? [target: RpcTarget, ...args: any[]]
+  : [...args: any[]]
 
 /**
  * Remote Procedure Call API.
@@ -34,7 +43,7 @@ export type RpcTarget = number | number[] | 'all'
  * - FiveM transports: remote client<->server.
  * - Node transports: often in-process (single runtime) and may ignore {@link RpcTarget}.
  */
-export abstract class RpcAPI {
+export abstract class RpcAPI<C extends RuntimeContext> {
   /**
    * Register an RPC handler.
    *
@@ -58,9 +67,7 @@ export abstract class RpcAPI {
    * @remarks
    * Use this when you need a return value.
    */
-  abstract call<TResult = unknown>(name: string, args?: any[]): Promise<TResult>
-
-  abstract call<TResult = unknown>(name: string, target: RpcTarget, args?: any[]): Promise<TResult>
+  abstract call<TResult = unknown>(name: string, ...args: RpcCallArgs<C>): Promise<TResult>
 
   /**
    * Notify an RPC and wait for ACK. (acknowledgments)
@@ -68,7 +75,5 @@ export abstract class RpcAPI {
    * @remarks
    * Use this when you only need delivery confirmation (no return value).
    */
-  abstract notify(name: string, args?: any[]): Promise<void>
-
-  abstract notify(name: string, target: RpcTarget, args?: any[]): Promise<void>
+  abstract notify(name: string, ...args: RpcNotifyArgs<C>): Promise<void>
 }

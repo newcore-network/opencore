@@ -19,7 +19,7 @@ export class OnRpcProcessor implements DecoratorProcessor {
 
   constructor(
     @inject(Players as any) private readonly players: Players,
-    @inject(RpcAPI as any) private readonly rpc: RpcAPI,
+    @inject(RpcAPI as any) private readonly rpc: RpcAPI<'server'>,
   ) {}
 
   process(instance: any, methodName: string, metadata: RpcHandlerOptions): void {

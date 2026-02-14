@@ -13,7 +13,7 @@ const clientRpcLogger = coreLogger.child('Rpc', LogDomain.CLIENT)
 export class ClientOnRpcProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.NET_RPC
 
-  constructor(@inject(RpcAPI as any) private readonly rpc: RpcAPI) {}
+  constructor(@inject(RpcAPI as any) private readonly rpc: RpcAPI<'client'>) {}
 
   process(target: any, methodName: string, metadata: ClientRpcHandlerOptions) {
     const handler = target[methodName].bind(target)

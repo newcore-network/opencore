@@ -2,13 +2,13 @@ import { randomUUID } from 'node:crypto'
 import { RpcAPI, type RpcTarget } from '../../contracts/transport/rpc.api'
 import type { RuntimeContext } from '../../contracts/transport/context'
 
-export class NodeRpc extends RpcAPI {
+export class NodeRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<C> {
   private readonly handlers = new Map<
     string,
     (ctx: { requestId: string; clientId?: number; raw?: unknown }, ...args: any[]) => unknown
   >()
 
-  constructor(private readonly context: RuntimeContext) {
+  constructor(private readonly context: C) {
     super()
   }
 
@@ -22,37 +22,51 @@ export class NodeRpc extends RpcAPI {
     this.handlers.set(name, handler as any)
   }
 
-  call<TResult = unknown>(name: string, args?: any[]): Promise<TResult>
-  call<TResult = unknown>(name: string, target: RpcTarget, args?: any[]): Promise<TResult>
-  call<TResult = unknown>(
+  call<TResult = unknown>(name: string, ...args: any[]): Promise<TResult> {
+    const { target, payload } = this.normalizeInvocation(name, 'call', args)
+    return this.executeCall<TResult>(name, payload, target)
+  }
+
+  notify(name: string, ...args: any[]): Promise<void> {
+    const { target, payload } = this.normalizeInvocation(name, 'notify', args)
+    return this.executeNotify(name, payload, target)
+  }
+
+  private normalizeInvocation(
     name: string,
-    targetOrArgs?: RpcTarget | any[],
-    maybeArgs?: any[],
-  ): Promise<TResult> {
-    const { target, args } = this.normalizeTargetAndArgs(targetOrArgs, maybeArgs)
-    return this.executeCall<TResult>(name, args, target)
-  }
+    kind: 'call' | 'notify',
+    args: any[],
+  ): { target?: RpcTarget; payload: any[] } {
+    if (this.context === 'server') {
+      if (args.length === 0) {
+        throw new Error(`NodeRpc: missing target for '${kind}' '${name}' in server context`)
+      }
 
-  notify(name: string, args?: any[]): Promise<void>
-  notify(name: string, target: RpcTarget, args?: any[]): Promise<void>
-  notify(name: string, targetOrArgs?: RpcTarget | any[], maybeArgs?: any[]): Promise<void> {
-    const { target, args } = this.normalizeTargetAndArgs(targetOrArgs, maybeArgs)
-    return this.executeNotify(name, args, target)
-  }
+      const [target, ...payload] = args
+      if (!this.isValidTarget(target)) {
+        throw new Error(`NodeRpc: invalid target for '${kind}' '${name}'`)
+      }
 
-  private normalizeTargetAndArgs(
-    targetOrArgs?: RpcTarget | any[],
-    maybeArgs?: any[],
-  ): { target?: RpcTarget; args: any[] } {
-    if (Array.isArray(targetOrArgs) || targetOrArgs === undefined) {
-      return { target: undefined, args: (targetOrArgs ?? []) as any[] }
+      if (kind === 'call' && target === 'all') {
+        throw new Error(`NodeRpc: target=all is not supported for call '${name}'`)
+      }
+
+      return { target, payload }
     }
-    return { target: targetOrArgs, args: (maybeArgs ?? []) as any[] }
+
+    return { target: undefined, payload: args }
+  }
+
+  private isValidTarget(value: unknown): value is RpcTarget {
+    if (value === 'all') return true
+    if (typeof value === 'number') return true
+    if (Array.isArray(value)) return value.every((item) => typeof item === 'number')
+    return false
   }
 
   private async executeCall<TResult>(
     name: string,
-    args: any[],
+    payload: any[],
     _target?: RpcTarget,
   ): Promise<TResult> {
     const handler = this.handlers.get(name)
@@ -68,13 +82,13 @@ export class NodeRpc extends RpcAPI {
           clientId: this.context === 'server' ? undefined : undefined,
           raw: undefined,
         },
-        ...(args ?? []),
+        ...(payload ?? []),
       ),
     )
     return result as TResult
   }
 
-  private async executeNotify(name: string, args: any[], _target?: RpcTarget): Promise<void> {
+  private async executeNotify(name: string, payload: any[], _target?: RpcTarget): Promise<void> {
     const handler = this.handlers.get(name)
     if (!handler) {
       return
@@ -87,7 +101,7 @@ export class NodeRpc extends RpcAPI {
           clientId: undefined,
           raw: undefined,
         },
-        ...(args ?? []),
+        ...(payload ?? []),
       ),
     )
   }

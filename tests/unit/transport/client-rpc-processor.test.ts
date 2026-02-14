@@ -7,11 +7,11 @@ import { METADATA_KEYS } from '../../../src/runtime/client/system/metadata-clien
 import { OnRPC } from '../../../src/runtime/client/decorators/onRPC'
 
 describe('ClientOnRpcProcessor', () => {
-  let rpc: NodeRpc
+  let rpc: NodeRpc<'client'>
   let processor: ClientOnRpcProcessor
 
   beforeEach(() => {
-    rpc = new NodeRpc('client')
+    rpc = new NodeRpc<'client'>('client')
     processor = new ClientOnRpcProcessor(rpc)
   })
 

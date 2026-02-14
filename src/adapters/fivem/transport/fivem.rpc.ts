@@ -46,7 +46,7 @@ type PendingEntry<TResult> = {
   timeout: ReturnType<typeof setTimeout>
 }
 
-export class FiveMRpc extends RpcAPI {
+export class FiveMRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<C> {
   private readonly pending = new Map<string, PendingEntry<unknown>>()
   private readonly handlers = new Map<
     string,
@@ -58,7 +58,7 @@ export class FiveMRpc extends RpcAPI {
 
   private readonly defaultTimeoutMs = 7_500
 
-  constructor(private readonly context: RuntimeContext) {
+  constructor(private readonly context: C) {
     super()
 
     onNet(this.requestEvent, (msg: RpcWireMessage) => {
@@ -80,32 +80,46 @@ export class FiveMRpc extends RpcAPI {
     this.handlers.set(name, handler as any)
   }
 
-  call<TResult = unknown>(name: string, args?: any[]): Promise<TResult>
-  call<TResult = unknown>(name: string, target: RpcTarget, args?: any[]): Promise<TResult>
-  call<TResult = unknown>(
+  call<TResult = unknown>(name: string, ...args: any[]): Promise<TResult> {
+    const { target, payload } = this.normalizeInvocation(name, 'call', args)
+    return this.sendAndWait<TResult>({ kind: 'call', name, args: payload }, target)
+  }
+
+  notify(name: string, ...args: any[]): Promise<void> {
+    const { target, payload } = this.normalizeInvocation(name, 'notify', args)
+    return this.sendAndWait<void>({ kind: 'notify', name, args: payload }, target)
+  }
+
+  private normalizeInvocation(
     name: string,
-    targetOrArgs?: RpcTarget | any[],
-    maybeArgs?: any[],
-  ): Promise<TResult> {
-    const { target, args } = this.normalizeTargetAndArgs(targetOrArgs, maybeArgs)
-    return this.sendAndWait<TResult>({ kind: 'call', name, args }, target)
-  }
+    kind: 'call' | 'notify',
+    args: any[],
+  ): { target?: RpcTarget; payload: any[] } {
+    if (this.context === 'server') {
+      if (args.length === 0) {
+        throw new Error(`FiveMRpc: missing target for '${kind}' '${name}' in server context`)
+      }
 
-  notify(name: string, args?: any[]): Promise<void>
-  notify(name: string, target: RpcTarget, args?: any[]): Promise<void>
-  notify(name: string, targetOrArgs?: RpcTarget | any[], maybeArgs?: any[]): Promise<void> {
-    const { target, args } = this.normalizeTargetAndArgs(targetOrArgs, maybeArgs)
-    return this.sendAndWait<void>({ kind: 'notify', name, args }, target)
-  }
+      const [target, ...payload] = args
+      if (!this.isValidTarget(target)) {
+        throw new Error(`FiveMRpc: invalid target for '${kind}' '${name}'`)
+      }
 
-  private normalizeTargetAndArgs(
-    targetOrArgs?: RpcTarget | any[],
-    maybeArgs?: any[],
-  ): { target?: RpcTarget; args: any[] } {
-    if (Array.isArray(targetOrArgs) || targetOrArgs === undefined) {
-      return { target: undefined, args: (targetOrArgs ?? []) as any[] }
+      if (kind === 'call' && target === 'all') {
+        throw new Error(`FiveMRpc: target=all is not supported for call '${name}'`)
+      }
+
+      return { target, payload }
     }
-    return { target: targetOrArgs, args: (maybeArgs ?? []) as any[] }
+
+    return { target: undefined, payload: args }
+  }
+
+  private isValidTarget(value: unknown): value is RpcTarget {
+    if (value === 'all') return true
+    if (typeof value === 'number') return true
+    if (Array.isArray(value)) return value.every((item) => typeof item === 'number')
+    return false
   }
 
   private sendAndWait<TResult>(
@@ -113,10 +127,6 @@ export class FiveMRpc extends RpcAPI {
     target?: RpcTarget,
   ): Promise<TResult> {
     const id = uuid()
-
-    if (this.context === 'server' && target === 'all') {
-      return Promise.reject(new Error('FiveMRpc: target=all is not supported for call/notify'))
-    }
 
     const msg: RpcWireMessage = {
       kind: input.kind,
@@ -138,7 +148,7 @@ export class FiveMRpc extends RpcAPI {
       this.pending.set(id, { resolve: resolve as any, reject, timeout })
 
       if (this.context === 'server') {
-        const resolvedTarget = this.resolveServerTarget(target)
+        const resolvedTarget = this.resolveServerTarget(target, input.kind, input.name)
         emitNet(this.requestEvent, resolvedTarget, msg)
       } else {
         emitNet(this.requestEvent, msg)
@@ -146,10 +156,19 @@ export class FiveMRpc extends RpcAPI {
     })
   }
 
-  private resolveServerTarget(target?: RpcTarget): number | number[] | -1 {
-    const resolved = target ?? 'all'
-    if (resolved === 'all') return -1
-    return resolved
+  private resolveServerTarget(
+    target: RpcTarget | undefined,
+    kind: 'call' | 'notify',
+    name: string,
+  ): number | number[] | -1 {
+    if (target === undefined) {
+      throw new Error(`FiveMRpc: missing target for '${kind}' '${name}' in server context`)
+    }
+    if (kind === 'call' && target === 'all') {
+      throw new Error(`FiveMRpc: target=all is not supported for call '${name}'`)
+    }
+    if (target === 'all') return -1
+    return target
   }
 
   private async handleRequestMessage(msg: RpcWireMessage): Promise<void> {
