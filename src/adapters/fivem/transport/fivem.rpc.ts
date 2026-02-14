@@ -46,6 +46,15 @@ type PendingEntry<TResult> = {
   timeout: ReturnType<typeof setTimeout>
 }
 
+function getCurrentResourceNameSafe(): string {
+  const fn = (globalThis as any).GetCurrentResourceName
+  if (typeof fn === 'function') {
+    const name = fn()
+    if (typeof name === 'string' && name.trim()) return name
+  }
+  return 'default'
+}
+
 export class FiveMRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<C> {
   private readonly pending = new Map<string, PendingEntry<unknown>>()
   private readonly handlers = new Map<
@@ -53,8 +62,9 @@ export class FiveMRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<
     (ctx: { requestId: string; clientId?: number; raw?: unknown }, ...args: any[]) => unknown
   >()
 
-  private readonly requestEvent = '__oc:rpc:req'
-  private readonly responseEvent = '__oc:rpc:res'
+  private readonly channel = getCurrentResourceNameSafe()
+  private readonly requestEvent = `__oc:rpc:req:${this.channel}`
+  private readonly responseEvent = `__oc:rpc:res:${this.channel}`
 
   private readonly defaultTimeoutMs = 7_500
 

@@ -1,6 +1,7 @@
 import { injectable } from 'tsyringe'
 import { ClassConstructor } from '../../../kernel/di/class-constructor'
 import { METADATA_KEYS } from '../system/metadata-client.keys'
+import { getClientRuntimeContext } from '../client-runtime'
 
 const clientControllerRegistryByResource = new Map<string, Set<ClassConstructor>>()
 
@@ -13,8 +14,21 @@ function getCurrentResourceNameSafe(): string {
   return 'default'
 }
 
+function resolveRegistryKey(resourceName?: string): string {
+  if (resourceName && resourceName.trim()) {
+    return resourceName
+  }
+
+  const runtime = getClientRuntimeContext()
+  if (runtime?.resourceName && runtime.resourceName.trim()) {
+    return runtime.resourceName
+  }
+
+  return getCurrentResourceNameSafe()
+}
+
 export function getClientControllerRegistry(resourceName?: string): ClassConstructor[] {
-  const key = resourceName ?? getCurrentResourceNameSafe()
+  const key = resolveRegistryKey(resourceName)
   let registry = clientControllerRegistryByResource.get(key)
   if (!registry) {
     registry = new Set<ClassConstructor>()
@@ -44,7 +58,7 @@ export function Controller() {
   return (target: ClassConstructor) => {
     injectable()(target)
     Reflect.defineMetadata(METADATA_KEYS.CONTROLLER, { type: 'client' }, target)
-    const key = getCurrentResourceNameSafe()
+    const key = resolveRegistryKey()
     let registry = clientControllerRegistryByResource.get(key)
     if (!registry) {
       registry = new Set<ClassConstructor>()
