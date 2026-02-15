@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid'
 import { RpcAPI, type RpcTarget } from '../../contracts/transport/rpc.api'
 import type { RuntimeContext } from '../../contracts/transport/context'
 
@@ -57,6 +56,7 @@ function getCurrentResourceNameSafe(): string {
 
 export class FiveMRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<C> {
   private readonly pending = new Map<string, PendingEntry<unknown>>()
+  private requestSeq = 0
   private readonly handlers = new Map<
     string,
     (ctx: { requestId: string; clientId?: number; raw?: unknown }, ...args: any[]) => unknown
@@ -136,7 +136,7 @@ export class FiveMRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<
     input: { kind: 'call' | 'notify'; name: string; args: unknown[] },
     target?: RpcTarget,
   ): Promise<TResult> {
-    const id = uuid()
+    const id = this.createRequestId()
 
     const msg: RpcWireMessage = {
       kind: input.kind,
@@ -164,6 +164,14 @@ export class FiveMRpc<C extends RuntimeContext = RuntimeContext> extends RpcAPI<
         emitNet(this.requestEvent, msg)
       }
     })
+  }
+
+  private createRequestId(): string {
+    this.requestSeq += 1
+    const ts = Date.now().toString(36)
+    const seq = this.requestSeq.toString(36)
+    const rand = Math.floor(Math.random() * 1_000_000_000).toString(36)
+    return `${this.channel}:${this.context}:${ts}:${seq}:${rand}`
   }
 
   private resolveServerTarget(
