@@ -40,15 +40,11 @@ export class OnRpcProcessor implements DecoratorProcessor {
     if (invalidCounts.has(key)) return
 
     const paramTypes = metadata.paramTypes
-    if (!paramTypes || paramTypes.length === 0) {
-      invalidCounts.add(key)
-      Reflect.defineMetadata(this.INVALID_COUNTS_META_KEY, invalidCounts, proto)
-      throw new Error(
-        `@OnRPC '${metadata.eventName}' must declare at least (player: Player, ...args)`,
-      )
-    }
+    const hasDesignParamTypes = Array.isArray(paramTypes)
+    const hasNoDeclaredParams = hasDesignParamTypes && paramTypes.length === 0
+    const expectsPlayer = hasDesignParamTypes && paramTypes.length > 0 && paramTypes[0] === Player
 
-    if (paramTypes[0] !== Player) {
+    if (hasDesignParamTypes && paramTypes.length > 0 && paramTypes[0] !== Player) {
       invalidCounts.add(key)
       Reflect.defineMetadata(this.INVALID_COUNTS_META_KEY, invalidCounts, proto)
       throw new Error(`@OnRPC '${metadata.eventName}' must declare Player as the first parameter`)
@@ -56,7 +52,19 @@ export class OnRpcProcessor implements DecoratorProcessor {
 
     let schema: z.ZodType | undefined
     try {
-      schema = metadata.schema ?? generateSchemaFromTypes(paramTypes)
+      if (metadata.schema) {
+        schema = metadata.schema
+      } else if (hasNoDeclaredParams) {
+        schema = z.tuple([])
+      } else if (hasDesignParamTypes) {
+        schema = generateSchemaFromTypes(paramTypes)
+      } else {
+        invalidCounts.add(key)
+        Reflect.defineMetadata(this.INVALID_COUNTS_META_KEY, invalidCounts, proto)
+        throw new Error(
+          `@OnRPC '${metadata.eventName}' requires schema when design:paramtypes metadata is unavailable`,
+        )
+      }
     } catch (error) {
       if (error instanceof AppError) {
         loggers.netEvent.fatal(error.message, { event: metadata.eventName }, error)
@@ -120,6 +128,10 @@ export class OnRpcProcessor implements DecoratorProcessor {
           clientId,
         })
         throw error
+      }
+
+      if (hasNoDeclaredParams) {
+        return handler()
       }
 
       return handler(player, ...validatedArgs)

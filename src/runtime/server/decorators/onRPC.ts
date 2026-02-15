@@ -22,13 +22,12 @@ export type RpcHandlerOptions = {
  * Server-side RPC handler signature.
  *
  * @remarks
- * The first parameter MUST be {@link Player}. The remaining parameters are the
- * RPC payload.
+ * You may declare the first parameter as {@link Player} if you need session
+ * context in the handler. You can also declare no parameters at all.
  */
-type ServerNetHandlerRPC<TArgs extends any[] = any[]> = (
-  player: Player,
-  ...args: TArgs
-) => Promise<any>
+type ServerNetHandlerRPC<TArgs extends any[] = any[]> =
+  | ((player: Player, ...args: TArgs) => Promise<any>)
+  | (() => Promise<any>)
 
 type RpcHandlerSignatureError =
   '❌ @OnRPC handlers must be async and return a Promise'
@@ -51,9 +50,12 @@ type EnsureValidRpcHandler<T> =
  * This decorator only registers metadata. The actual wiring happens inside
  * {@link OnRpcProcessor} (server runtime).
  *
- * ## Signature requirements
- * - The first argument MUST be {@link Player}.
- * - Remaining args come from the RPC payload.
+ * ## Signature options
+ * - Empty handler: `()`
+ * - With player context: `(player: Player, ...args)`
+ *
+ * If arguments are declared, the first must be {@link Player}. Remaining args
+ * come from the RPC payload.
  *
  * ## Validation
  * You should provide a Zod schema whenever args are not trivially serializable.

@@ -409,34 +409,28 @@ describe('OnRpcProcessor – Server RPC Flow', () => {
   // Signature validation at registration time
   // ═══════════════════════════════════════════════════════════════════════════
   describe('Signature validation', () => {
-    it('should throw when paramTypes is empty', () => {
+    it('should allow handlers without Player parameter', async () => {
       class TestController {
-        async handle(_player: Player) {}
+        async handle() {
+          return 'ok'
+        }
       }
 
       const instance = new TestController()
+      Reflect.defineMetadata(METADATA_KEYS.PUBLIC, true, TestController.prototype, 'handle')
+      vi.mocked(mockPlayerService.getByClient).mockReturnValue(
+        createMockPlayer({ clientID: 1, accountID: undefined }),
+      )
 
-      expect(() => {
-        processor.process(instance, 'handle', {
-          eventName: 'bad:sig',
-          paramTypes: [],
-        })
-      }).toThrow("@OnRPC 'bad:sig' must declare at least (player: Player, ...args)")
-    })
+      processor.process(instance, 'handle', {
+        eventName: 'sig:no-player',
+        paramTypes: [],
+      })
 
-    it('should throw when paramTypes is undefined', () => {
-      class TestController {
-        async handle(_player: Player) {}
-      }
+      const handler = (rpc as any).handlers.get('sig:no-player')
+      const result = await handler({ requestId: 'req-1', clientId: 1 })
 
-      const instance = new TestController()
-
-      expect(() => {
-        processor.process(instance, 'handle', {
-          eventName: 'bad:sig2',
-          paramTypes: undefined,
-        })
-      }).toThrow("@OnRPC 'bad:sig2' must declare at least (player: Player, ...args)")
+      expect(result).toBe('ok')
     })
 
     it('should throw when first param is not Player', () => {
@@ -452,6 +446,21 @@ describe('OnRpcProcessor – Server RPC Flow', () => {
           paramTypes: [String],
         })
       }).toThrow("@OnRPC 'bad:first' must declare Player as the first parameter")
+    })
+
+    it('should throw when paramTypes is undefined and schema is missing', () => {
+      class TestController {
+        async handle(_player: Player) {}
+      }
+
+      const instance = new TestController()
+
+      expect(() => {
+        processor.process(instance, 'handle', {
+          eventName: 'bad:sig',
+          paramTypes: undefined,
+        })
+      }).toThrow("@OnRPC 'bad:sig' requires schema when design:paramtypes metadata is unavailable")
     })
   })
 
