@@ -32,11 +32,7 @@ describe('ClientOnRpcProcessor', () => {
       }
 
       const instance = new TestController()
-      const metadata = Reflect.getMetadata(
-        METADATA_KEYS.NET_RPC,
-        TestController.prototype,
-        'ping',
-      )
+      const metadata = Reflect.getMetadata(METADATA_KEYS.NET_RPC, TestController.prototype, 'ping')
 
       processor.process(instance, 'ping', metadata)
 
@@ -130,9 +126,7 @@ describe('ClientOnRpcProcessor', () => {
 
       const handler = (rpc as any).handlers.get('client:tuple:bad')
 
-      await expect(
-        handler({ requestId: 'req-1' }, 'valid', 'not-a-number'),
-      ).rejects.toThrow()
+      await expect(handler({ requestId: 'req-1' }, 'valid', 'not-a-number')).rejects.toThrow()
 
       expect(instance.handlerCalled).toBe(false)
     })
@@ -189,9 +183,9 @@ describe('ClientOnRpcProcessor', () => {
 
       const handler = (rpc as any).handlers.get('client:obj:multi')
 
-      await expect(
-        handler({ requestId: 'req-1' }, 'arg1', 'arg2'),
-      ).rejects.toThrow('Invalid argument count')
+      await expect(handler({ requestId: 'req-1' }, 'arg1', 'arg2')).rejects.toThrow(
+        'Invalid argument count',
+      )
 
       expect(instance.handlerCalled).toBe(false)
     })

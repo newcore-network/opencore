@@ -15,12 +15,12 @@ function getCurrentResourceNameSafe(): string {
 }
 
 function resolveRegistryKey(resourceName?: string): string {
-  if (resourceName && resourceName.trim()) {
+  if (resourceName?.trim()) {
     return resourceName
   }
 
   const runtime = getClientRuntimeContext()
-  if (runtime?.resourceName && runtime.resourceName.trim()) {
+  if (runtime?.resourceName?.trim()) {
     return runtime.resourceName
   }
 

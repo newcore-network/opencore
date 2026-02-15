@@ -35,7 +35,7 @@ describe('NodeRpc', () => {
       await rpc.call('ping', 1)
       expect(receivedRequestId).toBeDefined()
       expect(typeof receivedRequestId).toBe('string')
-      expect(receivedRequestId!.length).toBeGreaterThan(0)
+      expect(receivedRequestId?.length).toBeGreaterThan(0)
     })
 
     it('should generate unique requestIds per call', async () => {

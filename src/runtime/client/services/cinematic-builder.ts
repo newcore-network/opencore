@@ -372,17 +372,18 @@ export class ShotBuilder {
       }
     }
 
-    if (defaults?.rotation) {
+    const defaultRotation = defaults?.rotation
+    if (defaultRotation) {
       if (shot.from && !shot.from.rotation) {
-        shot.from.rotation = { ...defaults.rotation }
+        shot.from.rotation = { ...defaultRotation }
       }
       if (shot.to && !shot.to.rotation) {
-        shot.to.rotation = { ...defaults.rotation }
+        shot.to.rotation = { ...defaultRotation }
       }
       if (shot.path) {
         shot.path = shot.path.map((entry) => ({
           ...entry,
-          rotation: entry.rotation ? { ...entry.rotation } : { ...defaults.rotation! },
+          rotation: entry.rotation ? { ...entry.rotation } : { ...defaultRotation },
         }))
       }
     }
@@ -502,11 +503,11 @@ export class SceneBuilder implements SceneBuildable {
     return this
   }
 
-  shot(id: string, configure: (shot: ShotBuilder) => ShotBuilder | void): SceneBuilder
-  shot(configure: (shot: ShotBuilder) => ShotBuilder | void): SceneBuilder
+  shot(id: string, configure: (shot: ShotBuilder) => ShotBuilder | undefined): SceneBuilder
+  shot(configure: (shot: ShotBuilder) => ShotBuilder | undefined): SceneBuilder
   shot(
-    idOrConfigure: string | ((shot: ShotBuilder) => ShotBuilder | void),
-    configure?: (shot: ShotBuilder) => ShotBuilder | void,
+    idOrConfigure: string | ((shot: ShotBuilder) => ShotBuilder | undefined),
+    configure?: (shot: ShotBuilder) => ShotBuilder | undefined,
   ): SceneBuilder {
     const id = typeof idOrConfigure === 'string' ? idOrConfigure : undefined
     const buildFn = typeof idOrConfigure === 'function' ? idOrConfigure : configure
@@ -525,7 +526,7 @@ export class SceneBuilder implements SceneBuildable {
   wait(waitMs: number): SceneBuilder
   wait(idOrMs: string | number, waitMs?: number): SceneBuilder {
     const id = typeof idOrMs === 'string' ? idOrMs : undefined
-    const duration = typeof idOrMs === 'number' ? idOrMs : waitMs ?? 0
+    const duration = typeof idOrMs === 'number' ? idOrMs : (waitMs ?? 0)
     this.definition.shots.push({ id, waitMs: duration })
     return this
   }
@@ -545,7 +546,10 @@ export class SceneBuilder implements SceneBuildable {
       ...this.definition,
       anchors: this.definition.anchors
         ? Object.fromEntries(
-            Object.entries(this.definition.anchors).map(([name, vector]) => [name, cloneVector3(vector)]),
+            Object.entries(this.definition.anchors).map(([name, vector]) => [
+              name,
+              cloneVector3(vector),
+            ]),
           )
         : undefined,
       effects: this.definition.effects?.map((effect) => toEffect(effect)),
@@ -567,7 +571,9 @@ export class SceneBuilder implements SceneBuildable {
 
   start(options: CinematicStartOptions = {}): CinematicHandle {
     if (!this.startFn) {
-      throw new Error('SceneBuilder cannot start without a cinematic context. Use cinematic.scene().')
+      throw new Error(
+        'SceneBuilder cannot start without a cinematic context. Use cinematic.scene().',
+      )
     }
 
     const handle = this.startFn(this, options)

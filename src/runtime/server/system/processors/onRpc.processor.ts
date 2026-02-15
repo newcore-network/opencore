@@ -42,7 +42,6 @@ export class OnRpcProcessor implements DecoratorProcessor {
     const paramTypes = metadata.paramTypes
     const hasDesignParamTypes = Array.isArray(paramTypes)
     const hasNoDeclaredParams = hasDesignParamTypes && paramTypes.length === 0
-    const expectsPlayer = hasDesignParamTypes && paramTypes.length > 0 && paramTypes[0] === Player
 
     if (hasDesignParamTypes && paramTypes.length > 0 && paramTypes[0] !== Player) {
       invalidCounts.add(key)

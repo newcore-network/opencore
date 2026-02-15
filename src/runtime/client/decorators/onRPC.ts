@@ -11,13 +11,11 @@ type ClientNetHandlerRPC<TArgs extends any[] = any[], TResult = any> = (
   ...args: TArgs
 ) => TResult | Promise<TResult>
 
-type ClientRpcHandlerSignatureError =
-  '❌ @Client.OnRPC handlers must be async and return a Promise'
+type ClientRpcHandlerSignatureError = '❌ @Client.OnRPC handlers must be async and return a Promise'
 
-type EnsureValidClientRpcHandler<T> =
-  T extends (...args: any[]) => Promise<any>
-    ? T
-    : ClientRpcHandlerSignatureError
+type EnsureValidClientRpcHandler<T> = T extends (...args: any[]) => Promise<any>
+  ? T
+  : ClientRpcHandlerSignatureError
 
 /**
  * Registers a method as a client-side RPC handler.

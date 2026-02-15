@@ -435,10 +435,7 @@ export class Cinematic {
   /**
    * Starts and awaits a cinematic timeline until completion.
    */
-  async play(
-    scene: SceneBuildable,
-    options: CinematicStartOptions = {},
-  ): Promise<CinematicResult> {
+  async play(scene: SceneBuildable, options: CinematicStartOptions = {}): Promise<CinematicResult> {
     const handle = this.start(scene, options)
     return handle.result
   }

@@ -93,16 +93,8 @@ describe('@BinaryCall decorator', () => {
         }
       }
 
-      const metaA = Reflect.getMetadata(
-        METADATA_KEYS.BINARY_CALL,
-        TestService.prototype,
-        'methodA',
-      )
-      const metaB = Reflect.getMetadata(
-        METADATA_KEYS.BINARY_CALL,
-        TestService.prototype,
-        'methodB',
-      )
+      const metaA = Reflect.getMetadata(METADATA_KEYS.BINARY_CALL, TestService.prototype, 'methodA')
+      const metaB = Reflect.getMetadata(METADATA_KEYS.BINARY_CALL, TestService.prototype, 'methodB')
 
       expect(metaA.action).toBe('action_a')
       expect(metaA.timeoutMs).toBe(1000)
@@ -162,9 +154,7 @@ describe('@BinaryCall decorator', () => {
         (name) => name !== 'constructor' && typeof (proto as any)[name] === 'function',
       )
 
-      const calls = methods.filter((m) =>
-        Reflect.hasMetadata(METADATA_KEYS.BINARY_CALL, proto, m),
-      )
+      const calls = methods.filter((m) => Reflect.hasMetadata(METADATA_KEYS.BINARY_CALL, proto, m))
 
       expect(calls).toHaveLength(3)
       expect(calls).toContain('first')
@@ -182,6 +172,8 @@ describe('@BinaryCall decorator', () => {
             return ''
           }
         }
+
+        void TestService
       }).toThrow(/descriptor\.value is undefined/)
     })
   })

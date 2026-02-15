@@ -59,7 +59,9 @@ describe('NodeEvents', () => {
       const receivedClientIds: number[] = []
 
       events.on('multi', (ctx) => {
-        receivedClientIds.push(ctx.clientId!)
+        if (ctx.clientId !== undefined) {
+          receivedClientIds.push(ctx.clientId)
+        }
       })
 
       events.emit('multi', [10, 20, 30])
