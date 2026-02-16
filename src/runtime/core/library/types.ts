@@ -103,7 +103,11 @@ export interface OpenCoreLibraryConfigAccessor<TConfig = Record<string, unknown>
 export interface OpenCoreServerLibrary extends OpenCoreLibraryBase {
   side: 'server'
   emitExternal<TPayload = unknown>(eventName: LibraryEventName, payload?: TPayload): void
-  emitNetExternal<TPayload = unknown>(eventName: LibraryEventName, target: number, payload?: TPayload): void
+  emitNetExternal<TPayload = unknown>(
+    eventName: LibraryEventName,
+    target: number,
+    payload?: TPayload,
+  ): void
   getLogger(): {
     trace(message: string, context?: Record<string, unknown>): void
     debug(message: string, context?: Record<string, unknown>): void

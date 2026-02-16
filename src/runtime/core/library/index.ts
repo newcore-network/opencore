@@ -1,4 +1,4 @@
-export { createLibraryBase } from './create-library-base'
+export { createLibraryCore } from './create-library-base'
 export { createLibraryBus } from './library-bus'
 export { createLibraryConfigAccessor } from './library-config'
 export type {

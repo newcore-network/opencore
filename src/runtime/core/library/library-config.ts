@@ -3,7 +3,6 @@ import { OpenCoreLibraryConfigAccessor } from './types'
 type LibraryConfigStore = Record<string, Record<string, unknown>>
 
 declare global {
-  // biome-ignore lint/style/noVar: global var is used as optional config source.
   var __OPENCORE_LIBRARY_CONFIG__: LibraryConfigStore | undefined
 }
 

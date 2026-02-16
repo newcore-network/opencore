@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createLibraryBase } from '../../../../src/runtime/core/library'
+import { createLibraryCore } from '../../../../src/runtime/core/library'
 
-describe('createLibraryBase', () => {
+describe('createLibraryCore', () => {
   it('supports on + emit for internal events', () => {
-    const library = createLibraryBase('characters')
+    const library = createLibraryCore('characters')
     const handler = vi.fn()
 
     library.on('created', handler)
@@ -13,7 +13,7 @@ describe('createLibraryBase', () => {
   })
 
   it('supports once subscriptions', () => {
-    const library = createLibraryBase('characters')
+    const library = createLibraryCore('characters')
     const handler = vi.fn()
 
     library.once('created', handler)
@@ -24,7 +24,7 @@ describe('createLibraryBase', () => {
   })
 
   it('supports off subscriptions', () => {
-    const library = createLibraryBase('characters')
+    const library = createLibraryCore('characters')
     const handler = vi.fn()
 
     library.on('created', handler)
@@ -35,7 +35,7 @@ describe('createLibraryBase', () => {
   })
 
   it('builds namespaced event names with the exact opencore format', () => {
-    const library = createLibraryBase('characters')
+    const library = createLibraryCore('characters')
 
     expect(library.namespace).toBe('opencore:characters')
     expect(library.buildEventName('created')).toBe('opencore:characters:created')

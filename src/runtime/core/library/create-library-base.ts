@@ -2,13 +2,13 @@ import { createLibraryBus } from './library-bus'
 import { LibraryNamespace, OpenCoreLibraryBase } from './types'
 
 /**
- * Creates the shared base API for an OpenCore library.
+ * Creates the shared base API for an OpenCore library. (Server and Client compatibility)
  *
  * @remarks
  * The base contains only library-local events (internal bus) and namespaced
  * event-name building. External bridge behavior is added by server/client wrappers.
  */
-export function createLibraryBase(
+export function createLibraryCore(
   name: string,
   opts?: {
     namespace?: string

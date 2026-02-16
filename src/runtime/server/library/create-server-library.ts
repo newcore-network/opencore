@@ -1,5 +1,5 @@
 import { coreLogger } from '../../../kernel/logger'
-import { createLibraryBase, createLibraryConfigAccessor } from '../../core/library'
+import { createLibraryCore, createLibraryConfigAccessor } from '../../core/library'
 import { OpenCoreServerLibrary } from '../../core/library/types'
 
 /**
@@ -17,7 +17,7 @@ export function createServerLibrary(
     namespace?: string
   },
 ): OpenCoreServerLibrary {
-  const base = createLibraryBase(name, opts)
+  const base = createLibraryCore(name, opts)
   const logger = coreLogger.server(`Library:${base.name}`)
 
   return {
