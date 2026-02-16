@@ -13,10 +13,10 @@ import { WebSocketLogTransport } from '../../../../src/kernel/logger/transports/
 
 describe('dev-transport.factory', () => {
   describe('detectEnvironment', () => {
-    it('should return "fivem" when GetCurrentResourceName is defined', () => {
+    it('should return "cfx" when GetCurrentResourceName is defined', () => {
       // GetCurrentResourceName is defined in test setup
       const env = detectEnvironment()
-      expect(env).toBe('fivem')
+      expect(env).toBe('cfx')
     })
 
     it('should return "node" when GetCurrentResourceName is not defined', () => {
@@ -62,7 +62,7 @@ describe('dev-transport.factory', () => {
       transport.destroy?.()
     })
 
-    it('should use HTTP transport in FiveM environment', () => {
+    it('should use HTTP transport in Cfx environment', () => {
       vi.stubGlobal('GetCurrentResourceName', () => 'test-resource')
 
       const transport = createDevTransport({

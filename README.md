@@ -8,7 +8,7 @@
 
 # OpenCore Framework - Open Stable beta
 
-OpenCore is a TypeScript multiplayer runtime framework targeting FiveM via an adapter.
+OpenCore is a TypeScript multiplayer runtime framework targeting CitizenFX runtimes (Cfx) via adapters.
 
 It is not a gamemode or RP framework. It provides:
 
@@ -49,16 +49,24 @@ OpenCore follows a Ports & Adapters (Hexagonal) architecture.
 
 - Kernel (`src/kernel`): engine-agnostic infrastructure (DI, logger, metadata scanning)
 - Runtime (`src/runtime`): multiplayer execution model (controllers, processors, security, lifecycle)
-- Adapters (`src/adapters`): platform integration (FiveM, Node testing)
+- Adapters (`src/adapters`): platform integration (Cfx, Node testing)
 
 The runtime never auto-detects the platform. Adapters are selected explicitly at bootstrap time.
+
+### Cfx game profiles
+
+OpenCore treats CitizenFX (`cfx`) as the platform and supports game profiles (`gta5` and `rdr3`).
+
+- Shared runtime APIs (events, exports, transport, DI) are registered through the Cfx adapter.
+- Game-specific behavior is controlled through platform capabilities/config (`gameProfile`, `defaultSpawnModel`, etc.).
+- Optional RedM-specific enhancements can be layered as external libraries without changing core runtime contracts.
 
 ## Operating modes
 
 Each instance runs in exactly one mode configured via `Server.init()`:
 
 - `CORE`: authoritative runtime. Typically provides identity/auth/players via exports.
-- `RESOURCE`: a normal FiveM resource using CORE as provider for some features.
+- `RESOURCE`: a normal Cfx resource using CORE as provider for some features.
 - `STANDALONE`: a self-contained runtime (useful for tooling, simulations, or small servers).
 
 ## Server bootstrap

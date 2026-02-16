@@ -199,6 +199,7 @@ export function createMockPlayerAdapters(): PlayerAdapters {
     playerServer: mockPlayerServer,
     entityServer: mockEntityServer,
     events: mockEventsAPI,
+    defaultSpawnModel: 'mp_m_freemode_01',
   }
 }
 

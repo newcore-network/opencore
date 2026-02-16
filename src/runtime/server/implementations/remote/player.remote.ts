@@ -1,5 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports, IPlayerInfo } from '../../../../adapters'
+import { IPlatformCapabilities } from '../../../../adapters/contracts/IPlatformCapabilities'
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
@@ -31,13 +32,19 @@ export class RemotePlayerImplementation extends Players {
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
+    @inject(IPlatformCapabilities as any)
+    private readonly platformCapabilities: IPlatformCapabilities,
   ) {
     super()
+    const defaultSpawnModel =
+      this.platformCapabilities.getConfig<string>('defaultSpawnModel') ?? 'mp_m_freemode_01'
+
     this.playerAdapters = {
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
       entityServer: this.entityServer,
       events: this.events,
+      defaultSpawnModel,
     }
   }
 

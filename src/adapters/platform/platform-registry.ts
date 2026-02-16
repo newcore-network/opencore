@@ -10,7 +10,7 @@ import type { DependencyContainer } from 'tsyringe'
 export interface PlatformAdapter {
   /**
    * Unique platform identifier.
-   * @example 'fivem', 'ragemp', 'altv', 'node'
+   * @example 'cfx', 'ragemp', 'altv', 'node'
    */
   readonly name: string
 

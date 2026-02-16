@@ -29,7 +29,7 @@ describe('Node.js Runtime Bootstrap', () => {
       mode: 'CORE',
       coreResourceName: 'node-test',
       features: {
-        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+        disabled: ['runtimeEvents', 'chat', 'principal', 'sessionLifecycle'],
       },
     })
     await initServer(options)
@@ -61,7 +61,7 @@ describe('Node.js Runtime Bootstrap', () => {
       mode: 'CORE',
       coreResourceName: 'node-test',
       features: {
-        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+        disabled: ['runtimeEvents', 'chat', 'principal', 'sessionLifecycle'],
       },
     })
     await initServer(options)
@@ -77,7 +77,7 @@ describe('Node.js Runtime Bootstrap', () => {
       mode: 'CORE',
       coreResourceName: 'node-test',
       features: {
-        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+        disabled: ['runtimeEvents', 'chat', 'principal', 'sessionLifecycle'],
       },
     })
     await initServer(options)
@@ -95,7 +95,7 @@ describe('Node.js Runtime Bootstrap', () => {
     const options = resolveRuntimeOptions({
       mode: 'CORE',
       features: {
-        disabled: ['fiveMEvents', 'chat', 'principal', 'sessionLifecycle'],
+        disabled: ['runtimeEvents', 'chat', 'principal', 'sessionLifecycle'],
       },
     })
     await initServer(options)

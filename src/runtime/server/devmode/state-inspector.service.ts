@@ -20,7 +20,7 @@ export class StateInspectorService extends IDevModeInspector {
   private commandHandlers = new Map<string, HandlerInfo>()
   private netEventHandlers = new Map<string, HandlerInfo>()
   private exportHandlers = new Map<string, HandlerInfo>()
-  private fiveMEventHandlers = new Map<string, HandlerInfo>()
+  private runtimeEventHandlers = new Map<string, HandlerInfo>()
 
   private get players(): Players {
     return GLOBAL_CONTAINER.resolve(Players as any)
@@ -44,7 +44,7 @@ export class StateInspectorService extends IDevModeInspector {
         commands: Array.from(this.commandHandlers.keys()),
         netEvents: Array.from(this.netEventHandlers.keys()),
         exports: Array.from(this.exportHandlers.keys()),
-        fiveMEvents: Array.from(this.fiveMEventHandlers.keys()),
+        runtimeEvents: Array.from(this.runtimeEventHandlers.keys()),
       },
       diContainer: this.getDIContainerInfo(),
     }
@@ -55,7 +55,7 @@ export class StateInspectorService extends IDevModeInspector {
     result.set('commands', Array.from(this.commandHandlers.values()))
     result.set('netEvents', Array.from(this.netEventHandlers.values()))
     result.set('exports', Array.from(this.exportHandlers.values()))
-    result.set('fiveMEvents', Array.from(this.fiveMEventHandlers.values()))
+    result.set('runtimeEvents', Array.from(this.runtimeEventHandlers.values()))
     return result
   }
 
@@ -103,8 +103,8 @@ export class StateInspectorService extends IDevModeInspector {
         return this.netEventHandlers.get(name) ?? null
       case 'export':
         return this.exportHandlers.get(name) ?? null
-      case 'fiveMEvent':
-        return this.fiveMEventHandlers.get(name) ?? null
+      case 'runtimeEvent':
+        return this.runtimeEventHandlers.get(name) ?? null
       default:
         return null
     }
@@ -132,10 +132,10 @@ export class StateInspectorService extends IDevModeInspector {
   }
 
   /**
-   * Registers a FiveM event handler for tracking.
+   * Registers a runtime event handler for tracking.
    */
-  registerFiveMEventHandler(name: string, info: HandlerInfo): void {
-    this.fiveMEventHandlers.set(name, info)
+  registerRuntimeEventHandler(name: string, info: HandlerInfo): void {
+    this.runtimeEventHandlers.set(name, info)
   }
 
   /**
@@ -181,7 +181,7 @@ export class StateInspectorService extends IDevModeInspector {
         commands: this.commandHandlers.size,
         netEvents: this.netEventHandlers.size,
         exports: this.exportHandlers.size,
-        fiveMEvents: this.fiveMEventHandlers.size,
+        runtimeEvents: this.runtimeEventHandlers.size,
       },
       uptime: process.uptime ? process.uptime() * 1000 : 0,
     }

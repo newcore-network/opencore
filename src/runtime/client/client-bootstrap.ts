@@ -29,7 +29,7 @@ import { registerSystemClient } from './system/processors.register'
 import { NuiBridge } from './ui-bridge'
 
 /**
- * Services that have an init() method which registers global FiveM event listeners.
+ * Services that have an init() method which registers global runtime event listeners.
  *
  * These services are:
  * - Registered in DI for ALL modes (so they can be injected and used)

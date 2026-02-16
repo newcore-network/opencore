@@ -53,7 +53,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
     }
   }
 
-  if (features.fiveMEvents.enabled) {
+  if (features.runtimeEvents.enabled) {
     GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: RuntimeEventProcessor })
   }
 }

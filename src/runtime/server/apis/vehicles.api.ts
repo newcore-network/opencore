@@ -1,5 +1,9 @@
 import { inject, injectable } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
+import {
+  IPlatformCapabilities,
+  PlatformFeatures,
+} from '../../../adapters/contracts/IPlatformCapabilities'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
@@ -42,6 +46,8 @@ export class Vehicles {
     @inject(Players as any) private readonly playerDirectory: Players,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
+    @inject(IPlatformCapabilities as any)
+    private readonly platformCapabilities: IPlatformCapabilities,
     @inject(IHasher as any) private readonly hasher: IHasher,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
@@ -81,7 +87,22 @@ export class Vehicles {
 
       const modelHash = typeof model === 'string' ? this.hasher.getHashKey(model) : model
 
-      const vehicleType = 'automobile'
+      const serverVehicleCreationEnabled =
+        this.platformCapabilities.getConfig<boolean>('enableServerVehicleCreation') ??
+        this.platformCapabilities.isFeatureSupported(PlatformFeatures.SERVER_ENTITIES)
+
+      if (!serverVehicleCreationEnabled) {
+        const profile = this.platformCapabilities.getConfig<string>('gameProfile') ?? 'unknown'
+        return {
+          networkId: 0,
+          handle: 0,
+          success: false,
+          error: `Server vehicle creation is disabled for profile '${profile}'`,
+        }
+      }
+
+      const vehicleType =
+        this.platformCapabilities.getConfig<string>('defaultVehicleType') ?? 'automobile'
       const handle = this.vehicleServer.createServerSetter(
         modelHash,
         vehicleType,

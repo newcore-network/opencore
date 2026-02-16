@@ -19,6 +19,7 @@ export interface PlayerAdapters {
   playerServer: IPlayerServer
   entityServer: IEntityServer
   events: EventsAPI<'server'>
+  defaultSpawnModel: string
 }
 
 /**
@@ -171,9 +172,9 @@ export class Player extends BaseEntity implements Spatial {
    * Spawns the player at a position with a specific model.
    *
    * @param vector - The spawn coordinates
-   * @param model - The ped model to use (default: 'mp_m_freemode_01')
+   * @param model - The ped model to use (default from platform capabilities)
    */
-  spawn(vector: Vector3, model = 'mp_m_freemode_01'): void {
+  spawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
     this.emit('opencore:spawner:spawn', { position: vector, model })
   }
 

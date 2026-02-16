@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { EventsAPI } from '../../../../src/adapters/contracts/transport/events.api'
 import type { EventContext } from '../../../../src/adapters/contracts/transport/context'
 import { NodeEntityServer } from '../../../../src/adapters/node/node-entity-server'
+import { NodeCapabilities } from '../../../../src/adapters/node/node-capabilities'
 import { NodeEvents } from '../../../../src/adapters/node/transport/node.events'
 import { NodePlayerServer } from '../../../../src/adapters/node/node-player-server'
 import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
@@ -37,6 +38,7 @@ const playerInfo = new NodePlayerInfo()
 const playerServer = new NodePlayerServer()
 const entityServer = new NodeEntityServer()
 const nodeEvents = new NodeEvents()
+const nodeCapabilities = new NodeCapabilities()
 
 describe('NetEventProcessor invalid payload resilience', () => {
   beforeEach(() => {
@@ -50,6 +52,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
       playerServer,
       entityServer,
       nodeEvents,
+      nodeCapabilities,
     )
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
@@ -102,6 +105,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
       playerServer,
       entityServer,
       nodeEvents,
+      nodeCapabilities,
     )
     const player = playerService.bind(1)
     player.linkAccount('acc-1')

@@ -2,16 +2,16 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
  * Registers a method as a server-side listener for a native Runtime event.
- * Runtime === FiveM
+ * Runtime === CitizenFX (Cfx)
  *
  * @remarks
  * This decorator only stores metadata. During bootstrap, the framework scans controller
- * methods and binds handlers to FiveM events.
+ * methods and binds handlers to runtime events.
  *
- * FiveM server event reference:
+ * CitizenFX server event reference:
  * https://docs.fivem.net/docs/scripting-reference/events/server-events/
  *
- * @param event - event name (e.g. `"playerJoining"`). FiveM Events
+ * @param event - event name (e.g. `"playerJoining"`). Runtime events
  *
  * @example
  * ```ts

@@ -4,18 +4,18 @@
  * @remarks
  * Defines what features a platform supports, allowing runtime
  * feature detection and graceful degradation across different
- * game engines (FiveM, RageMP, alt:V, RedM, etc.)
+ * game engines (CitizenFX, RageMP, alt:V, etc.)
  */
 export abstract class IPlatformCapabilities {
   /**
    * Unique identifier for the platform.
-   * @example 'fivem', 'ragemp', 'altv', 'redm'
+   * @example 'cfx', 'ragemp', 'altv', 'redm'
    */
   abstract readonly platformName: string
 
   /**
    * Human-readable display name.
-   * @example 'FiveM', 'RageMP', 'alt:V', 'RedM'
+   * @example 'CitizenFX', 'RageMP', 'alt:V', 'RedM'
    */
   abstract readonly displayName: string
 

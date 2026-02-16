@@ -1,7 +1,7 @@
 {
   "name": "@open-core/framework",
   "version": "1.0.0-alpha.1",
-  "description": "Secure, Event-Driven, OOP Engine for FiveM. Stop scripting, start engineering.",
+  "description": "Secure, event-driven TypeScript runtime engine for CitizenFX (Cfx).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
@@ -60,7 +60,9 @@
   "keywords": [
     "framework",
     "opencore",
-    "fivem",
+    "cfx",
+    "citizenfx",
+    "redm",
     "typescript",
     "roleplay"
   ],

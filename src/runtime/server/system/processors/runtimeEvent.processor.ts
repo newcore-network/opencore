@@ -25,7 +25,7 @@ export class RuntimeEventProcessor implements DecoratorProcessor {
         handler(...args)
       } catch (error) {
         loggers.eventBus.error(
-          `Handler error in FiveMEvent`,
+          `Handler error in runtime event`,
           {
             event: metadata.event,
             handler: handlerName,
@@ -35,6 +35,6 @@ export class RuntimeEventProcessor implements DecoratorProcessor {
       }
     })
 
-    loggers.eventBus.debug(`Registered FiveM event: ${metadata.event} -> ${handlerName}`)
+    loggers.eventBus.debug(`Registered runtime event: ${metadata.event} -> ${handlerName}`)
   }
 }

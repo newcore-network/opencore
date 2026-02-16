@@ -40,7 +40,7 @@ export async function runRuntimeConfigBenchmark(): Promise<Bench> {
   const standaloneOptions = resolveRuntimeOptions({ mode: 'STANDALONE' })
   const standaloneDisabled = resolveRuntimeOptions({
     mode: 'STANDALONE',
-    features: { disabled: ['chat', 'principal', 'fiveMEvents'] },
+    features: { disabled: ['chat', 'principal', 'runtimeEvents'] },
   })
 
   bench.add('RuntimeConfig - validate CORE (happy path)', () => {
