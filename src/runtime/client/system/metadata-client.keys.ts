@@ -6,6 +6,7 @@ export const METADATA_KEYS = {
   NET_RPC: 'core:meta:onRpc',
   TICK: 'core:meta:tick',
   LOCAL_EVENT: 'core:meta:localEvent',
+  LIBRARY_EVENT: 'core:meta:libraryEvent',
   INTERVAL: 'core:meta:interval',
   EXPORT: 'core:meta:export',
   RESOURCE_START: 'core:meta:resourceStart',

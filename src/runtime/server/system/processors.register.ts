@@ -9,6 +9,7 @@ import { DefaultSecurityHandler } from '../default/default-security.handler'
 import { CommandProcessor } from './processors/command.processor'
 import { ExportProcessor } from './processors/export.processor'
 import { InternalEventProcessor } from './processors/internalEvent.processor'
+import { LibraryEventProcessor } from './processors/libraryEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
 import { OnRpcProcessor } from './processors/onRpc.processor'
 import { RuntimeEventProcessor } from './processors/runtimeEvent.processor'
@@ -39,6 +40,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
   }
 
   GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: InternalEventProcessor })
+  GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: LibraryEventProcessor })
 
   if (features.commands.enabled) {
     GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: CommandProcessor })

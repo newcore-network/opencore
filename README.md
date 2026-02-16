@@ -139,6 +139,32 @@ export class ExampleNetController {
 - `@Throttle(limit, windowMs)`
 - `@RequiresState({ missing: [...] })`
 
+### Library events
+
+Use library wrappers to emit domain events and `@OnLibraryEvent()` to observe them.
+
+`@OnLibraryEvent()` listens to events emitted through `library.emit(...)` only.
+It does not listen to `emitExternal`, `emitNetExternal`, or `emitServer`.
+
+```ts
+import { Server } from '@open-core/framework/server'
+
+const characters = Server.createServerLibrary('characters')
+
+@Server.Controller()
+export class CharacterListeners {
+  @Server.OnLibraryEvent('characters', 'session:created')
+  onSessionCreated(payload: { sessionId: string; playerId: number }) {
+    // optional listener for library domain events
+  }
+}
+
+characters.emit('session:created', { sessionId: 's-1', playerId: 10 })
+```
+
+Client usage follows the same pattern with `Client.createClientLibrary(...)` and
+`@Client.OnLibraryEvent(...)`.
+
 ## Testing
 
 Tests run with Vitest.
