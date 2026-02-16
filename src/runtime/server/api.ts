@@ -5,6 +5,7 @@ export { init } from './core'
 // API
 export * from './apis'
 export * from './decorators'
+export * from './library'
 export * from './contracts'
 export * from './ports/players.api-port'
 export * from './ports/authorization.api-port'

@@ -1,6 +1,7 @@
 export * from './client-core'
 export * from './client-runtime'
 export * from './decorators'
+export * from './library'
 export * from './player/player'
 export * from './services'
 export * from './types'
