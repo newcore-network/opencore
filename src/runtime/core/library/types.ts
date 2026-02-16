@@ -20,9 +20,36 @@ export type LibraryNamespace = string
 export type LibraryEventName = string
 
 /**
+ * Canonical library event identifier.
+ *
+ * @example
+ * `characters:session:created`
+ */
+export type LibraryEventId = string
+
+/**
  * Generic handler used by the internal library bus.
  */
 export type LibraryEventHandler<TPayload = unknown> = (payload?: TPayload) => void
+
+/**
+ * Metadata attached to runtime library event notifications.
+ */
+export interface LibraryEventMetadata {
+  libraryName: LibraryName
+  eventName: LibraryEventName
+  eventId: LibraryEventId
+  namespace: LibraryNamespace
+  side: 'server' | 'client'
+}
+
+/**
+ * Runtime notification envelope emitted by library wrappers.
+ */
+export interface LibraryEventEnvelope<TPayload = unknown> {
+  payload?: TPayload
+  meta: LibraryEventMetadata
+}
 
 /**
  * Lightweight internal event bus for library-local communication.

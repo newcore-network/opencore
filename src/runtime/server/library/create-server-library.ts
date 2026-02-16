@@ -1,6 +1,11 @@
 import { coreLogger } from '../../../kernel/logger'
-import { createLibraryCore, createLibraryConfigAccessor } from '../../core/library'
-import { OpenCoreServerLibrary } from '../../core/library/types'
+import {
+  buildLibraryEventId,
+  createLibraryBase,
+  createLibraryConfigAccessor,
+} from '../../core/library'
+import { LibraryEventEnvelope, OpenCoreServerLibrary } from '../../core/library/types'
+import { emitLibraryEvent } from '../bus/library-event.bus'
 
 /**
  * Creates a server-side OpenCore library wrapper.
@@ -17,12 +22,30 @@ export function createServerLibrary(
     namespace?: string
   },
 ): OpenCoreServerLibrary {
-  const base = createLibraryCore(name, opts)
+  const base = createLibraryBase(name, opts)
   const logger = coreLogger.server(`Library:${base.name}`)
+  const emitInternal = base.emit
 
   return {
     ...base,
     side: 'server',
+    emit(eventName, payload) {
+      emitInternal(eventName, payload)
+
+      const eventId = buildLibraryEventId(base.name, eventName)
+      const envelope: LibraryEventEnvelope = {
+        payload,
+        meta: {
+          libraryName: base.name,
+          eventName,
+          eventId,
+          namespace: base.namespace,
+          side: 'server',
+        },
+      }
+
+      emitLibraryEvent(eventId, envelope)
+    },
     emitExternal(eventName, payload) {
       emit(base.buildEventName(eventName), payload)
     },

@@ -5,6 +5,7 @@ export const METADATA_KEYS = {
   NET_RPC: 'decorator:meta:net_rpc',
   TICK: 'decorator:meta:tick',
   INTERNAL_EVENT: 'decorator:meta:internal_event',
+  LIBRARY_EVENT: 'decorator:meta:library_event',
   RUNTIME_EVENT: 'decorator:meta:runtime_event',
   EXPORT: 'decorator:meta:export',
   PUBLIC: 'decorator:meta:public',

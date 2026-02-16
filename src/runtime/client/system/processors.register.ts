@@ -3,6 +3,7 @@ import { ClientExportProcessor } from './processors/export.processor'
 import { GameEventProcessor } from './processors/gameEvent.processor'
 import { IntervalProcessor } from './processors/interval.processor'
 import { KeyMappingProcessor } from './processors/key.processor'
+import { ClientLibraryEventProcessor } from './processors/libraryEvent.processor'
 import { LocalEventProcessor } from './processors/localEvent.processor'
 import { ClientNetEventProcessor } from './processors/netEvent.processor'
 import { ClientOnRpcProcessor } from './processors/onRpc.processor'
@@ -23,6 +24,7 @@ export function registerSystemClient() {
 
   // New processors
   di.register('DecoratorProcessor', { useClass: LocalEventProcessor })
+  di.register('DecoratorProcessor', { useClass: ClientLibraryEventProcessor })
   di.register('DecoratorProcessor', { useClass: IntervalProcessor })
   di.register('DecoratorProcessor', { useClass: ClientExportProcessor })
   di.register('DecoratorProcessor', { useClass: ResourceStartProcessor })
