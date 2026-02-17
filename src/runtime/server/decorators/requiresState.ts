@@ -1,7 +1,6 @@
 import { AppError } from '../../../kernel/error/app.error'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
-
-type ServerPlayer = { hasState(state: string): boolean }
+import { Player } from '../entities'
 
 /**
  * Configuration options for state validation requirements.
@@ -37,7 +36,7 @@ export interface StateRequirement {
  * state flags (e.g. `dead`, `cuffed`, `on_duty_police`).
  *
  * Rules:
- * - The decorated method must receive a `ServerPlayer` instance as its first argument.
+ * - The decorated method must receive a `Player` instance as its first argument.
  *
  * Validation:
  * - `req.has`: the player must have *all* of these states.
@@ -53,7 +52,7 @@ export interface StateRequirement {
  * @Server.Controller()
  * export class InventoryController {
  *   @Server.RequiresState({ missing: ['dead', 'cuffed'] })
- *   openInventory(player: ServerPlayer) {
+ *   openInventory(player: Player) {
  *     // ...
  *   }
  *
@@ -62,7 +61,7 @@ export interface StateRequirement {
  *     missing: ['dead'],
  *     errorMessage: 'You must be on duty to access the armory.',
  *   })
- *   openArmory(player: ServerPlayer) {
+ *   openArmory(player: Player) {
  *     // ...
  *   }
  * }
@@ -76,7 +75,7 @@ export function RequiresState(req: StateRequirement) {
     Reflect.defineMetadata(METADATA_KEYS.REQUIRES_STATE, req, target, propertyKey)
 
     descriptor.value = async function (...args: any[]) {
-      const player = args[0] as ServerPlayer
+      const player = args[0] as Player
 
       if (!player) {
         throw new Error(`@RequiresState used on ${propertyKey} without Player context`)
