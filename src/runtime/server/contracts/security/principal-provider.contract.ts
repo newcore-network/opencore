@@ -1,6 +1,7 @@
-import { Server } from '../..'
 import { LinkedID } from '../../types/linked-id'
 import { Principal } from '../../types/principal.type'
+
+type ServerPlayer = { clientID: number }
 
 /**
  * **Authorization**
@@ -25,7 +26,7 @@ export abstract class PrincipalProviderContract {
    * @param player - The active Server Player entity.
    * @returns A Promise resolving to the `Principal` data, or `null` if the player is not authenticated.
    */
-  abstract getPrincipal(player: Server.Player): Promise<Principal | null>
+  abstract getPrincipal(player: ServerPlayer): Promise<Principal | null>
 
   /**
    * Forces a refresh of the player's permissions from the persistence layer.
@@ -34,7 +35,7 @@ export abstract class PrincipalProviderContract {
    * @param player - The active Server Player entity to refresh.
    */
 
-  abstract refreshPrincipal(player: Server.Player): Promise<void>
+  abstract refreshPrincipal(player: ServerPlayer): Promise<void>
   /**
    * Retrieves a principal by their Account ID, even if they are offline.
    * Useful for web panels, discord bots, or offline bans.

@@ -1,6 +1,7 @@
 import { SecurityError } from '../../../../kernel/error/security.error'
-import { Server } from '../../'
+
+type ServerPlayer = { clientID: number }
 
 export abstract class SecurityHandlerContract {
-  abstract handleViolation(player: Server.Player, error: SecurityError): Promise<void>
+  abstract handleViolation(player: ServerPlayer, error: SecurityError): Promise<void>
 }

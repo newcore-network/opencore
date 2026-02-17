@@ -1,9 +1,10 @@
 import { injectable } from 'tsyringe'
 import { AppearanceService } from '../services'
 import { AppearanceValidationResult, PlayerAppearance } from '../../..'
-import { Server } from '..'
 
-type PlayerRef = Server.Player | number | string
+type ServerPlayer = { clientID: number }
+
+type PlayerRef = ServerPlayer | number | string
 type Clothes = Pick<PlayerAppearance, 'components' | 'props'>
 
 @injectable()

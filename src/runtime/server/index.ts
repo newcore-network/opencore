@@ -2,4 +2,6 @@ import { GLOBAL_CONTAINER } from '../../kernel/di/container'
 
 globalThis.oc_container = GLOBAL_CONTAINER
 
-export * as Server from './api'
+export { Server, createServerRuntime } from './server.runtime'
+export type { ServerApi } from './server.runtime'
+export type { ServerPluginApi } from './plugin/server-plugin-api'
