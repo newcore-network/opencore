@@ -1,7 +1,12 @@
 import * as BaseClientApi from './api'
 import type { ClientPluginApi } from './library/plugin/client-plugin-api'
 
-const RESERVED_CLIENT_API_KEYS = new Set(['registerApiExtension', '__proto__', 'prototype', 'constructor'])
+const RESERVED_CLIENT_API_KEYS = new Set([
+  'registerApiExtension',
+  '__proto__',
+  'prototype',
+  'constructor',
+])
 
 export type ClientApi = typeof BaseClientApi &
   ClientPluginApi & {

@@ -1,7 +1,12 @@
 import * as BaseServerApi from './api'
 import type { ServerPluginApi } from './library/plugin/server-plugin-api'
 
-const RESERVED_SERVER_API_KEYS = new Set(['registerApiExtension', '__proto__', 'prototype', 'constructor'])
+const RESERVED_SERVER_API_KEYS = new Set([
+  'registerApiExtension',
+  '__proto__',
+  'prototype',
+  'constructor',
+])
 
 export type ServerApi = typeof BaseServerApi &
   ServerPluginApi & {

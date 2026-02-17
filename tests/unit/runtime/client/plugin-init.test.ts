@@ -28,8 +28,6 @@ describe('Client plugin init integration', () => {
       ],
     })
 
-    expect(initClientCore).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: 'STANDALONE' }),
-    )
+    expect(initClientCore).toHaveBeenCalledWith(expect.objectContaining({ mode: 'STANDALONE' }))
   })
 })
