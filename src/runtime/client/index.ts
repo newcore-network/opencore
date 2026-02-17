@@ -1,3 +1,4 @@
+export * from './api'
 export { Client, createClientRuntime } from './client-api-runtime'
 export type { ClientApi } from './client-api-runtime'
 export type {
