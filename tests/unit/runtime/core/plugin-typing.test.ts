@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { OpenCorePlugin } from '../../../../src/runtime/server'
 import { createServerRuntime } from '../../../../src/runtime/server/server.runtime'
 
-declare module '../../../../src/runtime/server/library/plugin/server-plugin-api' {
+declare module '../../../../src/runtime/server' {
   interface ServerPluginApi {
     ExampleDecorator: (name: string) => string
   }

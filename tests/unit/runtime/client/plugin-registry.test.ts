@@ -2,22 +2,22 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   PluginRegistry,
   type PluginInstallContext,
-  type OpenCorePlugin,
-} from '../../../../src/runtime/server/library/plugin'
-import { createServerRuntime } from '../../../../src/runtime/server/server.runtime'
+  type OpenCoreClientPlugin,
+} from '../../../../src/runtime/client/library/plugin'
+import { createClientRuntime } from '../../../../src/runtime/client/client-api-runtime'
 
-describe('PluginRegistry', () => {
+describe('Client PluginRegistry', () => {
   it('installs plugins in order', async () => {
     const calls: string[] = []
     const registry = new PluginRegistry()
 
     const ctx: PluginInstallContext = {
-      server: createServerRuntime(),
+      client: createClientRuntime(),
       di: { register: vi.fn() },
       config: { get: vi.fn() },
     }
 
-    const plugins: OpenCorePlugin[] = [
+    const plugins: OpenCoreClientPlugin[] = [
       {
         name: 'first',
         install: async () => {
@@ -40,7 +40,7 @@ describe('PluginRegistry', () => {
   it('throws when duplicate plugin names are installed', async () => {
     const registry = new PluginRegistry()
     const ctx: PluginInstallContext = {
-      server: createServerRuntime(),
+      client: createClientRuntime(),
       di: { register: vi.fn() },
       config: { get: vi.fn() },
     }
@@ -53,9 +53,9 @@ describe('PluginRegistry', () => {
   })
 })
 
-describe('Server plugin API extensions', () => {
+describe('Client plugin API extensions', () => {
   it('registers an api extension on the runtime instance', () => {
-    const runtime = createServerRuntime()
+    const runtime = createClientRuntime()
     const extension = vi.fn()
 
     runtime.registerApiExtension('Test', extension)
@@ -64,28 +64,28 @@ describe('Server plugin API extensions', () => {
   })
 
   it('prevents duplicate extension keys', () => {
-    const runtime = createServerRuntime()
+    const runtime = createClientRuntime()
 
     runtime.registerApiExtension('Test', vi.fn())
 
     expect(() => runtime.registerApiExtension('Test', vi.fn())).toThrow(
-      'Server API "Test" already registered',
+      'Client API "Test" already registered',
     )
   })
 
   it('rejects empty extension keys', () => {
-    const runtime = createServerRuntime()
+    const runtime = createClientRuntime()
 
     expect(() => runtime.registerApiExtension('', vi.fn())).toThrow(
-      'Server API extension key must be a non-empty string',
+      'Client API extension key must be a non-empty string',
     )
   })
 
   it('rejects reserved extension keys', () => {
-    const runtime = createServerRuntime()
+    const runtime = createClientRuntime()
 
     expect(() => runtime.registerApiExtension('constructor', vi.fn())).toThrow(
-      'Server API extension key "constructor" is reserved',
+      'Client API extension key "constructor" is reserved',
     )
   })
 })

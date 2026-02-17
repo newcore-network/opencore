@@ -1,4 +1,7 @@
-// NOTE: Controllers are NOT imported here anymore
-// They are conditionally imported in client-bootstrap.ts based on mode
-
-export * as Client from './api'
+export { Client, createClientRuntime } from './client-api-runtime'
+export type { ClientApi } from './client-api-runtime'
+export type {
+  ClientPluginApi,
+  OpenCoreClientPlugin,
+  PluginInstallContext as ClientPluginInstallContext,
+} from './library/plugin'

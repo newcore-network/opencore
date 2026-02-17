@@ -173,6 +173,51 @@ characters.emit('session:created', { sessionId: 's-1', playerId: 10 })
 Client usage follows the same pattern with `Client.createClientLibrary(...)` and
 `@Client.OnLibraryEvent(...)`.
 
+## Plugins
+
+Plugin contracts are exposed by runtime entrypoint, not by root:
+
+- Server plugins: `@open-core/framework/server`
+- Client plugins: `@open-core/framework/client`
+
+```ts
+import { Server, type OpenCorePlugin } from '@open-core/framework/server'
+import { Client, type OpenCoreClientPlugin } from '@open-core/framework/client'
+
+const serverPlugin: OpenCorePlugin = {
+  name: 'server-example',
+  install(ctx) {
+    ctx.server.registerApiExtension('ExampleServerDecorator', () => {})
+  },
+}
+
+const clientPlugin: OpenCoreClientPlugin = {
+  name: 'client-example',
+  install(ctx) {
+    ctx.client.registerApiExtension('ExampleClientDecorator', () => {})
+  },
+}
+
+await Server.init({ mode: 'CORE', plugins: [serverPlugin] })
+await Client.init({ mode: 'CORE', plugins: [clientPlugin] })
+```
+
+Module augmentation for plugin APIs:
+
+```ts
+declare module '@open-core/framework/server' {
+  interface ServerPluginApi {
+    ExampleServerDecorator: () => void
+  }
+}
+
+declare module '@open-core/framework/client' {
+  interface ClientPluginApi {
+    ExampleClientDecorator: () => void
+  }
+}
+```
+
 ## Testing
 
 Tests run with Vitest.
