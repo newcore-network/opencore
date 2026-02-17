@@ -1,4 +1,4 @@
-import type { ServerApi } from '../../server/server.runtime'
+import type { ServerApi } from '../../server.runtime'
 
 export interface PluginInstallContext {
   readonly server: ServerApi

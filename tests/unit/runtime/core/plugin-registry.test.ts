@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { PluginRegistry, type PluginInstallContext, type OpenCorePlugin } from '../../../../src/runtime/core/plugin'
+import {
+  PluginRegistry,
+  type PluginInstallContext,
+  type OpenCorePlugin,
+} from '../../../../src/runtime/server/library/plugin'
 import { createServerRuntime } from '../../../../src/runtime/server/server.runtime'
 
 describe('PluginRegistry', () => {
@@ -41,20 +45,10 @@ describe('PluginRegistry', () => {
       config: { get: vi.fn() },
     }
 
-    await registry.installAll(
-      [
-        { name: 'duplicate', install: vi.fn() },
-      ],
-      ctx,
-    )
+    await registry.installAll([{ name: 'duplicate', install: vi.fn() }], ctx)
 
     await expect(
-      registry.installAll(
-        [
-          { name: 'duplicate', install: vi.fn() },
-        ],
-        ctx,
-      ),
+      registry.installAll([{ name: 'duplicate', install: vi.fn() }], ctx),
     ).rejects.toThrow('Plugin "duplicate" already installed')
   })
 })
@@ -78,5 +72,4 @@ describe('Server plugin API extensions', () => {
       'Server API "Test" already registered',
     )
   })
-
 })

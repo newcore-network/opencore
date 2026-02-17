@@ -1,5 +1,5 @@
 import * as BaseServerApi from './api'
-import type { ServerPluginApi } from './plugin/server-plugin-api'
+import type { ServerPluginApi } from './library/plugin/server-plugin-api'
 
 export type ServerApi = typeof BaseServerApi &
   ServerPluginApi & {
@@ -10,7 +10,7 @@ function attachApiExtensionRuntime(runtime: ServerApi): ServerApi {
   const dynamicApi: Record<string, unknown> = {}
 
   runtime.registerApiExtension = (key: string, value: unknown) => {
-    if (Object.prototype.hasOwnProperty.call(dynamicApi, key) || key in runtime) {
+    if (Object.hasOwn(dynamicApi, key) || key in runtime) {
       throw new Error(`Server API "${key}" already registered`)
     }
 
@@ -22,10 +22,10 @@ function attachApiExtensionRuntime(runtime: ServerApi): ServerApi {
 }
 
 export function createServerRuntime(): ServerApi {
-  const runtime = { ...(BaseServerApi as unknown as Record<string, unknown>) } as unknown as ServerApi
+  const runtime = {
+    ...(BaseServerApi as unknown as Record<string, unknown>),
+  } as unknown as ServerApi
   return attachApiExtensionRuntime(runtime)
 }
 
-export const Server = attachApiExtensionRuntime(
-  BaseServerApi as unknown as ServerApi,
-)
+export const Server = attachApiExtensionRuntime(BaseServerApi as unknown as ServerApi)
