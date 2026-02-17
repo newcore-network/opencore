@@ -1,3 +1,5 @@
+import type { OpenCoreClientPlugin } from './library/plugin'
+
 /**
  * Client Runtime Configuration
  *
@@ -35,6 +37,11 @@ export interface ClientInitOptions {
    * Defaults to 'CORE' if not specified (for backwards compatibility).
    */
   mode?: ClientMode
+
+  /**
+   * Optional client plugins installed before bootstrap.
+   */
+  plugins?: OpenCoreClientPlugin[]
 }
 
 /**

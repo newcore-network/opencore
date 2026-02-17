@@ -1,9 +1,9 @@
 import { container } from 'tsyringe'
 import { SecurityError } from '../../../kernel/error/security.error'
 import { SecurityAction } from '../../../kernel/error/security.types'
-import { Server } from '..'
 import { RateLimiterService } from '../services/rate-limiter.service'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
+import { Player } from '../entities/player'
 
 export interface ThrottleOptions {
   /**
@@ -49,12 +49,12 @@ export interface ThrottleOptions {
  * @Server.Controller()
  * export class MarketController {
  *   @Server.Throttle(5, 2000)
- *   async search(player: Server.Player, query: string) {
+ *   async search(player: Player, query: string) {
  *     // ...
  *   }
  *
  *   @Server.Throttle({ limit: 1, windowMs: 5000, message: 'Too fast!' })
- *   async placeOrder(player: Server.Player) {
+ *   async placeOrder(player: Player) {
  *     // ...
  *   }
  * }
@@ -83,7 +83,7 @@ export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: nu
     Reflect.defineMetadata(METADATA_KEYS.THROTTLE, opts, target, propertyKey)
 
     descriptor.value = async function (...args: any[]) {
-      const player = args[0] as Server.Player
+      const player = args[0] as Player
 
       if (player?.clientID) {
         const service = container.resolve(RateLimiterService)
