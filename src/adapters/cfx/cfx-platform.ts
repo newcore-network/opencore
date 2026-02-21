@@ -7,6 +7,7 @@ import { IPlayerInfo } from '../contracts/IPlayerInfo'
 import { IResourceInfo } from '../contracts/IResourceInfo'
 import { ITick } from '../contracts/ITick'
 import { IEntityServer } from '../contracts/server/IEntityServer'
+import { IPedServer } from '../contracts/server/IPedServer'
 import { IPedAppearanceServer } from '../contracts/server/IPedAppearanceServer'
 import { IPlayerServer } from '../contracts/server/IPlayerServer'
 import { IVehicleServer } from '../contracts/server/IVehicleServer'
@@ -34,6 +35,7 @@ export const CfxPlatform: PlatformAdapter = {
       { FiveMTick },
       { FiveMPlayerInfo },
       { FiveMEntityServer },
+      { FiveMPedServer },
       { FiveMVehicleServer },
       { FiveMPlayerServer },
       { FiveMHasher },
@@ -48,6 +50,7 @@ export const CfxPlatform: PlatformAdapter = {
       import('../fivem/fivem-tick'),
       import('../fivem/fivem-playerinfo'),
       import('../fivem/fivem-entity-server'),
+      import('../fivem/fivem-ped-server'),
       import('../fivem/fivem-vehicle-server'),
       import('../fivem/fivem-player-server'),
       import('../fivem/fivem-hasher'),
@@ -84,6 +87,9 @@ export const CfxPlatform: PlatformAdapter = {
     }
     if (!container.isRegistered(IEntityServer as any)) {
       container.registerSingleton(IEntityServer as any, FiveMEntityServer)
+    }
+    if (!container.isRegistered(IPedServer as any)) {
+      container.registerSingleton(IPedServer as any, FiveMPedServer)
     }
     if (!container.isRegistered(IVehicleServer as any)) {
       container.registerSingleton(IVehicleServer as any, FiveMVehicleServer)
