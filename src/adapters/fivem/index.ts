@@ -4,6 +4,7 @@ export { FiveMEngineEvents } from './fivem-engine-events'
 export { FiveMEntityServer } from './fivem-entity-server'
 export { FiveMExports } from './fivem-exports'
 export { FiveMHasher } from './fivem-hasher'
+export { FiveMPedServer } from './fivem-ped-server'
 export { FiveMMessagingTransport } from './transport/adapter'
 export { FiveMPedAppearanceServerAdapter } from './fivem-ped-appearance-server'
 // Platform adapter

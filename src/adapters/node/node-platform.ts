@@ -7,6 +7,7 @@ import { IPlayerInfo } from '../contracts/IPlayerInfo'
 import { IResourceInfo } from '../contracts/IResourceInfo'
 import { ITick } from '../contracts/ITick'
 import { IEntityServer } from '../contracts/server/IEntityServer'
+import { IPedServer } from '../contracts/server/IPedServer'
 import { IPedAppearanceServer } from '../contracts/server/IPedAppearanceServer'
 import { IPlayerServer } from '../contracts/server/IPlayerServer'
 import { IVehicleServer } from '../contracts/server/IVehicleServer'
@@ -38,6 +39,7 @@ export const NodePlatform: PlatformAdapter = {
       { NodeTick },
       { NodePlayerInfo },
       { NodeEntityServer },
+      { NodePedServer },
       { NodeVehicleServer },
       { NodePlayerServer },
       { NodeHasher },
@@ -51,6 +53,7 @@ export const NodePlatform: PlatformAdapter = {
       import('./node-tick'),
       import('./node-playerinfo'),
       import('./node-entity-server'),
+      import('./node-ped-server'),
       import('./node-vehicle-server'),
       import('./node-player-server'),
       import('./node-hasher'),
@@ -79,6 +82,8 @@ export const NodePlatform: PlatformAdapter = {
       container.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
     if (!container.isRegistered(IEntityServer as any))
       container.registerSingleton(IEntityServer as any, NodeEntityServer)
+    if (!container.isRegistered(IPedServer as any))
+      container.registerSingleton(IPedServer as any, NodePedServer)
     if (!container.isRegistered(IVehicleServer as any))
       container.registerSingleton(IVehicleServer as any, NodeVehicleServer)
     if (!container.isRegistered(IPlayerServer as any))
