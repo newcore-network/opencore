@@ -10,4 +10,5 @@ export type { OpenCorePlugin, PluginInstallContext } from './library/plugin'
 
 export namespace Server {
   export type Player = import('./entities/player').Player
+  export type NPC = import('./entities/npc').NPC
 }

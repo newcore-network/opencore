@@ -20,6 +20,7 @@ import { RemotePrincipalImplementation } from '../implementations/remote/princip
 import { RemoteChannelImplementation } from '../implementations/remote/channel.remote'
 import { Channels } from '../api'
 import { LocalChannelImplementation } from '../implementations/local/channel.local'
+import { Npcs } from '../apis/npcs.api'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -106,6 +107,10 @@ export function registerServicesServer(ctx: RuntimeContext) {
       GLOBAL_CONTAINER.registerSingleton(Channels as any, LocalChannelImplementation)
     }
     GLOBAL_CONTAINER.registerSingleton(Chat)
+  }
+
+  if (!GLOBAL_CONTAINER.isRegistered(Npcs)) {
+    GLOBAL_CONTAINER.registerSingleton(Npcs)
   }
 
   if (!GLOBAL_CONTAINER.isRegistered(BinaryProcessManager)) {

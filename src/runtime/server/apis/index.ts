@@ -1,5 +1,6 @@
 export * from './appearance.api'
 export * from './chat.api'
+export * from './npcs.api'
 export * from './parallel-compute.api'
 export * from './vehicle-modification.api'
 export * from './vehicles.api'
