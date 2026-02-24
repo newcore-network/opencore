@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { Channel } from '../../../../src/runtime/server/entities/channel'
+import { Channel } from '../../../../src/runtime/server/concepts/channel'
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { ChannelType } from '../../../../src/runtime/server/types/channel.types'
 

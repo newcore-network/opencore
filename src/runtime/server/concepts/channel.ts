@@ -1,4 +1,4 @@
-import { Player } from './player'
+import { Player } from '../entities/player'
 import { ChannelMetadata, ChannelSubscription, ChannelType } from '../types/channel.types'
 import { loggers } from '../../../kernel/logger'
 

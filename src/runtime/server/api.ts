@@ -14,8 +14,9 @@ export * from './ports/channel.api-port'
 // DevMode (development tools)
 export * from './devmode'
 
-// Entities
+// Entities + Concepts
 export * from './entities'
+export * from './concepts/channel'
 
 // Configurations
 export * from './runtime'

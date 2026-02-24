@@ -1,10 +1,11 @@
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { RGB } from 'src/kernel'
 import { inject, injectable } from 'tsyringe'
-import { Channel, Player } from '../../entities'
+import { Player } from '../../entities'
 import { Channels } from '../../ports/channel.api-port'
 import { IChannelValidator, ChannelMetadata, ChannelType } from '../../types'
 import { Players } from '../../ports/players.api-port'
+import { Channel } from '../../concepts/channel'
 
 @injectable()
 export class LocalChannelImplementation extends Channels {
