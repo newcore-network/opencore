@@ -14,11 +14,15 @@ const DEFAULT_PED_TYPE = 4
 const DEFAULT_SPAWN_TIMEOUT_MS = 2000
 
 /**
- * Server-side service for NPC entity lifecycle.
+ * Server-side API responsible for the full NPC (ped) lifecycle:
+ * spawn, registry, queries, spatial search, serialization and deletion.
  *
  * @remarks
- * This API is responsible for spawning, indexing, querying, and destroying NPC entities.
- * AI/behavior systems should consume this API instead of calling natives directly.
+ * Prefer consuming this API from gameplay / AI systems instead of calling natives directly.
+ * This class keeps a stable in-memory registry keyed by `npcId` and maintains secondary
+ * indexes by `handle` and (when networked) by `netId`.
+ *
+ * The registry is authoritative for lookups, while `NPC.exists` reflects runtime existence.
  */
 @injectable()
 export class Npcs {
@@ -40,6 +44,19 @@ export class Npcs {
     }
   }
 
+  /**
+   * Spawn (create) a single NPC and register it into the runtime.
+   *
+   * @remarks
+   * - Generates a UUID if `options.id` is not provided.
+   * - Prevents duplicate `npcId` collisions within this runtime.
+   * - Waits until the underlying entity exists (polling) and fails fast on timeout.
+   * - Applies routing bucket, orphan mode (persistent), and metadata after spawn.
+   * - Registers the NPC in `WorldContext` and internal indexes.
+   *
+   * @param options - Spawn options (model, position, routingBucket, persistence, metadata, etc.).
+   * @returns An object containing a `result` (success/error) and the created `npc` on success.
+   */
   async create(options: NpcSpawnOptions): Promise<{ result: NpcSpawnResult; npc?: NPC }> {
     const {
       id,
@@ -138,7 +155,7 @@ export class Npcs {
       totalNpcs: this.npcById.size,
     })
 
-    this.events.emit('opencore:npc:created', 'all', npc.serialize())
+    // this.events.emit('opencore:npc:created', 'all', npc.serialize())
 
     return {
       result: {
@@ -151,7 +168,22 @@ export class Npcs {
     }
   }
 
-  async createMany(options: NpcSpawnOptions[]): Promise<Array<{ result: NpcSpawnResult; npc?: NPC }>> {
+  /**
+   * Spawn multiple NPCs sequentially using {@link create}.
+   *
+   * @remarks
+   * This method is intentionally sequential to keep spawn load predictable and to preserve
+   * deterministic side-effects (logging, indexing, world registration).
+   *
+   * If you want parallel spawning, you can build it externally, but be mindful of server load
+   * and potential native limits.
+   *
+   * @param options - List of spawn requests.
+   * @returns A list of per-item results, each containing a `result` and optionally an `npc`.
+   */
+  async createMany(
+    options: NpcSpawnOptions[],
+  ): Promise<Array<{ result: NpcSpawnResult; npc?: NPC }>> {
     const result: Array<{ result: NpcSpawnResult; npc?: NPC }> = []
     for (const item of options) {
       result.push(await this.create(item))
@@ -159,24 +191,67 @@ export class Npcs {
     return result
   }
 
+  /**
+   * Get an NPC instance by its logical id (`npcId`).
+   *
+   * @param id - NPC logical identifier.
+   * @returns The NPC instance if present in the registry, otherwise `undefined`.
+   */
   getById(id: string): NPC | undefined {
     return this.npcById.get(id)
   }
 
+  /**
+   * Get an NPC instance by its ped handle.
+   *
+   * @remarks
+   * Handles are runtime-specific and can become invalid if the entity is removed.
+   * This lookup uses the internal `handle -> npcId` index.
+   *
+   * @param handle - Ped handle.
+   * @returns The NPC instance if present, otherwise `undefined`.
+   */
   getByHandle(handle: number): NPC | undefined {
     const id = this.idByHandle.get(handle)
     return id ? this.npcById.get(id) : undefined
   }
 
+  /**
+   * Get an NPC instance by its network id (netId).
+   *
+   * @remarks
+   * Only NPCs created with `networked=true` will have a netId and be indexed here.
+   *
+   * @param netId - Network id of the entity.
+   * @returns The NPC instance if present, otherwise `undefined`.
+   */
   getByNetId(netId: number): NPC | undefined {
     const id = this.idByNetId.get(netId)
     return id ? this.npcById.get(id) : undefined
   }
 
+  /**
+   * Return a snapshot array of all NPCs currently registered.
+   *
+   * @remarks
+   * This includes NPCs that may no longer exist at runtime (e.g. removed externally),
+   * until {@link cleanupOrphans} is called.
+   *
+   * @returns An array of NPC instances.
+   */
   getAll(): NPC[] {
     return Array.from(this.npcById.values())
   }
 
+  /**
+   * Return all NPCs whose current routing bucket (dimension) matches the given bucket.
+   *
+   * @remarks
+   * The check is performed using `npc.dimension` (which resolves via entity server).
+   *
+   * @param bucket - Routing bucket / dimension.
+   * @returns An array of NPC instances in the given bucket.
+   */
   getInRoutingBucket(bucket: number): NPC[] {
     const npcs: NPC[] = []
     for (const npc of this.npcById.values()) {
@@ -187,6 +262,20 @@ export class Npcs {
     return npcs
   }
 
+  /**
+   * Find NPCs within `radius` of a position (Euclidean distance in 3D).
+   *
+   * @remarks
+   * - This method performs a linear scan over registered NPCs.
+   * - Uses squared distance (avoids `Math.sqrt`) for performance.
+   * - Skips NPCs that no longer exist (`npc.exists === false`).
+   * - Optionally filters by routing bucket (dimension).
+   *
+   * @param position - Center position.
+   * @param radius - Search radius (negative values are clamped to 0).
+   * @param bucket - Optional routing bucket filter.
+   * @returns Matching NPCs (order is insertion/iteration order).
+   */
   findNear(position: Vector3, radius: number, bucket?: number): NPC[] {
     const maxDistance = Math.max(0, radius)
     const maxDistanceSq = maxDistance * maxDistance
@@ -209,15 +298,41 @@ export class Npcs {
     return npcs
   }
 
+  /**
+   * Return the current number of NPCs tracked in the registry.
+   *
+   * @remarks
+   * This is the registry size, not necessarily the number of NPCs that still exist in the world.
+   * Use {@link cleanupOrphans} to remove non-existing NPCs from the registry.
+   *
+   * @returns Registry count.
+   */
   count(): number {
     return this.npcById.size
   }
 
+  /**
+   * Check if a given `npcId` is registered and the underlying entity currently exists.
+   *
+   * @param id - NPC logical identifier.
+   * @returns `true` if registered and exists in the runtime, otherwise `false`.
+   */
   exists(id: string): boolean {
     const npc = this.npcById.get(id)
     return npc ? npc.exists : false
   }
 
+  /**
+   * Delete an NPC by its logical id and remove it from internal registries.
+   *
+   * @remarks
+   * - Calls {@link NPC.delete} (ped deletion) if the entity exists.
+   * - Removes the NPC from internal indexes and {@link WorldContext}.
+   * - Emits the `opencore:npc:deleted` server event to `'all'` with the `npcId`.
+   *
+   * @param id - NPC logical identifier.
+   * @returns `true` if an NPC was found and deleted, otherwise `false`.
+   */
   deleteById(id: string): boolean {
     const npc = this.npcById.get(id)
     if (!npc) {
@@ -239,18 +354,45 @@ export class Npcs {
     return true
   }
 
+  /**
+   * Delete an NPC by its handle.
+   *
+   * @remarks
+   * Resolves `handle -> npcId` and delegates to {@link deleteById}.
+   *
+   * @param handle - Ped handle.
+   * @returns `true` if an NPC was found and deleted, otherwise `false`.
+   */
   deleteByHandle(handle: number): boolean {
     const id = this.idByHandle.get(handle)
     if (!id) return false
     return this.deleteById(id)
   }
 
+  /**
+   * Delete an NPC by its network id (netId).
+   *
+   * @remarks
+   * Resolves `netId -> npcId` and delegates to {@link deleteById}.
+   * Only applies to NPCs created with `networked=true`.
+   *
+   * @param netId - Network id.
+   * @returns `true` if an NPC was found and deleted, otherwise `false`.
+   */
   deleteByNetId(netId: number): boolean {
     const id = this.idByNetId.get(netId)
     if (!id) return false
     return this.deleteById(id)
   }
 
+  /**
+   * Delete all currently registered NPCs.
+   *
+   * @remarks
+   * Iterates over a snapshot of ids to avoid mutation issues during deletion.
+   *
+   * @returns The number of NPCs successfully deleted.
+   */
   deleteAll(): number {
     const ids = Array.from(this.npcById.keys())
     let deleted = 0
@@ -264,6 +406,16 @@ export class Npcs {
     return deleted
   }
 
+  /**
+   * Remove registry entries for NPCs whose underlying entities no longer exist.
+   *
+   * @remarks
+   * This is useful when entities were deleted externally (by natives, scripts, cleanup, etc.).
+   * It removes them from internal indexes and {@link WorldContext}, without attempting to delete
+   * the already-nonexistent entity.
+   *
+   * @returns The number of orphan registry entries removed.
+   */
   cleanupOrphans(): number {
     const toDelete: string[] = []
     for (const npc of this.npcById.values()) {
@@ -289,6 +441,16 @@ export class Npcs {
     return toDelete.length
   }
 
+  /**
+   * Serialize all registered NPCs to plain data objects.
+   *
+   * @remarks
+   * Each NPC serialization includes position, heading, routing bucket, metadata and state bag snapshot.
+   * NPCs that no longer exist may still serialize, but values depending on natives could be stale or fail
+   * depending on adapter behavior; prefer calling {@link cleanupOrphans} first when needed.
+   *
+   * @returns An array of serialized NPC data.
+   */
   serializeAll(): SerializedNpcData[] {
     return Array.from(this.npcById.values()).map((npc) => npc.serialize())
   }
@@ -320,7 +482,10 @@ export class Npcs {
     }
   }
 
-  private async waitForSpawn(handle: number, timeoutMs: number = DEFAULT_SPAWN_TIMEOUT_MS): Promise<boolean> {
+  private async waitForSpawn(
+    handle: number,
+    timeoutMs: number = DEFAULT_SPAWN_TIMEOUT_MS,
+  ): Promise<boolean> {
     const startedAt = Date.now()
     while (!this.entityServer.doesExist(handle)) {
       if (Date.now() - startedAt > timeoutMs) {
