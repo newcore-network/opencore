@@ -37,7 +37,7 @@ export interface PlayerAdapters {
  * (FiveM, RageMP, alt:V, etc.) through the adapter pattern.
  */
 export class Player extends BaseEntity implements Spatial {
-  private position: Vector3
+  private _position: Vector3
 
   /**
    * Creates a new Player entity instance.
@@ -51,7 +51,7 @@ export class Player extends BaseEntity implements Spatial {
     private readonly adapters: PlayerAdapters,
   ) {
     super(`player:${session.clientID}`)
-    this.position = adapters.playerInfo.getPlayerPosition(session.clientID)
+    this._position = adapters.playerInfo.getPlayerPosition(session.clientID)
   }
 
   /**
@@ -82,8 +82,8 @@ export class Player extends BaseEntity implements Spatial {
   // ─────────────────────────────────────────────────────────────────
 
   getPosition(): Vector3 {
-    this.position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
-    return this.position
+    this._position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
+    return this._position
   }
 
   /**
