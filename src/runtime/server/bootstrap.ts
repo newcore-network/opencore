@@ -15,6 +15,7 @@ import {
 } from './runtime'
 import { BinaryProcessManager } from './system/managers/binary-process.manager'
 import { SessionRecoveryService } from './services/session-recovery.local'
+import type { PluginInstallContext, PluginRegistry } from './library/plugin'
 import { registerServicesServer } from './services/services.register'
 import { METADATA_KEYS } from './system/metadata-server.keys'
 import { registerSystemServer } from './system/processors.register'
@@ -93,7 +94,10 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
  *
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
-export async function initServer(options: ServerRuntimeOptions) {
+export async function initServer(
+  options: ServerRuntimeOptions,
+  plugins?: { registry: PluginRegistry; context: PluginInstallContext },
+) {
   validateRuntimeOptions(options)
   setRuntimeContext(options)
 
@@ -142,6 +146,11 @@ export async function initServer(options: ServerRuntimeOptions) {
   loggers.bootstrap.debug('Frameworks Controllers loaded')
   await tryImportAutoLoad()
   loggers.bootstrap.debug('User Controllers loaded')
+
+  if (plugins) {
+    await plugins.registry.startAll(plugins.context)
+    loggers.bootstrap.debug('Server plugins started')
+  }
 
   // 3. Register System Processors (Command, NetEvent, etc.)
   // These processors check if contracts are already registered before applying defaults.

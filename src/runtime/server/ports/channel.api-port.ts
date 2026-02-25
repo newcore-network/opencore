@@ -1,5 +1,6 @@
 import { RGB } from 'src/kernel'
-import { Channel, Player } from '../entities'
+import { Channel } from '../concepts/channel'
+import { Player } from '../entities'
 import { ChannelMetadata, ChannelType, IChannelValidator } from '../types'
 
 export abstract class Channels {

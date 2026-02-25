@@ -14,4 +14,16 @@ export class PluginRegistry {
       this.installed.set(plugin.name, plugin)
     }
   }
+
+  async startAll(ctx: PluginInstallContext): Promise<void> {
+    for (const plugin of this.installed.values()) {
+      if (typeof plugin.start !== 'function') continue
+      try {
+        await plugin.start(ctx)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        throw new Error(`Plugin "${plugin.name}" failed to start: ${message}`)
+      }
+    }
+  }
 }

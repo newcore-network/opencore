@@ -1,5 +1,9 @@
 import { GLOBAL_CONTAINER } from '../../kernel/di/container'
-import { PluginRegistry, type OpenCorePlugin } from './library/plugin'
+import {
+  PluginRegistry,
+  type OpenCorePlugin,
+  type PluginInstallContext,
+} from './library/plugin'
 import { Server } from './server.runtime'
 import { initServer } from './bootstrap'
 import {
@@ -38,7 +42,7 @@ export async function init(options: OpenCoreInitOptions) {
   _mode = resolved.mode
 
   const registry = new PluginRegistry()
-  await registry.installAll(options.plugins ?? [], {
+  const pluginContext: PluginInstallContext = {
     server: Server,
     di: {
       register(token: any, value: any) {
@@ -46,7 +50,9 @@ export async function init(options: OpenCoreInitOptions) {
       },
     },
     config: createConfigAccessor(resolved),
-  })
+  }
 
-  await initServer(resolved)
+  await registry.installAll(options.plugins ?? [], pluginContext)
+
+  await initServer(resolved, { registry, context: pluginContext })
 }
