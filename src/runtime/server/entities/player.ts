@@ -9,6 +9,7 @@ import { Spatial } from '../../core/spatial'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.types'
 import { SerializedPlayerData } from '../types/core-exports.types'
+import { NativeHandle } from 'src/runtime/core/nativehandle'
 
 /**
  * Adapter bundle for player operations.
@@ -36,7 +37,7 @@ export interface PlayerAdapters {
  * This class is platform-agnostic and works across different game engines
  * (FiveM, RageMP, alt:V, etc.) through the adapter pattern.
  */
-export class Player extends BaseEntity implements Spatial {
+export class Player extends BaseEntity implements Spatial, NativeHandle {
   private _position: Vector3
 
   /**
@@ -52,6 +53,17 @@ export class Player extends BaseEntity implements Spatial {
   ) {
     super(`player:${session.clientID}`)
     this._position = adapters.playerInfo.getPlayerPosition(session.clientID)
+  }
+
+  getHeading(): number {
+    return this.adapters.entityServer.getHeading(this.clientID)
+  }
+  setHeading(heading: number): void {
+    this.adapters.entityServer.setHeading(this.clientID, heading)
+  }
+
+  getHandle(): number {
+    return this.clientID
   }
 
   /**

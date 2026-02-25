@@ -1,3 +1,4 @@
+import { NativeHandle } from 'src/runtime/core/nativehandle'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
 import { Vector3 } from '../../../kernel/utils/vector3'
@@ -53,12 +54,16 @@ export interface NpcSession {
  * }
  * ```
  */
-export class NPC extends BaseEntity implements Spatial {
+export class NPC extends BaseEntity implements Spatial, NativeHandle {
   constructor(
     private readonly session: NpcSession,
     private readonly adapters: NpcAdapters,
   ) {
     super(`npc:${session.id}`)
+  }
+
+  getHandle(): number {
+    return this.session.handle
   }
 
   /**
@@ -68,16 +73,6 @@ export class NPC extends BaseEntity implements Spatial {
    */
   get npcId(): string {
     return this.session.id
-  }
-
-  /**
-   * Native entity handle of the ped.
-   *
-   * @remarks
-   * Handles are runtime-specific and may become invalid if the entity is removed.
-   */
-  get handle(): number {
-    return this.session.handle
   }
 
   /**

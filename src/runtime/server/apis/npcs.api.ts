@@ -344,7 +344,7 @@ export class Npcs {
 
     coreLogger.info('NPC deleted', {
       npcId: npc.npcId,
-      handle: npc.handle,
+      handle: npc.getHandle(),
       netId: npc.netId,
       remainingNpcs: this.npcById.size,
     })
@@ -462,7 +462,7 @@ export class Npcs {
 
   private removeFromRegistry(npc: NPC): void {
     this.npcById.delete(npc.npcId)
-    this.idByHandle.delete(npc.handle)
+    this.idByHandle.delete(npc.getHandle())
     if (npc.netId !== undefined) {
       this.idByNetId.delete(npc.netId)
     }
