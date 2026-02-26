@@ -1,4 +1,4 @@
-## OpenCore Framework v1.0.0-beta.1
+## OpenCore Framework v1.0.5-beta.1
 
 ### Highlights
 
