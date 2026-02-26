@@ -1,5 +1,5 @@
 import { parentPort } from 'node:worker_threads'
-import type { WorkerMessage } from './types'
+import type { WorkerMessage } from '../../types/parallel.types'
 import { processMessage } from './worker'
 
 const port = parentPort

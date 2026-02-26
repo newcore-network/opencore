@@ -30,7 +30,9 @@ export class FiveMPlayerServer extends IPlayerServer {
   }
 
   /**
-   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
+   * Get all identifiers registered.
+   *
+   * Use getPlayerIdentifiers() for structured identifier data.
    */
   getIdentifiers(playerSrc: string): string[] {
     const identifiers: string[] = []

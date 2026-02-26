@@ -2,8 +2,10 @@ export const METADATA_KEYS = {
   CONTROLLER: 'decorator:meta:controller',
   COMMAND: 'decorator:meta:command',
   NET_EVENT: 'decorator:meta:net_event',
+  NET_RPC: 'decorator:meta:net_rpc',
   TICK: 'decorator:meta:tick',
   INTERNAL_EVENT: 'decorator:meta:internal_event',
+  LIBRARY_EVENT: 'decorator:meta:library_event',
   RUNTIME_EVENT: 'decorator:meta:runtime_event',
   EXPORT: 'decorator:meta:export',
   PUBLIC: 'decorator:meta:public',
@@ -12,4 +14,5 @@ export const METADATA_KEYS = {
   BINARY_SERVICE: 'decorator:meta:binary_service',
   BINARY_SERVICE_NAME: 'decorator:meta:binary_service_name',
   BINARY_CALL: 'decorator:meta:binary_call',
+  BINARY_EVENT: 'decorator:meta:binary_event',
 }

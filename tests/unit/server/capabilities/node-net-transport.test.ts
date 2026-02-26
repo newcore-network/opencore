@@ -1,18 +1,18 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
+import { NodeEvents } from '../../../../src/adapters/node/transport/node.events'
 
-describe('NodeNetTransport', () => {
-  let transport: NodeNetTransport
+describe('NodeEvents', () => {
+  let events: NodeEvents
 
   beforeEach(() => {
-    transport = new NodeNetTransport()
+    events = new NodeEvents()
   })
 
-  it('should register net event handler', () => {
+  it('should register event handler', () => {
     const handler = vi.fn()
 
-    transport.onNet('testEvent', handler)
+    events.on('testEvent', handler)
 
     // Handler should be registered (no errors)
     expect(handler).not.toHaveBeenCalled()
@@ -22,8 +22,8 @@ describe('NodeNetTransport', () => {
     const handler = vi.fn()
     const eventName = 'playerConnect'
 
-    transport.onNet(eventName, handler)
-    transport.emitNet(eventName, 1, 'arg1', 'arg2')
+    events.on(eventName, handler)
+    events.emit(eventName, 1, 'arg1', 'arg2')
 
     // Wait for event loop
     await new Promise((resolve) => setImmediate(resolve))
@@ -37,8 +37,8 @@ describe('NodeNetTransport', () => {
     const eventName = 'testEvent'
     const clientId = 42
 
-    transport.onNet(eventName, handler)
-    transport.emitNet(eventName, clientId, 'data')
+    events.on(eventName, handler)
+    events.emit(eventName, clientId, 'data')
 
     await new Promise((resolve) => setImmediate(resolve))
 
@@ -50,9 +50,9 @@ describe('NodeNetTransport', () => {
     const handler2 = vi.fn()
     const eventName = 'multiHandler'
 
-    transport.onNet(eventName, handler1)
-    transport.onNet(eventName, handler2)
-    transport.emitNet(eventName, 1, 'test')
+    events.on(eventName, handler1)
+    events.on(eventName, handler2)
+    events.emit(eventName, 1, 'test')
 
     await new Promise((resolve) => setImmediate(resolve))
 
@@ -64,8 +64,8 @@ describe('NodeNetTransport', () => {
     const handler = vi.fn()
     const eventName = 'clientEvent'
 
-    transport.onNet(eventName, handler)
-    transport.simulateClientEvent(eventName, 99, 'payload')
+    events.on(eventName, handler)
+    events.simulateClientEvent(eventName, 99, 'payload')
 
     await new Promise((resolve) => setImmediate(resolve))
 
@@ -76,9 +76,9 @@ describe('NodeNetTransport', () => {
     const handler = vi.fn()
     const eventName = 'clearTest'
 
-    transport.onNet(eventName, handler)
-    transport.clearHandlers()
-    transport.emitNet(eventName, 1, 'data')
+    events.on(eventName, handler)
+    events.clearHandlers()
+    events.emit(eventName, 1, 'data')
 
     await new Promise((resolve) => setImmediate(resolve))
 
@@ -89,12 +89,12 @@ describe('NodeNetTransport', () => {
     const handler = vi.fn()
     const eventName = 'arrayTarget'
 
-    transport.onNet(eventName, handler)
-    transport.emitNet(eventName, [5, 10, 15], 'broadcast')
+    events.on(eventName, handler)
+    events.emit(eventName, [5, 10, 15], 'broadcast')
 
     await new Promise((resolve) => setImmediate(resolve))
 
-    // Should use first client in array
+    // Should emit to each client in array
     expect(handler).toHaveBeenCalledTimes(3)
     expect(handler).toHaveBeenNthCalledWith(
       1,

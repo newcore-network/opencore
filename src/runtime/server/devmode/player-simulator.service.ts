@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe'
-import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { loggers } from '../../../kernel/logger'
-import { PlayerSessionLifecyclePort } from '../services/ports/player-session-lifecycle.port'
 import { SimulatedPlayer, SimulatedPlayerOptions } from './types'
+import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
 
 /**
  * Service for simulating player connections during development.
@@ -16,8 +16,8 @@ export class PlayerSimulatorService {
   private simulatedPlayers = new Map<number, SimulatedPlayerData>()
   private clientIdCounter = 90000 // Start high to avoid conflicts with real players
 
-  private get transport(): INetTransport {
-    return GLOBAL_CONTAINER.resolve(INetTransport as any)
+  private get events(): EventsAPI<'server'> {
+    return GLOBAL_CONTAINER.resolve(EventsAPI as any)
   }
 
   private get sessionLifecycle(): PlayerSessionLifecyclePort {
@@ -168,9 +168,9 @@ export class PlayerSimulatorService {
     }
 
     // Use the node transport to simulate the event
-    const nodeTransport = this.transport as any
-    if (typeof nodeTransport.simulateClientEvent === 'function') {
-      nodeTransport.simulateClientEvent(eventName, clientId, ...args)
+    const events = this.events as any
+    if (typeof events.simulateClientEvent === 'function') {
+      events.simulateClientEvent(eventName, clientId, ...args)
     } else {
       loggers.bootstrap.warn('[DevMode] Transport does not support event simulation')
     }

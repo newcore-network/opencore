@@ -1,15 +1,17 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import type { INetTransport, NetEventContext } from '../../../../src/adapters'
+import { EventsAPI } from '../../../../src/adapters/contracts/transport/events.api'
+import type { EventContext } from '../../../../src/adapters/contracts/transport/context'
 import { NodeEntityServer } from '../../../../src/adapters/node/node-entity-server'
-import { NodeNetTransport } from '../../../../src/adapters/node/node-net-transport'
+import { NodeCapabilities } from '../../../../src/adapters/node/node-capabilities'
+import { NodeEvents } from '../../../../src/adapters/node/transport/node.events'
 import { NodePlayerServer } from '../../../../src/adapters/node/node-player-server'
 import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
 import { WorldContext } from '../../../../src/runtime/core/world'
 import type { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
-import { PlayerService } from '../../../../src/runtime/server/services/core/player.service'
+import { LocalPlayerImplementation } from '../../../../src/runtime/server/implementations/local/player.local'
 import { NetEventProcessor } from '../../../../src/runtime/server/system/processors/netEvent.processor'
 import { registeredNetEvents } from '../../../mocks/citizenfx'
 
@@ -21,24 +23,22 @@ const observer: NetEventSecurityObserverContract = {
   onInvalidPayload: vi.fn().mockResolvedValue(undefined),
 }
 
-const netAbstract: INetTransport = {
-  emitNet: vi.fn(),
-  onNet: vi
+const eventsAbstract: EventsAPI<'server'> = {
+  on: vi
     .fn()
     .mockImplementation(
-      (
-        eventName: string,
-        handler: (ctx: NetEventContext, ...args: any[]) => void | Promise<void>,
-      ) => {
-        registeredNetEvents.set(eventName, handler)
+      (event: string, handler: (ctx: EventContext, ...args: any[]) => void | Promise<void>) => {
+        registeredNetEvents.set(event, handler)
       },
     ),
-}
+  emit: vi.fn(),
+} as any
 
 const playerInfo = new NodePlayerInfo()
 const playerServer = new NodePlayerServer()
 const entityServer = new NodeEntityServer()
-const netTransport = new NodeNetTransport()
+const nodeEvents = new NodeEvents()
+const nodeCapabilities = new NodeCapabilities()
 
 describe('NetEventProcessor invalid payload resilience', () => {
   beforeEach(() => {
@@ -46,17 +46,23 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash on repeated invalid payloads and should notify observer with incrementing counts', async () => {
-    const playerService = new PlayerService(
+    const playerService = new LocalPlayerImplementation(
       new WorldContext(),
       playerInfo,
       playerServer,
       entityServer,
-      netTransport,
+      nodeEvents,
+      nodeCapabilities,
     )
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
-    const processor = new NetEventProcessor(playerService, securityHandler, observer, netAbstract)
+    const processor = new NetEventProcessor(
+      playerService,
+      securityHandler,
+      observer,
+      eventsAbstract,
+    )
 
     class TestController {
       async handle() {}
@@ -73,7 +79,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
     expect(fn).toBeDefined()
 
     // Create context with clientId instead of using global.source
-    const ctx: NetEventContext = { clientId: 1 }
+    const ctx: EventContext = { clientId: 1 }
 
     for (let i = 0; i < 10; i++) {
       await expect(fn?.(ctx, { a: 123 })).resolves.toBeUndefined()
@@ -93,17 +99,23 @@ describe('NetEventProcessor invalid payload resilience', () => {
   })
 
   it('should not crash even if handleViolation throws', async () => {
-    const playerService = new PlayerService(
+    const playerService = new LocalPlayerImplementation(
       new WorldContext(),
       playerInfo,
       playerServer,
       entityServer,
-      netTransport,
+      nodeEvents,
+      nodeCapabilities,
     )
     const player = playerService.bind(1)
     player.linkAccount('acc-1')
 
-    const processor = new NetEventProcessor(playerService, securityHandler, observer, netAbstract)
+    const processor = new NetEventProcessor(
+      playerService,
+      securityHandler,
+      observer,
+      eventsAbstract,
+    )
 
     class TestController {
       async handle() {}
@@ -120,7 +132,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
     expect(fn).toBeDefined()
 
     // Create context with clientId instead of using global.source
-    const ctx: NetEventContext = { clientId: 1 }
+    const ctx: EventContext = { clientId: 1 }
 
     await expect(fn?.(ctx, { a: 123 })).resolves.toBeUndefined()
     expect((observer.onInvalidPayload as any).mock.calls.length).toBe(1)

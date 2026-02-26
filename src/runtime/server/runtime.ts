@@ -12,7 +12,7 @@ export type FrameworkMode = 'CORE' | 'RESOURCE' | 'STANDALONE'
  *
  * - `'local'`: Feature implemented locally in current resource
  *   - Used in CORE/STANDALONE for all features
- *   - Used in RESOURCE for: netEvents, fiveMEvents, exports, http, chat
+ *   - Used in RESOURCE for: netEvents, runtimeEvents, exports, http, chat
  *   - Triggers local service implementations
  *
  * @example
@@ -30,7 +30,7 @@ export type FeatureScope = 'core' | 'resource' | 'standalone'
 export type FeatureName =
   | 'players'
   | 'netEvents'
-  | 'fiveMEvents'
+  | 'runtimeEvents'
   | 'commands'
   | 'exports'
   | 'chat'
@@ -172,7 +172,7 @@ export type RuntimeContext = ServerRuntimeOptions
 const FEATURE_NAMES: FeatureName[] = [
   'players',
   'netEvents',
-  'fiveMEvents',
+  'runtimeEvents',
   'commands',
   'exports',
   'chat',
@@ -183,7 +183,7 @@ const FEATURE_NAMES: FeatureName[] = [
 const FEATURE_ALLOWED_SCOPES: Record<FeatureName, FeatureScope[]> = {
   players: ['core', 'resource', 'standalone'],
   netEvents: ['core', 'resource', 'standalone'],
-  fiveMEvents: ['core', 'resource', 'standalone'],
+  runtimeEvents: ['core', 'resource', 'standalone'],
   commands: ['core', 'resource', 'standalone'],
   exports: ['core', 'resource', 'standalone'],
   chat: ['core', 'resource', 'standalone'],
@@ -281,7 +281,7 @@ function createDefaultFeatures(mode: FrameworkMode): FrameworkFeatures {
       scope,
       required: true,
     },
-    fiveMEvents: {
+    runtimeEvents: {
       enabled: true,
       provider: 'local',
       export: false,

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { emitFrameworkEvent, onFrameworkEvent } from '../../src/runtime/server/bus/core-event-bus'
-import type { CoreEventMap } from '../../src/runtime/server/types/core-events'
+import { emitFrameworkEvent, onFrameworkEvent } from '../../src/runtime/server/bus/internal-event.bus'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { PlayerFactory } from '../utils/player-factory'
@@ -15,7 +14,7 @@ describe('Core Events Load Benchmarks', () => {
   for (const playerCount of scenarios) {
     it(`Core Events - ${playerCount} players, single handler`, async () => {
       let handlerCallCount = 0
-      const unsubscribe = onFrameworkEvent('core:playerSessionCreated', () => {
+      const unsubscribe = onFrameworkEvent('internal:playerSessionCreated', () => {
         handlerCallCount++
       })
 
@@ -25,7 +24,7 @@ describe('Core Events Load Benchmarks', () => {
 
       for (const player of players) {
         const start = performance.now()
-        emitFrameworkEvent('core:playerSessionCreated', {
+        emitFrameworkEvent('internal:playerSessionCreated', {
           clientId: player.clientID,
           license: `license:${player.clientID}`,
         })
@@ -56,7 +55,7 @@ describe('Core Events Load Benchmarks', () => {
       for (let i = 0; i < 10; i++) {
         const index = i
         unsubscribes.push(
-          onFrameworkEvent('core:playerSessionCreated', () => {
+          onFrameworkEvent('internal:playerSessionCreated', () => {
             handlerCallCounts[index]++
           }),
         )
@@ -68,7 +67,7 @@ describe('Core Events Load Benchmarks', () => {
 
       for (const player of players) {
         const start = performance.now()
-        emitFrameworkEvent('core:playerSessionCreated', {
+        emitFrameworkEvent('internal:playerSessionCreated', {
           clientId: player.clientID,
           license: `license:${player.clientID}`,
         })
@@ -96,7 +95,7 @@ describe('Core Events Load Benchmarks', () => {
 
     it(`Core Events - ${playerCount} players, concurrent emissions`, async () => {
       let handlerCallCount = 0
-      const unsubscribe = onFrameworkEvent('core:playerSessionCreated', () => {
+      const unsubscribe = onFrameworkEvent('internal:playerSessionCreated', () => {
         handlerCallCount++
       })
 
@@ -106,7 +105,7 @@ describe('Core Events Load Benchmarks', () => {
 
       const promises = players.map(async (player) => {
         const start = performance.now()
-        emitFrameworkEvent('core:playerSessionCreated', {
+        emitFrameworkEvent('internal:playerSessionCreated', {
           clientId: player.clientID,
           license: `license:${player.clientID}`,
         })

@@ -3,12 +3,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { AppError } from '../../../../src/kernel'
 import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
 import { Player } from '../../../../src/runtime/server/entities'
-import { CommandService } from '../../../../src/runtime/server/services/core/command.service'
+import { LocalCommandImplementation } from '../../../../src/runtime/server/implementations/local/command.local'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
 
 describe('CommandService.execute', () => {
   it('should allow handler() when expectsPlayer=false and args are empty', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('ok')
 
     const meta: CommandMetadata = {
@@ -35,7 +35,7 @@ describe('CommandService.execute', () => {
   })
 
   it('should reject args when expectsPlayer=false (handler() must not accept args)', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('ok')
 
     const meta: CommandMetadata = {
@@ -60,7 +60,7 @@ describe('CommandService.execute', () => {
   })
 
   it('should allow handler(player) when expectsPlayer=true and no args', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('ok')
 
     const meta: CommandMetadata = {
@@ -87,7 +87,7 @@ describe('CommandService.execute', () => {
   })
 
   it('should allow handler(player, a, b) and auto-validate/coerce args', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('ok')
 
     const meta: CommandMetadata = {
@@ -117,7 +117,7 @@ describe('CommandService.execute', () => {
 
 describe('CommandService - Authentication', () => {
   it('should block unauthenticated player on non-public command', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('ok')
 
     const meta: CommandMetadata = {
@@ -147,7 +147,7 @@ describe('CommandService - Authentication', () => {
   })
 
   it('should allow authenticated player on non-public command', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('ok')
 
     const meta: CommandMetadata = {
@@ -176,7 +176,7 @@ describe('CommandService - Authentication', () => {
   })
 
   it('should allow unauthenticated player on @Public command', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('pong')
 
     const meta: CommandMetadata = {
@@ -211,7 +211,7 @@ describe('CommandService - Authentication', () => {
   })
 
   it('should allow authenticated player on @Public command', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockResolvedValue('pong')
 
     const meta: CommandMetadata = {
@@ -240,7 +240,7 @@ describe('CommandService - Authentication', () => {
   })
 
   it('should include isPublic in getAllCommands() output', () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
 
     const publicMeta: CommandMetadata = {
       command: 'help',

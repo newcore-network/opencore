@@ -2,12 +2,12 @@ import 'reflect-metadata'
 import { describe, expect, it, vi } from 'vitest'
 import type { CommandMetadata } from '../../../../src/runtime/server/decorators/command'
 import { Player } from '../../../../src/runtime/server/entities'
-import { CommandService } from '../../../../src/runtime/server/services/core/command.service'
+import { LocalCommandImplementation } from '../../../../src/runtime/server/implementations/local/command.local'
 import { createTestPlayer } from '../../../helpers'
 
 describe('Command Arguments - Spread Operator vs Array Parameter', () => {
   it('should flatten arguments when using spread operator (...args)', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockImplementation((_player: Player, ...actions: string[]) => {
       return actions.join(' ')
     })
@@ -40,7 +40,7 @@ describe('Command Arguments - Spread Operator vs Array Parameter', () => {
   })
 
   it('should pass array as single argument when using array parameter (args: string[])', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockImplementation((_player: Player, actions: string[]) => {
       return actions.join(' ')
     })
@@ -73,7 +73,7 @@ describe('Command Arguments - Spread Operator vs Array Parameter', () => {
   })
 
   it('should work with single argument using spread operator', async () => {
-    const service = new CommandService()
+    const service = new LocalCommandImplementation()
     const handler = vi.fn().mockImplementation((_player: Player, ...actions: string[]) => {
       return actions.join(' ')
     })

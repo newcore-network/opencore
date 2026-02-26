@@ -8,7 +8,12 @@
 
 import * as path from 'node:path'
 import { Worker } from 'node:worker_threads'
-import { WorkerInfo, WorkerMessage, WorkerPoolConfig, WorkerResponse } from './types'
+import {
+  WorkerInfo,
+  WorkerMessage,
+  WorkerPoolConfig,
+  WorkerResponse,
+} from '../../types/parallel.types'
 
 const DEFAULT_CONFIG: WorkerPoolConfig = {
   minWorkers: 0,

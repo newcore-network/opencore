@@ -2,15 +2,18 @@ import type { DependencyContainer } from 'tsyringe'
 import { IEngineEvents } from '../contracts/IEngineEvents'
 import { IExports } from '../contracts/IExports'
 import { IHasher } from '../contracts/IHasher'
-import { INetTransport } from '../contracts/INetTransport'
 import { IPlatformCapabilities } from '../contracts/IPlatformCapabilities'
 import { IPlayerInfo } from '../contracts/IPlayerInfo'
 import { IResourceInfo } from '../contracts/IResourceInfo'
 import { ITick } from '../contracts/ITick'
 import { IEntityServer } from '../contracts/server/IEntityServer'
+import { IPedServer } from '../contracts/server/IPedServer'
 import { IPedAppearanceServer } from '../contracts/server/IPedAppearanceServer'
 import { IPlayerServer } from '../contracts/server/IPlayerServer'
 import { IVehicleServer } from '../contracts/server/IVehicleServer'
+import { EventsAPI } from '../contracts/transport/events.api'
+import { MessagingTransport } from '../contracts/transport/messaging.transport'
+import { RpcAPI } from '../contracts/transport/rpc.api'
 import type { PlatformAdapter } from '../platform/platform-registry'
 
 /**
@@ -27,26 +30,28 @@ export const FiveMPlatform: PlatformAdapter = {
   async register(container: DependencyContainer): Promise<void> {
     // Dynamically import FiveM implementations
     const [
-      { FiveMNetTransport },
+      { FiveMMessagingTransport },
       { FiveMEngineEvents },
       { FiveMExports },
       { FiveMResourceInfo },
       { FiveMTick },
       { FiveMPlayerInfo },
       { FiveMEntityServer },
+      { FiveMPedServer },
       { FiveMVehicleServer },
       { FiveMPlayerServer },
       { FiveMHasher },
       { FiveMPedAppearanceServerAdapter },
       { FiveMCapabilities },
     ] = await Promise.all([
-      import('./fivem-net-transport'),
+      import('./transport/adapter'),
       import('./fivem-engine-events'),
       import('./fivem-exports'),
       import('./fivem-resourceinfo'),
       import('./fivem-tick'),
       import('./fivem-playerinfo'),
       import('./fivem-entity-server'),
+      import('./fivem-ped-server'),
       import('./fivem-vehicle-server'),
       import('./fivem-player-server'),
       import('./fivem-hasher'),
@@ -57,8 +62,13 @@ export const FiveMPlatform: PlatformAdapter = {
     // Register all FiveM implementations
     if (!container.isRegistered(IPlatformCapabilities as any))
       container.registerSingleton(IPlatformCapabilities as any, FiveMCapabilities)
-    if (!container.isRegistered(INetTransport as any))
-      container.registerSingleton(INetTransport as any, FiveMNetTransport)
+
+    if (!container.isRegistered(MessagingTransport as any)) {
+      const transport = new FiveMMessagingTransport()
+      container.registerInstance(MessagingTransport as any, transport)
+      container.registerInstance(EventsAPI as any, transport.events)
+      container.registerInstance(RpcAPI as any, transport.rpc)
+    }
     if (!container.isRegistered(IEngineEvents as any))
       container.registerSingleton(IEngineEvents as any, FiveMEngineEvents)
     if (!container.isRegistered(IExports as any))
@@ -70,6 +80,8 @@ export const FiveMPlatform: PlatformAdapter = {
       container.registerSingleton(IPlayerInfo as any, FiveMPlayerInfo)
     if (!container.isRegistered(IEntityServer as any))
       container.registerSingleton(IEntityServer as any, FiveMEntityServer)
+    if (!container.isRegistered(IPedServer as any))
+      container.registerSingleton(IPedServer as any, FiveMPedServer)
     if (!container.isRegistered(IVehicleServer as any))
       container.registerSingleton(IVehicleServer as any, FiveMVehicleServer)
     if (!container.isRegistered(IPlayerServer as any))

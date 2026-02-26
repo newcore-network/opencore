@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
 import type { CommandMetadata } from '../../src/runtime/server/decorators/command'
 import { Player } from '../../src/runtime/server/entities/player'
+import { LocalCommandImplementation } from '../../src/runtime/server/implementations/local/command.local'
+import { LocalPlayerImplementation } from '../../src/runtime/server/implementations/local/player.local'
+import { WorldContext } from '../../src/runtime/core/world'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { PlayerFactory } from '../utils/player-factory'
-import { CommandService } from '../../src/runtime/server/services/core/command.service'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
 
 global.fetch = vi.fn(() =>
   Promise.resolve({
@@ -27,15 +31,20 @@ class TestController {
 const testSchema = z.tuple([z.coerce.number(), z.coerce.string()])
 
 describe('Services Load Benchmarks', () => {
-  let commandService: CommandService
-  let playerService: PlayerService
+  let commandService: LocalCommandImplementation
+  let playerService: LocalPlayerImplementation
 
   beforeEach(() => {
     resetCitizenFxMocks()
 
-    const playerInfo = new NodePlayerInfo()
-    playerService = new PlayerService(playerInfo)
-    commandService = new CommandService()
+    playerService = new LocalPlayerImplementation(
+      new WorldContext(),
+      new NodePlayerInfo(),
+      new NodePlayerServer(),
+      new NodeEntityServer(),
+      new NodeEvents(),
+    )
+    commandService = new LocalCommandImplementation()
   })
 
   const scenarios = getAllScenarios()
@@ -203,7 +212,7 @@ describe('Services Load Benchmarks', () => {
 
         // Limpiar
         for (let i = 0; i < playerCount; i++) {
-          playerService.unbindByClient(i + 1)
+          playerService.unbind(i + 1)
         }
       })
 
@@ -237,7 +246,7 @@ describe('Services Load Benchmarks', () => {
         reportLoadMetric(metrics)
 
         for (let i = 0; i < playerCount; i++) {
-          playerService.unbindByClient(i + 1)
+          playerService.unbind(i + 1)
         }
       })
     }

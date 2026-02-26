@@ -4,3 +4,4 @@ dist/
 benchmark/reports/
 .windsurf/
 .claude/
+.mcp.json

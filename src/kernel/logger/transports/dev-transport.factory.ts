@@ -6,13 +6,13 @@ import { WebSocketLogTransport, type WebSocketTransportOptions } from './websock
 /**
  * Runtime environment detection.
  */
-export type RuntimeEnvironment = 'fivem' | 'node'
+export type RuntimeEnvironment = 'cfx' | 'node'
 
 /**
  * Options for creating a dev transport.
  */
 export interface DevTransportOptions {
-  /** HTTP endpoint URL for FiveM mode */
+  /** HTTP endpoint URL for Cfx mode */
   httpUrl: string
   /** WebSocket URL for Node.js mode */
   wsUrl?: string
@@ -29,12 +29,12 @@ export interface DevTransportOptions {
 /**
  * Detects the current runtime environment.
  *
- * @returns 'fivem' if running in FiveM, 'node' otherwise
+ * @returns 'cfx' if running in CitizenFX, 'node' otherwise
  */
 export function detectEnvironment(): RuntimeEnvironment {
-  // Check for FiveM-specific globals
+  // Check for CitizenFX globals
   if (typeof GetCurrentResourceName === 'function') {
-    return 'fivem'
+    return 'cfx'
   }
   return 'node'
 }
@@ -49,7 +49,7 @@ export function isWebSocketAvailable(): boolean {
 /**
  * Creates the appropriate log transport based on the runtime environment.
  *
- * - In FiveM: Uses HttpLogTransport (Node.js http module)
+ * - In Cfx: Uses HttpLogTransport (Node.js http module)
  * - In Node.js: Uses WebSocketLogTransport if available, otherwise HttpLogTransport
  *
  * @param options - Transport configuration
@@ -84,8 +84,8 @@ export function createDevTransport(options: DevTransportOptions): LogTransport {
   }
 
   // Auto-detect based on environment
-  if (env === 'fivem') {
-    // FiveM: Always use HTTP (WebSocket not available in FiveM runtime)
+  if (env === 'cfx') {
+    // Cfx runtime: Always use HTTP (WebSocket not available in game runtime)
     return new HttpLogTransport({ url: options.httpUrl, ...options.httpOptions }, minLevel)
   }
 

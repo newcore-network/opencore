@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import z from 'zod'
 import { AppError, SecurityError } from '../../../../'
-import { INetTransport } from '../../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
 import { coreLogger, loggers } from '../../../../kernel/logger'
 import {
@@ -14,7 +14,7 @@ import { NetEventOptions } from '../../decorators'
 import { Player } from '../../entities'
 import { processTupleSchema } from '../../helpers/process-tuple-schema'
 import { resolveMethod } from '../../helpers/resolve-method'
-import { PlayerDirectoryPort } from '../../services/ports/player-directory.port'
+import { Players } from '../../ports/players.api-port'
 import { METADATA_KEYS } from '../metadata-server.keys'
 import { generateSchemaFromTypes } from '../schema-generator'
 
@@ -24,11 +24,11 @@ export class NetEventProcessor implements DecoratorProcessor {
   private readonly INVALID_COUNTS_META_KEY = 'netEvent.invalidCounts'
 
   constructor(
-    @inject(PlayerDirectoryPort as any) private playerService: PlayerDirectoryPort,
+    @inject(Players as any) private playerService: Players,
     @inject(SecurityHandlerContract as any) private securityHandler: SecurityHandlerContract,
     @inject(NetEventSecurityObserverContract as any)
     private netEventObserver: NetEventSecurityObserverContract,
-    @inject(INetTransport as any) private netTransport: INetTransport,
+    @inject(EventsAPI as any) private events: EventsAPI<'server'>,
   ) {}
 
   process(instance: any, methodName: string, metadata: NetEventOptions) {
@@ -40,8 +40,15 @@ export class NetEventProcessor implements DecoratorProcessor {
     if (!result) return
     const { handler, handlerName, proto } = result
     const isPublic = Reflect.getMetadata(METADATA_KEYS.PUBLIC, proto, methodName) as boolean
-    this.netTransport.onNet(metadata.eventName, async (ctx, ...args: any[]) => {
+    this.events.on(metadata.eventName, async (ctx, ...args: any[]) => {
       const clientId = ctx.clientId
+      if (clientId === undefined) {
+        loggers.netEvent.warn(`Event ignored: Missing clientId in context`, {
+          event: metadata.eventName,
+        })
+        return
+      }
+
       const player = this.playerService.getByClient(clientId)
 
       if (!player) {

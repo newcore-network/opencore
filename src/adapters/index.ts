@@ -7,14 +7,20 @@ export * from './contracts/client/IPedAppearanceClient'
 export * from './contracts/IEngineEvents'
 export * from './contracts/IExports'
 export * from './contracts/IHasher'
-export * from './contracts/INetTransport'
 export * from './contracts/IPlatformCapabilities'
 export * from './contracts/IPlayerInfo'
 export * from './contracts/IResourceInfo'
 export * from './contracts/ITick'
 
+// Transport contracts
+export * from './contracts/transport/context'
+export * from './contracts/transport/events.api'
+export * from './contracts/transport/messaging.transport'
+export * from './contracts/transport/rpc.api'
+
 // Server contracts
 export * from './contracts/server/IEntityServer'
+export * from './contracts/server/IPedServer'
 export * from './contracts/server/IPedAppearanceServer'
 export * from './contracts/server/IPlayerServer'
 export * from './contracts/server/IVehicleServer'
@@ -27,5 +33,8 @@ export * from './platform/platform-registry'
 // Capability registration
 export * from './register-capabilities'
 
-// FiveM adapters (not exported by default - registered via registerServerCapabilities)
+// CitizenFX helpers
+export * from './cfx'
+
+// CitizenFX adapters (not exported by default - registered via registerServerCapabilities)
 // Node adapters (not exported by default - registered via registerServerCapabilities)

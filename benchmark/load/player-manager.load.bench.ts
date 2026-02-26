@@ -1,24 +1,27 @@
-import { container } from 'tsyringe'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { IPlayerInfo } from '../../src/adapters'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
-import { resetContainer } from '../../tests/helpers/di.helper'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
+import { LocalPlayerImplementation } from '../../src/runtime/server/implementations/local/player.local'
+import { WorldContext } from '../../src/runtime/core/world'
 import { resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { PlayerFactory } from '../utils/player-factory'
 
 describe('Player Manager Load Benchmarks', () => {
-  let playerService: PlayerService
+  let playerService: LocalPlayerImplementation
 
   beforeEach(() => {
-    resetContainer()
     resetCitizenFxMocks()
 
-    container.registerSingleton(IPlayerInfo as any, NodePlayerInfo)
-    container.registerSingleton(PlayerService, PlayerService)
-
-    playerService = container.resolve(PlayerService)
+    playerService = new LocalPlayerImplementation(
+      new WorldContext(),
+      new NodePlayerInfo(),
+      new NodePlayerServer(),
+      new NodeEntityServer(),
+      new NodeEvents(),
+    )
   })
 
   const playerCounts = [100, 200, 300, 400, 500]
@@ -55,7 +58,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
 
@@ -93,7 +96,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
 
@@ -129,7 +132,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
 
@@ -153,7 +156,7 @@ describe('Player Manager Load Benchmarks', () => {
       for (let i = 0; i < iterations; i++) {
         const randomClientID = clientIDs[Math.floor(Math.random() * clientIDs.length)]
         const start = performance.now()
-        const meta = playerService.getMeta(randomClientID, 'test-key')
+        const meta = await playerService.getMeta(randomClientID, 'test-key')
         const end = performance.now()
         timings.push(end - start)
 
@@ -171,7 +174,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
 
@@ -211,7 +214,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
 
@@ -239,7 +242,7 @@ describe('Player Manager Load Benchmarks', () => {
         } else if (i % 4 === 2) {
           playerService.setMeta(randomClientID, 'test-key', { value: i })
         } else {
-          playerService.getMeta(randomClientID, 'test-key')
+          await playerService.getMeta(randomClientID, 'test-key')
         }
 
         const end = performance.now()
@@ -257,7 +260,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
 
@@ -273,7 +276,8 @@ describe('Player Manager Load Benchmarks', () => {
 
       for (const player of players) {
         const start = performance.now()
-        playerService.linkAccount(player.clientID, `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(`account-${player.clientID}`)
         const end = performance.now()
         timings.push(end - start)
       }
@@ -289,7 +293,7 @@ describe('Player Manager Load Benchmarks', () => {
       reportLoadMetric(metrics)
 
       for (const player of players) {
-        playerService.unbindByClient(player.clientID)
+        playerService.unbind(player.clientID)
       }
     })
   }

@@ -12,6 +12,9 @@ import { getClientControllerRegistry } from './decorators'
 import { playerClientLoader } from './player/player.loader'
 import {
   BlipService,
+  Camera,
+  CameraEffectsRegistry,
+  Cinematic,
   MarkerService,
   NotificationService,
   PedService,
@@ -26,7 +29,7 @@ import { registerSystemClient } from './system/processors.register'
 import { NuiBridge } from './ui-bridge'
 
 /**
- * Services that have an init() method which registers global FiveM event listeners.
+ * Services that have an init() method which registers global runtime event listeners.
  *
  * These services are:
  * - Registered in DI for ALL modes (so they can be injected and used)
@@ -79,6 +82,9 @@ function registerServices() {
   di.registerSingleton(ProgressService, ProgressService)
   di.registerSingleton(MarkerService, MarkerService)
   di.registerSingleton(BlipService, BlipService)
+  di.registerSingleton(Camera, Camera)
+  di.registerSingleton(CameraEffectsRegistry, CameraEffectsRegistry)
+  di.registerSingleton(Cinematic, Cinematic)
   di.registerSingleton(VehicleClientService, VehicleClientService)
   di.registerSingleton(VehicleService, VehicleService)
   di.registerSingleton(PedService, PedService)
@@ -109,6 +115,18 @@ async function bootstrapServices(mode: ClientMode) {
   }
 }
 
+async function tryImportAutoLoad() {
+  try {
+    await import('./.opencore/autoload.client.controllers')
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('Cannot find module')) {
+      loggers.bootstrap.debug(`[Bootstrap] No client controllers autoload file found, skipping.`)
+      return
+    }
+    throw err
+  }
+}
+
 /**
  * Initialize the client core framework
  *
@@ -128,6 +146,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   if (existingContext?.isInitialized) {
     // If already initialized, only scan controllers for this resource
     if (mode === 'RESOURCE' || mode === 'STANDALONE') {
+      await tryImportAutoLoad()
       const scanner = di.resolve(MetadataScanner)
       scanner.scan(getClientControllerRegistry(resourceName))
       loggers.bootstrap.info(`Resource "${resourceName}" controllers registered`)
@@ -169,6 +188,8 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     await import('./controllers/appearance.controller')
     await import('./controllers/player-sync.controller')
   }
+
+  await tryImportAutoLoad()
 
   // Scan and register controllers
   const scanner = di.resolve(MetadataScanner)

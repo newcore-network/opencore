@@ -1,9 +1,10 @@
-import { IEngineEvents, INetTransport } from '../../adapters'
+import { IEngineEvents } from '../../adapters'
 import { registerServerCapabilities } from '../../adapters/register-capabilities'
+import { EventsAPI } from '../../adapters/contracts/transport/events.api'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { PrincipalProviderContract } from './contracts/index'
-import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binary-service'
+import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binaryService'
 import { getServerControllerRegistry } from './decorators/controller'
 import {
   getFrameworkModeScope,
@@ -12,8 +13,9 @@ import {
   setRuntimeContext,
   validateRuntimeOptions,
 } from './runtime'
-import { BinaryProcessManager } from './services/binary/binary-process.manager'
-import { SessionRecoveryService } from './services/core/session-recovery.service'
+import { BinaryProcessManager } from './system/managers/binary-process.manager'
+import { SessionRecoveryService } from './services/session-recovery.local'
+import type { PluginInstallContext, PluginRegistry } from './library/plugin'
 import { registerServicesServer } from './services/services.register'
 import { METADATA_KEYS } from './system/metadata-server.keys'
 import { registerSystemServer } from './system/processors.register'
@@ -60,6 +62,10 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
     await import('./controllers/player-export.controller')
   }
 
+  if (ctx.features.chat.enabled && ctx.features.exports.enabled && ctx.mode === 'CORE') {
+    await import('./controllers/channel.controller')
+  }
+
   if (ctx.mode === 'CORE') {
     await import('./controllers/ready.controller')
   }
@@ -88,7 +94,10 @@ async function loadFrameworkControllers(ctx: RuntimeContext): Promise<void> {
  *
  * @returns A promise that resolves when the Core is fully initialized and ready to process events.
  */
-export async function initServer(options: ServerRuntimeOptions) {
+export async function initServer(
+  options: ServerRuntimeOptions,
+  plugins?: { registry: PluginRegistry; context: PluginInstallContext },
+) {
   validateRuntimeOptions(options)
   setRuntimeContext(options)
 
@@ -134,7 +143,14 @@ export async function initServer(options: ServerRuntimeOptions) {
   // This is where user services get registered if they are decorated with @injectable()
   // and imported before init() or discovered here.
   await loadFrameworkControllers(ctx)
-  loggers.bootstrap.debug('Controllers loaded')
+  loggers.bootstrap.debug('Frameworks Controllers loaded')
+  await tryImportAutoLoad()
+  loggers.bootstrap.debug('User Controllers loaded')
+
+  if (plugins) {
+    await plugins.registry.startAll(plugins.context)
+    loggers.bootstrap.debug('Server plugins started')
+  }
 
   // 3. Register System Processors (Command, NetEvent, etc.)
   // These processors check if contracts are already registered before applying defaults.
@@ -178,14 +194,14 @@ export async function initServer(options: ServerRuntimeOptions) {
   if (
     ctx.mode === 'CORE' &&
     GLOBAL_CONTAINER.isRegistered(IEngineEvents as any) &&
-    GLOBAL_CONTAINER.isRegistered(INetTransport as any)
+    GLOBAL_CONTAINER.isRegistered(EventsAPI as any)
   ) {
     const engineEvents = GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents
-    const net = GLOBAL_CONTAINER.resolve(INetTransport as any) as INetTransport
+    const events = GLOBAL_CONTAINER.resolve(EventsAPI as any) as EventsAPI<'server'>
 
     // 1. Broadast to resources already running
     engineEvents.emit('core:ready')
-    net.emitNet('core:ready', 'all')
+    events.emit('core:ready', 'all')
 
     // 2. Listen for 'core:request-ready' for resources starting late (hot-reload)
     engineEvents.on('core:request-ready', () => {
@@ -291,6 +307,18 @@ async function dependencyResolver(
       loggers.bootstrap.fatal('Failed to execute onReady hook', { error: msg })
       throw new Error(`[OpenCore] onReady hook failed: ${msg}`)
     }
+  }
+}
+
+async function tryImportAutoLoad() {
+  try {
+    await import('./.opencore/autoload.server.controllers')
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('Cannot find module')) {
+      loggers.bootstrap.warn(`[Bootstrap] No server controllers autoload file found, skipping.`)
+      return
+    }
+    throw err
   }
 }
 
