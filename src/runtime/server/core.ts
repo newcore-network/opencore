@@ -1,9 +1,5 @@
 import { GLOBAL_CONTAINER } from '../../kernel/di/container'
-import {
-  PluginRegistry,
-  type OpenCorePlugin,
-  type PluginInstallContext,
-} from './library/plugin'
+import { PluginRegistry, type OpenCorePlugin, type PluginInstallContext } from './library/plugin'
 import { Server } from './server.runtime'
 import { initServer } from './bootstrap'
 import {

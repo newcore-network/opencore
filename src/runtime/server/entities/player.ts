@@ -33,9 +33,6 @@ export interface PlayerAdapters {
  *
  * **Design Note:** This class does NOT contain gameplay logic (money, jobs, inventory).
  * Domain logic should live in your modules' services/models (e.g., `EconomyService`, `JobModel`).
- *
- * This class is platform-agnostic and works across different game engines
- * (FiveM, RageMP, alt:V, etc.) through the adapter pattern.
  */
 export class Player extends BaseEntity implements Spatial, NativeHandle {
   private _position: Vector3

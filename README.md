@@ -37,12 +37,6 @@ The package exposes subpath entry points:
 - `@open-core/framework/server`
 - `@open-core/framework/client`
 
-Most projects will import the `Server`/`Client` namespaces:
-
-```ts
-import { Server } from '@open-core/framework/server'
-```
-
 ## Architecture
 
 OpenCore follows a Ports & Adapters (Hexagonal) architecture.
@@ -101,21 +95,21 @@ Decorators store metadata with `Reflect.defineMetadata()`. During bootstrap, the
 ### Commands
 
 ```ts
-import { Server } from '@open-core/framework/server'
+import { Controller, Command, Guard, Throttle, Player } from '@open-core/framework/server'
 import { z } from 'zod'
 
 const TransferSchema = z.tuple([z.coerce.number().int().positive(), z.coerce.number().min(1)])
 
-@Server.Controller()
+@Controller()
 export class BankController {
-  @Server.Command({
+  @Command({
     command: 'transfer',
     usage: '/transfer <id> <amount>',
     schema: TransferSchema,
   })
-  @Server.Guard({ rank: 1 })
-  @Server.Throttle(1, 2000)
-  async transfer(player: Server.Player, args: z.infer<typeof TransferSchema>) {
+  @Guard({ rank: 1 })
+  @Throttle(1, 2000)
+  async transfer(player: Player, args: z.infer<typeof TransferSchema>) {
     const [targetId, amount] = args
     player.emit('chat:message', `transfer -> ${targetId} (${amount})`)
   }
@@ -127,15 +121,15 @@ export class BankController {
 `@OnNet()` handlers always receive `Player` as the first parameter.
 
 ```ts
-import { Server } from '@open-core/framework/server'
+import { Controller, OnNet, Player } from '@open-core/framework/server'
 import { z } from 'zod'
 
 const PayloadSchema = z.object({ action: z.string(), amount: z.number().int().positive() })
 
-@Server.Controller()
+@Controller()
 export class ExampleNetController {
-  @Server.OnNet('bank:action', { schema: PayloadSchema })
-  async onBankAction(player: Server.Player, payload: z.infer<typeof PayloadSchema>) {
+  @OnNet('bank:action', { schema: PayloadSchema })
+  async onBankAction(player: Player, payload: z.infer<typeof PayloadSchema>) {
     player.emit('chat:message', `action=${payload.action} amount=${payload.amount}`)
   }
 }
@@ -159,9 +153,9 @@ import { Server } from '@open-core/framework/server'
 
 const characters = Server.createServerLibrary('characters')
 
-@Server.Controller()
+@Controller()
 export class CharacterListeners {
-  @Server.OnLibraryEvent('characters', 'session:created')
+  @OnLibraryEvent('characters', 'session:created')
   onSessionCreated(payload: { sessionId: string; playerId: number }) {
     // optional listener for library domain events
   }
@@ -246,16 +240,21 @@ pnpm bench:all
 
 ### Snapshot (latest local run)
 
-These values are a small extract from a recent local run (Dec 22, 2025). Results vary by machine.
+These values are a small extract from the latest local run (`1.0.0-beta.1`, Feb 26, 2026). Results vary by machine.
 
 - **Core**
-  - Decorators - Define metadata (Command): `~5.72M ops/sec` (mean `0.17μs`)
-  - EventBus - Multiple event types: `~2.01M ops/sec` (mean `0.50μs`)
-  - Dependency Injection (simple resolve): `~1.7M ops/sec`
+  - BinaryService - classify response type: `~18.25M ops/sec` (mean `~0.055μs`, p95 `~0.076μs`)
+  - EventInterceptor - getStatistics (1000 events): `~17.78M ops/sec` (mean `~0.056μs`)
+  - RuntimeConfig - resolve CORE mode: `~10.49M ops/sec` (mean `~0.095μs`)
+  - Decorators - define metadata (Command): `~6.92M ops/sec` (mean `~0.145μs`)
+  - EventBus - multiple event types: `~2.57M ops/sec` (mean `~0.390μs`)
+  - DI - resolve simple service: `~1.78M ops/sec` (mean `~0.560μs`)
 - **Load**
-  - Net Events - Simple (10 players): `~28.85K ops/sec` (p95 `0.25ms`)
-  - Net Events - Concurrent (500 players): `~1.18M ops/sec` (p95 `0.40ms`)
-  - Commands (validated, ~500 players): `~14M ops/sec`
+  - Commands - 500 players (validated): `~4.78M ops/sec` (p95 `~0.008ms`)
+  - Pipeline - validated (500 players): `~4.79M ops/sec` (p95 `~0.024ms`)
+  - Pipeline - full (500 players): `~2.34M ops/sec` (p95 `~0.011ms`)
+  - RPC - schema generation complex (500 methods): `~705K ops/sec` (p95 `~0.335ms`)
+  - Commands - 500 players (concurrent): `~6.31K ops/sec` (p95 `~76.00ms`)
 
 Full reports and methodology are available in benchmark/README.md.
 

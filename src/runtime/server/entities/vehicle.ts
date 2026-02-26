@@ -241,7 +241,9 @@ export class Vehicle extends BaseEntity implements Spatial, NativeHandle {
   setColors(primaryColor?: number, secondaryColor?: number): void {
     if (!this.exists) return
 
-    const [currentPrimary, currentSecondary] = this.adapters.vehicleServer.getColours(this.session.handle)
+    const [currentPrimary, currentSecondary] = this.adapters.vehicleServer.getColours(
+      this.session.handle,
+    )
     this.adapters.vehicleServer.setColours(
       this.session.handle,
       primaryColor ?? currentPrimary,
