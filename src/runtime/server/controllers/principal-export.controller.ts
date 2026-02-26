@@ -4,7 +4,7 @@ import { Principal, PrincipalProviderContract } from '../contracts/index'
 import { Export } from '../decorators/export'
 import { GuardOptions } from '../decorators/guard'
 import { Controller } from '../decorators/index'
-import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
+import { Players } from '../ports/players.api-port'
 
 /**
  * Exports principal/permission functionality for RESOURCE mode access.
@@ -19,8 +19,8 @@ import { PlayerDirectoryPort } from '../services/ports/player-directory.port'
 @Controller()
 export class PrincipalExportController {
   constructor(
-    @inject(PlayerDirectoryPort as any)
-    private readonly playerService: PlayerDirectoryPort,
+    @inject(Players as any)
+    private readonly playerService: Players,
     @inject(PrincipalProviderContract as any)
     private readonly principalProvider: PrincipalProviderContract,
   ) {}

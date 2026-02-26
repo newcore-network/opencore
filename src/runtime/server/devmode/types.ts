@@ -9,7 +9,7 @@ export interface DevEvent {
   /** Unix timestamp in milliseconds */
   timestamp: number
   /** Type of event */
-  type: 'net' | 'command' | 'export' | 'fivem' | 'internal'
+  type: 'net' | 'command' | 'export' | 'runtime' | 'internal'
   /** Event name */
   name: string
   /** Direction of the event */
@@ -74,7 +74,7 @@ export interface RuntimeSnapshot {
     commands: string[]
     netEvents: string[]
     exports: string[]
-    fiveMEvents: string[]
+    runtimeEvents: string[]
   }
   /** DI container information */
   diContainer: {

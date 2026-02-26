@@ -1,8 +1,8 @@
 import { loggers } from '../../../kernel/logger'
-import { InternalEventMap } from '../types/internal-events'
+import { FrameworkEventsMap } from '../types/framework-events.types'
 
-type InternalEventName = keyof InternalEventMap
-type InternalEventHandler<E extends InternalEventName> = (payload: InternalEventMap[E]) => void
+type InternalEventName = keyof FrameworkEventsMap
+type InternalEventHandler<E extends InternalEventName> = (payload: FrameworkEventsMap[E]) => void
 
 const handlers: Partial<Record<InternalEventName, InternalEventHandler<any>[]>> = {}
 
@@ -25,7 +25,7 @@ export function onFrameworkEvent<E extends InternalEventName>(
 
 export function emitFrameworkEvent<E extends InternalEventName>(
   event: E,
-  payload: InternalEventMap[E],
+  payload: FrameworkEventsMap[E],
 ) {
   const list = handlers[event] as InternalEventHandler<E>[] | undefined
   if (!list) return

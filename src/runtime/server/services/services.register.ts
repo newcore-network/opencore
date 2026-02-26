@@ -2,21 +2,25 @@ import { GLOBAL_CONTAINER } from '../../../kernel/di/index'
 import { WorldContext } from '../../core/world'
 import { PrincipalProviderContract } from '../contracts/security/principal-provider.contract'
 import { RuntimeContext } from '../runtime'
-import { BinaryProcessManager } from './binary/binary-process.manager'
-import { ChatService } from './chat.service'
-import { CommandService } from './core/command.service'
-import { PlayerService } from './core/player.service'
-import { LocalPrincipalService } from './core/principal.service'
-import { SessionRecoveryService } from './core/session-recovery.service'
-import { DefaultPrincipalProvider } from './default/default-principal.provider'
+import { BinaryProcessManager } from '../system/managers/binary-process.manager'
+import { Chat } from '../apis/chat.api'
+import { LocalCommandImplementation } from '../implementations/local/command.local'
+import { LocalPlayerImplementation } from '../implementations/local/player.local'
+import { LocalPrincipalService } from '../implementations/local/principal.local'
+import { SessionRecoveryService } from './session-recovery.local'
+import { DefaultPrincipalProvider } from '../default/default-principal.provider'
 import { PlayerPersistenceService } from './persistence.service'
-import { CommandExecutionPort } from './ports/command-execution.port'
-import { PlayerDirectoryPort } from './ports/player-directory.port'
-import { PlayerSessionLifecyclePort } from './ports/player-session-lifecycle.port'
-import { PrincipalPort } from './ports/principal.port'
-import { RemoteCommandService } from './remote/remote-command.service'
-import { RemotePlayerService } from './remote/remote-player.service'
-import { RemotePrincipalService } from './remote/remote-principal.service'
+import { CommandExecutionPort } from '../ports/internal/command-execution.port'
+import { Players } from '../ports/players.api-port'
+import { PlayerSessionLifecyclePort } from '../ports/internal/player-session-lifecycle.port'
+import { Authorization } from '../ports/authorization.api-port'
+import { RemoteCommandImplementation } from '../implementations/remote/command.remote'
+import { RemotePlayerImplementation } from '../implementations/remote/player.remote'
+import { RemotePrincipalImplementation } from '../implementations/remote/principal.remote'
+import { RemoteChannelImplementation } from '../implementations/remote/channel.remote'
+import { Channels } from '../api'
+import { LocalChannelImplementation } from '../implementations/local/channel.local'
+import { Npcs } from '../apis/npcs.api'
 
 /**
  * Registers server runtime services in the dependency injection container.
@@ -41,11 +45,13 @@ export function registerServicesServer(ctx: RuntimeContext) {
 
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {
-      GLOBAL_CONTAINER.registerSingleton(PlayerService)
-      GLOBAL_CONTAINER.register(PlayerDirectoryPort as any, { useToken: PlayerService })
-      GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, { useToken: PlayerService })
+      GLOBAL_CONTAINER.registerSingleton(LocalPlayerImplementation)
+      GLOBAL_CONTAINER.register(Players as any, { useToken: LocalPlayerImplementation })
+      GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, {
+        useToken: LocalPlayerImplementation,
+      })
     } else {
-      GLOBAL_CONTAINER.registerSingleton(PlayerDirectoryPort as any, RemotePlayerService)
+      GLOBAL_CONTAINER.registerSingleton(Players as any, RemotePlayerImplementation)
     }
   }
 
@@ -72,26 +78,39 @@ export function registerServicesServer(ctx: RuntimeContext) {
         )
       }
       GLOBAL_CONTAINER.registerSingleton(LocalPrincipalService)
-      GLOBAL_CONTAINER.register(PrincipalPort as any, { useToken: LocalPrincipalService })
+      GLOBAL_CONTAINER.register(Authorization as any, { useToken: LocalPrincipalService })
     } else {
       // RESOURCE: Remote principal service delegates to CORE
-      GLOBAL_CONTAINER.registerSingleton(PrincipalPort as any, RemotePrincipalService)
+      GLOBAL_CONTAINER.registerSingleton(Authorization as any, RemotePrincipalImplementation)
     }
   }
 
   if (features.commands.enabled) {
     if (features.commands.provider === 'local' || mode === 'CORE') {
       // CORE/STANDALONE: local command execution
-      GLOBAL_CONTAINER.registerSingleton(CommandService)
-      GLOBAL_CONTAINER.register(CommandExecutionPort as any, { useToken: CommandService })
+      GLOBAL_CONTAINER.registerSingleton(LocalCommandImplementation)
+      GLOBAL_CONTAINER.register(CommandExecutionPort as any, {
+        useToken: LocalCommandImplementation,
+      })
     } else {
       // RESOURCE: remote command execution (delegates to CORE)
-      GLOBAL_CONTAINER.registerSingleton(CommandExecutionPort as any, RemoteCommandService)
+      GLOBAL_CONTAINER.registerSingleton(CommandExecutionPort as any, RemoteCommandImplementation)
     }
   }
 
   if (features.chat.enabled) {
-    GLOBAL_CONTAINER.registerSingleton(ChatService)
+    if (mode === 'RESOURCE') {
+      // RESOURCE: remote channel management (delegates to CORE)
+      GLOBAL_CONTAINER.registerSingleton(Channels as any, RemoteChannelImplementation)
+    } else {
+      // CORE/STANDALONE: local channel management
+      GLOBAL_CONTAINER.registerSingleton(Channels as any, LocalChannelImplementation)
+    }
+    GLOBAL_CONTAINER.registerSingleton(Chat)
+  }
+
+  if (!GLOBAL_CONTAINER.isRegistered(Npcs)) {
+    GLOBAL_CONTAINER.registerSingleton(Npcs)
   }
 
   if (!GLOBAL_CONTAINER.isRegistered(BinaryProcessManager)) {

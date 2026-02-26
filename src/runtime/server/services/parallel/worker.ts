@@ -12,7 +12,7 @@
  * - Do not pass untrusted code as compute functions.
  */
 
-import { WorkerMessage, WorkerResponse } from './types'
+import { WorkerMessage, WorkerResponse } from '../../types/parallel.types'
 
 /**
  * Execute a compute function from its string body

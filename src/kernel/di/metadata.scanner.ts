@@ -14,7 +14,19 @@ export class MetadataScanner {
     )
 
     for (const ControllerClass of registry) {
-      const instance = GLOBAL_CONTAINER.resolve(ControllerClass)
+      let instance: any
+      try {
+        instance = GLOBAL_CONTAINER.resolve(ControllerClass)
+      } catch (error) {
+        loggers.scanner.error(
+          `Failed to resolve controller '${ControllerClass.name}' during metadata scan`,
+          {
+            error: error instanceof Error ? error.message : String(error),
+          },
+        )
+        continue
+      }
+
       const prototype = Object.getPrototypeOf(instance)
 
       const methods = Object.getOwnPropertyNames(prototype).filter(
@@ -26,7 +38,17 @@ export class MetadataScanner {
           const metadata = Reflect.getMetadata(processor.metadataKey, prototype, methodName)
 
           if (metadata) {
-            processor.process(instance, methodName, metadata)
+            try {
+              processor.process(instance, methodName, metadata)
+            } catch (error) {
+              loggers.scanner.error(
+                `Failed processing metadata for '${ControllerClass.name}.${methodName}'`,
+                {
+                  processor: processor.constructor.name,
+                  error: error instanceof Error ? error.message : String(error),
+                },
+              )
+            }
           }
         }
       }

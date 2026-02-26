@@ -3,13 +3,15 @@ import { CommandErrorObserverContract } from '../contracts/security/command-erro
 import { NetEventSecurityObserverContract } from '../contracts/security/net-event-security-observer.contract'
 import { SecurityHandlerContract } from '../contracts/security/security-handler.contract'
 import { RuntimeContext } from '../runtime'
-import { DefaultCommandErrorObserver } from '../services/default/default-command-error-observer'
-import { DefaultNetEventSecurityObserver } from '../services/default/default-net-event-security-observer'
-import { DefaultSecurityHandler } from '../services/default/default-security.handler'
+import { DefaultCommandErrorObserver } from '../default/default-command-error-observer'
+import { DefaultNetEventSecurityObserver } from '../default/default-net-event-security-observer'
+import { DefaultSecurityHandler } from '../default/default-security.handler'
 import { CommandProcessor } from './processors/command.processor'
 import { ExportProcessor } from './processors/export.processor'
 import { InternalEventProcessor } from './processors/internalEvent.processor'
+import { LibraryEventProcessor } from './processors/libraryEvent.processor'
 import { NetEventProcessor } from './processors/netEvent.processor'
+import { OnRpcProcessor } from './processors/onRpc.processor'
 import { RuntimeEventProcessor } from './processors/runtimeEvent.processor'
 import { TickProcessor } from './processors/tick.processor'
 
@@ -18,6 +20,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
 
   if (features.netEvents.enabled) {
     GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: NetEventProcessor })
+    GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: OnRpcProcessor })
 
     if (!GLOBAL_CONTAINER.isRegistered(SecurityHandlerContract as any)) {
       GLOBAL_CONTAINER.registerSingleton(SecurityHandlerContract as any, DefaultSecurityHandler)
@@ -37,6 +40,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
   }
 
   GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: InternalEventProcessor })
+  GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: LibraryEventProcessor })
 
   if (features.commands.enabled) {
     GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: CommandProcessor })
@@ -49,7 +53,7 @@ export function registerSystemServer(ctx: RuntimeContext) {
     }
   }
 
-  if (features.fiveMEvents.enabled) {
+  if (features.runtimeEvents.enabled) {
     GLOBAL_CONTAINER.register('DecoratorProcessor', { useClass: RuntimeEventProcessor })
   }
 }

@@ -1,5 +1,6 @@
 import { initClientCore } from './client-bootstrap'
 import { ClientInitOptions } from './client-runtime'
+import { installClientPlugins } from './library/plugin/install-client-plugins'
 
 /**
  * Initialize the OpenCore client framework
@@ -19,5 +20,6 @@ import { ClientInitOptions } from './client-runtime'
  * ```
  */
 export async function init(options: ClientInitOptions = {}) {
+  await installClientPlugins(options.plugins ?? [], options)
   await initClientCore(options)
 }

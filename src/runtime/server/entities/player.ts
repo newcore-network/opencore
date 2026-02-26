@@ -1,14 +1,15 @@
 import { IPlayerInfo } from '../../../adapters'
-import { INetTransport } from '../../../adapters/contracts/INetTransport'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import type { PlayerIdentifier } from '../../../adapters/contracts/types/identifier'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
-import { LinkedID } from '../services/types/linked-id'
-import { PlayerSession } from '../services/types/player-session.object'
-import { SerializedPlayerData } from '../types/core-exports'
+import { LinkedID } from '../types/linked-id'
+import { PlayerSession } from '../types/player-session.types'
+import { SerializedPlayerData } from '../types/core-exports.types'
+import { NativeHandle } from 'src/runtime/core/nativehandle'
 
 /**
  * Adapter bundle for player operations.
@@ -18,7 +19,8 @@ export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
   entityServer: IEntityServer
-  netTransport: INetTransport
+  events: EventsAPI<'server'>
+  defaultSpawnModel: string
 }
 
 /**
@@ -31,12 +33,9 @@ export interface PlayerAdapters {
  *
  * **Design Note:** This class does NOT contain gameplay logic (money, jobs, inventory).
  * Domain logic should live in your modules' services/models (e.g., `EconomyService`, `JobModel`).
- *
- * This class is platform-agnostic and works across different game engines
- * (FiveM, RageMP, alt:V, etc.) through the adapter pattern.
  */
-export class Player extends BaseEntity implements Spatial {
-  private position: Vector3
+export class Player extends BaseEntity implements Spatial, NativeHandle {
+  private _position: Vector3
 
   /**
    * Creates a new Player entity instance.
@@ -50,7 +49,18 @@ export class Player extends BaseEntity implements Spatial {
     private readonly adapters: PlayerAdapters,
   ) {
     super(`player:${session.clientID}`)
-    this.position = adapters.playerInfo.getPlayerPosition(session.clientID)
+    this._position = adapters.playerInfo.getPlayerPosition(session.clientID)
+  }
+
+  getHeading(): number {
+    return this.adapters.entityServer.getHeading(this.clientID)
+  }
+  setHeading(heading: number): void {
+    this.adapters.entityServer.setHeading(this.clientID, heading)
+  }
+
+  getHandle(): number {
+    return this.clientID
   }
 
   /**
@@ -81,8 +91,8 @@ export class Player extends BaseEntity implements Spatial {
   // ─────────────────────────────────────────────────────────────────
 
   getPosition(): Vector3 {
-    this.position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
-    return this.position
+    this._position = this.adapters.playerInfo.getPlayerPosition(this.clientID)
+    return this._position
   }
 
   /**
@@ -98,16 +108,6 @@ export class Player extends BaseEntity implements Spatial {
   // ─────────────────────────────────────────────────────────────────
   // Identifiers
   // ─────────────────────────────────────────────────────────────────
-
-  /**
-   * Retrieves all platform identifiers associated with the player.
-   *
-   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
-   * @returns An array of identifier strings (e.g., `['steam:11000...', 'license:2332...']`).
-   */
-  getIdentifiers(): string[] {
-    return this.adapters.playerServer.getIdentifiers(this.clientID.toString())
-  }
 
   /**
    * Retrieves all identifiers as structured objects.
@@ -147,7 +147,7 @@ export class Player extends BaseEntity implements Spatial {
    * @param args - Data to send to the client.
    */
   emit(eventName: string, ...args: any[]): void {
-    this.adapters.netTransport.emitNet(eventName, this.clientID, ...args)
+    this.adapters.events.emit(eventName, this.clientID, ...args)
   }
 
   /**
@@ -181,9 +181,9 @@ export class Player extends BaseEntity implements Spatial {
    * Spawns the player at a position with a specific model.
    *
    * @param vector - The spawn coordinates
-   * @param model - The ped model to use (default: 'mp_m_freemode_01')
+   * @param model - The ped model to use (default from platform capabilities)
    */
-  spawn(vector: Vector3, model = 'mp_m_freemode_01'): void {
+  spawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
     this.emit('opencore:spawner:spawn', { position: vector, model })
   }
 

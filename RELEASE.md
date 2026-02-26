@@ -1,25 +1,58 @@
-## OpenCore Framework v0.3.3
+## OpenCore Framework v1.0.0-beta.1
 
 ### Highlights
 
-- **Native Binary Isolation**: Introduced a robust system to execute heavy or sensitive logic in isolated operating system processes, outside the FiveM runtime.
-- **Language-Agnostic Services**: Binary services can be implemented in any language (Go, Rust, C++, etc.) that supports standard I/O (stdin/stdout).
-- **Asynchronous Proxy Pattern**: Methods decorated with `@BinaryCall` are automatically transformed into asynchronous proxies, making external execution feel like native TypeScript.
+- Major runtime evolution with channels, RPC/events transport, plugins, and library APIs.
+- Large architecture and cleanup pass across the codebase.
+- Expanded benchmark coverage and refreshed benchmark results for this beta cycle.
+- Clearer separation between public API surface and runtime implementations (ports/contracts vs local/remote implementations).
+- Core runtime primitives are now more explicit and reusable (`BaseEntity`, `Spatial`, `World`, library core).
 
 ### New Features
 
-- **@BinaryService Decorator**: New decorator to declare and manage the lifecycle of external binary processes.
-- **@BinaryCall Decorator**: New decorator to mark class methods as remote actions to be executed by the associated binary.
-- **BinaryProcessManager**: A centralized runtime service that handles process spawning, JSON-RPC communication, and automatic timeout management.
-- **Enhanced Observability**: Added detailed debug logging for service registration, process lifecycle events, and RPC call/response cycles.
-- **Peer dependencies**: move dependencies to peerDependencies
+- Channels and chat API ecosystem:
+  - Added a comprehensive channel system (radio, phone, team, admin, proximity).
+  - Added communication controller examples and extensive JSDoc for channel APIs.
+  - Exported channel API ports and removed legacy channel implementation paths.
+- Messaging transport and RPC/events:
+  - Introduced a unified messaging transport architecture with `EventsAPI` and `RpcAPI`.
+  - Added stronger typed runtime contexts for server/client events and RPC.
+  - Added/expanded RPC decorator and handler support (`@OnRPC`) with integration tests.
+- Runtime surface expansion:
+  - Consolidated core concepts around reusable runtime primitives (`BaseEntity`, `Spatial`, `World`) exported from runtime core.
+  - Added Appearance API wrapper for validation/apply/reset flows.
+  - Added Camera and Cinematic services, cinematic builder, and typed lifecycle payloads.
+  - Added ped abstractions (Cfx + Node implementations) and server-side NPC lifecycle APIs.
+  - Added first-class runtime library factories (`createServerLibrary`, `createClientLibrary`) and dedicated library event bus/processors.
+- Public API boundary and port model:
+  - Server public API now explicitly exports API ports (`players.api-port`, `authorization.api-port`, `channel.api-port`) through `runtime/server/api`.
+  - Internal runtime ports were isolated under `ports/internal` (`command-execution`, `player-session-lifecycle`) to mark non-public contracts.
+  - Runtime services were moved toward explicit local/remote implementations under `runtime/server/implementations/*`.
+- Security and validation flow:
+  - Principal/authorization and command/net validation paths were tightened through contract-based security handlers and observers.
+  - Runtime config and validation behavior were expanded and benchmarked (including validation-heavy and error-path scenarios).
+- Plugin model:
+  - Added server plugin kernel MVP with extensible API hooks.
+  - Added client-side plugin system and plugin lifecycle hook after server initialization.
+- Autoload and developer experience:
+  - Added autoload for user server controllers.
+  - Improved client controller autoloading and metadata scanning error handling.
+- Benchmark system:
+  - Added broad benchmark suites for BinaryService, SchemaGenerator, EntitySystem, AppearanceValidation, EventInterceptor, RuntimeConfig.
+  - Added load benchmarks for RPC concurrency, validation, and request lifecycle.
 
-### Internal Changes
+### Breaking Changes
 
-- **JSON-RPC Over Stdin/Stdout**: Implemented a lightweight protocol for bidirectional communication between OpenCore and external binaries.
-- **Platform-Specific Resolution**: Automated resolution of binary executables based on the host operating system (Windows/Linux).
-- **Graceful Error Handling**: Comprehensive error propagation from external processes back to the TypeScript runtime, including stderr capture.
+- Service-to-API/implementation migration in multiple modules (notably `*Service` naming changes).
+- Channel/chat APIs were renamed and moved (`ChannelService` -> `Channels`, `ChatService` -> `Chat`, moved to `apis/`).
+- Transport contracts changed from legacy net transport shape to MessagingTransport + Events/RPC APIs.
+- Port/file naming was normalized (`player-directory` -> `players.api-port`, `principal.port` -> `authorization.api-port`, plus related API file renames).
+- Public vs internal contracts are stricter: `api-port` exports are public surface, while `ports/internal/*` are runtime internals and should not be consumed directly.
+- Deprecated methods, stale docs, and obsolete examples were removed.
+- Import paths and shared types were normalized/centralized (including parallel compute types and decorator/binary file naming updates).
 
 ### Notes
 
-This release marks a significant milestone in OpenCore's architecture, providing developers with the tools to build high-performance, isolated systems that leverage native code while maintaining the ease of use of the framework's decorator-based DI system.
+This beta is a major milestone for OpenCore: cleaner runtime boundaries, stronger extension points, and richer communication primitives while keeping decorator-driven DX.
+
+Simple CLI context: OpenCore CLI now supports cleaner non-interactive build output for CI environments (for example `opencore build --output=plain`).

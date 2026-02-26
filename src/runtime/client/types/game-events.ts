@@ -1,10 +1,12 @@
 /**
- * Game Events - Native GTA V internal events captured by FiveM
+ * Game Events - low-level events captured by CitizenFX runtimes
  *
  * Documentation: https://docs.fivem.net/docs/game-references/game-events/
  *
  * These are low-level events from the RAGE engine. The arguments are
  * passed as arrays from the native layer.
+ *
+ * Note: this list is GTA5-oriented and may differ on RedM (rdr3).
  */
 // ─────────────────────────────────────────────────────────────────────────────
 // Event Names (string literals for type safety)

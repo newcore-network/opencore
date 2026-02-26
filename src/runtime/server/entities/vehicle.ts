@@ -1,6 +1,9 @@
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { BaseEntity } from '../../core/entity'
+import { NativeHandle } from '../../core/nativehandle'
+import { Spatial } from '../../core/spatial'
 import {
   SerializedVehicleData,
   VehicleMetadata,
@@ -9,49 +12,48 @@ import {
 } from '../types/vehicle.types'
 
 /**
- * Adapter bundle for vehicle operations.
- * Passed to Vehicle instances by VehicleService.
+ * Adapter bundle used by {@link Vehicle} to call platform-specific natives.
  */
 export interface VehicleAdapters {
   entityServer: IEntityServer
   vehicleServer: IVehicleServer
 }
 
+interface VehicleSession {
+  handle: number
+  networkId: number
+  model: string
+  modelHash: number
+  persistent: boolean
+  routingBucket: number
+  createdAt: number
+}
+
 /**
- * Server-side representation of a vehicle entity.
+ * Runtime representation of a server-managed vehicle entity.
  *
- * This class wraps FiveM server-side vehicle natives and manages vehicle state.
- * All vehicle creation and modification should go through this entity
- * to ensure proper synchronization and security.
- *
- * ⚠️ **Design Note:** Vehicles are created server-side using CreateVehicleServerSetter
- * to prevent client-side spawning abuse. Network IDs are used for cross-client references.
- *
- * ⚠️ **Important:** Visual modifications (mods, repairs, fuel) are stored in state bags
- * and must be applied client-side. The server only stores the desired state.
+ * @remarks
+ * This class stores ownership/mod/metadata state and delegates native calls through
+ * framework adapters. Most mutating methods are no-ops when the entity no longer exists.
  */
-export class Vehicle {
-  private readonly _networkId: number
-  private readonly _handle: number
-  private readonly _adapters: VehicleAdapters
-  private readonly _model: string
-  private readonly _modelHash: number
-  private _ownership: VehicleOwnership
-  private _mods: VehicleMods = {}
-  private _metadata: VehicleMetadata = {}
-  private _persistent: boolean
-  private _routingBucket: number
+export class Vehicle extends BaseEntity implements Spatial, NativeHandle {
+  private readonly session: VehicleSession
+  private readonly adapters: VehicleAdapters
+  private ownershipData: VehicleOwnership
+  private modsData: VehicleMods = {}
+  private metadataData: VehicleMetadata = {}
 
   /**
-   * Creates a new Vehicle entity instance.
-   * This should only be instantiated by VehicleService after server-side creation.
+   * Creates a new vehicle entity wrapper.
    *
-   * @param handle - The server-side entity handle
-   * @param networkId - The network ID for cross-client reference
-   * @param ownership - Ownership information
-   * @param adapters - Platform adapters for entity/vehicle operations
-   * @param persistent - Whether the vehicle should persist
-   * @param routingBucket - The routing bucket the vehicle belongs to
+   * @param handle - Native entity handle.
+   * @param networkId - Network ID for cross-client references.
+   * @param ownership - Initial ownership descriptor.
+   * @param adapters - Entity/vehicle adapters.
+   * @param persistent - Whether orphan mode should keep this entity alive.
+   * @param routingBucket - Initial routing bucket.
+   * @param model - Resolved model string.
+   * @param modelHash - Spawn model hash.
    */
   constructor(
     handle: number,
@@ -63,259 +65,241 @@ export class Vehicle {
     model: string,
     modelHash: number,
   ) {
-    this._handle = handle
-    this._networkId = networkId
-    this._ownership = ownership
-    this._adapters = adapters
-    this._persistent = persistent
-    this._routingBucket = routingBucket
-    this._model = model
-    this._modelHash = modelHash
+    super(`car:${handle}`)
 
-    if (persistent) {
-      this._adapters.entityServer.setOrphanMode(handle, 2)
+    this.adapters = adapters
+    this.ownershipData = ownership
+    this.session = {
+      handle,
+      networkId,
+      model,
+      modelHash,
+      persistent,
+      routingBucket,
+      createdAt: Date.now(),
     }
 
-    this._metadata.createdAt = Date.now()
+    if (persistent) {
+      this.adapters.entityServer.setOrphanMode(handle, 2)
+    }
+
+    this.metadataData.createdAt = this.session.createdAt
+    this._dimension = routingBucket
   }
 
+  /** Returns the native entity handle. */
+  getHandle(): number {
+    return this.session.handle
+  }
+
+  /** Returns current world coordinates. */
+  getPosition(): Vector3 {
+    return this.adapters.entityServer.getCoords(this.session.handle)
+  }
+
+  /** Teleports the entity to a target position. */
+  setPosition(position: Vector3): void {
+    if (!this.exists) return
+    this.adapters.entityServer.setPosition(this.session.handle, position, { clearArea: true })
+  }
+
+  /** Returns current heading (yaw). */
+  getHeading(): number {
+    return this.adapters.entityServer.getHeading(this.session.handle)
+  }
+
+  /** Sets heading (yaw) in degrees. */
+  setHeading(heading: number): void {
+    if (!this.exists) return
+    this.adapters.entityServer.setHeading(this.session.handle, heading)
+  }
+
+  /** Native handle shortcut. */
   get handle(): number {
-    return this._handle
+    return this.session.handle
   }
 
+  /** Stable network ID. */
   get networkId(): number {
-    return this._networkId
+    return this.session.networkId
   }
 
-  get ownership(): VehicleOwnership {
-    return { ...this._ownership }
-  }
-
-  get mods(): VehicleMods {
-    return { ...this._mods }
-  }
-
-  get metadata(): VehicleMetadata {
-    return { ...this._metadata }
-  }
-
-  get persistent(): boolean {
-    return this._persistent
-  }
-
-  get routingBucket(): number {
-    return this._routingBucket
-  }
-
-  get exists(): boolean {
-    return this._adapters.entityServer.doesExist(this._handle)
-  }
-
+  /** Resolved model identifier. */
   get model(): string {
-    return this._model
+    return this.session.model
   }
 
+  /** Model hash used at spawn time. */
   get modelHash(): number {
-    return this._modelHash
+    return this.session.modelHash
   }
 
+  /** Whether the vehicle is configured as persistent. */
+  get persistent(): boolean {
+    return this.session.persistent
+  }
+
+  /** Current routing bucket/dimension. */
+  get routingBucket(): number {
+    return this.getRoutingBucket()
+  }
+
+  /** Dimension alias for routing bucket. */
+  override get dimension(): number {
+    return this.getRoutingBucket()
+  }
+
+  /** Dimension alias for routing bucket. */
+  override set dimension(value: number) {
+    this.setRoutingBucket(value)
+  }
+
+  /** Snapshot of ownership data. */
+  get ownership(): VehicleOwnership {
+    return { ...this.ownershipData }
+  }
+
+  /** Snapshot of stored mods. */
+  get mods(): VehicleMods {
+    return { ...this.modsData }
+  }
+
+  /** Snapshot of metadata values. */
+  get metadata(): VehicleMetadata {
+    return { ...this.metadataData }
+  }
+
+  /** True when the underlying native entity exists. */
+  get exists(): boolean {
+    return this.adapters.entityServer.doesExist(this.session.handle)
+  }
+
+  /** Position shorthand using {@link getPosition}. */
   get position(): Vector3 {
-    return this._adapters.entityServer.getCoords(this._handle)
+    return this.getPosition()
   }
 
+  /** Heading shorthand using {@link getHeading}. */
   get heading(): number {
-    return this._adapters.entityServer.getHeading(this._handle)
+    return this.getHeading()
   }
 
+  /** Current license plate text. */
   get plate(): string {
-    return this._adapters.vehicleServer.getNumberPlateText(this._handle)
+    return this.adapters.vehicleServer.getNumberPlateText(this.session.handle)
   }
 
-  /**
-   * Updates the ownership of the vehicle.
-   *
-   * @param ownership - New ownership information
-   */
+  /** Merges ownership data and replicates it to state bag. */
   setOwnership(ownership: Partial<VehicleOwnership>): void {
-    this._ownership = { ...this._ownership, ...ownership }
-    this.syncStateBag('ownership', this._ownership)
+    this.ownershipData = { ...this.ownershipData, ...ownership }
+    this.syncStateBag('ownership', this.ownershipData)
   }
 
-  /**
-   * Stores modifications in state bag for client-side application.
-   *
-   * @remarks
-   * Mods are stored server-side and synced via state bags.
-   * The client must read and apply these modifications locally.
-   *
-   * @param mods - Modifications to store
-   */
+  /** Merges vehicle mod state and updates modification timestamp. */
   setMods(mods: Partial<VehicleMods>): void {
     if (!this.exists) return
 
-    this._mods = { ...this._mods, ...mods }
-    this._metadata.modifiedAt = Date.now()
-
-    // Sync to state bag for client-side application
-    this.syncStateBag('mods', this._mods)
+    this.modsData = { ...this.modsData, ...mods }
+    this.metadataData.modifiedAt = Date.now()
+    this.syncStateBag('mods', this.modsData)
   }
 
-  /**
-   * Sets custom metadata for the vehicle.
-   *
-   * @param key - Metadata key
-   * @param value - Metadata value
-   */
-  setMetadata(key: string, value: any): void {
-    this._metadata[key] = value
+  /** Stores custom metadata and replicates it to state bag. */
+  setMetadata(key: string, value: unknown): void {
+    this.metadataData[key] = value
     this.syncStateBag(`meta_${key}`, value)
   }
 
-  /**
-   * Gets metadata value by key.
-   *
-   * @param key - Metadata key
-   * @returns The metadata value or undefined
-   */
-  getMetadata<T = any>(key: string): T | undefined {
-    return this._metadata[key] as T | undefined
+  /** Reads one metadata value by key. */
+  getMetadata<T = unknown>(key: string): T | undefined {
+    return this.metadataData[key] as T | undefined
   }
 
-  /**
-   * Sets the routing bucket for the vehicle.
-   *
-   * @param bucket - Routing bucket ID
-   */
+  /** Reads current routing bucket, using cached value if entity no longer exists. */
+  getRoutingBucket(): number {
+    if (!this.exists) {
+      return this.session.routingBucket
+    }
+    return this.adapters.entityServer.getRoutingBucket(this.session.handle)
+  }
+
+  /** Sets routing bucket and updates local dimension snapshot. */
   setRoutingBucket(bucket: number): void {
     if (!this.exists) return
-    this._adapters.entityServer.setRoutingBucket(this._handle, bucket)
-    this._routingBucket = bucket
+    this.adapters.entityServer.setRoutingBucket(this.session.handle, bucket)
+    this.session.routingBucket = bucket
+    this._dimension = bucket
   }
 
-  /**
-   * Sets the license plate text.
-   *
-   * @param plate - Plate text (max 8 characters)
-   */
+  /** Sets plate text (trimmed to 8 chars). */
   setPlate(plate: string): void {
     if (!this.exists) return
-    this._adapters.vehicleServer.setNumberPlateText(this._handle, plate.substring(0, 8))
+    this.adapters.vehicleServer.setNumberPlateText(this.session.handle, plate.substring(0, 8))
   }
 
-  /**
-   * Sets the vehicle colors (server-side native).
-   *
-   * @param primaryColor - Primary color index
-   * @param secondaryColor - Secondary color index
-   */
+  /** Sets primary/secondary vehicle colors. */
   setColors(primaryColor?: number, secondaryColor?: number): void {
     if (!this.exists) return
 
-    const [currentPrimary, currentSecondary] = this._adapters.vehicleServer.getColours(this._handle)
-    this._adapters.vehicleServer.setColours(
-      this._handle,
+    const [currentPrimary, currentSecondary] = this.adapters.vehicleServer.getColours(
+      this.session.handle,
+    )
+    this.adapters.vehicleServer.setColours(
+      this.session.handle,
       primaryColor ?? currentPrimary,
       secondaryColor ?? currentSecondary,
     )
   }
 
-  /**
-   * Marks vehicle for repair (client applies the actual repair).
-   *
-   * @remarks
-   * Sets a state bag flag that clients should watch to apply repair locally.
-   */
+  /** Flags this vehicle for repair through replicated metadata. */
   markForRepair(): void {
     if (!this.exists) return
-    this._metadata.needsRepair = true
-    this._metadata.repairRequestedAt = Date.now()
+    this.metadataData.needsRepair = true
+    this.metadataData.repairRequestedAt = Date.now()
     this.syncStateBag('needsRepair', true)
   }
 
-  /**
-   * Sets the fuel level (stored in metadata, applied client-side).
-   *
-   * @param level - Fuel level (0–100)
-   */
+  /** Sets fuel level in range 0-100. */
   setFuel(level: number): void {
     if (!this.exists) return
 
-    const clampedLevel = Math.max(0, Math.min(100, level))
-    this._metadata.fuel = clampedLevel
-    this.syncStateBag('fuel', clampedLevel)
+    const clamped = Math.max(0, Math.min(100, level))
+    this.metadataData.fuel = clamped
+    this.syncStateBag('fuel', clamped)
   }
 
-  /**
-   * Gets the stored fuel level from metadata.
-   *
-   * @returns Fuel level (0-100) or 100 if not set
-   */
+  /** Gets stored fuel level, defaulting to 100. */
   getFuel(): number {
-    return this._metadata.fuel ?? 100
+    return this.metadataData.fuel ?? 100
   }
 
-  /**
-   * Sets the vehicle doors locked state (server-side native).
-   *
-   * @param locked - Whether doors should be locked
-   */
+  /** Locks or unlocks doors and replicates lock state. */
   setDoorsLocked(locked: boolean): void {
     if (!this.exists) return
-    this._adapters.vehicleServer.setDoorsLocked(this._handle, locked ? 2 : 1)
+    this.adapters.vehicleServer.setDoorsLocked(this.session.handle, locked ? 2 : 1)
     this.syncStateBag('locked', locked)
   }
 
-  /**
-   * Teleports the vehicle to a position.
-   *
-   * @param position - Target position
-   * @param heading - Optional heading
-   */
+  /** Teleports vehicle and optionally sets heading. */
   teleport(position: Vector3, heading?: number): void {
     if (!this.exists) return
-    this._adapters.entityServer.setCoords(
-      this._handle,
-      position.x,
-      position.y,
-      position.z,
-      false,
-      false,
-      false,
-      true,
-    )
+    this.setPosition(position)
     if (heading !== undefined) {
-      this._adapters.entityServer.setHeading(this._handle, heading)
+      this.setHeading(heading)
     }
   }
 
-  /**
-   * Deletes the vehicle from the server.
-   */
+  /** Deletes the underlying entity. */
   delete(): void {
     if (!this.exists) return
-    this._adapters.entityServer.delete(this._handle)
+    this.adapters.entityServer.delete(this.session.handle)
   }
 
-  /**
-   * Syncs data to the vehicle's state bag for client access.
-   *
-   * @param key - State bag key
-   * @param value - Value to sync
-   */
-  private syncStateBag(key: string, value: any): void {
-    const stateBag = this._adapters.entityServer.getStateBag(this._handle)
-    stateBag.set(key, value, true)
-  }
-
-  /**
-   * Serializes the vehicle data for network transfer.
-   *
-   * @returns Serialized vehicle data
-   */
+  /** Serializes this vehicle state for transport. */
   serialize(): SerializedVehicleData {
     return {
-      networkId: this._networkId,
-      handle: this._handle,
+      networkId: this.session.networkId,
+      handle: this.session.handle,
       modelHash: this.modelHash,
       model: this.model,
       position: this.position,
@@ -324,8 +308,14 @@ export class Vehicle {
       ownership: this.ownership,
       mods: this.mods,
       metadata: this.metadata,
-      routingBucket: this._routingBucket,
-      persistent: this._persistent,
+      routingBucket: this.routingBucket,
+      persistent: this.session.persistent,
     }
+  }
+
+  /** Writes one replicated value to entity state bag. */
+  private syncStateBag(key: string, value: unknown): void {
+    if (!this.exists) return
+    this.adapters.entityServer.getStateBag(this.session.handle).set(key, value, true)
   }
 }

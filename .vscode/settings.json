@@ -2,5 +2,8 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "biomejs.biome",
   "eslint.validate": ["typescript", "javascript"],
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
 }

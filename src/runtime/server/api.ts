@@ -1,22 +1,26 @@
-// Framework modules
-
+// Framework functions
 export { onFrameworkEvent } from './bus/internal-event.bus'
-
-// Configs
-export * from './configs'
-export * from './contracts/index'
 export { init } from './core'
+
+// API
+export * from './apis'
 export * from './decorators'
+export * from './library'
+export * from './contracts'
+export * from './ports/players.api-port'
+export * from './ports/authorization.api-port'
+export * from './ports/channel.api-port'
 
 // DevMode (development tools)
 export * from './devmode'
 
-// Entities
+// Entities + Concepts
 export * from './entities'
+export * from './concepts/channel'
 
+// Configurations
 export * from './runtime'
-export * from './services'
 export * from './setup'
-export * from './templates'
+
 // Types
-export type * from './types/internal-events'
+export * from './types'

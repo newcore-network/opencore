@@ -34,16 +34,6 @@ export abstract class IPlayerServer {
   abstract getIdentifier(playerSrc: string, identifierType: string): string | undefined
 
   /**
-   * Gets all identifiers for a player as raw strings.
-   *
-   * @deprecated Use getPlayerIdentifiers() for structured identifier data.
-   *
-   * @param playerSrc - Player source/client ID (as string)
-   * @returns Array of identifier strings (e.g., ['steam:xxx', 'license:xxx'])
-   */
-  abstract getIdentifiers(playerSrc: string): string[]
-
-  /**
    * Gets all identifiers for a player as structured objects.
    *
    * @param playerSrc - Player source/client ID (as string)

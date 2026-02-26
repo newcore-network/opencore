@@ -1,13 +1,13 @@
 import 'reflect-metadata'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { NodeNetTransport } from '../../../src/adapters/node/node-net-transport'
+import { NodeEvents } from '../../../src/adapters/node/transport/node.events'
 import type { NetEventSecurityObserverContract } from '../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../src/runtime/server/contracts/security/security-handler.contract'
 import { OnNet } from '../../../src/runtime/server/decorators/onNet'
 import { Public } from '../../../src/runtime/server/decorators/public'
 import type { Player } from '../../../src/runtime/server/entities'
-import type { PlayerDirectoryPort } from '../../../src/runtime/server/services/ports/player-directory.port'
+import type { Players } from '../../../src/runtime/server/ports/players.api-port'
 import { METADATA_KEYS } from '../../../src/runtime/server/system/metadata-server.keys'
 import { NetEventProcessor } from '../../../src/runtime/server/system/processors/netEvent.processor'
 
@@ -44,15 +44,15 @@ function waitForEventProcessing(): Promise<void> {
 }
 
 describe('NetEventProcessor Node Runtime Flow', () => {
-  let transport: NodeNetTransport
-  let mockPlayerService: PlayerDirectoryPort
+  let transport: NodeEvents
+  let mockPlayerService: Players
   let mockSecurityHandler: SecurityHandlerContract
   let mockObserver: NetEventSecurityObserverContract
   let processor: NetEventProcessor
 
   beforeEach(() => {
-    // Create fresh Node transport (no FiveM globals)
-    transport = new NodeNetTransport()
+    // Create fresh Node events transport (no FiveM globals)
+    transport = new NodeEvents()
 
     // Create mock services
     mockPlayerService = {

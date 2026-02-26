@@ -1,5 +1,5 @@
 import { GLOBAL_CONTAINER } from '../kernel/di/container'
-import { FiveMPlatform } from './fivem/fivem-platform'
+import { CfxPlatform } from './cfx/cfx-platform'
 import { NodePlatform } from './node/node-platform'
 import {
   getCurrentPlatformName,
@@ -16,14 +16,14 @@ export type { PlatformAdapter }
  * Supported platform types.
  * @deprecated Use platformRegistry.getCurrent()?.name instead for dynamic platform detection.
  */
-export type Platform = 'fivem' | 'node' | string
+export type Platform = 'cfx' | 'node' | string
 
 // ─────────────────────────────────────────────────────────────────
 // Register built-in platforms
 // ─────────────────────────────────────────────────────────────────
 
-// Register FiveM platform (high priority)
-registerPlatform(FiveMPlatform)
+// Register CitizenFX platform (high priority)
+registerPlatform(CfxPlatform)
 
 // Register Node.js fallback platform (low priority)
 registerPlatform(NodePlatform)
@@ -61,7 +61,7 @@ export function detectPlatform(): Platform {
  * await registerServerCapabilities()
  *
  * // Force a specific platform
- * await registerServerCapabilities('fivem')
+ * await registerServerCapabilities('cfx')
  *
  * // Register a custom platform before calling
  * registerPlatform(MyCustomPlatform)
@@ -80,8 +80,8 @@ export async function registerServerCapabilities(platform?: Platform): Promise<v
  *
  * @example
  * ```typescript
- * if (isPlatform('fivem')) {
- *   // FiveM-specific code
+ * if (isPlatform('cfx')) {
+ *   // CitizenFX-specific code
  * }
  * ```
  */

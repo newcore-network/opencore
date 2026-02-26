@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { FiveMNetTransport } from '../../src/adapters/fivem/fivem-net-transport'
+import { NodeEvents } from '../../src/adapters/node/transport/node.events'
 import { NodePlayerInfo } from '../../src/adapters/node/node-playerinfo'
+import { NodeEntityServer } from '../../src/adapters/node/node-entity-server'
+import { NodePlayerServer } from '../../src/adapters/node/node-player-server'
 import { Player } from '../../src/runtime/server/entities/player'
-import { PlayerService } from '../../src/runtime/server/services/core/player.service'
-import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/services/default/default-net-event-security-observer'
-import { DefaultSecurityHandler } from '../../src/runtime/server/services/default/default-security.handler'
+import { LocalPlayerImplementation } from '../../src/runtime/server/implementations/local/player.local'
+import { DefaultNetEventSecurityObserver } from '../../src/runtime/server/default/default-net-event-security-observer'
+import { DefaultSecurityHandler } from '../../src/runtime/server/default/default-security.handler'
 import { NetEventProcessor } from '../../src/runtime/server/system/processors/netEvent.processor'
-import { emitNet, registeredNetEvents, resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
+import { WorldContext } from '../../src/runtime/core/world'
+import { emitNet, resetCitizenFxMocks } from '../../tests/mocks/citizenfx'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 import { PlayerFactory } from '../utils/player-factory'
@@ -39,19 +42,24 @@ const eventSchema = z.object({
 
 describe('Net Events Full Load Benchmarks', () => {
   let processor: NetEventProcessor
-  let playerService: PlayerService
+  let playerService: LocalPlayerImplementation
   let controller: TestController
+  let nodeEvents: NodeEvents
 
   beforeEach(() => {
     resetCitizenFxMocks()
-    registeredNetEvents.clear()
 
     const securityHandler = new DefaultSecurityHandler()
-    const playerInfo = new NodePlayerInfo()
-    playerService = new PlayerService(playerInfo)
+    nodeEvents = new NodeEvents()
+    playerService = new LocalPlayerImplementation(
+      new WorldContext(),
+      new NodePlayerInfo(),
+      new NodePlayerServer(),
+      new NodeEntityServer(),
+      nodeEvents,
+    )
     const observer = new DefaultNetEventSecurityObserver()
-    const netTransport = new FiveMNetTransport()
-    processor = new NetEventProcessor(playerService, securityHandler, observer, netTransport)
+    processor = new NetEventProcessor(playerService, securityHandler, observer, nodeEvents)
     controller = new TestController()
 
     processor.process(controller, 'handleEvent', {
@@ -75,7 +83,8 @@ describe('Net Events Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []
@@ -83,16 +92,9 @@ describe('Net Events Full Load Benchmarks', () => {
       let errorCount = 0
 
       for (const player of players) {
-        const handler = registeredNetEvents.get('test:event')
-        if (!handler) {
-          errorCount++
-          continue
-        }
-
         const start = performance.now()
         try {
-          ;(global as any).source = player.clientID
-          await handler({ action: 'test', value: 123 })
+          nodeEvents.simulateClientEvent('test:event', player.clientID, { action: 'test', value: 123 })
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -118,7 +120,8 @@ describe('Net Events Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []
@@ -126,16 +129,9 @@ describe('Net Events Full Load Benchmarks', () => {
       let errorCount = 0
 
       for (const player of players) {
-        const handler = registeredNetEvents.get('test:validated')
-        if (!handler) {
-          errorCount++
-          continue
-        }
-
         const start = performance.now()
         try {
-          ;(global as any).source = player.clientID
-          await handler({
+          nodeEvents.simulateClientEvent('test:validated', player.clientID, {
             action: 'transfer',
             amount: 100,
             targetId: 123,
@@ -166,7 +162,8 @@ describe('Net Events Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const serializationTimings: number[] = []
@@ -176,14 +173,10 @@ describe('Net Events Full Load Benchmarks', () => {
         const serializationMetrics = measureSerialization(payload)
         serializationTimings.push(serializationMetrics.totalTime)
 
-        const handler = registeredNetEvents.get('test:event')
-        if (handler) {
-          const start = performance.now()
-          ;(global as any).source = player.clientID
-          await handler(payload)
-          const end = performance.now()
-          eventTimings.push(end - start)
-        }
+        const start = performance.now()
+        nodeEvents.simulateClientEvent('test:event', player.clientID, payload)
+        const end = performance.now()
+        eventTimings.push(end - start)
       }
 
       const serializationMetrics = calculateLoadMetrics(
@@ -215,10 +208,8 @@ describe('Net Events Full Load Benchmarks', () => {
 
         for (const player of players) {
           playerService.bind(player.clientID)
-          playerService.linkAccount(
-            player.clientID,
-            player.accountID || `account-${player.clientID}`,
-          )
+          const p = playerService.getByClient(player.clientID)
+          if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
         }
 
         for (const size of payloadSizes) {
@@ -230,14 +221,10 @@ describe('Net Events Full Load Benchmarks', () => {
             const serializationMetrics = measureSerialization(payload)
             serializationTimings.push(serializationMetrics.totalTime)
 
-            const handler = registeredNetEvents.get('test:event')
-            if (handler) {
-              const start = performance.now()
-              ;(global as any).source = player.clientID
-              await handler(payload)
-              const end = performance.now()
-              timings.push(end - start)
-            }
+            const start = performance.now()
+            nodeEvents.simulateClientEvent('test:event', player.clientID, payload)
+            const end = performance.now()
+            timings.push(end - start)
           }
 
           const serializationMetrics = calculateLoadMetrics(
@@ -275,29 +262,23 @@ describe('Net Events Full Load Benchmarks', () => {
 
         for (const player of players) {
           playerService.bind(player.clientID)
-          playerService.linkAccount(
-            player.clientID,
-            player.accountID || `account-${player.clientID}`,
-          )
+          const p = playerService.getByClient(player.clientID)
+          if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
         }
 
         for (const latency of latencies) {
           const timings: number[] = []
 
           for (const player of players) {
-            const handler = registeredNetEvents.get('test:event')
-            if (handler) {
-              const start = performance.now()
-              ;(global as any).source = player.clientID
+            const start = performance.now()
 
-              if (latency > 0) {
-                await new Promise((resolve) => setTimeout(resolve, latency))
-              }
-
-              await handler(payload)
-              const end = performance.now()
-              timings.push(end - start)
+            if (latency > 0) {
+              await new Promise((resolve) => setTimeout(resolve, latency))
             }
+
+            nodeEvents.simulateClientEvent('test:event', player.clientID, payload)
+            const end = performance.now()
+            timings.push(end - start)
           }
 
           const metrics = calculateLoadMetrics(
@@ -318,7 +299,8 @@ describe('Net Events Full Load Benchmarks', () => {
 
       for (const player of players) {
         playerService.bind(player.clientID)
-        playerService.linkAccount(player.clientID, player.accountID || `account-${player.clientID}`)
+        const p = playerService.getByClient(player.clientID)
+        if (p) p.linkAccount(player.accountID || `account-${player.clientID}`)
       }
 
       const timings: number[] = []
@@ -326,16 +308,9 @@ describe('Net Events Full Load Benchmarks', () => {
       let errorCount = 0
 
       const promises = players.map(async (player) => {
-        const handler = registeredNetEvents.get('test:event')
-        if (!handler) {
-          errorCount++
-          return
-        }
-
         const start = performance.now()
         try {
-          ;(global as any).source = player.clientID
-          await handler({ action: 'test', value: 123 })
+          nodeEvents.simulateClientEvent('test:event', player.clientID, { action: 'test', value: 123 })
           const end = performance.now()
           timings.push(end - start)
           successCount++
