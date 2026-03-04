@@ -1,4 +1,5 @@
 import { injectable } from 'tsyringe'
+import { detectCfxGameProfile, isCfxRuntime } from '../../../adapters/cfx/runtime-profile'
 import { loggers, PlayerAppearance } from '../../../kernel'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { AppearanceService } from './appearance.service'
@@ -13,6 +14,7 @@ interface SpawnOptions {
 const NETWORK_TIMEOUT_MS = 15_000
 const PED_TIMEOUT_MS = 10_000
 const COLLISION_TIMEOUT_MS = 7_000
+const IS_RDR3_PROFILE = isCfxRuntime() && detectCfxGameProfile() === 'rdr3'
 
 /**
  * Handles all player spawning logic on the client.
@@ -31,11 +33,15 @@ const COLLISION_TIMEOUT_MS = 7_000
 export class SpawnService {
   private spawned = false
   private spawning = false
+  private readonly skipAppearancePipeline = IS_RDR3_PROFILE
 
   constructor(private appearanceService: AppearanceService) {}
 
   async init(): Promise<void> {
     loggers.spawn.debug('SpawnService initialized')
+    if (this.skipAppearancePipeline) {
+      loggers.spawn.debug('RedM profile detected: skipping appearance pipeline during spawn')
+    }
   }
 
   /**
@@ -207,8 +213,8 @@ export class SpawnService {
     SetModelAsNoLongerNeeded(modelHash)
 
     const ped = PlayerPedId()
-    if (ped !== 0) {
-      SetPedDefaultComponentVariation(ped)
+    if (ped !== 0 && !this.skipAppearancePipeline) {
+      this.applyDefaultAppearanceSafe(ped)
     }
   }
 
@@ -271,15 +277,19 @@ export class SpawnService {
   }
 
   private async applyAppearanceIfNeeded(ped: number, appearance?: PlayerAppearance): Promise<void> {
+    if (this.skipAppearancePipeline) {
+      return
+    }
+
     if (!appearance) {
-      SetPedDefaultComponentVariation(ped)
+      this.applyDefaultAppearanceSafe(ped)
       return
     }
 
     const validation = this.appearanceService.validateAppearance(appearance)
     if (!validation.valid) {
       loggers.spawn.warn('Invalid appearance data', { errors: validation.errors })
-      SetPedDefaultComponentVariation(ped)
+      this.applyDefaultAppearanceSafe(ped)
       return
     }
 
@@ -289,7 +299,11 @@ export class SpawnService {
       loggers.spawn.error('Failed to apply appearance, using default variation', {
         error: error instanceof Error ? error.message : String(error),
       })
-      SetPedDefaultComponentVariation(ped)
+      this.applyDefaultAppearanceSafe(ped)
     }
+  }
+
+  private applyDefaultAppearanceSafe(ped: number): void {
+    this.appearanceService.setDefaultAppearance(ped)
   }
 }

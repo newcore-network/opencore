@@ -34,7 +34,12 @@ export async function registerClientCapabilities(): Promise<void> {
   }
 
   if (!di.isRegistered(IPedAppearanceClient as any)) {
-    if (cfxRuntime && gameProfile !== 'rdr3') {
+    if (cfxRuntime && gameProfile === 'rdr3') {
+      const [{ RedMPedAppearanceClientAdapter }] = await Promise.all([
+        import('./redm/redm-ped-appearance-client'),
+      ])
+      di.registerSingleton(IPedAppearanceClient as any, RedMPedAppearanceClientAdapter)
+    } else if (cfxRuntime) {
       const [{ FiveMPedAppearanceClientAdapter }] = await Promise.all([
         import('./fivem/fivem-ped-appearance-client'),
       ])

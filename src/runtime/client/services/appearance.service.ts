@@ -338,7 +338,10 @@ export class AppearanceService {
    * @param ped - Ped entity handle
    */
   setDefaultAppearance(ped: number): void {
-    this.pedAdapter.setDefaultComponentVariation(ped)
+    const adapter = this.pedAdapter as any
+    if (typeof adapter?.setDefaultComponentVariation === 'function') {
+      adapter.setDefaultComponentVariation(ped)
+    }
   }
 
   /**

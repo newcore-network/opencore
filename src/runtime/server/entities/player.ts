@@ -36,6 +36,7 @@ export interface PlayerAdapters {
  */
 export class Player extends BaseEntity implements Spatial, NativeHandle {
   private _position: Vector3
+  private _model: string | undefined
 
   /**
    * Creates a new Player entity instance.
@@ -369,6 +370,15 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   setArmor(armor: number): void {
     const ped = this.adapters.playerServer.getPed(this.clientID.toString())
     this.adapters.entityServer.setArmor(ped, armor)
+  }
+
+  get model(): string | undefined {
+    return this._model
+  }
+
+  set model(model: string) {
+    SetPlayerModel(this.clientID.toString(), model)
+    this._model = model
   }
 
   /**
