@@ -47,7 +47,7 @@ export function detectPlatform(): Platform {
  *
  * @remarks
  * This function registers adapters needed by the SERVER runtime only.
- * Client-side adapters are registered separately via `registerClientCapabilities`.
+ * Client-side adapters are now installed through `Client.init({ adapter })`.
  *
  * The function uses the Platform Registry to automatically detect and register
  * the appropriate platform adapters. You can also force a specific platform

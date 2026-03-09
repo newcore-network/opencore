@@ -54,7 +54,7 @@ export function getActiveClientAdapterName(): string | undefined {
 
 export function getCurrentClientResourceName(): string {
   if (di.isRegistered(IClientRuntimeBridge as any)) {
-    return di.resolve(IClientRuntimeBridge as any).getCurrentResourceName()
+    return (di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge).getCurrentResourceName()
   }
 
   const fn = (globalThis as any).GetCurrentResourceName

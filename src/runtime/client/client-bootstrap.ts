@@ -1,8 +1,7 @@
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { loggers } from '../../kernel/logger'
 import { createNodeClientAdapter } from './adapter/node-client-adapter'
-import { getActiveClientAdapterName, installClientAdapter } from './adapter/registry'
-import { IClientRuntimeBridge } from './adapter/runtime-bridge'
+import { getActiveClientAdapterName, getCurrentClientResourceName, installClientAdapter } from './adapter/registry'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -37,7 +36,10 @@ import { NuiBridge } from './ui-bridge'
  * - Registered in DI for ALL modes (so they can be injected and used)
  * - Only initialized (.init() called) in CORE mode to avoid duplicate event handlers
  */
-const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService, ClientSessionBridgeService] as const
+const SERVICES_WITH_GLOBAL_LISTENERS: Array<new (...args: any[]) => { init?: () => Promise<void> | void }> = [
+  SpawnService,
+  ClientSessionBridgeService,
+]
 
 /**
  * All client services that should be available in the DI container
@@ -129,19 +131,12 @@ async function tryImportAutoLoad() {
  */
 export async function initClientCore(options: ClientInitOptions = {}) {
   const mode: ClientMode = options.mode ?? 'CORE'
+  const resourceName = getCurrentClientResourceName()
 
   // Register system processors early (needed for MetadataScanner)
   // These processors are safe - they just process metadata, they don't register event handlers
   // Each resource bundle needs its own copy registered in its DI container
   registerSystemClient()
-
-  await installClientAdapter(options.adapter ?? createNodeClientAdapter())
-  loggers.bootstrap.debug('Client adapter registered', {
-    adapter: getActiveClientAdapterName() ?? 'unknown',
-  })
-
-  const runtimeBridge = di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge
-  const resourceName = runtimeBridge.getCurrentResourceName()
 
   // Check if already initialized
   const existingContext = getClientRuntimeContext()
@@ -160,6 +155,11 @@ export async function initClientCore(options: ClientInitOptions = {}) {
       `Client already initialized in ${existingContext.mode} mode by resource "${existingContext.resourceName}". Cannot initialize again in ${mode} mode.`,
     )
   }
+
+  await installClientAdapter(options.adapter ?? createNodeClientAdapter())
+  loggers.bootstrap.debug('Client adapter registered', {
+    adapter: getActiveClientAdapterName() ?? 'unknown',
+  })
 
   // Set runtime context
   setClientRuntimeContext({

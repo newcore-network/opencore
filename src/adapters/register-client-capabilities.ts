@@ -10,8 +10,7 @@ import { detectCfxGameProfile, isCfxRuntime } from './cfx/runtime-profile'
  * Registers client-side platform-specific capability implementations.
  *
  * @remarks
- * This function registers adapters needed by the CLIENT runtime only.
- * Should be called during client bootstrap before services that depend on these adapters.
+ * Deprecated in favor of `Client.init({ adapter })` and custom client adapters.
  */
 export async function registerClientCapabilities(): Promise<void> {
   const cfxRuntime = isCfxRuntime()

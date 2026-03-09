@@ -80,3 +80,7 @@ export function setClientRuntimeContext(ctx: ClientRuntimeContext): void {
 export function isClientInitialized(): boolean {
   return runtimeContext?.isInitialized ?? false
 }
+
+export function __resetClientRuntimeContextForTests(): void {
+  runtimeContext = null
+}
