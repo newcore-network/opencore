@@ -1,6 +1,8 @@
-import { registerClientCapabilities } from '../../adapters/register-client-capabilities'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { loggers } from '../../kernel/logger'
+import { createNodeClientAdapter } from './adapter/node-client-adapter'
+import { getActiveClientAdapterName, installClientAdapter } from './adapter/registry'
+import { IClientRuntimeBridge } from './adapter/runtime-bridge'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -9,7 +11,6 @@ import {
   setClientRuntimeContext,
 } from './client-runtime'
 import { getClientControllerRegistry } from './decorators'
-import { playerClientLoader } from './player/player.loader'
 import {
   BlipService,
   Camera,
@@ -19,6 +20,7 @@ import {
   NotificationService,
   PedService,
   ProgressService,
+  ClientSessionBridgeService,
   SpawnService,
   StreamingService,
   TextUIService,
@@ -35,7 +37,7 @@ import { NuiBridge } from './ui-bridge'
  * - Registered in DI for ALL modes (so they can be injected and used)
  * - Only initialized (.init() called) in CORE mode to avoid duplicate event handlers
  */
-const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService] as const
+const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService, ClientSessionBridgeService] as const
 
 /**
  * All client services that should be available in the DI container
@@ -55,18 +57,6 @@ const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService] as const
 // ] as const
 
 /**
- * Get current resource name safely
- */
-function getCurrentResourceNameSafe(): string {
-  const fn = (globalThis as any).GetCurrentResourceName
-  if (typeof fn === 'function') {
-    const name = fn()
-    if (typeof name === 'string' && name.trim()) return name
-  }
-  return 'default'
-}
-
-/**
  * Register singleton services in the DI container
  *
  * @remarks
@@ -81,6 +71,8 @@ function registerServices() {
     di.registerSingleton(NotificationService, NotificationService)
   if (!di.isRegistered(TextUIService)) di.registerSingleton(TextUIService, TextUIService)
   if (!di.isRegistered(ProgressService)) di.registerSingleton(ProgressService, ProgressService)
+  if (!di.isRegistered(ClientSessionBridgeService))
+    di.registerSingleton(ClientSessionBridgeService, ClientSessionBridgeService)
   if (!di.isRegistered(MarkerService)) di.registerSingleton(MarkerService, MarkerService)
   if (!di.isRegistered(BlipService)) di.registerSingleton(BlipService, BlipService)
   if (!di.isRegistered(Camera)) di.registerSingleton(Camera, Camera)
@@ -137,12 +129,19 @@ async function tryImportAutoLoad() {
  */
 export async function initClientCore(options: ClientInitOptions = {}) {
   const mode: ClientMode = options.mode ?? 'CORE'
-  const resourceName = getCurrentResourceNameSafe()
 
   // Register system processors early (needed for MetadataScanner)
   // These processors are safe - they just process metadata, they don't register event handlers
   // Each resource bundle needs its own copy registered in its DI container
   registerSystemClient()
+
+  await installClientAdapter(options.adapter ?? createNodeClientAdapter())
+  loggers.bootstrap.debug('Client adapter registered', {
+    adapter: getActiveClientAdapterName() ?? 'unknown',
+  })
+
+  const runtimeBridge = di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge
+  const resourceName = runtimeBridge.getCurrentResourceName()
 
   // Check if already initialized
   const existingContext = getClientRuntimeContext()
@@ -169,20 +168,12 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     isInitialized: true,
   })
 
-  // Register client-side adapters (IPedAppearanceClient, IHasher)
-  await registerClientCapabilities()
-
   // Register all services in DI (available in all modes)
   registerServices()
 
   // Bootstrap services (only in CORE mode)
   // This is where services that register global event handlers are initialized
   await bootstrapServices(mode)
-
-  // Player loader (only in CORE mode)
-  if (mode === 'CORE') {
-    playerClientLoader()
-  }
 
   // Import framework controllers (only in CORE mode)
   // These controllers listen to global events and should only be registered once

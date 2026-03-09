@@ -377,7 +377,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   }
 
   set model(model: string) {
-    SetPlayerModel(this.clientID.toString(), model)
+    this.adapters.playerServer.setModel(this.clientID.toString(), model)
     this._model = model
   }
 

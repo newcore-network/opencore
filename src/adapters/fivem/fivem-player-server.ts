@@ -15,6 +15,10 @@ export class FiveMPlayerServer extends IPlayerServer {
     DropPlayer(playerSrc, reason)
   }
 
+  setModel(playerSrc: string, model: string): void {
+    SetPlayerModel(playerSrc, model)
+  }
+
   getIdentifier(playerSrc: string, identifierType: string): string | undefined {
     const numIdentifiers = this.getNumIdentifiers(playerSrc)
     const prefix = `${identifierType}:`

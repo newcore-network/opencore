@@ -1,6 +1,7 @@
 import { inject } from 'tsyringe'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
+import { serializeServerPlayerData } from '../adapter/serialization'
 import { Players } from '../ports/players.api-port'
 import { InternalPlayerExports, SerializedPlayerData } from '../types/core-exports.types'
 import { LinkedID } from '../services'
@@ -31,24 +32,24 @@ export class PlayerExportController implements InternalPlayerExports {
   @Export()
   getPlayerData(clientID: number): SerializedPlayerData | null {
     const player = this.playerService.getByClient(clientID)
-    return player?.serialize() ?? null
+    return player ? serializeServerPlayerData(player) : null
   }
 
   @Export()
   getManyData(clientIds: number[]): SerializedPlayerData[] {
-    return this.playerService.getMany(clientIds).map((p) => p.serialize())
+    return this.playerService.getMany(clientIds).map((player) => serializeServerPlayerData(player))
   }
 
   @Export()
   getAllPlayersData(): SerializedPlayerData[] {
-    return this.playerService.getAll().map((p) => p.serialize())
+    return this.playerService.getAll().map((player) => serializeServerPlayerData(player))
   }
 
   @Export()
   getPlayerByAccountId(accountId: string): SerializedPlayerData | null {
     const players = this.playerService.getAll()
     const player = players.find((p) => p.accountID === accountId)
-    return player?.serialize() ?? null
+    return player ? serializeServerPlayerData(player) : null
   }
 
   @Export()

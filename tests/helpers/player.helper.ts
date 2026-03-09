@@ -39,6 +39,8 @@ export class MockPlayerServer extends IPlayerServer {
 
   drop(_playerSrc: string, _reason: string): void {}
 
+  setModel(_playerSrc: string, _model: string): void {}
+
   getIdentifier(playerSrc: string, identifierType: string): string | undefined {
     const identifiers = this.playerIdentifiers.get(playerSrc)
     return identifiers?.[identifierType]

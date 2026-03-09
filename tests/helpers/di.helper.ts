@@ -1,5 +1,7 @@
 import type { DependencyContainer } from 'tsyringe'
 import { container } from 'tsyringe'
+import { __resetClientAdapterRegistryForTests } from '../../src/runtime/client/adapter/registry'
+import { __resetServerAdapterRegistryForTests } from '../../src/runtime/server/adapter/registry'
 
 /**
  * Resets the global DI container to a clean state.
@@ -7,6 +9,8 @@ import { container } from 'tsyringe'
  */
 export function resetContainer(): void {
   container.reset()
+  __resetClientAdapterRegistryForTests()
+  __resetServerAdapterRegistryForTests()
 }
 
 /**

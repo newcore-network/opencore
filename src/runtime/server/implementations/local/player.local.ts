@@ -7,6 +7,7 @@ import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServ
 import { loggers } from '../../../../kernel/logger'
 import { BaseEntity } from '../../../core/entity'
 import { WorldContext } from '../../../core/world'
+import { createLocalServerPlayer } from '../../adapter/registry'
 import { Player, type PlayerAdapters } from '../../entities'
 import { Players } from '../../ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../../ports/internal/player-session-lifecycle.port'
@@ -68,7 +69,7 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
       meta: {},
     }
 
-    const player = new Player(session, this.playerAdapters)
+    const player = createLocalServerPlayer(session, this.playerAdapters)
     this.world.add(player)
     loggers.session.debug('Player session bound', {
       clientID,

@@ -1,18 +1,10 @@
 import { injectable } from 'tsyringe'
 import { ClassConstructor } from '../../../kernel/di/class-constructor'
+import { getCurrentClientResourceName } from '../adapter/registry'
 import { METADATA_KEYS } from '../system/metadata-client.keys'
 import { getClientRuntimeContext } from '../client-runtime'
 
 const clientControllerRegistryByResource = new Map<string, Set<ClassConstructor>>()
-
-function getCurrentResourceNameSafe(): string {
-  const fn = (globalThis as any).GetCurrentResourceName
-  if (typeof fn === 'function') {
-    const name = fn()
-    if (typeof name === 'string' && name.trim()) return name
-  }
-  return 'default'
-}
 
 function resolveRegistryKey(resourceName?: string): string {
   if (resourceName?.trim()) {
@@ -24,7 +16,7 @@ function resolveRegistryKey(resourceName?: string): string {
     return runtime.resourceName
   }
 
-  return getCurrentResourceNameSafe()
+  return getCurrentClientResourceName()
 }
 
 export function getClientControllerRegistry(resourceName?: string): ClassConstructor[] {

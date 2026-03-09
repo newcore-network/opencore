@@ -25,6 +25,11 @@ export abstract class IPlayerServer {
   abstract drop(playerSrc: string, reason: string): void
 
   /**
+   * Sets the active player model when the runtime supports it.
+   */
+  abstract setModel(playerSrc: string, model: string): void
+
+  /**
    * Gets a player identifier by type.
    *
    * @param playerSrc - Player source/client ID (as string)

@@ -1,4 +1,5 @@
 import { inject } from 'tsyringe'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { Controller, OnNet } from '../decorators'
 import { Player } from '../entities/player'
 import { Vehicles } from '../apis/vehicles.api'
@@ -11,7 +12,10 @@ import { Vehicles } from '../apis/vehicles.api'
  */
 @Controller()
 export class VehicleController {
-  constructor(@inject(Vehicles) private readonly vehicleService: Vehicles) {}
+  constructor(
+    @inject(Vehicles) private readonly vehicleService: Vehicles,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
+  ) {}
   /**
    * Handles client request to get vehicle data.
    */
@@ -19,12 +23,12 @@ export class VehicleController {
   handleGetData(player: Player, networkId: number) {
     const vehicle = this.vehicleService.getByNetworkId(networkId)
     if (!vehicle) {
-      emitNet('opencore:vehicle:dataResult', player.clientID, null)
+      this.events.emit('opencore:vehicle:dataResult', player.clientID, null)
       return null
     }
 
     const data = vehicle.serialize()
-    emitNet('opencore:vehicle:dataResult', player.clientID, data)
+    this.events.emit('opencore:vehicle:dataResult', player.clientID, data)
 
     return data
   }
@@ -37,7 +41,7 @@ export class VehicleController {
     const vehicles = this.vehicleService.getPlayerVehicles(player.clientID)
     const serialized = vehicles.map((v) => v.serialize())
 
-    emitNet('opencore:vehicle:playerVehiclesResult', player.clientID, serialized)
+    this.events.emit('opencore:vehicle:playerVehiclesResult', player.clientID, serialized)
 
     return serialized
   }

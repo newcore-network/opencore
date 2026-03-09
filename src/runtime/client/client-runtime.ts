@@ -38,6 +38,9 @@ export interface ClientInitOptions {
    */
   mode?: ClientMode
 
+  /** Optional runtime adapter for non-node client environments. */
+  adapter?: import('./adapter').OpenCoreClientAdapter
+
   /**
    * Optional client plugins installed before bootstrap.
    */

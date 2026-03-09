@@ -1,7 +1,58 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { coreLogger, LogDomain } from '../../kernel/logger'
+import { di } from './client-container'
+import { IClientRuntimeBridge } from './adapter/runtime-bridge'
 
 const nuiLogger = coreLogger.child('NUI', LogDomain.CLIENT)
+
+function createFallbackRuntimeBridge(): IClientRuntimeBridge {
+  return {
+    getCurrentResourceName: () => 'default',
+    on: (eventName, handler) => {
+      const onFn = (globalThis as any).on
+      if (typeof onFn === 'function') {
+        onFn(eventName, handler)
+      }
+    },
+    registerCommand: (commandName, handler, restricted) => {
+      const fn = (globalThis as any).RegisterCommand
+      if (typeof fn === 'function') {
+        fn(commandName, handler, restricted)
+      }
+    },
+    registerKeyMapping: (commandName, description, inputMapper, key) => {
+      const fn = (globalThis as any).RegisterKeyMapping
+      if (typeof fn === 'function') {
+        fn(commandName, description, inputMapper, key)
+      }
+    },
+    setTick: (handler) => setInterval(() => void handler(), 0),
+    clearTick: (handle) => clearInterval(handle as ReturnType<typeof setInterval>),
+    getGameTimer: () => Date.now(),
+    registerNuiCallback: (eventName, handler) => {
+      const registerType = (globalThis as any).RegisterNuiCallbackType
+      const onFn = (globalThis as any).on
+      if (typeof registerType === 'function') registerType(eventName)
+      if (typeof onFn === 'function') onFn(`__cfx_nui:${eventName}`, handler)
+    },
+    sendNuiMessage: (message) => {
+      const fn = (globalThis as any).SendNuiMessage
+      if (typeof fn === 'function') fn(message)
+    },
+    setNuiFocus: (hasFocus, hasCursor) => {
+      const fn = (globalThis as any).SetNuiFocus
+      if (typeof fn === 'function') fn(hasFocus, hasCursor)
+    },
+    setNuiFocusKeepInput: (keepInput) => {
+      const fn = (globalThis as any).SetNuiFocusKeepInput
+      if (typeof fn === 'function') fn(keepInput)
+    },
+    registerExport: (exportName, exportHandler) => {
+      const fn = (globalThis as any).exports
+      if (typeof fn === 'function') fn(exportName, exportHandler)
+    },
+  }
+}
 
 /**
  * Type-safe NUI (Native UI) Bridge for client-server communication.
@@ -35,6 +86,13 @@ export class NuiBridge<
   private _hasFocus = false
   private _hasCursor = false
 
+  constructor(
+    @inject(IClientRuntimeBridge as any)
+    private readonly runtime: IClientRuntimeBridge = di.isRegistered(IClientRuntimeBridge as any)
+      ? (di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge)
+      : createFallbackRuntimeBridge(),
+  ) {}
+
   /**
    * Whether the NUI frame is currently visible
    */
@@ -63,7 +121,7 @@ export class NuiBridge<
    * @param data - The data payload
    */
   send<K extends keyof TSend & string>(action: K, data: TSend[K]): void {
-    SendNuiMessage(JSON.stringify({ action, data }))
+    this.runtime.sendNuiMessage(JSON.stringify({ action, data }))
     nuiLogger.debug(`Sent message: ${action}`)
   }
 
@@ -74,7 +132,7 @@ export class NuiBridge<
    * @param data - The data payload
    */
   sendRaw(action: string, data: any): void {
-    SendNuiMessage(JSON.stringify({ action, data }))
+    this.runtime.sendNuiMessage(JSON.stringify({ action, data }))
     nuiLogger.debug(`Sent raw message: ${action}`)
   }
 
@@ -89,9 +147,7 @@ export class NuiBridge<
     action: K,
     handler: (data: TReceive[K]) => void | Promise<void>,
   ): void {
-    RegisterNuiCallbackType(action)
-
-    on(`__cfx_nui:${action}`, async (data: TReceive[K], cb: (resp: any) => void) => {
+    this.runtime.registerNuiCallback(action, async (data: TReceive[K], cb: (resp: any) => void) => {
       try {
         await handler(data)
         cb({ ok: true })
@@ -114,9 +170,7 @@ export class NuiBridge<
     action: K,
     handler: (data: TReceive[K]) => R | Promise<R>,
   ): void {
-    RegisterNuiCallbackType(action)
-
-    on(`__cfx_nui:${action}`, async (data: TReceive[K], cb: (resp: any) => void) => {
+    this.runtime.registerNuiCallback(action, async (data: TReceive[K], cb: (resp: any) => void) => {
       try {
         const result = await handler(data)
         cb({ ok: true, data: result })
@@ -138,7 +192,7 @@ export class NuiBridge<
   focus(hasFocus: boolean, hasCursor?: boolean): void {
     this._hasFocus = hasFocus
     this._hasCursor = hasCursor ?? hasFocus
-    SetNuiFocus(this._hasFocus, this._hasCursor)
+    this.runtime.setNuiFocus(this._hasFocus, this._hasCursor)
     nuiLogger.debug(`Focus set: focus=${this._hasFocus}, cursor=${this._hasCursor}`)
   }
 
@@ -202,7 +256,7 @@ export class NuiBridge<
    * @param keepInput - Whether to keep game input enabled
    */
   setKeepInput(keepInput: boolean): void {
-    SetNuiFocusKeepInput(keepInput)
+    this.runtime.setNuiFocusKeepInput(keepInput)
     nuiLogger.debug(`Keep input set: ${keepInput}`)
   }
 }

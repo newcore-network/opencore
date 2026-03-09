@@ -162,6 +162,7 @@ export interface ServerRuntimeOptions {
   mode: FrameworkMode
   features: FrameworkFeatures
   coreResourceName: string
+  adapter?: import('./adapter').OpenCoreServerAdapter
   /** Development mode configuration (disabled in production) */
   devMode?: DevModeConfig
   onDependency?: Hooks
@@ -228,6 +229,9 @@ export function getFrameworkModeScope(mode: FrameworkMode): FeatureScope {
 export interface ServerInitOptions {
   /** Runtime mode determining feature availability and provider sources */
   mode: FrameworkMode
+
+  /** Optional runtime adapter for non-node server environments. */
+  adapter?: import('./adapter').OpenCoreServerAdapter
 
   /**
    * Feature configuration.
@@ -342,6 +346,7 @@ export function resolveRuntimeOptions(options: ServerInitOptions): ServerRuntime
     mode: options.mode,
     features,
     coreResourceName: options.coreResourceName ?? 'core',
+    adapter: options.adapter,
     devMode: options.devMode,
     onDependency: options.onDependency,
   }
@@ -367,27 +372,6 @@ export function validateRuntimeOptions(options: ServerRuntimeOptions): void {
   // If in RESOURCE mode, must have coreResourceName
   if (mode === 'RESOURCE' && !options.coreResourceName) {
     throw new Error('[OpenCore] RESOURCE mode requires coreResourceName to be specified')
-  }
-
-  // Determine which features need CORE exports in RESOURCE mode
-  const needsCoreExports =
-    mode === 'RESOURCE' &&
-    (features.players.provider === 'core' ||
-      features.commands.provider === 'core' ||
-      features.principal.provider === 'core')
-
-  // Validate coreResourceName exists if needed
-  if (mode === 'RESOURCE') {
-    const { coreResourceName } = options
-
-    if (needsCoreExports) {
-      const core = (globalThis as any).exports?.[coreResourceName]
-      if (!core) {
-        throw new Error(
-          `[OpenCore] CORE resource '${coreResourceName}' not found. Ensure it is started before RESOURCE mode resources.`,
-        )
-      }
-    }
   }
 
   const scope = getFrameworkModeScope(mode)
