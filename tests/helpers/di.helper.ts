@@ -1,6 +1,7 @@
 import type { DependencyContainer } from 'tsyringe'
 import { container } from 'tsyringe'
 import { __resetClientAdapterRegistryForTests } from '../../src/runtime/client/adapter/registry'
+import { __resetClientProcessorRegistrationForTests } from '../../src/runtime/client/system/processors.register'
 import { __resetClientRuntimeContextForTests } from '../../src/runtime/client/client-runtime'
 import { __resetServerAdapterRegistryForTests } from '../../src/runtime/server/adapter/registry'
 
@@ -11,6 +12,7 @@ import { __resetServerAdapterRegistryForTests } from '../../src/runtime/server/a
 export function resetContainer(): void {
   container.reset()
   __resetClientAdapterRegistryForTests()
+  __resetClientProcessorRegistrationForTests()
   __resetClientRuntimeContextForTests()
   __resetServerAdapterRegistryForTests()
 }

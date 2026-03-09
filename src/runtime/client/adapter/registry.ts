@@ -44,12 +44,34 @@ function createAdapterContext(adapterName: string): ClientAdapterContext {
  */
 export async function installClientAdapter(adapter?: OpenCoreClientAdapter): Promise<void> {
   const active = adapter ?? createNodeClientAdapter()
-  activeClientAdapterName = active.name
+  if (activeClientAdapterName) {
+    if (activeClientAdapterName !== active.name) {
+      throw new Error(
+        `[OpenCore] Client adapter '${active.name}' cannot be installed because '${activeClientAdapterName}' is already active.`,
+      )
+    }
+
+    return
+  }
+
   await active.register(createAdapterContext(active.name))
+  activeClientAdapterName = active.name
 }
 
 export function getActiveClientAdapterName(): string | undefined {
   return activeClientAdapterName ?? undefined
+}
+
+export function assertClientAdapterCompatibility(adapter?: OpenCoreClientAdapter): void {
+  if (!adapter || !activeClientAdapterName) {
+    return
+  }
+
+  if (adapter.name !== activeClientAdapterName) {
+    throw new Error(
+      `[OpenCore] Client adapter '${adapter.name}' does not match active adapter '${activeClientAdapterName}'.`,
+    )
+  }
 }
 
 export function getCurrentClientResourceName(): string {

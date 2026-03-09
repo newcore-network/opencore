@@ -1,7 +1,12 @@
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { loggers } from '../../kernel/logger'
 import { createNodeClientAdapter } from './adapter/node-client-adapter'
-import { getActiveClientAdapterName, getCurrentClientResourceName, installClientAdapter } from './adapter/registry'
+import {
+  assertClientAdapterCompatibility,
+  getActiveClientAdapterName,
+  getCurrentClientResourceName,
+  installClientAdapter,
+} from './adapter/registry'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -27,7 +32,7 @@ import {
   VehicleService,
 } from './services'
 import { registerSystemClient } from './system/processors.register'
-import { NuiBridge } from './ui-bridge'
+import { WebViewBridge } from './webview-bridge'
 
 /**
  * Services that have an init() method which registers global runtime event listeners.
@@ -46,7 +51,7 @@ const SERVICES_WITH_GLOBAL_LISTENERS: Array<new (...args: any[]) => { init?: () 
  */
 // const ALL_CLIENT_SERVICES = [
 //   SpawnService,
-//   NuiBridge,
+  //   WebViewBridge,
 //   NotificationService,
 //   TextUIService,
 //   ProgressService,
@@ -68,7 +73,7 @@ const SERVICES_WITH_GLOBAL_LISTENERS: Array<new (...args: any[]) => { init?: () 
 function registerServices() {
   // Register all client services in DI (available in all modes)
   if (!di.isRegistered(SpawnService)) di.registerSingleton(SpawnService, SpawnService)
-  if (!di.isRegistered(NuiBridge)) di.registerSingleton(NuiBridge, NuiBridge)
+  if (!di.isRegistered(WebViewBridge)) di.registerSingleton(WebViewBridge, WebViewBridge)
   if (!di.isRegistered(NotificationService))
     di.registerSingleton(NotificationService, NotificationService)
   if (!di.isRegistered(TextUIService)) di.registerSingleton(TextUIService, TextUIService)
@@ -131,16 +136,17 @@ async function tryImportAutoLoad() {
  */
 export async function initClientCore(options: ClientInitOptions = {}) {
   const mode: ClientMode = options.mode ?? 'CORE'
-  const resourceName = getCurrentClientResourceName()
-
-  // Register system processors early (needed for MetadataScanner)
-  // These processors are safe - they just process metadata, they don't register event handlers
-  // Each resource bundle needs its own copy registered in its DI container
-  registerSystemClient()
 
   // Check if already initialized
   const existingContext = getClientRuntimeContext()
   if (existingContext?.isInitialized) {
+    assertClientAdapterCompatibility(options.adapter)
+
+    // Register system processors for the active bundle if needed.
+    registerSystemClient()
+
+    const resourceName = getCurrentClientResourceName()
+
     // If already initialized, only scan controllers for this resource
     if (mode === 'RESOURCE' || mode === 'STANDALONE') {
       await tryImportAutoLoad()
@@ -160,6 +166,13 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   loggers.bootstrap.debug('Client adapter registered', {
     adapter: getActiveClientAdapterName() ?? 'unknown',
   })
+
+  const resourceName = getCurrentClientResourceName()
+
+  // Register system processors early (needed for MetadataScanner)
+  // These processors are safe - they just process metadata, they don't register event handlers
+  // Each resource bundle needs its own copy registered in its DI container
+  registerSystemClient()
 
   // Set runtime context
   setClientRuntimeContext({

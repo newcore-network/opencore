@@ -1,4 +1,5 @@
 import { initClientCore } from './client-bootstrap'
+import { installClientAdapter } from './adapter/registry'
 import { ClientInitOptions } from './client-runtime'
 import { installClientPlugins } from './library/plugin/install-client-plugins'
 
@@ -20,6 +21,7 @@ import { installClientPlugins } from './library/plugin/install-client-plugins'
  * ```
  */
 export async function init(options: ClientInitOptions = {}) {
+  await installClientAdapter(options.adapter)
   await installClientPlugins(options.plugins ?? [], options)
   await initClientCore(options)
 }

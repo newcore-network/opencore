@@ -10,13 +10,14 @@
 - Added public server adapter helpers in `@open-core/framework/server` for custom adapter packages.
 - Added adapter-aware Player serialization hooks for CORE/RESOURCE flows.
 - `Client.init()` now accepts `adapter` to install a single client adapter during bootstrap.
-- Added client runtime bridge contracts so event processors, NUI callbacks, key mappings, and ticks no longer depend directly on CFX globals.
+- Added client runtime bridge contracts so event processors, WebView callbacks, key mappings, and ticks no longer depend directly on CFX globals.
 
 ### Breaking Changes
 - Server bootstrap now defaults to the built-in Node adapter when no explicit runtime adapter is provided.
 - Platform-specific Player APIs should move into adapter packages through Player subclassing/module augmentation.
 - `ClientPlayer` is no longer exported from `@open-core/framework/client`.
 - Client bootstrap no longer uses `register-client-capabilities`; external adapters should be installed through `Client.init({ adapter })`.
+- `WebViewBridge` is now the preferred embedded UI abstraction; `OnView` now represents WebView callbacks directly, while `NuiBridge` and `NUI` remain as deprecated compatibility aliases.
 
 ### Notes
 - Migration path for external adapters:

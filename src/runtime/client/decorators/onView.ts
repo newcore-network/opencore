@@ -1,13 +1,13 @@
 import { METADATA_KEYS } from '../system/metadata-client.keys'
 
 /**
- * Registers a method as an onView callback handler. View are equal to NUI
+ * Registers a method as a WebView callback handler.
  *
  * @remarks
  * This decorator only stores metadata. During bootstrap, the framework binds the decorated method
- * to the NUI callback event name.
+ * to the active WebView runtime callback.
  *
- * @param eventName - onView callback name.
+ * @param eventName - Callback name.
  *
  * @example
  * ```ts
