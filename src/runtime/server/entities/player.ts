@@ -212,7 +212,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param bucket - The bucket ID (0 is the default shared world).
    */
   setRoutingBucket(bucket: number): void {
-    this.adapters.playerServer.setRoutingBucket(this.clientID.toString(), bucket)
+    this.adapters.playerServer.setDimension(this.clientID.toString(), bucket)
     this._dimension = bucket
   }
 
@@ -220,7 +220,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * Gets the current routing bucket.
    */
   getRoutingBucket(): number {
-    return this.adapters.playerServer.getRoutingBucket(this.clientID.toString())
+    return this.adapters.playerServer.getDimension(this.clientID.toString())
   }
 
   /**

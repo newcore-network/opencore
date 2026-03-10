@@ -41,17 +41,18 @@ import { WebViewBridge } from './webview-bridge'
  * - Registered in DI for ALL modes (so they can be injected and used)
  * - Only initialized (.init() called) in CORE mode to avoid duplicate event handlers
  */
-const SERVICES_WITH_GLOBAL_LISTENERS: Array<new (...args: any[]) => { init?: () => Promise<void> | void }> = [
-  SpawnService,
-  ClientSessionBridgeService,
-]
+const SERVICES_WITH_GLOBAL_LISTENERS: Array<
+  new (
+    ...args: any[]
+  ) => { init?: () => Promise<void> | void }
+> = [SpawnService, ClientSessionBridgeService]
 
 /**
  * All client services that should be available in the DI container
  */
 // const ALL_CLIENT_SERVICES = [
 //   SpawnService,
-  //   WebViewBridge,
+//   WebViewBridge,
 //   NotificationService,
 //   TextUIService,
 //   ProgressService,

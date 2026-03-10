@@ -77,11 +77,11 @@ export class FiveMEntityServer extends IEntityServer {
     SetEntityOrphanMode(handle, mode)
   }
 
-  setRoutingBucket(handle: number, bucket: number): void {
+  setDimension(handle: number, bucket: number): void {
     SetEntityRoutingBucket(handle, bucket)
   }
 
-  getRoutingBucket(handle: number): number {
+  getDimension(handle: number): number {
     return GetEntityRoutingBucket(handle)
   }
 

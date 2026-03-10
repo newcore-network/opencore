@@ -79,9 +79,9 @@ export class MockPlayerServer extends IPlayerServer {
     return '127.0.0.1:30120'
   }
 
-  setRoutingBucket(_playerSrc: string, _bucket: number): void {}
+  setDimension(_playerSrc: string, _bucket: number): void {}
 
-  getRoutingBucket(playerSrc: string): number {
+  getDimension(playerSrc: string): number {
     return this.routingBuckets.get(playerSrc) ?? 0
   }
 
@@ -148,9 +148,9 @@ export class MockEntityServer extends IEntityServer {
 
   setOrphanMode(_handle: number, _mode: number): void {}
 
-  setRoutingBucket(_handle: number, _bucket: number): void {}
+  setDimension(_handle: number, _bucket: number): void {}
 
-  getRoutingBucket(_handle: number): number {
+  getDimension(_handle: number): number {
     return 0
   }
 

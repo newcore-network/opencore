@@ -1,6 +1,10 @@
 import { di } from '../client-container'
 import { createNodeClientAdapter } from './node-client-adapter'
-import { type OpenCoreClientAdapter, type ClientAdapterContext, bindClientTransportInstances } from './client-adapter'
+import {
+  type OpenCoreClientAdapter,
+  type ClientAdapterContext,
+  bindClientTransportInstances,
+} from './client-adapter'
 import { IClientRuntimeBridge } from './runtime-bridge'
 
 let activeClientAdapterName: string | null = null
@@ -76,7 +80,9 @@ export function assertClientAdapterCompatibility(adapter?: OpenCoreClientAdapter
 
 export function getCurrentClientResourceName(): string {
   if (di.isRegistered(IClientRuntimeBridge as any)) {
-    return (di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge).getCurrentResourceName()
+    return (
+      di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge
+    ).getCurrentResourceName()
   }
 
   const fn = (globalThis as any).GetCurrentResourceName

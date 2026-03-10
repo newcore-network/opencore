@@ -36,7 +36,7 @@ export abstract class IPlayerServer {
    * @param identifierType - Identifier type (e.g., 'license', 'steam', 'discord')
    * @returns Identifier string or undefined
    */
-  abstract getIdentifier(playerSrc: string, identifierType: string): string | undefined
+  abstract getIdentifier(playerSrc: string, identifierType: string): string | undefined // TODO: DELETE
 
   /**
    * Gets all identifiers for a player as structured objects.
@@ -44,7 +44,7 @@ export abstract class IPlayerServer {
    * @param playerSrc - Player source/client ID (as string)
    * @returns Array of PlayerIdentifier objects
    */
-  abstract getPlayerIdentifiers(playerSrc: string): PlayerIdentifier[]
+  abstract getPlayerIdentifiers(playerSrc: string): PlayerIdentifier[] // TODO: DELETE
 
   /**
    * Gets the number of player identifiers.
@@ -52,7 +52,7 @@ export abstract class IPlayerServer {
    * @param playerSrc - Player source/client ID (as string)
    * @returns Number of identifiers
    */
-  abstract getNumIdentifiers(playerSrc: string): number
+  abstract getNumIdentifiers(playerSrc: string): number // TODO: DELETE
 
   /**
    * Gets player display name.
@@ -88,7 +88,7 @@ export abstract class IPlayerServer {
    * @param playerSrc - Player source/client ID (as string)
    * @param bucket - Routing bucket ID
    */
-  abstract setRoutingBucket(playerSrc: string, bucket: number): void
+  abstract setDimension(playerSrc: string, bucket: number): void
 
   /**
    * Gets player routing bucket (virtual world/dimension).
@@ -96,7 +96,7 @@ export abstract class IPlayerServer {
    * @param playerSrc - Player source/client ID (as string)
    * @returns Routing bucket ID (0 is default world)
    */
-  abstract getRoutingBucket(playerSrc: string): number
+  abstract getDimension(playerSrc: string): number
 
   /**
    * Gets all currently connected player sources.
@@ -108,32 +108,4 @@ export abstract class IPlayerServer {
    * @returns Array of player source strings
    */
   abstract getConnectedPlayers(): string[]
-
-  /**
-   * Gets player dimension (alias for getRoutingBucket).
-   *
-   * @remarks
-   * Cross-platform alias. Some platforms call it "dimension",
-   * others call it "routing bucket" or "virtual world".
-   *
-   * @param playerSrc - Player source/client ID (as string)
-   * @returns Dimension ID
-   */
-  getDimension(playerSrc: string): number {
-    return this.getRoutingBucket(playerSrc)
-  }
-
-  /**
-   * Sets player dimension (alias for setRoutingBucket).
-   *
-   * @remarks
-   * Cross-platform alias. Some platforms call it "dimension",
-   * others call it "routing bucket" or "virtual world".
-   *
-   * @param playerSrc - Player source/client ID (as string)
-   * @param dimension - Dimension ID
-   */
-  setDimension(playerSrc: string, dimension: number): void {
-    this.setRoutingBucket(playerSrc, dimension)
-  }
 }

@@ -83,14 +83,14 @@ export class NodePlayerServer extends IPlayerServer {
     return this.players.get(playerSrc)?.endpoint ?? ''
   }
 
-  setRoutingBucket(playerSrc: string, bucket: number): void {
+  setDimension(playerSrc: string, bucket: number): void {
     const player = this.players.get(playerSrc)
     if (player) {
       player.routingBucket = bucket
     }
   }
 
-  getRoutingBucket(playerSrc: string): number {
+  getDimension(playerSrc: string): number {
     return this.players.get(playerSrc)?.routingBucket ?? 0
   }
 

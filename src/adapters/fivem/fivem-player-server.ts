@@ -82,11 +82,11 @@ export class FiveMPlayerServer extends IPlayerServer {
     return GetPlayerEndpoint(playerSrc) || ''
   }
 
-  setRoutingBucket(playerSrc: string, bucket: number): void {
+  setDimension(playerSrc: string, bucket: number): void {
     SetPlayerRoutingBucket(playerSrc, bucket)
   }
 
-  getRoutingBucket(playerSrc: string): number {
+  getDimension(playerSrc: string): number {
     return GetPlayerRoutingBucket(playerSrc)
   }
 

@@ -10,7 +10,9 @@ const clientInterval = coreLogger.child('Interval', LogDomain.CLIENT)
 export class IntervalProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.INTERVAL
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string, metadata: { interval: number }) {
     const handler = target[methodName].bind(target)

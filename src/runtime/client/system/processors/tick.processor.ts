@@ -10,7 +10,9 @@ const clientTick = coreLogger.child('Tick', LogDomain.CLIENT)
 export class TickProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.TICK
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string) {
     const handler = target[methodName].bind(target)

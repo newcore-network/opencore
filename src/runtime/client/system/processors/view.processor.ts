@@ -8,7 +8,9 @@ import { METADATA_KEYS } from '../metadata-client.keys'
 export class ViewProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.VIEW
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string, metadata: { eventName: string }) {
     const handler = target[methodName].bind(target)
@@ -21,7 +23,7 @@ export class ViewProcessor implements DecoratorProcessor {
           const result = await handler(data)
           cb({ ok: true, data: result })
         } catch (error) {
-          loggers.nui.error(
+          loggers.webView.error(
             `WebView callback error`,
             {
               event: metadata.eventName,
@@ -35,6 +37,6 @@ export class ViewProcessor implements DecoratorProcessor {
       },
     )
 
-    loggers.nui.debug(`Registered WebView callback: ${metadata.eventName} -> ${handlerName}`)
+    loggers.webView.debug(`Registered WebView callback: ${metadata.eventName} -> ${handlerName}`)
   }
 }

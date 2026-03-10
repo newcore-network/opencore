@@ -83,7 +83,9 @@ describe('client adapter bootstrap', () => {
     const adapter = defineClientAdapter({
       name: 'custom-webview',
       async register(ctx) {
-        const { NodeMessagingTransport } = await import('../../../../src/adapters/node/transport/adapter')
+        const { NodeMessagingTransport } = await import(
+          '../../../../src/adapters/node/transport/adapter'
+        )
         ctx.bindMessagingTransport(new NodeMessagingTransport('client'))
         ctx.bindInstance(IClientRuntimeBridge as any, runtime)
         ctx.bindInstance(IClientLocalPlayerBridge as any, new NoopLocalPlayerBridge())
@@ -115,8 +117,8 @@ describe('client adapter bootstrap', () => {
 
     await initClientCore({ mode: 'STANDALONE', adapter: makeAdapter('alpha') })
 
-    await expect(initClientCore({ mode: 'STANDALONE', adapter: makeAdapter('beta') })).rejects.toThrow(
-      "does not match active adapter 'alpha'",
-    )
+    await expect(
+      initClientCore({ mode: 'STANDALONE', adapter: makeAdapter('beta') }),
+    ).rejects.toThrow("does not match active adapter 'alpha'")
   })
 })

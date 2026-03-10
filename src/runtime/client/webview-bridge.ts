@@ -116,15 +116,18 @@ export class WebViewBridge<
     action: K,
     handler: (data: TReceive[K]) => void | Promise<void>,
   ): void {
-    this.runtime.registerWebViewCallback(action, async (data: TReceive[K], cb: (resp: any) => void) => {
-      try {
-        await handler(data)
-        cb({ ok: true })
-      } catch (error) {
-        webViewLogger.error(`WebView callback error`, { action }, error as Error)
-        cb({ ok: false, error: String(error) })
-      }
-    })
+    this.runtime.registerWebViewCallback(
+      action,
+      async (data: TReceive[K], cb: (resp: any) => void) => {
+        try {
+          await handler(data)
+          cb({ ok: true })
+        } catch (error) {
+          webViewLogger.error(`WebView callback error`, { action }, error as Error)
+          cb({ ok: false, error: String(error) })
+        }
+      },
+    )
 
     webViewLogger.debug(`Registered callback: ${action}`)
   }
@@ -133,15 +136,18 @@ export class WebViewBridge<
     action: K,
     handler: (data: TReceive[K]) => R | Promise<R>,
   ): void {
-    this.runtime.registerWebViewCallback(action, async (data: TReceive[K], cb: (resp: any) => void) => {
-      try {
-        const result = await handler(data)
-        cb({ ok: true, data: result })
-      } catch (error) {
-        webViewLogger.error(`WebView callback error`, { action }, error as Error)
-        cb({ ok: false, error: String(error) })
-      }
-    })
+    this.runtime.registerWebViewCallback(
+      action,
+      async (data: TReceive[K], cb: (resp: any) => void) => {
+        try {
+          const result = await handler(data)
+          cb({ ok: true, data: result })
+        } catch (error) {
+          webViewLogger.error(`WebView callback error`, { action }, error as Error)
+          cb({ ok: false, error: String(error) })
+        }
+      },
+    )
 
     webViewLogger.debug(`Registered callback with response: ${action}`)
   }

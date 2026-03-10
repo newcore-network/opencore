@@ -7,7 +7,9 @@ import { METADATA_KEYS } from '../metadata-client.keys'
 export class KeyMappingProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.KEY
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string, metadata: { key: string; description?: string }) {
     const handler = target[methodName].bind(target)

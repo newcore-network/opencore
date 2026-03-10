@@ -10,7 +10,9 @@ const clientExport = coreLogger.child('Export', LogDomain.CLIENT)
 export class ClientExportProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.EXPORT
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string, metadata: { exportName: string }) {
     const handler = target[methodName].bind(target)

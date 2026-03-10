@@ -10,7 +10,9 @@ const clientLocalEvent = coreLogger.child('LocalEvent', LogDomain.CLIENT)
 export class LocalEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.LOCAL_EVENT
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string, metadata: { eventName: string }) {
     const handler = target[methodName].bind(target)

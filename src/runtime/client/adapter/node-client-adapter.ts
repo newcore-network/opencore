@@ -13,15 +13,12 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
   return defineClientAdapter({
     name: 'node',
     async register(ctx) {
-      const [
-        { NodeMessagingTransport },
-        { NodePedAppearanceClient },
-        { NodeHasher },
-      ] = await Promise.all([
-        import('../../../adapters/node/transport/adapter'),
-        import('../../../adapters/node/node-ped-appearance-client'),
-        import('../../../adapters/node/node-hasher'),
-      ])
+      const [{ NodeMessagingTransport }, { NodePedAppearanceClient }, { NodeHasher }] =
+        await Promise.all([
+          import('../../../adapters/node/transport/adapter'),
+          import('../../../adapters/node/node-ped-appearance-client'),
+          import('../../../adapters/node/node-hasher'),
+        ])
 
       const transport = new NodeMessagingTransport('client')
       ctx.bindMessagingTransport(transport)

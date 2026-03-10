@@ -26,7 +26,9 @@ interface GameEventMetadata {
 export class GameEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.GAME_EVENT
 
-  constructor(@inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge) {}
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   process(target: any, methodName: string, metadata: GameEventMetadata) {
     const handler = target[methodName].bind(target)
