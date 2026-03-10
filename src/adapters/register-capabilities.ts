@@ -1,5 +1,4 @@
 import { GLOBAL_CONTAINER } from '../kernel/di/container'
-import { CfxPlatform } from './cfx/cfx-platform'
 import { NodePlatform } from './node/node-platform'
 import {
   getCurrentPlatformName,
@@ -23,7 +22,6 @@ export type Platform = 'cfx' | 'node' | string
 // ─────────────────────────────────────────────────────────────────
 
 // Register CitizenFX platform (high priority)
-registerPlatform(CfxPlatform)
 
 // Register Node.js fallback platform (low priority)
 registerPlatform(NodePlatform)

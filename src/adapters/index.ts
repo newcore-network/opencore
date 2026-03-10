@@ -33,9 +33,5 @@ export * from './platform/platform-registry'
 // Capability registration
 export * from './register-capabilities'
 
-// CitizenFX helpers
-export * from './cfx'
-export * from './runtime/runtime-info'
-
 // CitizenFX adapters (not exported by default - registered via registerServerCapabilities)
 // Node adapters (not exported by default - registered via registerServerCapabilities)

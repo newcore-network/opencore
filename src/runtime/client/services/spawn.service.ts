@@ -1,5 +1,4 @@
 import { injectable } from 'tsyringe'
-import { detectCfxGameProfile, isCfxRuntime } from '../../../adapters/cfx/runtime-profile'
 import { loggers, PlayerAppearance } from '../../../kernel'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { AppearanceService } from './appearance.service'
@@ -14,7 +13,24 @@ interface SpawnOptions {
 const NETWORK_TIMEOUT_MS = 15_000
 const PED_TIMEOUT_MS = 10_000
 const COLLISION_TIMEOUT_MS = 7_000
-const IS_RDR3_PROFILE = isCfxRuntime() && detectCfxGameProfile() === 'rdr3'
+
+function isCfxRuntime(): boolean {
+  return typeof (globalThis as any).GetGameName === 'function'
+}
+
+function detectGameProfile(): 'gta5' | 'rdr3' | 'common' {
+  const getGameName = (globalThis as any).GetGameName
+  if (typeof getGameName !== 'function') {
+    return 'common'
+  }
+
+  const raw = String(getGameName()).toLowerCase()
+  if (raw.includes('rdr')) return 'rdr3'
+  if (raw.includes('gta')) return 'gta5'
+  return 'common'
+}
+
+const IS_RDR3_PROFILE = isCfxRuntime() && detectGameProfile() === 'rdr3'
 
 /**
  * Handles all player spawning logic on the client.
