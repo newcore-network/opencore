@@ -120,8 +120,7 @@ export abstract class IEntityServer {
    * Sets entity routing bucket (virtual world/dimension).
    *
    * @remarks
-   * Not all platforms support routing buckets.
-   * Use IPlatformCapabilities.supportsRoutingBuckets to check support.
+   * Platform-specific behavior may vary.
    *
    * @param handle - Entity handle
    * @param bucket - Routing bucket ID
@@ -139,8 +138,7 @@ export abstract class IEntityServer {
    * Gets the state bag interface for an entity.
    *
    * @remarks
-   * Not all platforms support state bags.
-   * Use IPlatformCapabilities.supportsStateBags to check support.
+   * Platform-specific behavior may vary.
    *
    * @param handle - Entity handle
    */

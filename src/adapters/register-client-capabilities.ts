@@ -14,11 +14,12 @@ import { RpcAPI } from './contracts/transport/rpc.api'
  * This legacy helper now installs only the built-in Node fallback bindings.
  */
 export async function registerClientCapabilities(): Promise<void> {
-  const [{ NodeMessagingTransport }, { NodePedAppearanceClient }, { NodeHasher }] = await Promise.all([
-    import('./node/transport/adapter'),
-    import('./node/node-ped-appearance-client'),
-    import('./node/node-hasher'),
-  ])
+  const [{ NodeMessagingTransport }, { NodePedAppearanceClient }, { NodeHasher }] =
+    await Promise.all([
+      import('./node/transport/adapter'),
+      import('./node/node-ped-appearance-client'),
+      import('./node/node-hasher'),
+    ])
 
   if (!di.isRegistered(MessagingTransport as any)) {
     const transport = new NodeMessagingTransport('client')

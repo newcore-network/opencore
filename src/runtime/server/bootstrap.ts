@@ -1,4 +1,4 @@
-import { IEngineEvents } from '../../adapters'
+import { IEngineEvents, IPlatformContext } from '../../adapters'
 import { IExports } from '../../adapters/contracts/IExports'
 import { EventsAPI } from '../../adapters/contracts/transport/events.api'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
@@ -115,6 +115,12 @@ export async function initServer(
   await installServerAdapter(options.adapter ?? createNodeServerAdapter())
   loggers.bootstrap.debug('Server adapter registered', {
     adapter: getActiveServerAdapterName() ?? 'unknown',
+  })
+
+  const platformContext = GLOBAL_CONTAINER.resolve(IPlatformContext as any) as IPlatformContext
+  loggers.bootstrap.debug('Loading server Adapter ', {
+    adapter: options.adapter?.name ?? 'node',
+    game: platformContext.gameProfile,
   })
 
   const dependenciesToWaitFor: Promise<any>[] = []

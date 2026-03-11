@@ -1,5 +1,4 @@
 import { GLOBAL_CONTAINER } from '../../kernel/di/container'
-import { detectRuntimeInfo } from '../../adapters/runtime/runtime-info'
 import { PluginRegistry, type OpenCorePlugin, type PluginInstallContext } from './library/plugin'
 import { Server } from './server.runtime'
 import { initServer } from './bootstrap'
@@ -17,11 +16,7 @@ export interface OpenCoreInitOptions extends ServerInitOptions {
 }
 
 function createConfigAccessor(options: ServerRuntimeOptions) {
-  const runtimeInfo = detectRuntimeInfo()
-  const runtimeOptions = {
-    ...options,
-    runtime: runtimeInfo,
-  }
+  const runtimeOptions = { ...options }
 
   return {
     get<T = any>(key: string): T | undefined {

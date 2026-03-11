@@ -1,7 +1,7 @@
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { IExports } from '../../../adapters/contracts/IExports'
 import { IHasher } from '../../../adapters/contracts/IHasher'
-import { IPlatformCapabilities } from '../../../adapters/contracts/IPlatformCapabilities'
+import { IPlatformContext } from '../../../adapters/contracts/IPlatformContext'
 import { IPlayerInfo } from '../../../adapters/contracts/IPlayerInfo'
 import { IResourceInfo } from '../../../adapters/contracts/IResourceInfo'
 import { ITick } from '../../../adapters/contracts/ITick'
@@ -32,7 +32,7 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         { NodePlayerServer },
         { NodeHasher },
         { NodePedAppearanceServer },
-        { NodeCapabilities },
+        { NodePlatformContext },
       ] = await Promise.all([
         import('../../../adapters/node/transport/adapter'),
         import('../../../adapters/node/node-engine-events'),
@@ -49,7 +49,7 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         import('../../../adapters/node/node-capabilities'),
       ])
 
-      ctx.bindSingleton(IPlatformCapabilities as any, NodeCapabilities)
+      ctx.bindSingleton(IPlatformContext as any, NodePlatformContext)
 
       const transport = new NodeMessagingTransport('server')
       ctx.bindMessagingTransport(transport)

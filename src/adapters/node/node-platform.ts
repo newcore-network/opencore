@@ -2,7 +2,7 @@ import type { DependencyContainer } from 'tsyringe'
 import { IEngineEvents } from '../contracts/IEngineEvents'
 import { IExports } from '../contracts/IExports'
 import { IHasher } from '../contracts/IHasher'
-import { IPlatformCapabilities } from '../contracts/IPlatformCapabilities'
+import { IPlatformContext } from '../contracts/IPlatformContext'
 import { IPlayerInfo } from '../contracts/IPlayerInfo'
 import { IResourceInfo } from '../contracts/IResourceInfo'
 import { ITick } from '../contracts/ITick'
@@ -44,7 +44,7 @@ export const NodePlatform: PlatformAdapter = {
       { NodePlayerServer },
       { NodeHasher },
       { NodePedAppearanceServer },
-      { NodeCapabilities },
+      { NodePlatformContext },
     ] = await Promise.all([
       import('./transport/adapter'),
       import('./node-engine-events'),
@@ -62,8 +62,8 @@ export const NodePlatform: PlatformAdapter = {
     ])
 
     // Register all Node.js mock implementations
-    if (!container.isRegistered(IPlatformCapabilities as any))
-      container.registerSingleton(IPlatformCapabilities as any, NodeCapabilities)
+    if (!container.isRegistered(IPlatformContext as any))
+      container.registerSingleton(IPlatformContext as any, NodePlatformContext)
 
     if (!container.isRegistered(MessagingTransport as any)) {
       const transport = new NodeMessagingTransport('server')

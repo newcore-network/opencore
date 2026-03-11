@@ -1,9 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
-import {
-  IPlatformCapabilities,
-  PlatformFeatures,
-} from '../../../adapters/contracts/IPlatformCapabilities'
+import { IPlatformContext } from '../../../adapters/contracts/IPlatformContext'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
@@ -46,8 +43,8 @@ export class Vehicles {
     @inject(Players as any) private readonly playerDirectory: Players,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
-    @inject(IPlatformCapabilities as any)
-    private readonly platformCapabilities: IPlatformCapabilities,
+    @inject(IPlatformContext as any)
+    private readonly platformContext: IPlatformContext,
     @inject(IHasher as any) private readonly hasher: IHasher,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
@@ -87,12 +84,10 @@ export class Vehicles {
 
       const modelHash = typeof model === 'string' ? this.hasher.getHashKey(model) : model
 
-      const serverVehicleCreationEnabled =
-        this.platformCapabilities.getConfig<boolean>('enableServerVehicleCreation') ??
-        this.platformCapabilities.isFeatureSupported(PlatformFeatures.SERVER_ENTITIES)
+      const serverVehicleCreationEnabled = this.platformContext.enableServerVehicleCreation
 
       if (!serverVehicleCreationEnabled) {
-        const profile = this.platformCapabilities.getConfig<string>('gameProfile') ?? 'unknown'
+        const profile = this.platformContext.gameProfile
         return {
           networkId: 0,
           handle: 0,
@@ -101,8 +96,7 @@ export class Vehicles {
         }
       }
 
-      const vehicleType =
-        this.platformCapabilities.getConfig<string>('defaultVehicleType') ?? 'automobile'
+      const vehicleType = this.platformContext.defaultVehicleType
       const handle = this.vehicleServer.createServerSetter(
         modelHash,
         vehicleType,

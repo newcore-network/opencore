@@ -1,20 +1,15 @@
 import { injectable } from 'tsyringe'
-import { IPlatformCapabilities, PlatformFeatures } from '../contracts/IPlatformCapabilities'
+import { IPlatformContext } from '../contracts/IPlatformContext'
 import { IdentifierTypes } from '../contracts/types/identifier'
 
 /**
- * Node.js mock platform capabilities implementation.
+ * Node.js mock platform context implementation.
  * Used for testing and standalone development.
  */
 @injectable()
-export class NodeCapabilities extends IPlatformCapabilities {
+export class NodePlatformContext extends IPlatformContext {
   readonly platformName = 'node'
   readonly displayName = 'Node.js (Mock)'
-
-  readonly supportsRoutingBuckets = true // Mocked
-  readonly supportsStateBags = true // Mocked
-  readonly supportsVoiceChat = false
-  readonly supportsServerEntities = true // Mocked
 
   readonly identifierTypes = [
     IdentifierTypes.STEAM,
@@ -23,25 +18,14 @@ export class NodeCapabilities extends IPlatformCapabilities {
     IdentifierTypes.IP,
   ] as const
 
-  readonly maxPlayers = undefined // Unlimited in mock mode
-
-  private readonly supportedFeatures = new Set<string>([
-    PlatformFeatures.ROUTING_BUCKETS,
-    PlatformFeatures.STATE_BAGS,
-    PlatformFeatures.SERVER_ENTITIES,
-    // Note: Other features are not mocked
-  ])
-
-  private readonly config: Record<string, unknown> = {
-    mockMode: true,
-    defaultRoutingBucket: 0,
-  }
-
-  isFeatureSupported(feature: string): boolean {
-    return this.supportedFeatures.has(feature)
-  }
-
-  getConfig<T = unknown>(key: string): T | undefined {
-    return this.config[key] as T | undefined
-  }
+  readonly maxPlayers = undefined
+  readonly gameProfile = 'common' as const
+  readonly defaultSpawnModel = 'mp_m_freemode_01'
+  readonly defaultVehicleType = 'automobile'
+  readonly enableServerVehicleCreation = true
 }
+
+/**
+ * @deprecated Use NodePlatformContext.
+ */
+export const NodeCapabilities = NodePlatformContext

@@ -1,10 +1,9 @@
 export * from './IEngineEvents'
 export * from './IExports'
 export * from './IHasher'
-export * from './IPlatformCapabilities'
+export * from './IPlatformContext'
 export * from './IPlayerInfo'
 export * from './IResourceInfo'
-export * from './IRuntimeInfo'
 export * from './ITick'
 
 export * from './types'

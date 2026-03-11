@@ -1,15 +1,12 @@
 import { di } from '../../client-container'
 import type { ClientInitOptions } from '../../client-runtime'
 import { Client } from '../../client-api-runtime'
-import { detectRuntimeInfo } from '../../../../adapters/runtime/runtime-info'
 import { PluginRegistry } from './plugin-registry'
 import type { OpenCoreClientPlugin } from './plugin.interface'
 
 function createConfigAccessor(options: ClientInitOptions) {
-  const runtimeInfo = detectRuntimeInfo()
   const runtimeOptions = {
     mode: options.mode ?? 'CORE',
-    runtime: runtimeInfo,
   }
 
   return {

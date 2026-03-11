@@ -82,8 +82,7 @@ export abstract class IPlayerServer {
    * Sets player routing bucket (virtual world/dimension).
    *
    * @remarks
-   * Not all platforms support routing buckets.
-   * Use IPlatformCapabilities.supportsRoutingBuckets to check support.
+   * Platform-specific behavior may vary.
    *
    * @param playerSrc - Player source/client ID (as string)
    * @param bucket - Routing bucket ID
