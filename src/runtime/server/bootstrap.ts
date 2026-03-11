@@ -4,7 +4,7 @@ import { EventsAPI } from '../../adapters/contracts/transport/events.api'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { createNodeServerAdapter } from './adapter/node-server-adapter'
-import { getActiveServerAdapterName, installServerAdapter } from './adapter/registry'
+import { installServerAdapter } from './adapter/registry'
 import { PrincipalProviderContract } from './contracts/index'
 import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binaryService'
 import { getServerControllerRegistry } from './decorators/controller'
@@ -113,9 +113,6 @@ export async function initServer(
 
   // Register platform-specific capabilities through the selected server adapter.
   await installServerAdapter(options.adapter ?? createNodeServerAdapter())
-  loggers.bootstrap.debug('Server adapter registered', {
-    adapter: getActiveServerAdapterName() ?? 'unknown',
-  })
 
   const platformContext = GLOBAL_CONTAINER.resolve(IPlatformContext as any) as IPlatformContext
   loggers.bootstrap.debug('Loading server Adapter ', {

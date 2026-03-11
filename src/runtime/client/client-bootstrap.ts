@@ -1,6 +1,5 @@
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { loggers } from '../../kernel/logger'
-import { createNodeClientAdapter } from './adapter/node-client-adapter'
 import {
   assertClientAdapterCompatibility,
   getActiveClientAdapterName,
@@ -163,7 +162,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     )
   }
 
-  await installClientAdapter(options.adapter ?? createNodeClientAdapter())
+  await installClientAdapter(options.adapter)
   loggers.bootstrap.debug('Client adapter registered', {
     adapter: getActiveClientAdapterName() ?? 'unknown',
   })

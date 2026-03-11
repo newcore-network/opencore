@@ -1,5 +1,4 @@
 import { di } from '../client-container'
-import { createNodeClientAdapter } from './node-client-adapter'
 import {
   type OpenCoreClientAdapter,
   type ClientAdapterContext,
@@ -8,6 +7,11 @@ import {
 import { IClientRuntimeBridge } from './runtime-bridge'
 
 let activeClientAdapterName: string | null = null
+
+async function getDefaultClientAdapter(): Promise<OpenCoreClientAdapter> {
+  const { createNodeClientAdapter } = await import('./node-client-adapter')
+  return createNodeClientAdapter()
+}
 
 function assertTokenAvailable(token: any, adapterName: string): void {
   if (di.isRegistered(token)) {
@@ -47,7 +51,7 @@ function createAdapterContext(adapterName: string): ClientAdapterContext {
  * Installs the active client adapter for the current bootstrap.
  */
 export async function installClientAdapter(adapter?: OpenCoreClientAdapter): Promise<void> {
-  const active = adapter ?? createNodeClientAdapter()
+  const active = adapter ?? (await getDefaultClientAdapter())
   if (activeClientAdapterName) {
     if (activeClientAdapterName !== active.name) {
       throw new Error(
