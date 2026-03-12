@@ -3,6 +3,7 @@ import { container } from 'tsyringe'
 import { __resetClientAdapterRegistryForTests } from '../../src/runtime/client/adapter/registry'
 import { __resetClientProcessorRegistrationForTests } from '../../src/runtime/client/system/processors.register'
 import { __resetClientRuntimeContextForTests } from '../../src/runtime/client/client-runtime'
+import { __resetInjectedProjectAdaptersForTests } from '../../src/runtime/project-adapter'
 import { __resetServerAdapterRegistryForTests } from '../../src/runtime/server/adapter/registry'
 
 /**
@@ -15,6 +16,7 @@ export function resetContainer(): void {
   __resetClientProcessorRegistrationForTests()
   __resetClientRuntimeContextForTests()
   __resetServerAdapterRegistryForTests()
+  __resetInjectedProjectAdaptersForTests()
 }
 
 /**

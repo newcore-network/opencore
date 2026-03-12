@@ -1,4 +1,5 @@
 import type { OpenCoreClientPlugin } from './library/plugin'
+import { getInjectedClientAdapter } from '../project-adapter'
 
 /**
  * Client Runtime Configuration
@@ -83,4 +84,8 @@ export function isClientInitialized(): boolean {
 
 export function __resetClientRuntimeContextForTests(): void {
   runtimeContext = null
+}
+
+export function resolveClientAdapter(options: ClientInitOptions = {}) {
+  return options.adapter ?? getInjectedClientAdapter()
 }
