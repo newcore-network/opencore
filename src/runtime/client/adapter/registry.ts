@@ -1,3 +1,4 @@
+import type { InjectionToken } from 'tsyringe'
 import { di } from '../client-container'
 import {
   type OpenCoreClientAdapter,
@@ -13,7 +14,7 @@ async function getDefaultClientAdapter(): Promise<OpenCoreClientAdapter> {
   return createNodeClientAdapter()
 }
 
-function assertTokenAvailable(token: any, adapterName: string): void {
+function assertTokenAvailable<T>(token: InjectionToken<T>, adapterName: string): void {
   if (di.isRegistered(token)) {
     throw new Error(`[OpenCore] Adapter '${adapterName}' cannot bind an already registered token.`)
   }
@@ -23,18 +24,18 @@ function createAdapterContext(adapterName: string): ClientAdapterContext {
   return {
     adapterName,
     container: di,
-    isRegistered(token: any): boolean {
+    isRegistered<T>(token: InjectionToken<T>): boolean {
       return di.isRegistered(token)
     },
-    bindSingleton(token: any, implementation: any): void {
+    bindSingleton<T>(token: InjectionToken<T>, implementation: InjectionToken<T>): void {
       assertTokenAvailable(token, adapterName)
       di.registerSingleton(token, implementation)
     },
-    bindInstance(token: any, value: any): void {
+    bindInstance<T>(token: InjectionToken<T>, value: T): void {
       assertTokenAvailable(token, adapterName)
       di.registerInstance(token, value)
     },
-    bindFactory(token: any, factory: () => any): void {
+    bindFactory<T>(token: InjectionToken<T>, factory: () => T): void {
       assertTokenAvailable(token, adapterName)
       di.register(token, { useFactory: factory })
     },
@@ -42,7 +43,7 @@ function createAdapterContext(adapterName: string): ClientAdapterContext {
       bindClientTransportInstances(this, transport)
     },
     useRuntimeBridge(runtime: IClientRuntimeBridge): void {
-      this.bindInstance(IClientRuntimeBridge as any, runtime)
+      this.bindInstance(IClientRuntimeBridge as InjectionToken<IClientRuntimeBridge>, runtime)
     },
   }
 }
@@ -83,13 +84,13 @@ export function assertClientAdapterCompatibility(adapter?: OpenCoreClientAdapter
 }
 
 export function getCurrentClientResourceName(): string {
-  if (di.isRegistered(IClientRuntimeBridge as any)) {
-    return (
-      di.resolve(IClientRuntimeBridge as any) as IClientRuntimeBridge
-    ).getCurrentResourceName()
+  if (di.isRegistered(IClientRuntimeBridge as InjectionToken<IClientRuntimeBridge>)) {
+    return di
+      .resolve(IClientRuntimeBridge as InjectionToken<IClientRuntimeBridge>)
+      .getCurrentResourceName()
   }
 
-  const fn = (globalThis as any).GetCurrentResourceName
+  const fn = (globalThis as Record<string, unknown>).GetCurrentResourceName
   if (typeof fn === 'function') {
     const name = fn()
     if (typeof name === 'string' && name.trim()) return name

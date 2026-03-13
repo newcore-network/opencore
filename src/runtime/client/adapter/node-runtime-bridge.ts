@@ -2,6 +2,13 @@ import { EventEmitter } from 'node:events'
 import { injectable } from 'tsyringe'
 import { IClientRuntimeBridge } from './runtime-bridge'
 
+type RuntimeHandler = (...args: readonly unknown[]) => void | Promise<void>
+type WebViewCallback = (
+  data: unknown,
+  cb: (response: unknown) => void,
+) => void | Promise<void>
+type RuntimeExport = (...args: readonly unknown[]) => unknown
+
 /**
  * Node fallback runtime bridge used in tests and standalone execution.
  */
@@ -14,7 +21,7 @@ export class NodeClientRuntimeBridge extends IClientRuntimeBridge {
     return process.env.RESOURCE_NAME || 'default'
   }
 
-  on(eventName: string, handler: (...args: any[]) => void | Promise<void>): void {
+  on(eventName: string, handler: RuntimeHandler): void {
     this.events.on(eventName, (...args) => {
       void handler(...args)
     })
@@ -22,7 +29,7 @@ export class NodeClientRuntimeBridge extends IClientRuntimeBridge {
 
   registerCommand(
     _commandName: string,
-    _handler: (...args: any[]) => void,
+    _handler: (...args: readonly unknown[]) => void,
     _restricted: boolean,
   ): void {}
 
@@ -54,7 +61,7 @@ export class NodeClientRuntimeBridge extends IClientRuntimeBridge {
 
   registerNuiCallback(
     eventName: string,
-    handler: (data: any, cb: (response: unknown) => void) => void | Promise<void>,
+    handler: WebViewCallback,
   ): void {
     this.events.on(`__nui:${eventName}`, (data, cb) => {
       void handler(data, cb)
@@ -67,7 +74,7 @@ export class NodeClientRuntimeBridge extends IClientRuntimeBridge {
 
   setNuiFocusKeepInput(_keepInput: boolean): void {}
 
-  registerExport(exportName: string, handler: (...args: any[]) => any): void {
+  registerExport(exportName: string, handler: RuntimeExport): void {
     ;(globalThis as Record<string, unknown>)[`__client_export:${exportName}`] = handler
   }
 }

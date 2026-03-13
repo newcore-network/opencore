@@ -1,3 +1,4 @@
+import type { InjectionToken } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { IExports } from '../../../adapters/contracts/IExports'
 import { IHasher } from '../../../adapters/contracts/IHasher'
@@ -49,22 +50,25 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         import('../../../adapters/node/node-capabilities'),
       ])
 
-      ctx.bindSingleton(IPlatformContext as any, NodePlatformContext)
+      ctx.bindSingleton(IPlatformContext as InjectionToken<IPlatformContext>, NodePlatformContext)
 
       const transport = new NodeMessagingTransport('server')
       ctx.bindMessagingTransport(transport)
 
-      ctx.bindSingleton(IEngineEvents as any, NodeEngineEvents)
-      ctx.bindSingleton(IExports as any, NodeExports)
-      ctx.bindSingleton(IResourceInfo as any, NodeResourceInfo)
-      ctx.bindSingleton(ITick as any, NodeTick)
-      ctx.bindSingleton(IPlayerInfo as any, NodePlayerInfo)
-      ctx.bindSingleton(IEntityServer as any, NodeEntityServer)
-      ctx.bindSingleton(IPedServer as any, NodePedServer)
-      ctx.bindSingleton(IVehicleServer as any, NodeVehicleServer)
-      ctx.bindSingleton(IPlayerServer as any, NodePlayerServer)
-      ctx.bindSingleton(IHasher as any, NodeHasher)
-      ctx.bindSingleton(IPedAppearanceServer as any, NodePedAppearanceServer)
+      ctx.bindSingleton(IEngineEvents as InjectionToken<IEngineEvents>, NodeEngineEvents)
+      ctx.bindSingleton(IExports as InjectionToken<IExports>, NodeExports)
+      ctx.bindSingleton(IResourceInfo as InjectionToken<IResourceInfo>, NodeResourceInfo)
+      ctx.bindSingleton(ITick as InjectionToken<ITick>, NodeTick)
+      ctx.bindSingleton(IPlayerInfo as InjectionToken<IPlayerInfo>, NodePlayerInfo)
+      ctx.bindSingleton(IEntityServer as InjectionToken<IEntityServer>, NodeEntityServer)
+      ctx.bindSingleton(IPedServer as InjectionToken<IPedServer>, NodePedServer)
+      ctx.bindSingleton(IVehicleServer as InjectionToken<IVehicleServer>, NodeVehicleServer)
+      ctx.bindSingleton(IPlayerServer as InjectionToken<IPlayerServer>, NodePlayerServer)
+      ctx.bindSingleton(IHasher as InjectionToken<IHasher>, NodeHasher)
+      ctx.bindSingleton(
+        IPedAppearanceServer as InjectionToken<IPedAppearanceServer>,
+        NodePedAppearanceServer,
+      )
     },
   })
 }

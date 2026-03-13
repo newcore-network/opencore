@@ -1,4 +1,4 @@
-import type { DependencyContainer } from 'tsyringe'
+import type { DependencyContainer, InjectionToken } from 'tsyringe'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { MessagingTransport } from '../../../adapters/contracts/transport/messaging.transport'
 import { RpcAPI } from '../../../adapters/contracts/transport/rpc.api'
@@ -18,10 +18,10 @@ export interface OpenCoreClientAdapter {
 export interface ClientAdapterContext {
   readonly adapterName: string
   readonly container: DependencyContainer
-  isRegistered(token: any): boolean
-  bindSingleton(token: any, implementation: any): void
-  bindInstance(token: any, value: any): void
-  bindFactory(token: any, factory: () => any): void
+  isRegistered<T>(token: InjectionToken<T>): boolean
+  bindSingleton<T>(token: InjectionToken<T>, implementation: InjectionToken<T>): void
+  bindInstance<T>(token: InjectionToken<T>, value: T): void
+  bindFactory<T>(token: InjectionToken<T>, factory: () => T): void
   bindMessagingTransport(transport: MessagingTransport): void
   useRuntimeBridge(runtime: IClientRuntimeBridge): void
 }
@@ -34,7 +34,7 @@ export function bindClientTransportInstances(
   context: Pick<ClientAdapterContext, 'bindInstance'>,
   transport: MessagingTransport,
 ): void {
-  context.bindInstance(MessagingTransport as any, transport)
-  context.bindInstance(EventsAPI as any, transport.events)
-  context.bindInstance(RpcAPI as any, transport.rpc)
+  context.bindInstance(MessagingTransport as unknown as InjectionToken<MessagingTransport>, transport)
+  context.bindInstance(EventsAPI as InjectionToken<EventsAPI<'client'>>, transport.events)
+  context.bindInstance(RpcAPI as InjectionToken<RpcAPI<'client'>>, transport.rpc)
 }

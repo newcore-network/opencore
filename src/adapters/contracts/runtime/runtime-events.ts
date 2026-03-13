@@ -2,6 +2,7 @@ export const RUNTIME_EVENTS = {
   playerJoining: 'playerJoining',
   playerDropped: 'playerDropped',
   serverResourceStop: 'onServerResourceStop',
+  playerCommand: 'playerCommand',
 } as const
 
 export type RuntimeEventName = (typeof RUNTIME_EVENTS)[keyof typeof RUNTIME_EVENTS]

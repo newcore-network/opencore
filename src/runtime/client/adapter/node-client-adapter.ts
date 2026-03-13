@@ -1,3 +1,4 @@
+import type { InjectionToken } from 'tsyringe'
 import { IPedAppearanceClient } from '../../../adapters/contracts/client/IPedAppearanceClient'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { IClientLocalPlayerBridge } from './local-player-bridge'
@@ -24,11 +25,23 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
 
       const transport = new NodeMessagingTransport('client')
       ctx.bindMessagingTransport(transport)
-      ctx.bindSingleton(IPedAppearanceClient as any, NodePedAppearanceClient)
-      ctx.bindSingleton(IHasher as any, NodeHasher)
-      ctx.bindSingleton(IClientRuntimeBridge as any, NodeClientRuntimeBridge)
-      ctx.bindSingleton(IClientLocalPlayerBridge as any, NodeClientLocalPlayerBridge)
-      ctx.bindSingleton(IClientPlatformBridge as any, NodeClientPlatformBridge)
+      ctx.bindSingleton(
+        IPedAppearanceClient as InjectionToken<IPedAppearanceClient>,
+        NodePedAppearanceClient,
+      )
+      ctx.bindSingleton(IHasher as InjectionToken<IHasher>, NodeHasher)
+      ctx.bindSingleton(
+        IClientRuntimeBridge as InjectionToken<IClientRuntimeBridge>,
+        NodeClientRuntimeBridge,
+      )
+      ctx.bindSingleton(
+        IClientLocalPlayerBridge as InjectionToken<IClientLocalPlayerBridge>,
+        NodeClientLocalPlayerBridge,
+      )
+      ctx.bindSingleton(
+        IClientPlatformBridge as InjectionToken<IClientPlatformBridge>,
+        NodeClientPlatformBridge,
+      )
     },
   })
 }

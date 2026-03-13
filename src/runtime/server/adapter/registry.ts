@@ -1,4 +1,4 @@
-import { DependencyContainer } from 'tsyringe'
+import { DependencyContainer, type InjectionToken } from 'tsyringe'
 import { GLOBAL_CONTAINER } from '../../../kernel/di/container'
 import { Player } from '../entities/player'
 import { SerializedPlayerData } from '../types/core-exports.types'
@@ -29,7 +29,7 @@ let activeServerAdapter: ActiveServerAdapterState | null = null
 
 function assertTokenAvailable(
   container: DependencyContainer,
-  token: any,
+  token: InjectionToken<unknown>,
   adapterName: string,
 ): void {
   if (container.isRegistered(token)) {
@@ -43,18 +43,18 @@ function createAdapterContext(adapterName: string): ServerAdapterContext {
   return {
     adapterName,
     container: GLOBAL_CONTAINER,
-    isRegistered(token: any): boolean {
+    isRegistered<T>(token: InjectionToken<T>): boolean {
       return GLOBAL_CONTAINER.isRegistered(token)
     },
-    bindSingleton(token: any, implementation: any): void {
+    bindSingleton<T>(token: InjectionToken<T>, implementation: InjectionToken<T>): void {
       assertTokenAvailable(GLOBAL_CONTAINER, token, adapterName)
       GLOBAL_CONTAINER.registerSingleton(token, implementation)
     },
-    bindInstance(token: any, value: any): void {
+    bindInstance<T>(token: InjectionToken<T>, value: T): void {
       assertTokenAvailable(GLOBAL_CONTAINER, token, adapterName)
       GLOBAL_CONTAINER.registerInstance(token, value)
     },
-    bindFactory(token: any, factory: () => any): void {
+    bindFactory<T>(token: InjectionToken<T>, factory: () => T): void {
       assertTokenAvailable(GLOBAL_CONTAINER, token, adapterName)
       GLOBAL_CONTAINER.register(token, { useFactory: factory })
     },
