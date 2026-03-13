@@ -1,5 +1,4 @@
 export * from './node-server-adapter'
-export * from '../../adapter-runtime'
 export * from './player-adapter'
 export * from './registry'
 export * from './serialization'

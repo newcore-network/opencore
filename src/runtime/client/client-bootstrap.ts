@@ -11,7 +11,6 @@ import {
   type ClientInitOptions,
   type ClientMode,
   getClientRuntimeContext,
-  resolveClientAdapter,
   setClientRuntimeContext,
 } from './client-runtime'
 import { getClientControllerRegistry } from './decorators'
@@ -137,12 +136,11 @@ async function tryImportAutoLoad() {
  */
 export async function initClientCore(options: ClientInitOptions = {}) {
   const mode: ClientMode = options.mode ?? 'CORE'
-  const activeAdapter = resolveClientAdapter(options)
 
   // Check if already initialized
   const existingContext = getClientRuntimeContext()
   if (existingContext?.isInitialized) {
-    assertClientAdapterCompatibility(activeAdapter)
+    assertClientAdapterCompatibility(options.adapter)
 
     // Register system processors for the active bundle if needed.
     registerSystemClient()
@@ -164,7 +162,7 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     )
   }
 
-  await installClientAdapter(activeAdapter)
+  await installClientAdapter(options.adapter)
   loggers.bootstrap.debug('Client adapter registered', {
     adapter: getActiveClientAdapterName() ?? 'unknown',
   })

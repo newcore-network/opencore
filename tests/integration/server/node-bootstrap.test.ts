@@ -14,7 +14,6 @@ import { NodeResourceInfo } from '../../../src/adapters/node/node-resourceinfo'
 import { NodeTick } from '../../../src/adapters/node/node-tick'
 import { GLOBAL_CONTAINER } from '../../../src/kernel/di/container'
 import { initServer } from '../../../src/runtime/server/bootstrap'
-import { defineServerAdapter, getActiveServerAdapterName } from '../../../src/runtime/server/adapter'
 import { resolveRuntimeOptions } from '../../../src/runtime/server/runtime'
 import { resetContainer } from '../../helpers/di.helper'
 
@@ -104,31 +103,5 @@ describe('Node.js Runtime Bootstrap', () => {
     const resourceInfo = GLOBAL_CONTAINER.resolve(IResourceInfo as any)
     if (resourceInfo instanceof IResourceInfo)
       expect(resourceInfo.getCurrentResourceName()).toBe('default')
-  })
-
-  it('should use the injected project adapter before the node default', async () => {
-    globalThis.__OPENCORE_PROJECT_SERVER_ADAPTER__ = defineServerAdapter({
-      name: 'injected-server',
-      async register(ctx) {
-        ctx.bindMessagingTransport(new NodeMessagingTransport('server'))
-        ctx.bindInstance(IExports as any, new NodeExports())
-        ctx.bindInstance(IEngineEvents as any, new NodeEngineEvents())
-        ctx.bindInstance(IResourceInfo as any, new NodeResourceInfo())
-        ctx.bindInstance(ITick as any, new NodeTick())
-      },
-    })
-
-    const options = resolveRuntimeOptions({
-      mode: 'CORE',
-      features: {
-        disabled: ['runtimeEvents', 'chat', 'principal', 'sessionLifecycle'],
-      },
-    })
-
-    await initServer(options)
-
-    expect(getActiveServerAdapterName()).toBe('injected-server')
-    const messagingTransport = GLOBAL_CONTAINER.resolve(MessagingTransport as any)
-    expect(messagingTransport).toBeInstanceOf(NodeMessagingTransport)
   })
 })

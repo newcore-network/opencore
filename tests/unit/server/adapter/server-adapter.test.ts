@@ -5,7 +5,6 @@ import { resetContainer } from '../../../helpers/di.helper'
 import {
   createLocalServerPlayer,
   createRemoteServerPlayer,
-  defineRuntimeHints,
   defineServerAdapter,
   installServerAdapter,
   serializeServerPlayerData,
@@ -96,31 +95,5 @@ describe('server adapter registry', () => {
     expect(remotePlayer).toBeInstanceOf(ExtendedPlayer)
     expect(remotePlayer.hasState('ready')).toBe(true)
     expect((remotePlayer as ExtendedPlayer).adapterKind).toBe('local')
-  })
-
-  it('keeps shared runtime hints on adapter definitions', () => {
-    const runtime = defineRuntimeHints({
-      runtime: 'ragemp',
-      server: {
-        target: 'node14',
-        outputRoot: 'packages',
-        outFileName: 'index.js',
-      },
-      client: {
-        outputRoot: 'client_packages',
-        outFileName: 'index.js',
-      },
-      manifest: {
-        kind: 'none',
-      },
-    })
-
-    const adapter = defineServerAdapter({
-      name: 'ragemp',
-      runtime,
-      register() {},
-    })
-
-    expect(adapter.runtime).toEqual(runtime)
   })
 })

@@ -2,7 +2,6 @@ import type { DependencyContainer } from 'tsyringe'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { MessagingTransport } from '../../../adapters/contracts/transport/messaging.transport'
 import { RpcAPI } from '../../../adapters/contracts/transport/rpc.api'
-import type { OpenCoreRuntimeHints } from '../../adapter-runtime'
 import { IClientRuntimeBridge } from './runtime-bridge'
 
 /**
@@ -10,7 +9,6 @@ import { IClientRuntimeBridge } from './runtime-bridge'
  */
 export interface OpenCoreClientAdapter {
   readonly name: string
-  readonly runtime?: OpenCoreRuntimeHints
   register(context: ClientAdapterContext): void | Promise<void>
 }
 
