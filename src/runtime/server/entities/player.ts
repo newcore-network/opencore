@@ -206,35 +206,18 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   // ─────────────────────────────────────────────────────────────────
 
   /**
-   * Sets the routing bucket (virtual world/dimension) for the player.
-   * Players in different buckets cannot see or interact with each other.
-   *
-   * @param bucket - The bucket ID (0 is the default shared world).
-   */
-  setRoutingBucket(bucket: number): void {
-    this.adapters.playerServer.setDimension(this.clientID.toString(), bucket)
-    this._dimension = bucket
-  }
-
-  /**
-   * Gets the current routing bucket.
-   */
-  getRoutingBucket(): number {
-    return this.adapters.playerServer.getDimension(this.clientID.toString())
-  }
-
-  /**
    * Sets the player dimension (alias for setRoutingBucket).
    */
   override set dimension(value: number) {
-    this.setRoutingBucket(value)
+    this.adapters.playerServer.setDimension(this.clientID.toString(), value)
+    this._dimension = value
   }
 
   /**
    * Gets the player dimension (alias for getRoutingBucket).
    */
   override get dimension(): number {
-    return this.getRoutingBucket()
+    return this.adapters.playerServer.getDimension(this.clientID.toString())
   }
 
   // ─────────────────────────────────────────────────────────────────
