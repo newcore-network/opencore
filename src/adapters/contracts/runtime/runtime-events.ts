@@ -8,8 +8,6 @@ export type RuntimeEventName = (typeof RUNTIME_EVENTS)[keyof typeof RUNTIME_EVEN
 
 export type RuntimeEventMap = Record<RuntimeEventName, string>
 
-export const DEFAULT_RUNTIME_EVENT_MAP: RuntimeEventMap = {
-  [RUNTIME_EVENTS.playerJoining]: RUNTIME_EVENTS.playerJoining,
-  [RUNTIME_EVENTS.playerDropped]: RUNTIME_EVENTS.playerDropped,
-  [RUNTIME_EVENTS.serverResourceStop]: RUNTIME_EVENTS.serverResourceStop,
-}
+export const DEFAULT_RUNTIME_EVENT_MAP: RuntimeEventMap = Object.fromEntries(
+  Object.values(RUNTIME_EVENTS).map((e) => [e, e]),
+) as RuntimeEventMap
