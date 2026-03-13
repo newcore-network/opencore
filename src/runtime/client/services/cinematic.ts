@@ -1,5 +1,7 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
 import {
   type CameraEffectContext,
   type CameraEffectDefinition,
@@ -225,7 +227,7 @@ export class CinematicHandle {
   pause(): void {
     if (this.runtime.paused) return
     this.runtime.paused = true
-    this.runtime.pauseStartedAt = GetGameTimer()
+    this.runtime.pauseStartedAt = Date.now()
     this.emit('paused', undefined)
   }
 
@@ -347,14 +349,16 @@ export class Cinematic {
   constructor(
     private readonly camera: Camera,
     effectsRegistry: CameraEffectsRegistry,
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientRuntimeBridge as any) private readonly runtimeBridge: IClientRuntimeBridge,
   ) {
     this.effects = effectsRegistry
     if (!this.effects.has('fadeIn')) {
       this.effects.registerBuiltins()
     }
 
-    const currentResource = GetCurrentResourceName()
-    on('onClientResourceStop', (resourceName: string) => {
+    const currentResource = this.runtimeBridge.getCurrentResourceName()
+    this.runtimeBridge.on('onClientResourceStop', (resourceName: string) => {
       if (resourceName !== currentResource) return
       this.cancel()
       this.camera.reset({ ease: false, easeTimeMs: 0 })
@@ -467,7 +471,7 @@ export class Cinematic {
     runtime: CinematicRuntimeState,
     handle: CinematicHandle,
   ): Promise<CinematicResult> {
-    const ped = PlayerPedId()
+    const ped = this.platform.getLocalPlayerPed()
 
     try {
       this.applyRuntimeFlags(runtime.definition, ped)
@@ -540,16 +544,16 @@ export class Cinematic {
 
   private applyRuntimeFlags(definition: CinematicDefinition, ped: number): void {
     if (definition.freezePlayer) {
-      FreezeEntityPosition(ped, true)
+      this.platform.freezeEntityPosition(ped, true)
     }
     if (definition.invinciblePlayer) {
-      SetEntityInvincible(ped, true)
+      this.platform.setEntityInvincible(ped, true)
     }
     if (definition.hideHud) {
-      DisplayHud(false)
+      this.platform.displayHud(false)
     }
     if (definition.hideRadar) {
-      DisplayRadar(false)
+      this.platform.displayRadar(false)
     }
   }
 
@@ -560,19 +564,19 @@ export class Cinematic {
     this.camera.destroy(runtime.camHandle, false)
 
     if (runtime.definition.freezePlayer) {
-      FreezeEntityPosition(ped, false)
+      this.platform.freezeEntityPosition(ped, false)
     }
     if (runtime.definition.invinciblePlayer) {
-      SetEntityInvincible(ped, false)
+      this.platform.setEntityInvincible(ped, false)
     }
     if (runtime.definition.hideHud) {
-      DisplayHud(true)
+      this.platform.displayHud(true)
     }
     if (runtime.definition.hideRadar) {
-      DisplayRadar(true)
+      this.platform.displayRadar(true)
     }
 
-    ClearTimecycleModifier()
+    this.platform.clearTimecycleModifier()
   }
 
   private resolveGlobalEffects(definition: CinematicDefinition): CameraEffectReference[] {
@@ -613,7 +617,7 @@ export class Cinematic {
     effects: RuntimeEffect[],
     durationMs: number,
   ): Promise<void> {
-    const start = GetGameTimer()
+    const start = this.runtimeBridge.getGameTimer()
     let previousTime = start
 
     while (true) {
@@ -623,19 +627,22 @@ export class Cinematic {
       }
 
       if (runtime.paused) {
-        previousTime = GetGameTimer()
+        previousTime = this.runtimeBridge.getGameTimer()
         await delay(0)
         continue
       }
 
-      if (runtime.definition.skippable && IsControlJustPressed(0, runtime.options.skipControlId)) {
+      if (
+        runtime.definition.skippable &&
+        this.platform.isControlJustPressed(0, runtime.options.skipControlId)
+      ) {
         runtime.cancelled = true
         runtime.interruptStatus = 'cancelled'
         await this.finalizeEffects(runtime, effects, 'cancelled', durationMs)
         return
       }
 
-      const now = GetGameTimer()
+      const now = this.runtimeBridge.getGameTimer()
       const elapsedMs = now - start
       const deltaMs = now - previousTime
       previousTime = now
@@ -680,8 +687,8 @@ export class Cinematic {
   }
 
   private async waitStep(runtime: CinematicRuntimeState, waitMs: number): Promise<void> {
-    const started = GetGameTimer()
-    while (GetGameTimer() - started < waitMs) {
+    const started = this.runtimeBridge.getGameTimer()
+    while (this.runtimeBridge.getGameTimer() - started < waitMs) {
       if (runtime.cancelled) return
 
       if (runtime.paused) {
@@ -689,7 +696,10 @@ export class Cinematic {
         continue
       }
 
-      if (runtime.definition.skippable && IsControlJustPressed(0, runtime.options.skipControlId)) {
+      if (
+        runtime.definition.skippable &&
+        this.platform.isControlJustPressed(0, runtime.options.skipControlId)
+      ) {
         runtime.cancelled = true
         runtime.interruptStatus = 'cancelled'
         return
@@ -765,15 +775,15 @@ export class Cinematic {
       normalized,
       deltaMs,
       drawSubtitle: (text: string) => {
-        BeginTextCommandDisplayText('STRING')
-        AddTextComponentSubstringPlayerName(text)
-        EndTextCommandDisplayText(0.5, 0.92)
+        this.platform.beginTextCommandDisplayText('STRING')
+        this.platform.addTextComponentSubstringPlayerName(text)
+        this.platform.endTextCommandDisplayText(0.5, 0.92)
       },
       drawLetterbox: (top: number, bottom: number, alpha = 230) => {
         const topHeight = Math.max(0, Math.min(0.5, top))
         const bottomHeight = Math.max(0, Math.min(0.5, bottom))
-        DrawRect(0.5, topHeight / 2, 1.0, topHeight, 0, 0, 0, alpha)
-        DrawRect(0.5, 1 - bottomHeight / 2, 1.0, bottomHeight, 0, 0, 0, alpha)
+        this.platform.drawRect(0.5, topHeight / 2, 1.0, topHeight, 0, 0, 0, alpha)
+        this.platform.drawRect(0.5, 1 - bottomHeight / 2, 1.0, bottomHeight, 0, 0, 0, alpha)
       },
     }
   }
@@ -849,7 +859,7 @@ export class Cinematic {
       case 'coords':
         return { x: input.x, y: input.y, z: input.z }
       case 'entity': {
-        const [x, y, z] = GetEntityCoords(input.entity, true)
+        const { x, y, z } = this.platform.getEntityCoords(input.entity)
         return {
           x: x + (input.offset?.x ?? 0),
           y: y + (input.offset?.y ?? 0),
@@ -857,7 +867,7 @@ export class Cinematic {
         }
       }
       case 'entityBone': {
-        const [x, y, z] = GetWorldPositionOfEntityBone(input.entity, input.bone)
+        const { x, y, z } = this.platform.getWorldPositionOfEntityBone(input.entity, input.bone)
         return {
           x: x + (input.offset?.x ?? 0),
           y: y + (input.offset?.y ?? 0),

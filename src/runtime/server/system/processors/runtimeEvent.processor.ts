@@ -1,5 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IEngineEvents } from '../../../../adapters/contracts/IEngineEvents'
+import type { RuntimeEventName } from '../../../../adapters/contracts/runtime'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
 import { loggers } from '../../../../kernel/logger'
 import { resolveMethod } from '../../helpers/resolve-method'
@@ -10,7 +11,7 @@ export class RuntimeEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.RUNTIME_EVENT
   constructor(@inject(IEngineEvents as any) private readonly engineEvents: IEngineEvents) {}
 
-  process(instance: any, methodName: string, metadata: { event: string }) {
+  process(instance: any, methodName: string, metadata: { event: RuntimeEventName }) {
     const result = resolveMethod(
       instance,
       methodName,
@@ -20,7 +21,7 @@ export class RuntimeEventProcessor implements DecoratorProcessor {
 
     const { handler, handlerName } = result
 
-    this.engineEvents.on(metadata.event, (...args: any[]) => {
+    this.engineEvents.onRuntime(metadata.event, (...args: any[]) => {
       try {
         handler(...args)
       } catch (error) {

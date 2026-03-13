@@ -1,26 +1,17 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { IClientPlatformBridge } from '../adapter/platform-bridge'
 
 export interface VehicleSpawnOptions {
-  /** Model name or hash */
   model: string
-  /** Spawn position */
   position: Vector3
-  /** Heading/rotation */
   heading?: number
-  /** Whether to place on ground */
   placeOnGround?: boolean
-  /** Whether to warp the player into the vehicle */
   warpIntoVehicle?: boolean
-  /** Seat index to warp into (-1 = driver) */
   seatIndex?: number
-  /** Primary color */
   primaryColor?: number
-  /** Secondary color */
   secondaryColor?: number
-  /** License plate text */
   plate?: string
-  /** Network the vehicle */
   networked?: boolean
 }
 
@@ -51,17 +42,12 @@ export interface VehicleMods {
   plateStyle?: number
 }
 
-/**
- * Service for vehicle operations and management.
- */
 @injectable()
 export class VehicleService {
-  /**
-   * Spawn a vehicle at a position.
-   *
-   * @param options - Spawn options
-   * @returns The vehicle handle
-   */
+  constructor(
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+  ) {}
+
   async spawn(options: VehicleSpawnOptions): Promise<number> {
     const {
       model,
@@ -76,279 +62,159 @@ export class VehicleService {
       networked = true,
     } = options
 
-    const modelHash = GetHashKey(model)
-
-    // Load the model
-    if (!IsModelInCdimage(modelHash) || !IsModelAVehicle(modelHash)) {
+    const modelHash = this.platform.getHashKey(model)
+    if (!this.platform.isModelInCdimage(modelHash) || !this.platform.isModelAVehicle(modelHash)) {
       throw new Error(`Invalid vehicle model: ${model}`)
     }
 
-    RequestModel(modelHash)
-    while (!HasModelLoaded(modelHash)) {
+    this.platform.requestModel(modelHash)
+    while (!this.platform.hasModelLoaded(modelHash)) {
       await new Promise((r) => setTimeout(r, 0))
     }
 
-    // Create the vehicle
-    const vehicle = CreateVehicle(
-      modelHash,
-      position.x,
-      position.y,
-      position.z,
-      heading,
-      networked,
-      false,
-    )
+    const vehicle = this.platform.createVehicle(modelHash, position, heading, networked, false)
+    this.platform.setModelAsNoLongerNeeded(modelHash)
+    if (!vehicle || vehicle === 0) throw new Error('Failed to create vehicle')
 
-    SetModelAsNoLongerNeeded(modelHash)
-
-    if (!vehicle || vehicle === 0) {
-      throw new Error('Failed to create vehicle')
-    }
-
-    // Place on ground
-    if (placeOnGround) {
-      SetVehicleOnGroundProperly(vehicle)
-    }
-
-    // Set colors
+    if (placeOnGround) this.platform.setVehicleOnGroundProperly(vehicle)
     if (primaryColor !== undefined || secondaryColor !== undefined) {
-      const [currentPrimary, currentSecondary] = GetVehicleColours(vehicle)
-      SetVehicleColours(vehicle, primaryColor ?? currentPrimary, secondaryColor ?? currentSecondary)
+      const [currentPrimary, currentSecondary] = this.platform.getVehicleColours(vehicle)
+      this.platform.setVehicleColours(
+        vehicle,
+        primaryColor ?? currentPrimary,
+        secondaryColor ?? currentSecondary,
+      )
     }
-
-    // Set plate
-    if (plate) {
-      SetVehicleNumberPlateText(vehicle, plate)
-    }
-
-    // Warp player into vehicle
-    if (warpIntoVehicle) {
-      TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, seatIndex)
-    }
-
+    if (plate) this.platform.setVehicleNumberPlateText(vehicle, plate)
+    if (warpIntoVehicle)
+      this.platform.taskWarpPedIntoVehicle(this.platform.getLocalPlayerPed(), vehicle, seatIndex)
     return vehicle
   }
 
-  /**
-   * Delete a vehicle.
-   *
-   * @param vehicle - Vehicle handle
-   */
   delete(vehicle: number): void {
-    if (DoesEntityExist(vehicle)) {
-      SetEntityAsMissionEntity(vehicle, true, true)
-      DeleteVehicle(vehicle)
+    if (this.platform.doesEntityExist(vehicle)) {
+      this.platform.setEntityAsMissionEntity(vehicle, true, true)
+      this.platform.deleteVehicle(vehicle)
     }
   }
 
-  /**
-   * Delete the vehicle the player is currently in.
-   */
   deleteCurrentVehicle(): void {
     const vehicle = this.getCurrentVehicle()
     if (vehicle) {
-      TaskLeaveVehicle(PlayerPedId(), vehicle, 16)
+      this.platform.taskLeaveVehicle(this.platform.getLocalPlayerPed(), vehicle, 16)
       setTimeout(() => this.delete(vehicle), 1000)
     }
   }
 
-  /**
-   * Repair a vehicle completely.
-   *
-   * @param vehicle - Vehicle handle
-   */
   repair(vehicle: number): void {
-    if (!DoesEntityExist(vehicle)) return
-
-    SetVehicleFixed(vehicle)
-    SetVehicleDeformationFixed(vehicle)
-    SetVehicleUndriveable(vehicle, false)
-    SetVehicleEngineOn(vehicle, true, true, false)
-    SetVehicleEngineHealth(vehicle, 1000.0)
-    SetVehiclePetrolTankHealth(vehicle, 1000.0)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setVehicleFixed(vehicle)
+    this.platform.setVehicleDeformationFixed(vehicle)
+    this.platform.setVehicleUndriveable(vehicle, false)
+    this.platform.setVehicleEngineOn(vehicle, true, true, false)
+    this.platform.setVehicleEngineHealth(vehicle, 1000.0)
+    this.platform.setVehiclePetrolTankHealth(vehicle, 1000.0)
   }
 
-  /**
-   * Set vehicle fuel level.
-   *
-   * @param vehicle - Vehicle handle
-   * @param level - Fuel level (0.0-100.0)
-   */
   setFuel(vehicle: number, level: number): void {
-    if (!DoesEntityExist(vehicle)) return
-    SetVehicleFuelLevel(vehicle, Math.max(0, Math.min(100, level * 100)))
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setVehicleFuelLevel(vehicle, Math.max(0, Math.min(100, level * 100)))
   }
 
-  /**
-   * Get vehicle fuel level.
-   *
-   * @param vehicle - Vehicle handle
-   * @returns Fuel level (0.0-1.0)
-   */
   getFuel(vehicle: number): number {
-    if (!DoesEntityExist(vehicle)) return 0
-    return GetVehicleFuelLevel(vehicle) / 100
+    if (!this.platform.doesEntityExist(vehicle)) return 0
+    return this.platform.getVehicleFuelLevel(vehicle) / 100
   }
 
-  /**
-   * Get the closest vehicle to the player.
-   *
-   * @param radius - Search radius
-   * @returns Vehicle handle or null
-   */
   getClosest(radius = 10.0): number | null {
-    const playerPed = PlayerPedId()
-    const [px, py, pz] = GetEntityCoords(playerPed, true)
-
-    const vehicle = GetClosestVehicle(px, py, pz, radius, 0, 71)
-    return vehicle !== 0 ? vehicle : null
+    const playerPed = this.platform.getLocalPlayerPed()
+    return this.platform.getClosestVehicle(this.platform.getEntityCoords(playerPed), radius)
   }
 
-  /**
-   * Check if the player is in a vehicle.
-   */
   isPlayerInVehicle(): boolean {
-    return IsPedInAnyVehicle(PlayerPedId(), false)
+    return this.platform.isPedInAnyVehicle(this.platform.getLocalPlayerPed())
   }
 
-  /**
-   * Get the vehicle the player is currently in.
-   *
-   * @returns Vehicle handle or null
-   */
   getCurrentVehicle(): number | null {
-    const ped = PlayerPedId()
-    if (!IsPedInAnyVehicle(ped, false)) return null
-    return GetVehiclePedIsIn(ped, false)
+    const ped = this.platform.getLocalPlayerPed()
+    if (!this.platform.isPedInAnyVehicle(ped)) return null
+    return this.platform.getVehiclePedIsIn(ped, false)
   }
 
-  /**
-   * Get the last vehicle the player was in.
-   *
-   * @returns Vehicle handle or null
-   */
   getLastVehicle(): number | null {
-    const vehicle = GetVehiclePedIsIn(PlayerPedId(), true)
-    return vehicle !== 0 ? vehicle : null
+    return this.platform.getVehiclePedIsIn(this.platform.getLocalPlayerPed(), true)
   }
 
-  /**
-   * Check if player is the driver of their current vehicle.
-   */
   isPlayerDriver(): boolean {
     const vehicle = this.getCurrentVehicle()
     if (!vehicle) return false
-    return GetPedInVehicleSeat(vehicle, -1) === PlayerPedId()
+    return this.platform.getPedInVehicleSeat(vehicle, -1) === this.platform.getLocalPlayerPed()
   }
 
-  /**
-   * Apply modifications to a vehicle.
-   *
-   * @param vehicle - Vehicle handle
-   * @param mods - Modifications to apply
-   */
   setMods(vehicle: number, mods: VehicleMods): void {
-    if (!DoesEntityExist(vehicle)) return
-
-    SetVehicleModKit(vehicle, 0)
-
-    if (mods.spoiler !== undefined) SetVehicleMod(vehicle, 0, mods.spoiler, false)
-    if (mods.frontBumper !== undefined) SetVehicleMod(vehicle, 1, mods.frontBumper, false)
-    if (mods.rearBumper !== undefined) SetVehicleMod(vehicle, 2, mods.rearBumper, false)
-    if (mods.sideSkirt !== undefined) SetVehicleMod(vehicle, 3, mods.sideSkirt, false)
-    if (mods.exhaust !== undefined) SetVehicleMod(vehicle, 4, mods.exhaust, false)
-    if (mods.frame !== undefined) SetVehicleMod(vehicle, 5, mods.frame, false)
-    if (mods.grille !== undefined) SetVehicleMod(vehicle, 6, mods.grille, false)
-    if (mods.hood !== undefined) SetVehicleMod(vehicle, 7, mods.hood, false)
-    if (mods.fender !== undefined) SetVehicleMod(vehicle, 8, mods.fender, false)
-    if (mods.rightFender !== undefined) SetVehicleMod(vehicle, 9, mods.rightFender, false)
-    if (mods.roof !== undefined) SetVehicleMod(vehicle, 10, mods.roof, false)
-    if (mods.engine !== undefined) SetVehicleMod(vehicle, 11, mods.engine, false)
-    if (mods.brakes !== undefined) SetVehicleMod(vehicle, 12, mods.brakes, false)
-    if (mods.transmission !== undefined) SetVehicleMod(vehicle, 13, mods.transmission, false)
-    if (mods.horns !== undefined) SetVehicleMod(vehicle, 14, mods.horns, false)
-    if (mods.suspension !== undefined) SetVehicleMod(vehicle, 15, mods.suspension, false)
-    if (mods.armor !== undefined) SetVehicleMod(vehicle, 16, mods.armor, false)
-
-    if (mods.turbo !== undefined) ToggleVehicleMod(vehicle, 18, mods.turbo)
-    if (mods.xenon !== undefined) ToggleVehicleMod(vehicle, 22, mods.xenon)
-
-    if (mods.wheelType !== undefined) SetVehicleWheelType(vehicle, mods.wheelType)
-    if (mods.wheels !== undefined) SetVehicleMod(vehicle, 23, mods.wheels, false)
-    if (mods.windowTint !== undefined) SetVehicleWindowTint(vehicle, mods.windowTint)
-    if (mods.livery !== undefined) SetVehicleLivery(vehicle, mods.livery)
-    if (mods.plateStyle !== undefined) SetVehicleNumberPlateTextIndex(vehicle, mods.plateStyle)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setVehicleModKit(vehicle, 0)
+    if (mods.spoiler !== undefined) this.platform.setVehicleMod(vehicle, 0, mods.spoiler, false)
+    if (mods.frontBumper !== undefined)
+      this.platform.setVehicleMod(vehicle, 1, mods.frontBumper, false)
+    if (mods.rearBumper !== undefined)
+      this.platform.setVehicleMod(vehicle, 2, mods.rearBumper, false)
+    if (mods.sideSkirt !== undefined) this.platform.setVehicleMod(vehicle, 3, mods.sideSkirt, false)
+    if (mods.exhaust !== undefined) this.platform.setVehicleMod(vehicle, 4, mods.exhaust, false)
+    if (mods.frame !== undefined) this.platform.setVehicleMod(vehicle, 5, mods.frame, false)
+    if (mods.grille !== undefined) this.platform.setVehicleMod(vehicle, 6, mods.grille, false)
+    if (mods.hood !== undefined) this.platform.setVehicleMod(vehicle, 7, mods.hood, false)
+    if (mods.fender !== undefined) this.platform.setVehicleMod(vehicle, 8, mods.fender, false)
+    if (mods.rightFender !== undefined)
+      this.platform.setVehicleMod(vehicle, 9, mods.rightFender, false)
+    if (mods.roof !== undefined) this.platform.setVehicleMod(vehicle, 10, mods.roof, false)
+    if (mods.engine !== undefined) this.platform.setVehicleMod(vehicle, 11, mods.engine, false)
+    if (mods.brakes !== undefined) this.platform.setVehicleMod(vehicle, 12, mods.brakes, false)
+    if (mods.transmission !== undefined)
+      this.platform.setVehicleMod(vehicle, 13, mods.transmission, false)
+    if (mods.horns !== undefined) this.platform.setVehicleMod(vehicle, 14, mods.horns, false)
+    if (mods.suspension !== undefined)
+      this.platform.setVehicleMod(vehicle, 15, mods.suspension, false)
+    if (mods.armor !== undefined) this.platform.setVehicleMod(vehicle, 16, mods.armor, false)
+    if (mods.turbo !== undefined) this.platform.toggleVehicleMod(vehicle, 18, mods.turbo)
+    if (mods.xenon !== undefined) this.platform.toggleVehicleMod(vehicle, 22, mods.xenon)
+    if (mods.wheelType !== undefined) this.platform.setVehicleWheelType(vehicle, mods.wheelType)
+    if (mods.wheels !== undefined) this.platform.setVehicleMod(vehicle, 23, mods.wheels, false)
+    if (mods.windowTint !== undefined) this.platform.setVehicleWindowTint(vehicle, mods.windowTint)
+    if (mods.livery !== undefined) this.platform.setVehicleLivery(vehicle, mods.livery)
+    if (mods.plateStyle !== undefined)
+      this.platform.setVehicleNumberPlateTextIndex(vehicle, mods.plateStyle)
   }
 
-  /**
-   * Set vehicle doors locked state.
-   *
-   * @param vehicle - Vehicle handle
-   * @param locked - Whether doors should be locked
-   */
   setDoorsLocked(vehicle: number, locked: boolean): void {
-    if (!DoesEntityExist(vehicle)) return
-    SetVehicleDoorsLocked(vehicle, locked ? 2 : 0)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setVehicleDoorsLocked(vehicle, locked ? 2 : 0)
   }
 
-  /**
-   * Set vehicle engine state.
-   *
-   * @param vehicle - Vehicle handle
-   * @param running - Whether engine should be running
-   * @param instant - Whether to start instantly
-   */
   setEngineRunning(vehicle: number, running: boolean, instant = false): void {
-    if (!DoesEntityExist(vehicle)) return
-    SetVehicleEngineOn(vehicle, running, instant, true)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setVehicleEngineOn(vehicle, running, instant, true)
   }
 
-  /**
-   * Set vehicle invincibility.
-   *
-   * @param vehicle - Vehicle handle
-   * @param invincible - Whether vehicle should be invincible
-   */
   setInvincible(vehicle: number, invincible: boolean): void {
-    if (!DoesEntityExist(vehicle)) return
-    SetEntityInvincible(vehicle, invincible)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setEntityInvincible(vehicle, invincible)
   }
 
-  /**
-   * Get vehicle speed in km/h.
-   *
-   * @param vehicle - Vehicle handle
-   */
   getSpeed(vehicle: number): number {
-    if (!DoesEntityExist(vehicle)) return 0
-    return GetEntitySpeed(vehicle) * 3.6 // Convert m/s to km/h
+    if (!this.platform.doesEntityExist(vehicle)) return 0
+    return this.platform.getEntitySpeed(vehicle) * 3.6
   }
 
-  /**
-   * Set vehicle heading/rotation.
-   *
-   * @param vehicle - Vehicle handle
-   * @param heading - Heading in degrees
-   */
   setHeading(vehicle: number, heading: number): void {
-    if (!DoesEntityExist(vehicle)) return
-    SetEntityHeading(vehicle, heading)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setEntityHeading(vehicle, heading)
   }
 
-  /**
-   * Teleport a vehicle to a position.
-   *
-   * @param vehicle - Vehicle handle
-   * @param position - Target position
-   * @param heading - Optional heading
-   */
   teleport(vehicle: number, position: Vector3, heading?: number): void {
-    if (!DoesEntityExist(vehicle)) return
-
-    SetEntityCoords(vehicle, position.x, position.y, position.z, false, false, false, true)
-    if (heading !== undefined) {
-      SetEntityHeading(vehicle, heading)
-    }
-    SetVehicleOnGroundProperly(vehicle)
+    if (!this.platform.doesEntityExist(vehicle)) return
+    this.platform.setEntityCoords(vehicle, position)
+    if (heading !== undefined) this.platform.setEntityHeading(vehicle, heading)
+    this.platform.setVehicleOnGroundProperly(vehicle)
   }
 }

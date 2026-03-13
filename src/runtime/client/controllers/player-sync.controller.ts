@@ -1,3 +1,5 @@
+import { inject, injectable } from 'tsyringe'
+import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { Controller } from '../decorators'
 
 /**
@@ -8,34 +10,25 @@ import { Controller } from '../decorators'
  * This allows the server to control player health and armor through simple state bag updates.
  */
 @Controller()
+@injectable()
 export class PlayerSyncController {
-  constructor() {
+  constructor(
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+  ) {
     this.registerStateBagHandlers()
   }
 
   private registerStateBagHandlers(): void {
-    // Sync health from server state bag to local ped
-    AddStateBagChangeHandler('health', '', (bagName: string, _key: string, value: number) => {
-      const entity = GetEntityFromStateBagName(bagName)
-      if (entity === 0) return
-
-      const playerPed = PlayerPedId()
-      if (entity !== playerPed) return
-
-      // Apply health to local ped
-      SetEntityHealth(entity, value)
+    this.platform.onLocalPlayerStateChange('health', (value) => {
+      const entity = this.platform.getLocalPlayerPed()
+      if (typeof value !== 'number' || entity === 0) return
+      this.platform.setEntityHealth(entity, value)
     })
 
-    // Sync armor from server state bag to local ped
-    AddStateBagChangeHandler('armor', '', (bagName: string, _key: string, value: number) => {
-      const entity = GetEntityFromStateBagName(bagName)
-      if (entity === 0) return
-
-      const playerPed = PlayerPedId()
-      if (entity !== playerPed) return
-
-      // Apply armor to local ped
-      SetPedArmour(entity, value)
+    this.platform.onLocalPlayerStateChange('armor', (value) => {
+      const entity = this.platform.getLocalPlayerPed()
+      if (typeof value !== 'number' || entity === 0) return
+      this.platform.setPedArmour(entity, value)
     })
   }
 }

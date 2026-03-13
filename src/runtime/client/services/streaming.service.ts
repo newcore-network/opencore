@@ -1,4 +1,6 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
+import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
 
 export interface StreamingRequest {
   type: 'model' | 'animDict' | 'ptfx' | 'texture' | 'audio'
@@ -7,45 +9,26 @@ export interface StreamingRequest {
   hash?: number
 }
 
-/**
- * Service for managing asset streaming (models, animations, particles, etc.).
- */
 @injectable()
 export class StreamingService {
   private loadedAssets: Map<string, StreamingRequest> = new Map()
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Model Loading
-  // ─────────────────────────────────────────────────────────────────────────────
+  constructor(
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
-  /**
-   * Request and load a model.
-   *
-   * @param model - Model name or hash
-   * @param timeout - Maximum wait time in ms
-   * @returns Whether the model was loaded successfully
-   */
   async requestModel(model: string | number, timeout = 10000): Promise<boolean> {
-    const hash = typeof model === 'string' ? GetHashKey(model) : model
+    const hash = typeof model === 'string' ? this.platform.getHashKey(model) : model
     const key = `model:${hash}`
 
-    // Already loaded
-    if (this.loadedAssets.get(key)?.loaded) {
-      return true
-    }
+    if (this.loadedAssets.get(key)?.loaded) return true
+    if (!this.platform.isModelInCdimage(hash) || !this.platform.isModelValid(hash)) return false
 
-    // Check if valid
-    if (!IsModelInCdimage(hash) || !IsModelValid(hash)) {
-      return false
-    }
-
-    RequestModel(hash)
-
-    const startTime = GetGameTimer()
-    while (!HasModelLoaded(hash)) {
-      if (GetGameTimer() - startTime > timeout) {
-        return false
-      }
+    this.platform.requestModel(hash)
+    const startTime = this.runtime.getGameTimer()
+    while (!this.platform.hasModelLoaded(hash)) {
+      if (this.runtime.getGameTimer() - startTime > timeout) return false
       await new Promise((r) => setTimeout(r, 0))
     }
 
@@ -53,83 +36,40 @@ export class StreamingService {
     return true
   }
 
-  /**
-   * Check if a model is loaded.
-   *
-   * @param model - Model name or hash
-   */
   isModelLoaded(model: string | number): boolean {
-    const hash = typeof model === 'string' ? GetHashKey(model) : model
-    return HasModelLoaded(hash)
+    const hash = typeof model === 'string' ? this.platform.getHashKey(model) : model
+    return this.platform.hasModelLoaded(hash)
   }
 
-  /**
-   * Release a loaded model.
-   *
-   * @param model - Model name or hash
-   */
   releaseModel(model: string | number): void {
-    const hash = typeof model === 'string' ? GetHashKey(model) : model
-    SetModelAsNoLongerNeeded(hash)
+    const hash = typeof model === 'string' ? this.platform.getHashKey(model) : model
+    this.platform.setModelAsNoLongerNeeded(hash)
     this.loadedAssets.delete(`model:${hash}`)
   }
 
-  /**
-   * Check if a model is valid and exists in the game files.
-   *
-   * @param model - Model name or hash
-   */
   isModelValid(model: string | number): boolean {
-    const hash = typeof model === 'string' ? GetHashKey(model) : model
-    return IsModelInCdimage(hash) && IsModelValid(hash)
+    const hash = typeof model === 'string' ? this.platform.getHashKey(model) : model
+    return this.platform.isModelInCdimage(hash) && this.platform.isModelValid(hash)
   }
 
-  /**
-   * Check if a model is a vehicle.
-   *
-   * @param model - Model name or hash
-   */
   isModelVehicle(model: string | number): boolean {
-    const hash = typeof model === 'string' ? GetHashKey(model) : model
-    return IsModelAVehicle(hash)
+    const hash = typeof model === 'string' ? this.platform.getHashKey(model) : model
+    return this.platform.isModelAVehicle(hash)
   }
 
-  /**
-   * Check if a model is a ped.
-   *
-   * @param model - Model name or hash
-   */
   isModelPed(model: string | number): boolean {
-    const hash = typeof model === 'string' ? GetHashKey(model) : model
-    return IsModelAPed(hash)
+    const hash = typeof model === 'string' ? this.platform.getHashKey(model) : model
+    return this.platform.isModelAPed(hash)
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Animation Dictionary Loading
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Request and load an animation dictionary.
-   *
-   * @param dict - Animation dictionary name
-   * @param timeout - Maximum wait time in ms
-   * @returns Whether the dictionary was loaded successfully
-   */
   async requestAnimDict(dict: string, timeout = 10000): Promise<boolean> {
     const key = `anim:${dict}`
+    if (this.loadedAssets.get(key)?.loaded) return true
 
-    // Already loaded
-    if (this.loadedAssets.get(key)?.loaded) {
-      return true
-    }
-
-    RequestAnimDict(dict)
-
-    const startTime = GetGameTimer()
-    while (!HasAnimDictLoaded(dict)) {
-      if (GetGameTimer() - startTime > timeout) {
-        return false
-      }
+    this.platform.requestAnimDict(dict)
+    const startTime = this.runtime.getGameTimer()
+    while (!this.platform.hasAnimDictLoaded(dict)) {
+      if (this.runtime.getGameTimer() - startTime > timeout) return false
       await new Promise((r) => setTimeout(r, 0))
     }
 
@@ -137,51 +77,23 @@ export class StreamingService {
     return true
   }
 
-  /**
-   * Check if an animation dictionary is loaded.
-   *
-   * @param dict - Animation dictionary name
-   */
   isAnimDictLoaded(dict: string): boolean {
-    return HasAnimDictLoaded(dict)
+    return this.platform.hasAnimDictLoaded(dict)
   }
 
-  /**
-   * Release a loaded animation dictionary.
-   *
-   * @param dict - Animation dictionary name
-   */
   releaseAnimDict(dict: string): void {
-    RemoveAnimDict(dict)
+    this.platform.removeAnimDict(dict)
     this.loadedAssets.delete(`anim:${dict}`)
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Particle Effects (PTFX) Loading
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Request and load a particle effect asset.
-   *
-   * @param asset - PTFX asset name
-   * @param timeout - Maximum wait time in ms
-   * @returns Whether the asset was loaded successfully
-   */
   async requestPtfxAsset(asset: string, timeout = 10000): Promise<boolean> {
     const key = `ptfx:${asset}`
+    if (this.loadedAssets.get(key)?.loaded) return true
 
-    // Already loaded
-    if (this.loadedAssets.get(key)?.loaded) {
-      return true
-    }
-
-    RequestNamedPtfxAsset(asset)
-
-    const startTime = GetGameTimer()
-    while (!HasNamedPtfxAssetLoaded(asset)) {
-      if (GetGameTimer() - startTime > timeout) {
-        return false
-      }
+    this.platform.requestNamedPtfxAsset(asset)
+    const startTime = this.runtime.getGameTimer()
+    while (!this.platform.hasNamedPtfxAssetLoaded(asset)) {
+      if (this.runtime.getGameTimer() - startTime > timeout) return false
       await new Promise((r) => setTimeout(r, 0))
     }
 
@@ -189,36 +101,15 @@ export class StreamingService {
     return true
   }
 
-  /**
-   * Check if a PTFX asset is loaded.
-   *
-   * @param asset - PTFX asset name
-   */
   isPtfxAssetLoaded(asset: string): boolean {
-    return HasNamedPtfxAssetLoaded(asset)
+    return this.platform.hasNamedPtfxAssetLoaded(asset)
   }
 
-  /**
-   * Release a loaded PTFX asset.
-   *
-   * @param asset - PTFX asset name
-   */
   releasePtfxAsset(asset: string): void {
-    RemoveNamedPtfxAsset(asset)
+    this.platform.removeNamedPtfxAsset(asset)
     this.loadedAssets.delete(`ptfx:${asset}`)
   }
 
-  /**
-   * Start a particle effect at a position.
-   *
-   * @param asset - PTFX asset name
-   * @param effectName - Effect name within the asset
-   * @param position - World position
-   * @param rotation - Rotation
-   * @param scale - Scale
-   * @param looped - Whether to loop
-   * @returns The particle effect handle
-   */
   async startParticleEffect(
     asset: string,
     effectName: string,
@@ -228,76 +119,24 @@ export class StreamingService {
     looped = false,
   ): Promise<number> {
     await this.requestPtfxAsset(asset)
-
-    UseParticleFxAssetNextCall(asset)
-
-    if (looped) {
-      return StartParticleFxLoopedAtCoord(
-        effectName,
-        position.x,
-        position.y,
-        position.z,
-        rotation.x,
-        rotation.y,
-        rotation.z,
-        scale,
-        false,
-        false,
-        false,
-        false,
-      )
-    } else {
-      return StartParticleFxNonLoopedAtCoord(
-        effectName,
-        position.x,
-        position.y,
-        position.z,
-        rotation.x,
-        rotation.y,
-        rotation.z,
-        scale,
-        false,
-        false,
-        false,
-      )
-    }
+    this.platform.useParticleFxAssetNextCall(asset)
+    return looped
+      ? this.platform.startParticleFxLoopedAtCoord(effectName, position, rotation, scale)
+      : this.platform.startParticleFxNonLoopedAtCoord(effectName, position, rotation, scale)
   }
 
-  /**
-   * Stop a looped particle effect.
-   *
-   * @param handle - Particle effect handle
-   */
   stopParticleEffect(handle: number): void {
-    StopParticleFxLooped(handle, false)
+    this.platform.stopParticleFxLooped(handle, false)
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Texture Dictionary Loading
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Request and load a texture dictionary.
-   *
-   * @param dict - Texture dictionary name
-   * @param timeout - Maximum wait time in ms
-   * @returns Whether the dictionary was loaded successfully
-   */
   async requestTextureDict(dict: string, timeout = 10000): Promise<boolean> {
     const key = `texture:${dict}`
+    if (this.loadedAssets.get(key)?.loaded) return true
 
-    // Already loaded
-    if (this.loadedAssets.get(key)?.loaded) {
-      return true
-    }
-
-    RequestStreamedTextureDict(dict, true)
-
-    const startTime = GetGameTimer()
-    while (!HasStreamedTextureDictLoaded(dict)) {
-      if (GetGameTimer() - startTime > timeout) {
-        return false
-      }
+    this.platform.requestStreamedTextureDict(dict, true)
+    const startTime = this.runtime.getGameTimer()
+    while (!this.platform.hasStreamedTextureDictLoaded(dict)) {
+      if (this.runtime.getGameTimer() - startTime > timeout) return false
       await new Promise((r) => setTimeout(r, 0))
     }
 
@@ -305,105 +144,59 @@ export class StreamingService {
     return true
   }
 
-  /**
-   * Check if a texture dictionary is loaded.
-   *
-   * @param dict - Texture dictionary name
-   */
   isTextureDictLoaded(dict: string): boolean {
-    return HasStreamedTextureDictLoaded(dict)
+    return this.platform.hasStreamedTextureDictLoaded(dict)
   }
 
-  /**
-   * Release a loaded texture dictionary.
-   *
-   * @param dict - Texture dictionary name
-   */
   releaseTextureDict(dict: string): void {
-    SetStreamedTextureDictAsNoLongerNeeded(dict)
+    this.platform.setStreamedTextureDictAsNoLongerNeeded(dict)
     this.loadedAssets.delete(`texture:${dict}`)
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Audio Loading
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Request and load a script audio bank.
-   *
-   * @param audioBank - Audio bank name
-   * @param networked - Whether the audio should be networked
-   * @param timeout - Maximum wait time in ms
-   * @returns Whether the audio bank was loaded successfully
-   */
   async requestAudioBank(audioBank: string, networked = false, _timeout = 10000): Promise<boolean> {
     const key = `audio:${audioBank}`
+    if (this.loadedAssets.get(key)?.loaded) return true
 
-    // Already loaded
-    if (this.loadedAssets.get(key)?.loaded) {
-      return true
-    }
-
-    const success = RequestScriptAudioBank(audioBank, networked)
+    const success = this.platform.requestScriptAudioBank(audioBank, networked)
     if (!success) return false
 
     this.loadedAssets.set(key, { type: 'audio', asset: audioBank, loaded: true })
     return true
   }
 
-  /**
-   * Release a loaded audio bank.
-   *
-   * @param audioBank - Audio bank name
-   */
   releaseAudioBank(audioBank: string): void {
-    ReleaseScriptAudioBank()
+    this.platform.releaseScriptAudioBank(audioBank)
     this.loadedAssets.delete(`audio:${audioBank}`)
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Utility Methods
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Get all currently loaded assets.
-   */
   getLoadedAssets(): StreamingRequest[] {
     return Array.from(this.loadedAssets.values())
   }
 
-  /**
-   * Release all loaded assets.
-   */
   releaseAll(): void {
     for (const asset of this.loadedAssets.values()) {
       switch (asset.type) {
         case 'model':
-          if (asset.hash) SetModelAsNoLongerNeeded(asset.hash)
+          if (asset.hash) this.platform.setModelAsNoLongerNeeded(asset.hash)
           break
         case 'animDict':
-          RemoveAnimDict(asset.asset)
+          this.platform.removeAnimDict(asset.asset)
           break
         case 'ptfx':
-          RemoveNamedPtfxAsset(asset.asset)
+          this.platform.removeNamedPtfxAsset(asset.asset)
           break
         case 'texture':
-          SetStreamedTextureDictAsNoLongerNeeded(asset.asset)
+          this.platform.setStreamedTextureDictAsNoLongerNeeded(asset.asset)
           break
         case 'audio':
-          ReleaseScriptAudioBank()
+          this.platform.releaseScriptAudioBank(asset.asset)
           break
       }
     }
     this.loadedAssets.clear()
   }
 
-  /**
-   * Get hash key for a string.
-   *
-   * @param str - String to hash
-   */
   getHash(str: string): number {
-    return GetHashKey(str)
+    return this.platform.getHashKey(str)
   }
 }

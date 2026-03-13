@@ -24,12 +24,6 @@ importers:
       '@biomejs/biome':
         specifier: ^2.3.11
         version: 2.3.11
-      '@citizenfx/client':
-        specifier: 2.0.22443-1
-        version: 2.0.22443-1
-      '@citizenfx/server':
-        specifier: 2.0.22443-1
-        version: 2.0.22443-1
       '@types/node':
         specifier: ^25.0.3
         version: 25.0.3
@@ -136,12 +130,6 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
-
-  '@citizenfx/client@2.0.22443-1':
-    resolution: {integrity: sha512-fCnYxGrFCl1iUxS1oAbmwXCuouLd+MzMjLrvVIv9Q/2/H7SyhPDHLZVOedUZmkG0gWvt4wGk1Pjcv41uzmVlhA==}
-
-  '@citizenfx/server@2.0.22443-1':
-    resolution: {integrity: sha512-QbLuZQ0JnFXu59d4x0Z0qN3Bu+tb38oK4+E3DvB0zg172+EzrdGnfX66KprlM8JEjDvItTR4fSIVUWJyNYzULQ==}
 
   '@esbuild/aix-ppc64@0.27.2':
     resolution: {integrity: sha512-GZMB+a0mOMZs4MpDbj8RJp4cw+w1WV5NYD6xzgvzUJ5Ek2jerwfO2eADyI6ExDSUED+1X8aMbegahsJi+8mgpw==}
@@ -1694,10 +1682,6 @@ snapshots:
 
   '@biomejs/cli-win32-x64@2.3.11':
     optional: true
-
-  '@citizenfx/client@2.0.22443-1': {}
-
-  '@citizenfx/server@2.0.22443-1': {}
 
   '@esbuild/aix-ppc64@0.27.2':
     optional: true

@@ -1,12 +1,13 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { loggers, PlayerAppearance } from '../../../kernel'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
 import { AppearanceService } from './appearance.service'
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 interface SpawnOptions {
-  /** Optional: Apply complete character appearance (RP clothing, face, props, tattoos...) */
   appearance?: PlayerAppearance
 }
 
@@ -20,10 +21,7 @@ function isCfxRuntime(): boolean {
 
 function detectGameProfile(): 'gta5' | 'rdr3' | 'common' {
   const getGameName = (globalThis as any).GetGameName
-  if (typeof getGameName !== 'function') {
-    return 'common'
-  }
-
+  if (typeof getGameName !== 'function') return 'common'
   const raw = String(getGameName()).toLowerCase()
   if (raw.includes('rdr')) return 'rdr3'
   if (raw.includes('gta')) return 'gta5'
@@ -32,26 +30,17 @@ function detectGameProfile(): 'gta5' | 'rdr3' | 'common' {
 
 const IS_RDR3_PROFILE = isCfxRuntime() && detectGameProfile() === 'rdr3'
 
-/**
- * Handles all player spawning logic on the client.
- *
- * This service manages the complete lifecycle of a player spawn:
- * - Waiting for the network session
- * - Loading and applying the player model
- * - Ensuring collision and world data is ready
- * - Resurrecting the player cleanly
- * - Applying default ped components for freemode models
- * - Fading the screen in/out during transitions
- *
- * The service is designed to be robust, predictable, and safe for any gamemode.
- */
 @injectable()
 export class SpawnService {
   private spawned = false
   private spawning = false
   private readonly skipAppearancePipeline = IS_RDR3_PROFILE
 
-  constructor(private appearanceService: AppearanceService) {}
+  constructor(
+    private appearanceService: AppearanceService,
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
 
   async init(): Promise<void> {
     loggers.spawn.debug('SpawnService initialized')
@@ -60,22 +49,6 @@ export class SpawnService {
     }
   }
 
-  /**
-   * Performs the first spawn of the player.
-   *
-   * This method handles:
-   * - Fade out
-   * - Closing loading screens
-   * - Setting the player model
-   * - Ensuring the ped exists
-   * - Ensuring collision is loaded
-   * - Resurrecting the player
-   * - Preparing the ped for gameplay
-   * - Placing the player at the desired position
-   * - Fade in
-   *
-   * It should only be called once when the player joins.
-   */
   async spawn(
     position: Vector3,
     model: string,
@@ -91,9 +64,9 @@ export class SpawnService {
     try {
       await this.ensureNetworkReady()
 
-      if (!IsScreenFadedOut() && !IsScreenFadingOut()) {
-        DoScreenFadeOut(500)
-        while (!IsScreenFadedOut()) {
+      if (!this.platform.isScreenFadedOut() && !this.platform.isScreenFadingOut()) {
+        this.platform.doScreenFadeOut(500)
+        while (!this.platform.isScreenFadedOut()) {
           await delay(0)
         }
       }
@@ -104,7 +77,7 @@ export class SpawnService {
       await this.applyAppearanceIfNeeded(ped, options?.appearance)
 
       await this.ensureCollisionAt(position, ped)
-      NetworkResurrectLocalPlayer(position.x, position.y, position.z, heading, 0, false)
+      this.platform.networkResurrectLocalPlayer(position, heading)
       const finalPed = await this.ensurePed()
 
       await this.setupPedForGameplay(finalPed)
@@ -112,8 +85,8 @@ export class SpawnService {
 
       this.spawned = true
 
-      if (!IsScreenFadedIn() && !IsScreenFadingIn()) {
-        DoScreenFadeIn(500)
+      if (!this.platform.isScreenFadedIn() && !this.platform.isScreenFadingIn()) {
+        this.platform.doScreenFadeIn(500)
       }
 
       loggers.spawn.info('Player spawned successfully (first spawn)', {
@@ -130,40 +103,24 @@ export class SpawnService {
     }
   }
 
-  /**
-   * Teleports the player instantly to a new position.
-   * Does not change the model or resurrect the player.
-   * Safe for gameplay use.
-   */
   async teleportTo(position: Vector3, heading?: number): Promise<void> {
     const ped = await this.ensurePed()
-
     await this.ensureCollisionAt(position, ped)
-
-    FreezeEntityPosition(ped, true)
-    SetEntityCoordsNoOffset(ped, position.x, position.y, position.z, false, false, false)
-
+    this.platform.freezeEntityPosition(ped, true)
+    this.platform.setEntityCoordsNoOffset(ped, position)
     if (heading !== undefined) {
-      SetEntityHeading(ped, heading)
+      this.platform.setEntityHeading(ped, heading)
     }
-
-    FreezeEntityPosition(ped, false)
+    this.platform.freezeEntityPosition(ped, false)
   }
 
-  /**
-   * Respawns the player after death or a gameplay event.
-   * Restores health, resurrects the player, loads collision,
-   * prepares the ped and teleports them to the desired location.
-   */
   async respawn(position: Vector3, heading = 0.0): Promise<void> {
     const ped = await this.ensurePed()
-
     await this.ensureCollisionAt(position, ped)
 
-    ClearPedTasksImmediately(ped)
-    SetEntityHealth(ped, GetEntityMaxHealth(ped))
-
-    NetworkResurrectLocalPlayer(position.x, position.y, position.z, heading, 0, false)
+    this.platform.clearPedTasksImmediately(ped)
+    this.platform.setEntityHealth(ped, this.platform.getEntityMaxHealth(ped))
+    this.platform.networkResurrectLocalPlayer(position, heading)
 
     const finalPed = await this.ensurePed()
     await this.setupPedForGameplay(finalPed)
@@ -175,16 +132,10 @@ export class SpawnService {
     })
   }
 
-  /**
-   * Returns whether the player has completed their first spawn.
-   */
   isSpawned(): boolean {
     return this.spawned
   }
 
-  /**
-   * Allows other systems to wait until the player is fully spawned.
-   */
   async waitUntilSpawned(): Promise<void> {
     while (!this.spawned) {
       await delay(0)
@@ -192,10 +143,9 @@ export class SpawnService {
   }
 
   private async ensureNetworkReady(): Promise<void> {
-    const start = GetGameTimer()
-
-    while (!NetworkIsSessionStarted()) {
-      if (GetGameTimer() - start > NETWORK_TIMEOUT_MS) {
+    const start = this.runtime.getGameTimer()
+    while (!this.platform.networkIsSessionStarted()) {
+      if (this.runtime.getGameTimer() - start > NETWORK_TIMEOUT_MS) {
         loggers.spawn.error('Network session did not start in time')
         throw new Error('NETWORK_TIMEOUT')
       }
@@ -205,62 +155,58 @@ export class SpawnService {
 
   private closeLoadingScreens(): void {
     try {
-      ShutdownLoadingScreen()
+      this.platform.shutdownLoadingScreen()
     } catch {}
     try {
-      ShutdownLoadingScreenNui()
+      this.platform.shutdownLoadingScreenNui()
     } catch {}
   }
 
   private async setPlayerModel(model: string): Promise<void> {
-    const modelHash = GetHashKey(model)
+    const modelHash = this.platform.getHashKey(model)
 
-    if (!IsModelInCdimage(modelHash) || !IsModelValid(modelHash)) {
+    if (!this.platform.isModelInCdimage(modelHash) || !this.platform.isModelValid(modelHash)) {
       loggers.spawn.error('Invalid model requested', { model })
       throw new Error('MODEL_INVALID')
     }
 
-    RequestModel(modelHash)
-    while (!HasModelLoaded(modelHash)) {
+    this.platform.requestModel(modelHash)
+    while (!this.platform.hasModelLoaded(modelHash)) {
       await delay(0)
     }
 
-    SetPlayerModel(PlayerId(), modelHash)
-    SetModelAsNoLongerNeeded(modelHash)
+    this.platform.setPlayerModel(this.platform.playerId(), modelHash)
+    this.platform.setModelAsNoLongerNeeded(modelHash)
 
-    const ped = PlayerPedId()
+    const ped = this.platform.getLocalPlayerPed()
     if (ped !== 0 && !this.skipAppearancePipeline) {
       this.applyDefaultAppearanceSafe(ped)
     }
   }
 
   private async ensurePed(): Promise<number> {
-    const start = GetGameTimer()
-    let ped = PlayerPedId()
+    const start = this.runtime.getGameTimer()
+    let ped = this.platform.getLocalPlayerPed()
 
     while (ped === 0) {
-      if (GetGameTimer() - start > PED_TIMEOUT_MS) {
-        loggers.spawn.error('PlayerPedId() did not become valid in time')
+      if (this.runtime.getGameTimer() - start > PED_TIMEOUT_MS) {
+        loggers.spawn.error('Local player ped did not become valid in time')
         throw new Error('PED_TIMEOUT')
       }
       await delay(0)
-      ped = PlayerPedId()
+      ped = this.platform.getLocalPlayerPed()
     }
 
     return ped
   }
 
   private async ensureCollisionAt(position: Vector3, ped: number): Promise<void> {
-    RequestCollisionAtCoord(position.x, position.y, position.z)
+    this.platform.requestCollisionAtCoord(position)
 
-    const start = GetGameTimer()
-    while (!HasCollisionLoadedAroundEntity(ped)) {
-      if (GetGameTimer() - start > COLLISION_TIMEOUT_MS) {
-        loggers.spawn.warn('Collision did not fully load around entity in time', {
-          x: position.x,
-          y: position.y,
-          z: position.z,
-        })
+    const start = this.runtime.getGameTimer()
+    while (!this.platform.hasCollisionLoadedAroundEntity(ped)) {
+      if (this.runtime.getGameTimer() - start > COLLISION_TIMEOUT_MS) {
+        loggers.spawn.warn('Collision did not fully load around entity in time', position)
         break
       }
       await delay(0)
@@ -268,34 +214,27 @@ export class SpawnService {
   }
 
   private async setupPedForGameplay(ped: number): Promise<void> {
-    SetEntityAsMissionEntity(ped, true, true)
-
-    ClearPedTasksImmediately(ped)
-    RemoveAllPedWeapons(ped, true)
-
-    ResetEntityAlpha(ped)
+    this.platform.setEntityAsMissionEntity(ped, true, true)
+    this.platform.clearPedTasksImmediately(ped)
+    this.platform.removeAllPedWeapons(ped, true)
+    this.platform.resetEntityAlpha(ped)
     await delay(0)
-    SetEntityAlpha(ped, 255, false)
-    SetEntityVisible(ped, true, false)
-    SetEntityCollision(ped, true, true)
-    SetEntityInvincible(ped, false)
+    this.platform.setEntityAlpha(ped, 255)
+    this.platform.setEntityVisible(ped, true)
+    this.platform.setEntityCollision(ped, true)
+    this.platform.setEntityInvincible(ped, false)
   }
 
   private async placePed(ped: number, position: Vector3, heading: number): Promise<void> {
-    FreezeEntityPosition(ped, true)
-
-    SetEntityCoordsNoOffset(ped, position.x, position.y, position.z, false, false, false)
-    SetEntityHeading(ped, heading)
-
+    this.platform.freezeEntityPosition(ped, true)
+    this.platform.setEntityCoordsNoOffset(ped, position)
+    this.platform.setEntityHeading(ped, heading)
     await delay(0)
-
-    FreezeEntityPosition(ped, false)
+    this.platform.freezeEntityPosition(ped, false)
   }
 
   private async applyAppearanceIfNeeded(ped: number, appearance?: PlayerAppearance): Promise<void> {
-    if (this.skipAppearancePipeline) {
-      return
-    }
+    if (this.skipAppearancePipeline) return
 
     if (!appearance) {
       this.applyDefaultAppearanceSafe(ped)

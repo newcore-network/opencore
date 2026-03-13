@@ -2,6 +2,8 @@ import { IPedAppearanceClient } from '../../../adapters/contracts/client/IPedApp
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { IClientLocalPlayerBridge } from './local-player-bridge'
 import { NodeClientLocalPlayerBridge } from './node-local-player-bridge'
+import { NodeClientPlatformBridge } from './node-platform-bridge'
+import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
 import { defineClientAdapter, type OpenCoreClientAdapter } from './client-adapter'
 import { IClientRuntimeBridge } from './runtime-bridge'
@@ -26,6 +28,7 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
       ctx.bindSingleton(IHasher as any, NodeHasher)
       ctx.bindSingleton(IClientRuntimeBridge as any, NodeClientRuntimeBridge)
       ctx.bindSingleton(IClientLocalPlayerBridge as any, NodeClientLocalPlayerBridge)
+      ctx.bindSingleton(IClientPlatformBridge as any, NodeClientPlatformBridge)
     },
   })
 }

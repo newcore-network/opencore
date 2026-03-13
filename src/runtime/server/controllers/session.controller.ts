@@ -1,3 +1,4 @@
+import { RUNTIME_EVENTS } from '../../../adapters/contracts/runtime'
 import { inject } from 'tsyringe'
 import { loggers } from '../../../kernel/logger'
 import { emitFrameworkEvent } from '../bus/internal-event.bus'
@@ -19,7 +20,7 @@ export class SessionController {
     private readonly persistance: PlayerPersistenceService,
   ) {}
 
-  @OnRuntimeEvent('playerJoining')
+  @OnRuntimeEvent(RUNTIME_EVENTS.playerJoining)
   public async onPlayerJoining(
     clientId: number,
     identifiers?: Record<string, string>,
@@ -49,7 +50,7 @@ export class SessionController {
     })
   }
 
-  @OnRuntimeEvent('playerDropped')
+  @OnRuntimeEvent(RUNTIME_EVENTS.playerDropped)
   public async onPlayerDropped(clientId: number): Promise<void> {
     const player = this.playerDirectory.getByClient(clientId)
 

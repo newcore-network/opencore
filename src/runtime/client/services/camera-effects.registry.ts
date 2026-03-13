@@ -1,4 +1,5 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
+import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { Camera } from './camera'
 
 /**
@@ -76,6 +77,10 @@ export class CameraEffectsRegistry {
   private effects = new Map<string, CameraEffectDefinition>()
   private presets = new Map<string, CameraEffectPreset>()
 
+  constructor(
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+  ) {}
+
   /**
    * Registers a single effect definition.
    */
@@ -129,7 +134,7 @@ export class CameraEffectsRegistry {
       defaults: { ms: 500 },
       setup: (_ctx, params) => {
         const ms = Number((params as Record<string, unknown>).ms ?? 500)
-        DoScreenFadeIn(ms)
+        this.platform.doScreenFadeIn(ms)
       },
     })
 
@@ -138,7 +143,7 @@ export class CameraEffectsRegistry {
       defaults: { ms: 500 },
       setup: (_ctx, params) => {
         const ms = Number((params as Record<string, unknown>).ms ?? 500)
-        DoScreenFadeOut(ms)
+        this.platform.doScreenFadeOut(ms)
       },
     })
 
@@ -163,11 +168,11 @@ export class CameraEffectsRegistry {
         const p = params as Record<string, unknown>
         const name = String(p.name ?? 'default')
         const strength = Number(p.strength ?? 1)
-        SetTimecycleModifier(name)
-        SetTimecycleModifierStrength(strength)
+        this.platform.setTimecycleModifier(name)
+        this.platform.setTimecycleModifierStrength(strength)
       },
       teardown: () => {
-        ClearTimecycleModifier()
+        this.platform.clearTimecycleModifier()
       },
     })
 

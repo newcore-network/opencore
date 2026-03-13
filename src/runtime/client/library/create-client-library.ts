@@ -52,12 +52,11 @@ export function createClientLibrary(
       emitLibraryEvent(eventId, envelope)
     },
     emitServer(eventName, payload) {
-      if (events) {
-        events.emit(base.buildEventName(eventName), payload)
-        return
+      if (!events) {
+        throw new Error('[OpenCore] Client events transport is not registered.')
       }
 
-      emitNet(base.buildEventName(eventName), payload)
+      events.emit(base.buildEventName(eventName), payload)
     },
     getLogger() {
       return logger

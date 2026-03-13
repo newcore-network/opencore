@@ -60,16 +60,13 @@ export function createServerLibrary(
         engineEvents.emit(base.buildEventName(eventName), payload)
         return
       }
-
-      emit(base.buildEventName(eventName), payload)
     },
     emitNetExternal(eventName, target, payload) {
-      if (netEvents) {
-        netEvents.emit(base.buildEventName(eventName), target, payload)
+      if (!netEvents) {
         return
       }
 
-      emitNet(base.buildEventName(eventName), target, payload)
+      netEvents.emit(base.buildEventName(eventName), target, payload)
     },
     getLogger() {
       return logger
