@@ -1,8 +1,4 @@
-import {
-  DEFAULT_RUNTIME_EVENT_MAP,
-  type RuntimeEventMap,
-  type RuntimeEventName,
-} from './runtime'
+import { DEFAULT_RUNTIME_EVENT_MAP, type RuntimeEventMap, type RuntimeEventName } from './runtime'
 
 export abstract class IEngineEvents {
   /**
