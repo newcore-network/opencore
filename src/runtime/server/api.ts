@@ -1,6 +1,6 @@
 // Framework functions
 export { onFrameworkEvent } from './bus/internal-event.bus'
-export { init } from './core'
+export { init, useAdapter } from './core'
 
 // API
 export * from './apis'
