@@ -34,7 +34,10 @@ export function bindClientTransportInstances(
   context: Pick<ClientAdapterContext, 'bindInstance'>,
   transport: MessagingTransport,
 ): void {
-  context.bindInstance(MessagingTransport as unknown as InjectionToken<MessagingTransport>, transport)
+  context.bindInstance(
+    MessagingTransport as unknown as InjectionToken<MessagingTransport>,
+    transport,
+  )
   context.bindInstance(EventsAPI as InjectionToken<EventsAPI<'client'>>, transport.events)
   context.bindInstance(RpcAPI as InjectionToken<RpcAPI<'client'>>, transport.rpc)
 }

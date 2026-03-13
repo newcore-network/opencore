@@ -3,10 +3,7 @@ import { injectable } from 'tsyringe'
 import { IClientRuntimeBridge } from './runtime-bridge'
 
 type RuntimeHandler = (...args: readonly unknown[]) => void | Promise<void>
-type WebViewCallback = (
-  data: unknown,
-  cb: (response: unknown) => void,
-) => void | Promise<void>
+type WebViewCallback = (data: unknown, cb: (response: unknown) => void) => void | Promise<void>
 type RuntimeExport = (...args: readonly unknown[]) => unknown
 
 /**
@@ -59,10 +56,7 @@ export class NodeClientRuntimeBridge extends IClientRuntimeBridge {
     return Date.now()
   }
 
-  registerNuiCallback(
-    eventName: string,
-    handler: WebViewCallback,
-  ): void {
+  registerNuiCallback(eventName: string, handler: WebViewCallback): void {
     this.events.on(`__nui:${eventName}`, (data, cb) => {
       void handler(data, cb)
     })
