@@ -101,6 +101,26 @@ describe('client adapter bootstrap', () => {
     expect(getClientRuntimeContext()?.resourceName).toBe('custom-resource')
   })
 
+  it('prefers the injected project adapter before the node default', async () => {
+    const runtime = new CustomRuntimeBridge()
+    globalThis.__OPENCORE_PROJECT_CLIENT_ADAPTER__ = defineClientAdapter({
+      name: 'injected-client',
+      async register(ctx) {
+        const { NodeMessagingTransport } = await import(
+          '../../../../src/adapters/node/transport/adapter'
+        )
+        ctx.bindMessagingTransport(new NodeMessagingTransport('client'))
+        ctx.bindInstance(IClientRuntimeBridge as any, runtime)
+        ctx.bindInstance(IClientLocalPlayerBridge as any, new NoopLocalPlayerBridge())
+      },
+    })
+
+    await initClientCore({ mode: 'STANDALONE' })
+
+    expect(getActiveClientAdapterName()).toBe('injected-client')
+    expect(getClientRuntimeContext()?.resourceName).toBe('custom-resource')
+  })
+
   it('throws when re-initialized with a different adapter', async () => {
     const makeAdapter = (name: string) =>
       defineClientAdapter({

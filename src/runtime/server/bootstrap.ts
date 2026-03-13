@@ -5,6 +5,7 @@ import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { createNodeServerAdapter } from './adapter/node-server-adapter'
 import { installServerAdapter } from './adapter/registry'
+import { getInjectedServerAdapter } from '../project-adapter'
 import { PrincipalProviderContract } from './contracts/index'
 import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binaryService'
 import { getServerControllerRegistry } from './decorators/controller'
@@ -111,12 +112,14 @@ export async function initServer(
     scope: getFrameworkModeScope(ctx.mode),
   })
 
+  const activeAdapter = options.adapter ?? getInjectedServerAdapter() ?? createNodeServerAdapter()
+
   // Register platform-specific capabilities through the selected server adapter.
-  await installServerAdapter(options.adapter ?? createNodeServerAdapter())
+  await installServerAdapter(activeAdapter)
 
   const platformContext = GLOBAL_CONTAINER.resolve(IPlatformContext as any) as IPlatformContext
   loggers.bootstrap.debug('Loading server Adapter ', {
-    adapter: options.adapter?.name ?? 'node',
+    adapter: activeAdapter.name,
     game: platformContext.gameProfile,
   })
 

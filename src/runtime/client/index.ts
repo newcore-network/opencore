@@ -1,4 +1,5 @@
 export * from './api'
+export * from '../adapter-runtime'
 export { Client, createClientRuntime } from './client-api-runtime'
 export type { ClientApi } from './client-api-runtime'
 export type {
