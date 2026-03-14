@@ -32,6 +32,7 @@ import {
 } from './services'
 import { registerSystemClient } from './system/processors.register'
 import { WebViewBridge } from './webview-bridge'
+import { WebViewService } from './webview.service'
 
 /**
  * Services that have an init() method which registers global runtime event listeners.
@@ -73,6 +74,7 @@ const SERVICES_WITH_GLOBAL_LISTENERS: Array<
 function registerServices() {
   // Register all client services in DI (available in all modes)
   if (!di.isRegistered(SpawnService)) di.registerSingleton(SpawnService, SpawnService)
+  if (!di.isRegistered(WebViewService)) di.registerSingleton(WebViewService, WebViewService)
   if (!di.isRegistered(WebViewBridge)) di.registerSingleton(WebViewBridge, WebViewBridge)
   if (!di.isRegistered(NotificationService))
     di.registerSingleton(NotificationService, NotificationService)

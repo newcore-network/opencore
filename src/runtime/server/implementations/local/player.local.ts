@@ -4,6 +4,7 @@ import { IPlatformContext } from '../../../../adapters/contracts/IPlatformContex
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
 import { IPlayerLifecycleServer } from '../../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../../../adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
 import { BaseEntity } from '../../../core/entity'
@@ -34,6 +35,8 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IPlayerLifecycleServer as any)
     private readonly playerLifecycle: IPlayerLifecycleServer,
+    @inject(IPlayerStateSyncServer as any)
+    private readonly playerStateSync: IPlayerStateSyncServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
     @inject(IPlatformContext as any)
@@ -45,6 +48,7 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
       playerLifecycle: this.playerLifecycle,
+      playerStateSync: this.playerStateSync,
       entityServer: this.entityServer,
       events: this.events,
       defaultSpawnModel,

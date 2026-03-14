@@ -1,4 +1,5 @@
 import { inject, injectable } from 'tsyringe'
+import { IClientNotificationBridge } from '../../../adapters/contracts/client/ui/IClientNotificationBridge'
 import { IClientPlatformBridge } from '../adapter/platform-bridge'
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error'
@@ -18,27 +19,18 @@ export interface AdvancedNotificationOptions {
 @injectable()
 export class NotificationService {
   constructor(
+    @inject(IClientNotificationBridge as any)
+    private readonly notifications: IClientNotificationBridge,
     @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
   ) {}
 
   show(message: string, blink = false): void {
-    this.platform.setNotificationTextEntry('STRING')
-    this.platform.addTextComponentString(message)
-    this.platform.drawNotification(blink, true)
+    this.notifications.show(message, blink)
   }
 
   showWithType(message: string, type: NotificationType = 'info'): void {
     const iconMap: Record<NotificationType, number> = { info: 1, success: 2, warning: 3, error: 4 }
-    this.platform.beginTextCommandThefeedPost('STRING')
-    this.platform.addTextComponentString(message)
-    this.platform.endTextCommandThefeedPostMessagetext(
-      'CHAR_SOCIAL_CLUB',
-      'CHAR_SOCIAL_CLUB',
-      true,
-      iconMap[type],
-      '',
-      message,
-    )
+    this.notifications.showTyped(message, iconMap[type])
   }
 
   showAdvanced(options: AdvancedNotificationOptions): void {
@@ -54,39 +46,36 @@ export class NotificationService {
       backgroundColor,
     } = options
 
-    this.platform.setNotificationTextEntry('STRING')
-    this.platform.addTextComponentString(message)
-    if (backgroundColor !== undefined) this.platform.setNotificationBackgroundColor(backgroundColor)
-    this.platform.setNotificationMessage(textureDict, textureName, flash, iconType, title, subtitle)
-    this.platform.drawNotification(flash, saveToBrief)
+    this.notifications.showAdvanced({
+      title,
+      subtitle,
+      message,
+      textureDict,
+      textureName,
+      iconType,
+      flash,
+      saveToBrief,
+      backgroundColor,
+    })
   }
 
   showHelp(message: string, duration = 5000, beep = true, looped = false): void {
-    this.platform.beginTextCommandDisplayHelp('STRING')
-    this.platform.addTextComponentSubstringPlayerName(message)
-    this.platform.endTextCommandDisplayHelp(0, looped, beep, duration)
+    this.notifications.showHelp(message, duration, beep, looped)
   }
 
   clearHelp(): void {
-    this.platform.clearAllHelpMessages()
+    this.notifications.clearHelp()
   }
 
   showSubtitle(message: string, duration = 2500): void {
-    this.platform.beginTextCommandPrint('STRING')
-    this.platform.addTextComponentSubstringPlayerName(message)
-    this.platform.endTextCommandPrint(duration, true)
+    this.notifications.showSubtitle(message, duration)
   }
 
   clearSubtitle(): void {
-    this.platform.clearPrints()
+    this.notifications.clearSubtitle()
   }
 
   showFloatingHelp(message: string): void {
-    const position = this.platform.getEntityCoords(this.platform.getLocalPlayerPed())
-    this.platform.setFloatingHelpTextWorldPosition(1, position)
-    this.platform.setFloatingHelpTextStyle(1, 1, 2, -1, 3, 0)
-    this.platform.beginTextCommandDisplayHelp('STRING')
-    this.platform.addTextComponentSubstringPlayerName(message)
-    this.platform.endTextCommandDisplayHelp(2, false, false, -1)
+    this.notifications.showFloatingHelp(message, this.platform.getEntityCoords(this.platform.getLocalPlayerPed()))
   }
 }

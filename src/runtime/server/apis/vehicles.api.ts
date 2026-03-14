@@ -15,7 +15,8 @@ import {
 } from '../types/vehicle.types'
 import { Players } from '../ports/players.api-port'
 
-export interface VehicleCreateForPlayerOptions extends Omit<VehicleCreateOptions, 'position' | 'ownership'> {
+export interface VehicleCreateForPlayerOptions
+  extends Omit<VehicleCreateOptions, 'position' | 'ownership'> {
   offset?: Vector3
   seatIndex?: number
 }
@@ -98,7 +99,7 @@ export class Vehicles {
         heading,
       })
 
-      if (!handle || handle === 0) {
+      if (!Number.isFinite(handle) || handle < 0) {
         coreLogger.error('Failed to create vehicle', { model, position })
         return {
           networkId: 0,
@@ -157,11 +158,16 @@ export class Vehicles {
       }
 
       this.vehiclesByNetworkId.set(networkId, vehicle)
+      let ownershipComp: string = vehicleOwnership.type
+
+      if (vehicleOwnership.type === 'player') {
+        ownershipComp = `${vehicleOwnership.type}:${ownership?.clientID}`
+      }
 
       coreLogger.info('Vehicle created', {
         networkId,
         model,
-        ownership: vehicleOwnership.type,
+        ownership: ownershipComp,
         persistent,
         totalVehicles: this.vehiclesByNetworkId.size,
       })
@@ -244,7 +250,10 @@ export class Vehicles {
       : playerOrClientID
   }
 
-  private getSpawnPositionForPlayer(player: Player, offset: Vector3 = DEFAULT_PLAYER_VEHICLE_OFFSET): Vector3 {
+  private getSpawnPositionForPlayer(
+    player: Player,
+    offset: Vector3 = DEFAULT_PLAYER_VEHICLE_OFFSET,
+  ): Vector3 {
     const position = player.getPosition()
     const headingRadians = (player.getHeading() * Math.PI) / 180
 

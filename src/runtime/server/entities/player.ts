@@ -2,6 +2,7 @@ import { IPlayerInfo } from '../../../adapters'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../../adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import type {
   RespawnPlayerRequest,
@@ -26,6 +27,7 @@ export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
   playerLifecycle: IPlayerLifecycleServer
+  playerStateSync: IPlayerStateSyncServer
   entityServer: IEntityServer
   events: EventsAPI<'server'>
   defaultSpawnModel: string
@@ -359,8 +361,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * Gets the current health of the player's ped.
    */
   getHealth(): number {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    return this.adapters.entityServer.getHealth(ped)
+    return this.adapters.playerStateSync.getHealth(this.clientID.toString())
   }
 
   /**
@@ -369,16 +370,14 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param health - Health value to set (platform-specific range).
    */
   setHealth(health: number): void {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    this.adapters.entityServer.setHealth(ped, health)
+    this.adapters.playerStateSync.setHealth(this.clientID.toString(), health)
   }
 
   /**
    * Gets the current armor of the player's ped.
    */
   getArmor(): number {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    return this.adapters.entityServer.getArmor(ped)
+    return this.adapters.playerStateSync.getArmor(this.clientID.toString())
   }
 
   /**
@@ -387,8 +386,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param armor - Armor value to set (typically 0-100).
    */
   setArmor(armor: number): void {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    this.adapters.entityServer.setArmor(ped, armor)
+    this.adapters.playerStateSync.setArmor(this.clientID.toString(), armor)
   }
 
   get model(): string | undefined {

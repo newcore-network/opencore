@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
-import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
+import { IClientMarkerBridge } from '../../../adapters/contracts/client/ui/IClientMarkerBridge'
 
 export interface MarkerOptions {
   type?: number
@@ -34,18 +34,18 @@ const DEFAULT_OPTIONS: Required<MarkerOptions> = {
 
 @injectable()
 export class MarkerService {
-  private markers: Map<string, ManagedMarker> = new Map()
+  private activeMarkers: Map<string, ManagedMarker> = new Map()
   private tickHandle: unknown = null
   private idCounter = 0
 
   constructor(
-    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientMarkerBridge as any) private readonly markers: IClientMarkerBridge,
     @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
   ) {}
 
   create(position: Vector3, options: MarkerOptions = {}): string {
     const id = `marker_${++this.idCounter}`
-    this.markers.set(id, {
+    this.activeMarkers.set(id, {
       id,
       position,
       options: { ...DEFAULT_OPTIONS, ...options },
@@ -56,42 +56,42 @@ export class MarkerService {
   }
 
   remove(id: string): boolean {
-    const deleted = this.markers.delete(id)
+    const deleted = this.activeMarkers.delete(id)
     this.checkTickNeeded()
     return deleted
   }
 
   removeAll(): void {
-    this.markers.clear()
+    this.activeMarkers.clear()
     this.stopTick()
   }
 
   setPosition(id: string, position: Vector3): boolean {
-    const marker = this.markers.get(id)
+    const marker = this.activeMarkers.get(id)
     if (!marker) return false
     marker.position = position
     return true
   }
 
   setOptions(id: string, options: Partial<MarkerOptions>): boolean {
-    const marker = this.markers.get(id)
+    const marker = this.activeMarkers.get(id)
     if (!marker) return false
     marker.options = { ...marker.options, ...options }
     return true
   }
 
   setVisible(id: string, visible: boolean): boolean {
-    const marker = this.markers.get(id)
+    const marker = this.activeMarkers.get(id)
     if (!marker) return false
     marker.visible = visible
     return true
   }
 
   get(id: string): ManagedMarker | undefined {
-    return this.markers.get(id)
+    return this.activeMarkers.get(id)
   }
   getAll(): ManagedMarker[] {
-    return Array.from(this.markers.values())
+    return Array.from(this.activeMarkers.values())
   }
 
   drawOnce(position: Vector3, options: MarkerOptions = {}): void {
@@ -101,7 +101,7 @@ export class MarkerService {
   private ensureTickRunning(): void {
     if (this.tickHandle !== null) return
     this.tickHandle = this.runtime.setTick(() => {
-      for (const marker of this.markers.values()) {
+      for (const marker of this.activeMarkers.values()) {
         if (!marker.visible) continue
         this.drawMarker(marker.position, marker.options)
       }
@@ -109,7 +109,7 @@ export class MarkerService {
   }
 
   private drawMarker(position: Vector3, options: Required<MarkerOptions>): void {
-    this.platform.drawMarker({
+    this.markers.draw({
       type: options.type,
       position,
       rotation: options.rotation,
@@ -130,6 +130,6 @@ export class MarkerService {
   }
 
   private checkTickNeeded(): void {
-    if (this.markers.size === 0) this.stopTick()
+    if (this.activeMarkers.size === 0) this.stopTick()
   }
 }

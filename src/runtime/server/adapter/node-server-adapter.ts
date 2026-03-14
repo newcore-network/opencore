@@ -10,7 +10,9 @@ import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { INpcLifecycleServer } from '../../../adapters/contracts/server/npc-lifecycle/INpcLifecycleServer'
 import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
+import { IPlayerAppearanceLifecycleServer } from '../../../adapters/contracts/server/player-appearance/IPlayerAppearanceLifecycleServer'
 import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../../adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { IVehicleLifecycleServer } from '../../../adapters/contracts/server/vehicle-lifecycle/IVehicleLifecycleServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
@@ -40,6 +42,8 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         { NodePlayerLifecycleServer },
         { NodeVehicleLifecycleServer },
         { NodeNpcLifecycleServer },
+        { NodePlayerAppearanceLifecycleServer },
+        { NodePlayerStateSyncServer },
       ] = await Promise.all([
         import('../../../adapters/node/transport/adapter'),
         import('../../../adapters/node/node-engine-events'),
@@ -57,6 +61,8 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         import('./node-player-lifecycle-server'),
         import('./node-vehicle-lifecycle-server'),
         import('./node-npc-lifecycle-server'),
+        import('./node-player-appearance-lifecycle-server'),
+        import('./node-player-state-sync-server'),
       ])
 
       ctx.bindSingleton(IPlatformContext as InjectionToken<IPlatformContext>, NodePlatformContext)
@@ -78,6 +84,14 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         NodeVehicleLifecycleServer,
       )
       ctx.bindSingleton(IPlayerServer as InjectionToken<IPlayerServer>, NodePlayerServer)
+      ctx.bindSingleton(
+        IPlayerAppearanceLifecycleServer as InjectionToken<IPlayerAppearanceLifecycleServer>,
+        NodePlayerAppearanceLifecycleServer,
+      )
+      ctx.bindSingleton(
+        IPlayerStateSyncServer as InjectionToken<IPlayerStateSyncServer>,
+        NodePlayerStateSyncServer,
+      )
       ctx.bindSingleton(
         IPlayerLifecycleServer as InjectionToken<IPlayerLifecycleServer>,
         NodePlayerLifecycleServer,

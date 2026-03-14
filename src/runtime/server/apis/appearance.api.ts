@@ -1,5 +1,7 @@
 import { injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { AppearanceService } from '../services'
+import { IPlayerAppearanceLifecycleServer } from '../../../adapters/contracts/server/player-appearance/IPlayerAppearanceLifecycleServer'
 import { AppearanceValidationResult, PlayerAppearance } from '../../..'
 import { Player } from '../entities/player'
 
@@ -8,7 +10,11 @@ type Clothes = Pick<PlayerAppearance, 'components' | 'props'>
 
 @injectable()
 export class Appearance {
-  constructor(private readonly appearance: AppearanceService) {}
+  constructor(
+    private readonly appearance: AppearanceService,
+    @inject(IPlayerAppearanceLifecycleServer as any)
+    private readonly lifecycle: IPlayerAppearanceLifecycleServer,
+  ) {}
 
   /**
    * Apply full appearance to a player.
@@ -23,8 +29,12 @@ export class Appearance {
     player: PlayerRef,
     appearance: PlayerAppearance,
   ): Promise<{ success: boolean; appearance?: PlayerAppearance; errors?: string[] }> {
+    const validation = this.appearance.validateAppearance(appearance)
+    if (!validation.valid) {
+      return { success: false, errors: validation.errors }
+    }
     const src = this.resolveSource(player)
-    return this.appearance.applyAppearance(src, appearance)
+    return this.lifecycle.apply(src, appearance)
   }
 
   /**
@@ -32,17 +42,17 @@ export class Appearance {
    *
    * Useful for quick outfit swaps without touching face / tattoos.
    */
-  applyClothing(player: PlayerRef, appearance: Clothes): boolean {
+  async applyClothing(player: PlayerRef, appearance: Clothes): Promise<boolean> {
     const src = this.resolveSource(player)
-    return this.appearance.applyClothing(src, appearance)
+    return await Promise.resolve(this.lifecycle.applyClothing(src, appearance))
   }
 
   /**
    * Reset player appearance to default.
    */
-  reset(player: PlayerRef): boolean {
+  async reset(player: PlayerRef): Promise<boolean> {
     const src = this.resolveSource(player)
-    return this.appearance.resetAppearance(src)
+    return await Promise.resolve(this.lifecycle.reset(src))
   }
 
   /**

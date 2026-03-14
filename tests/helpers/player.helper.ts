@@ -7,6 +7,7 @@ import {
   type SetPositionOptions,
 } from '../../src/adapters/contracts/server/IEntityServer'
 import { IPlayerLifecycleServer } from '../../src/adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../src/adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer'
 import type { PlayerIdentifier } from '../../src/adapters/contracts/types/identifier'
 import { Vector3 } from '../../src/kernel'
@@ -191,12 +192,20 @@ export class MockPlayerLifecycleServer extends IPlayerLifecycleServer {
   respawn(): void {}
 }
 
+export class MockPlayerStateSyncServer extends IPlayerStateSyncServer {
+  getHealth(): number { return 200 }
+  setHealth(): void {}
+  getArmor(): number { return 0 }
+  setArmor(): void {}
+}
+
 /**
  * Shared mock instances for tests.
  */
 export const mockPlayerInfo = new MockPlayerInfo()
 export const mockPlayerServer = new MockPlayerServer()
 export const mockPlayerLifecycle = new MockPlayerLifecycleServer()
+export const mockPlayerStateSync = new MockPlayerStateSyncServer()
 export const mockEntityServer = new MockEntityServer()
 export const mockEventsAPI = new MockEventsAPI()
 
@@ -208,6 +217,7 @@ export function createMockPlayerAdapters(): PlayerAdapters {
     playerInfo: mockPlayerInfo,
     playerServer: mockPlayerServer,
     playerLifecycle: mockPlayerLifecycle,
+    playerStateSync: mockPlayerStateSync,
     entityServer: mockEntityServer,
     events: mockEventsAPI,
     defaultSpawnModel: 'mp_m_freemode_01',
