@@ -39,6 +39,16 @@
       "import": "./dist/contracts.js",
       "require": "./dist/contracts.js"
     },
+    "./contracts/client": {
+      "types": "./dist/contracts/client.d.ts",
+      "import": "./dist/contracts/client.js",
+      "require": "./dist/contracts/client.js"
+    },
+    "./contracts/server": {
+      "types": "./dist/contracts/server.d.ts",
+      "import": "./dist/contracts/server.js",
+      "require": "./dist/contracts/server.js"
+    },
     "./kernel": {
       "types": "./dist/kernel-public.d.ts",
       "import": "./dist/kernel-public.js",

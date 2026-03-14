@@ -1,1 +1,4 @@
-export * from './adapters/contracts'
+export * from './adapters/contracts/IHasher'
+export * from './adapters/contracts/transport'
+export * from './adapters/contracts/types'
+export * from './adapters/contracts/runtime'
