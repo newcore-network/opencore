@@ -6,6 +6,7 @@ import {
   IEntityServer,
   type SetPositionOptions,
 } from '../../src/adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../src/adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
 import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer'
 import type { PlayerIdentifier } from '../../src/adapters/contracts/types/identifier'
 import { Vector3 } from '../../src/kernel'
@@ -184,11 +185,18 @@ export class MockEventsAPI extends EventsAPI<'server'> {
   emit(_event: string, _targetOrArg?: number | number[] | 'all' | any, ..._args: any[]): void {}
 }
 
+export class MockPlayerLifecycleServer extends IPlayerLifecycleServer {
+  spawn(): void {}
+  teleport(): void {}
+  respawn(): void {}
+}
+
 /**
  * Shared mock instances for tests.
  */
 export const mockPlayerInfo = new MockPlayerInfo()
 export const mockPlayerServer = new MockPlayerServer()
+export const mockPlayerLifecycle = new MockPlayerLifecycleServer()
 export const mockEntityServer = new MockEntityServer()
 export const mockEventsAPI = new MockEventsAPI()
 
@@ -199,6 +207,7 @@ export function createMockPlayerAdapters(): PlayerAdapters {
   return {
     playerInfo: mockPlayerInfo,
     playerServer: mockPlayerServer,
+    playerLifecycle: mockPlayerLifecycle,
     entityServer: mockEntityServer,
     events: mockEventsAPI,
     defaultSpawnModel: 'mp_m_freemode_01',

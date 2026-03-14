@@ -9,6 +9,7 @@ import { ITick } from '../../../adapters/contracts/ITick'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
+import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { defineServerAdapter, type OpenCoreServerAdapter } from './server-adapter'
@@ -34,6 +35,7 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         { NodeHasher },
         { NodePedAppearanceServer },
         { NodePlatformContext },
+        { NodePlayerLifecycleServer },
       ] = await Promise.all([
         import('../../../adapters/node/transport/adapter'),
         import('../../../adapters/node/node-engine-events'),
@@ -48,6 +50,7 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         import('../../../adapters/node/node-hasher'),
         import('../../../adapters/node/node-ped-appearance-server'),
         import('../../../adapters/node/node-capabilities'),
+        import('./node-player-lifecycle-server'),
       ])
 
       ctx.bindSingleton(IPlatformContext as InjectionToken<IPlatformContext>, NodePlatformContext)
@@ -64,6 +67,10 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
       ctx.bindSingleton(IPedServer as InjectionToken<IPedServer>, NodePedServer)
       ctx.bindSingleton(IVehicleServer as InjectionToken<IVehicleServer>, NodeVehicleServer)
       ctx.bindSingleton(IPlayerServer as InjectionToken<IPlayerServer>, NodePlayerServer)
+      ctx.bindSingleton(
+        IPlayerLifecycleServer as InjectionToken<IPlayerLifecycleServer>,
+        NodePlayerLifecycleServer,
+      )
       ctx.bindSingleton(IHasher as InjectionToken<IHasher>, NodeHasher)
       ctx.bindSingleton(
         IPedAppearanceServer as InjectionToken<IPedAppearanceServer>,

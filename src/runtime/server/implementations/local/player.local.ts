@@ -3,6 +3,7 @@ import { IPlayerInfo } from '../../../../adapters'
 import { IPlatformContext } from '../../../../adapters/contracts/IPlatformContext'
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
 import { BaseEntity } from '../../../core/entity'
@@ -31,6 +32,8 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     @inject(WorldContext) private readonly world: WorldContext,
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(IPlayerLifecycleServer as any)
+    private readonly playerLifecycle: IPlayerLifecycleServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
     @inject(IPlatformContext as any)
@@ -41,6 +44,7 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     this.playerAdapters = {
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
+      playerLifecycle: this.playerLifecycle,
       entityServer: this.entityServer,
       events: this.events,
       defaultSpawnModel,

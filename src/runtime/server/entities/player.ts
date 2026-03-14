@@ -1,8 +1,15 @@
 import { IPlayerInfo } from '../../../adapters'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import type {
+  RespawnPlayerRequest,
+  SpawnPlayerRequest,
+  TeleportPlayerRequest,
+} from '../../../adapters/contracts/server/player-lifecycle/types'
 import type { PlayerIdentifier } from '../../../adapters/contracts/types/identifier'
+import { loggers } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
@@ -18,6 +25,7 @@ import { NativeHandle } from 'src/runtime/core/nativehandle'
 export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
+  playerLifecycle: IPlayerLifecycleServer
   entityServer: IEntityServer
   events: EventsAPI<'server'>
   defaultSpawnModel: string
@@ -175,7 +183,15 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param vector - The target coordinates (x, y, z).
    */
   teleport(vector: Vector3): void {
-    this.emit('opencore:spawner:teleport', vector)
+    const request: TeleportPlayerRequest = { position: vector }
+    void Promise.resolve(
+      this.adapters.playerLifecycle.teleport(this.clientID.toString(), request),
+    ).catch((error: unknown) => {
+      loggers.spawn.error('Failed to teleport player', {
+        clientID: this.clientID,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
   }
 
   /**
@@ -185,7 +201,27 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param model - The ped model to use (default from platform capabilities)
    */
   spawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
-    this.emit('opencore:spawner:spawn', { position: vector, model })
+    const request: SpawnPlayerRequest = { position: vector, model }
+    void Promise.resolve(
+      this.adapters.playerLifecycle.spawn(this.clientID.toString(), request),
+    ).catch((error: unknown) => {
+      loggers.spawn.error('Failed to spawn player', {
+        clientID: this.clientID,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
+  }
+
+  respawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
+    const request: RespawnPlayerRequest = { position: vector, model }
+    void Promise.resolve(
+      this.adapters.playerLifecycle.respawn(this.clientID.toString(), request),
+    ).catch((error: unknown) => {
+      loggers.spawn.error('Failed to respawn player', {
+        clientID: this.clientID,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
   }
 
   // ─────────────────────────────────────────────────────────────────
