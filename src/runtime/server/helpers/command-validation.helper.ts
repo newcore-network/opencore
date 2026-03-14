@@ -3,7 +3,7 @@ import { AppError } from '../../../kernel'
 import { CommandMetadata } from '../decorators/command'
 import { Player } from '../entities'
 import { generateSchemaFromTypes } from '../system/schema-generator'
-import { processTupleSchema } from './process-tuple-schema'
+import { processTupleSchema } from '../../shared/helpers/process-tuple-schema'
 
 export async function validateAndExecuteCommand(
   meta: CommandMetadata,

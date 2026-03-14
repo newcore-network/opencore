@@ -3,7 +3,7 @@ import z from 'zod'
 import { RpcAPI } from '../../../../adapters/contracts/transport/rpc.api'
 import { type DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { coreLogger, LogDomain } from '../../../../kernel/logger'
-import { processTupleSchema } from '../../../server/helpers/process-tuple-schema'
+import { processTupleSchema } from '../../../shared/helpers/process-tuple-schema'
 import type { ClientRpcHandlerOptions } from '../../decorators/onRPC'
 import { METADATA_KEYS } from '../metadata-client.keys'
 

@@ -34,6 +34,16 @@
       "import": "./dist/runtime/client/index.js",
       "require": "./dist/runtime/client/index.js"
     },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "import": "./dist/contracts.js",
+      "require": "./dist/contracts.js"
+    },
+    "./kernel": {
+      "types": "./dist/kernel-public.d.ts",
+      "import": "./dist/kernel-public.js",
+      "require": "./dist/kernel-public.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

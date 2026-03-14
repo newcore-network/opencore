@@ -7,10 +7,22 @@ import {
 } from './client-adapter'
 import { IClientRuntimeBridge } from './runtime-bridge'
 
+declare const __OPENCORE_TARGET__: 'client' | 'server' | undefined
+
 let activeClientAdapterName: string | null = null
 
 async function getDefaultClientAdapter(): Promise<OpenCoreClientAdapter> {
-  const { createNodeClientAdapter } = await import('./node-client-adapter')
+  if (typeof __OPENCORE_TARGET__ !== 'undefined' && __OPENCORE_TARGET__ === 'client') {
+    throw new Error(
+      '[OpenCore] No client adapter provided. Configure one in opencore.config.ts or pass adapter to Client.init().',
+    )
+  }
+
+  const loadNodeClientAdapterModule = Function(
+    'return import("./node-client-adapter")',
+  ) as () => Promise<typeof import('./node-client-adapter')>
+
+  const { createNodeClientAdapter } = await loadNodeClientAdapterModule()
   return createNodeClientAdapter()
 }
 
