@@ -7,10 +7,12 @@ import { IPlayerInfo } from '../../../adapters/contracts/IPlayerInfo'
 import { IResourceInfo } from '../../../adapters/contracts/IResourceInfo'
 import { ITick } from '../../../adapters/contracts/ITick'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
+import { INpcLifecycleServer } from '../../../adapters/contracts/server/npc-lifecycle/INpcLifecycleServer'
 import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
 import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import { IVehicleLifecycleServer } from '../../../adapters/contracts/server/vehicle-lifecycle/IVehicleLifecycleServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { defineServerAdapter, type OpenCoreServerAdapter } from './server-adapter'
 
@@ -36,6 +38,8 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         { NodePedAppearanceServer },
         { NodePlatformContext },
         { NodePlayerLifecycleServer },
+        { NodeVehicleLifecycleServer },
+        { NodeNpcLifecycleServer },
       ] = await Promise.all([
         import('../../../adapters/node/transport/adapter'),
         import('../../../adapters/node/node-engine-events'),
@@ -51,6 +55,8 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
         import('../../../adapters/node/node-ped-appearance-server'),
         import('../../../adapters/node/node-capabilities'),
         import('./node-player-lifecycle-server'),
+        import('./node-vehicle-lifecycle-server'),
+        import('./node-npc-lifecycle-server'),
       ])
 
       ctx.bindSingleton(IPlatformContext as InjectionToken<IPlatformContext>, NodePlatformContext)
@@ -64,8 +70,13 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
       ctx.bindSingleton(ITick as InjectionToken<ITick>, NodeTick)
       ctx.bindSingleton(IPlayerInfo as InjectionToken<IPlayerInfo>, NodePlayerInfo)
       ctx.bindSingleton(IEntityServer as InjectionToken<IEntityServer>, NodeEntityServer)
+      ctx.bindSingleton(INpcLifecycleServer as InjectionToken<INpcLifecycleServer>, NodeNpcLifecycleServer)
       ctx.bindSingleton(IPedServer as InjectionToken<IPedServer>, NodePedServer)
       ctx.bindSingleton(IVehicleServer as InjectionToken<IVehicleServer>, NodeVehicleServer)
+      ctx.bindSingleton(
+        IVehicleLifecycleServer as InjectionToken<IVehicleLifecycleServer>,
+        NodeVehicleLifecycleServer,
+      )
       ctx.bindSingleton(IPlayerServer as InjectionToken<IPlayerServer>, NodePlayerServer)
       ctx.bindSingleton(
         IPlayerLifecycleServer as InjectionToken<IPlayerLifecycleServer>,
