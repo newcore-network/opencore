@@ -19,12 +19,24 @@ export class WebViewBridge<
       : this.serviceResolver
   }
 
-  create(url: string, options: { visible?: boolean; focused?: boolean; cursor?: boolean; inputPassthrough?: boolean } = {}): void {
+  create(
+    url: string,
+    options: {
+      visible?: boolean
+      focused?: boolean
+      cursor?: boolean
+      inputPassthrough?: boolean
+    } = {},
+  ): void {
     this.service.create({ id: this.viewId, url, ...options })
   }
 
-  destroy(): void { this.service.destroy(this.viewId) }
-  exists(): boolean { return this.service.exists(this.viewId) }
+  destroy(): void {
+    this.service.destroy(this.viewId)
+  }
+  exists(): boolean {
+    return this.service.exists(this.viewId)
+  }
 
   send<K extends keyof TSend & string>(action: K, data: TSend[K]): void {
     this.service.send(this.viewId, action, data)
@@ -60,8 +72,12 @@ export class WebViewBridge<
     this.service.blur(this.viewId)
   }
 
-  blur(): void { this.service.blur(this.viewId) }
-  setVisible(visible: boolean): void { visible ? this.service.show(this.viewId) : this.service.hide(this.viewId) }
+  blur(): void {
+    this.service.blur(this.viewId)
+  }
+  setVisible(visible: boolean): void {
+    visible ? this.service.show(this.viewId) : this.service.hide(this.viewId)
+  }
   show(withFocus = true, withCursor?: boolean): void {
     this.service.show(this.viewId)
     if (withFocus) this.focus(true, withCursor)
@@ -77,7 +93,9 @@ export class WebViewBridge<
   setInputPassthrough(enabled: boolean): void {
     this.service.focus(this.viewId, { inputPassthrough: enabled, cursor: true })
   }
-  setKeepInput(keepInput: boolean): void { this.setInputPassthrough(keepInput) }
+  setKeepInput(keepInput: boolean): void {
+    this.setInputPassthrough(keepInput)
+  }
 }
 
 export class NuiBridge<

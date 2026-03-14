@@ -193,9 +193,13 @@ export class MockPlayerLifecycleServer extends IPlayerLifecycleServer {
 }
 
 export class MockPlayerStateSyncServer extends IPlayerStateSyncServer {
-  getHealth(): number { return 200 }
+  getHealth(): number {
+    return 200
+  }
   setHealth(): void {}
-  getArmor(): number { return 0 }
+  getArmor(): number {
+    return 0
+  }
   setArmor(): void {}
 }
 

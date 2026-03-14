@@ -8,9 +8,7 @@ import { METADATA_KEYS } from '../metadata-client.keys'
 export class ViewProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.VIEW
 
-  constructor(
-    @inject(WebViewService as any) private readonly webviews: WebViewService,
-  ) {}
+  constructor(@inject(WebViewService as any) private readonly webviews: WebViewService) {}
 
   process(target: any, methodName: string, metadata: { eventName: string }) {
     const handler = target[methodName].bind(target)

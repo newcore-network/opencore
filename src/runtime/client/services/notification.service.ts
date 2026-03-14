@@ -76,6 +76,9 @@ export class NotificationService {
   }
 
   showFloatingHelp(message: string): void {
-    this.notifications.showFloatingHelp(message, this.platform.getEntityCoords(this.platform.getLocalPlayerPed()))
+    this.notifications.showFloatingHelp(
+      message,
+      this.platform.getEntityCoords(this.platform.getLocalPlayerPed()),
+    )
   }
 }

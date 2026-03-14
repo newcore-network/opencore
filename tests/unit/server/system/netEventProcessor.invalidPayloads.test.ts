@@ -9,6 +9,7 @@ import { NodeEvents } from '../../../../src/adapters/node/transport/node.events'
 import { NodePlayerServer } from '../../../../src/adapters/node/node-player-server'
 import { NodePlayerInfo } from '../../../../src/adapters/node/node-playerinfo'
 import { NodePlayerLifecycleServer } from '../../../../src/runtime/server/adapter/node-player-lifecycle-server'
+import { NodePlayerStateSyncServer } from '../../../../src/runtime/server/adapter/node-player-state-sync-server'
 import { WorldContext } from '../../../../src/runtime/core/world'
 import type { NetEventSecurityObserverContract } from '../../../../src/runtime/server/contracts/security/net-event-security-observer.contract'
 import type { SecurityHandlerContract } from '../../../../src/runtime/server/contracts/security/security-handler.contract'
@@ -40,6 +41,7 @@ const playerInfo = new NodePlayerInfo()
 const playerServer = new NodePlayerServer()
 const playerLifecycle = new NodePlayerLifecycleServer(nodeEvents as unknown as EventsAPI<'server'>)
 const entityServer = new NodeEntityServer()
+const playerStateSync = new NodePlayerStateSyncServer(playerServer, entityServer)
 const nodeCapabilities = new NodeCapabilities()
 
 describe('NetEventProcessor invalid payload resilience', () => {
@@ -53,6 +55,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
       playerInfo,
       playerServer,
       playerLifecycle,
+      playerStateSync,
       entityServer,
       nodeEvents,
       nodeCapabilities,
@@ -107,6 +110,7 @@ describe('NetEventProcessor invalid payload resilience', () => {
       playerInfo,
       playerServer,
       playerLifecycle,
+      playerStateSync,
       entityServer,
       nodeEvents,
       nodeCapabilities,

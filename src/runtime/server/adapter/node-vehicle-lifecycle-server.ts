@@ -1,5 +1,4 @@
 import { inject, injectable } from 'tsyringe'
-import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { IVehicleLifecycleServer } from '../../../adapters/contracts/server/vehicle-lifecycle/IVehicleLifecycleServer'
 import type {
   CreateVehicleServerRequest,
@@ -15,7 +14,6 @@ export class NodeVehicleLifecycleServer extends IVehicleLifecycleServer {
   constructor(
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
     @inject(IPlatformContext as any) private readonly platformContext: IPlatformContext,
-    @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {
     super()

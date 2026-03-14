@@ -11,9 +11,6 @@ import { WorldContext } from '../../core/world'
 import { NPC, NpcAdapters, NpcSession } from '../entities/npc'
 import { NpcSpawnOptions, NpcSpawnResult, SerializedNpcData } from '../types/npc.types'
 
-const DEFAULT_PED_TYPE = 4
-const DEFAULT_SPAWN_TIMEOUT_MS = 2000
-
 /**
  * Server-side API responsible for the full NPC (ped) lifecycle:
  * spawn, registry, queries, spatial search, serialization and deletion.
@@ -67,7 +64,6 @@ export class Npcs {
       position,
       heading = 0,
       networked = true,
-      pedType = DEFAULT_PED_TYPE,
       routingBucket = 0,
       persistent = false,
       metadata,
@@ -452,5 +448,4 @@ export class Npcs {
     }
     this.world.remove(npc.id)
   }
-
 }

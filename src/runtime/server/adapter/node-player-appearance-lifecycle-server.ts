@@ -3,7 +3,7 @@ import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
 import { IPlayerAppearanceLifecycleServer } from '../../../adapters/contracts/server/player-appearance/IPlayerAppearanceLifecycleServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
-import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
+import { PlayerAppearance } from '../../../kernel/shared'
 
 @injectable()
 export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecycleServer {
@@ -53,7 +53,13 @@ export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecy
   ): void {
     if (appearance.components) {
       for (const [componentId, data] of Object.entries(appearance.components)) {
-        this.pedAdapter.setComponentVariation(ped, parseInt(componentId, 10), data.drawable, data.texture, 2)
+        this.pedAdapter.setComponentVariation(
+          ped,
+          parseInt(componentId, 10),
+          data.drawable,
+          data.texture,
+          2,
+        )
       }
     }
 

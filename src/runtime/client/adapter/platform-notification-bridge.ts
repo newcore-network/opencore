@@ -4,7 +4,9 @@ import { IClientPlatformBridge } from './platform-bridge'
 
 @injectable()
 export class PlatformNotificationBridge extends IClientNotificationBridge {
-  constructor(@inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge) {
+  constructor(
+    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+  ) {
     super()
   }
 
@@ -17,7 +19,14 @@ export class PlatformNotificationBridge extends IClientNotificationBridge {
   showTyped(message: string, iconType: number): void {
     this.platform.beginTextCommandThefeedPost('STRING')
     this.platform.addTextComponentString(message)
-    this.platform.endTextCommandThefeedPostMessagetext('CHAR_SOCIAL_CLUB', 'CHAR_SOCIAL_CLUB', true, iconType, '', message)
+    this.platform.endTextCommandThefeedPostMessagetext(
+      'CHAR_SOCIAL_CLUB',
+      'CHAR_SOCIAL_CLUB',
+      true,
+      iconType,
+      '',
+      message,
+    )
   }
 
   showAdvanced(options: {
@@ -53,7 +62,9 @@ export class PlatformNotificationBridge extends IClientNotificationBridge {
     this.platform.endTextCommandDisplayHelp(0, looped, beep, duration)
   }
 
-  clearHelp(): void { this.platform.clearAllHelpMessages() }
+  clearHelp(): void {
+    this.platform.clearAllHelpMessages()
+  }
 
   showSubtitle(message: string, duration: number): void {
     this.platform.beginTextCommandPrint('STRING')
@@ -61,7 +72,9 @@ export class PlatformNotificationBridge extends IClientNotificationBridge {
     this.platform.endTextCommandPrint(duration, true)
   }
 
-  clearSubtitle(): void { this.platform.clearPrints() }
+  clearSubtitle(): void {
+    this.platform.clearPrints()
+  }
 
   showFloatingHelp(message: string, position: { x: number; y: number; z: number }): void {
     this.platform.setFloatingHelpTextWorldPosition(1, position)

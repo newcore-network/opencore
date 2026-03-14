@@ -76,7 +76,10 @@ export function createNodeServerAdapter(): OpenCoreServerAdapter {
       ctx.bindSingleton(ITick as InjectionToken<ITick>, NodeTick)
       ctx.bindSingleton(IPlayerInfo as InjectionToken<IPlayerInfo>, NodePlayerInfo)
       ctx.bindSingleton(IEntityServer as InjectionToken<IEntityServer>, NodeEntityServer)
-      ctx.bindSingleton(INpcLifecycleServer as InjectionToken<INpcLifecycleServer>, NodeNpcLifecycleServer)
+      ctx.bindSingleton(
+        INpcLifecycleServer as InjectionToken<INpcLifecycleServer>,
+        NodeNpcLifecycleServer,
+      )
       ctx.bindSingleton(IPedServer as InjectionToken<IPedServer>, NodePedServer)
       ctx.bindSingleton(IVehicleServer as InjectionToken<IVehicleServer>, NodeVehicleServer)
       ctx.bindSingleton(

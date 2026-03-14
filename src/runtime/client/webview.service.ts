@@ -86,11 +86,21 @@ export class WebViewService {
     return this.bridge.exists(viewId)
   }
 
-  show(viewId: string): void { this.bridge.show(viewId) }
-  hide(viewId: string): void { this.bridge.hide(viewId) }
-  focus(viewId: string, options?: WebViewFocusOptions): void { this.bridge.focus(viewId, options) }
-  blur(viewId: string): void { this.bridge.blur(viewId) }
-  send(viewId: string, event: string, payload: unknown): void { this.bridge.send(viewId, event, payload) }
+  show(viewId: string): void {
+    this.bridge.show(viewId)
+  }
+  hide(viewId: string): void {
+    this.bridge.hide(viewId)
+  }
+  focus(viewId: string, options?: WebViewFocusOptions): void {
+    this.bridge.focus(viewId, options)
+  }
+  blur(viewId: string): void {
+    this.bridge.blur(viewId)
+  }
+  send(viewId: string, event: string, payload: unknown): void {
+    this.bridge.send(viewId, event, payload)
+  }
   onMessage(handler: (message: WebViewMessage) => void | Promise<void>): () => void {
     return this.bridge.onMessage(handler)
   }
