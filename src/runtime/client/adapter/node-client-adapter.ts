@@ -4,8 +4,10 @@ import { IHasher } from '../../../adapters/contracts/IHasher'
 import { IClientLocalPlayerBridge } from './local-player-bridge'
 import { NodeClientLocalPlayerBridge } from './node-local-player-bridge'
 import { IClientLogConsole } from '../../../adapters/contracts/client/IClientLogConsole'
+import { IClientSpawnBridge } from '../../../adapters/contracts/client/spawn/IClientSpawnBridge'
 import { installNodeClientLogConsole, NodeClientLogConsole } from './node-log-console'
 import { NodeClientPlatformBridge } from './node-platform-bridge'
+import { NodeClientSpawnBridge } from './node-spawn-bridge'
 import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
 import { defineClientAdapter, type OpenCoreClientAdapter } from './client-adapter'
@@ -43,6 +45,10 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
       ctx.bindSingleton(
         IClientPlatformBridge as InjectionToken<IClientPlatformBridge>,
         NodeClientPlatformBridge,
+      )
+      ctx.bindSingleton(
+        IClientSpawnBridge as InjectionToken<IClientSpawnBridge>,
+        NodeClientSpawnBridge,
       )
       ctx.bindSingleton(
         IClientLogConsole as InjectionToken<IClientLogConsole>,

@@ -18,11 +18,7 @@ async function getDefaultClientAdapter(): Promise<OpenCoreClientAdapter> {
     )
   }
 
-  const loadNodeClientAdapterModule = Function(
-    'return import("./node-client-adapter")',
-  ) as () => Promise<typeof import('./node-client-adapter')>
-
-  const { createNodeClientAdapter } = await loadNodeClientAdapterModule()
+  const { createNodeClientAdapter } = await import('./node-client-adapter')
   return createNodeClientAdapter()
 }
 
