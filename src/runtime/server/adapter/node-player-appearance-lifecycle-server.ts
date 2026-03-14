@@ -3,6 +3,7 @@ import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IPedAppearanceServer } from '../../../adapters/contracts/server/IPedAppearanceServer'
 import { IPlayerAppearanceLifecycleServer } from '../../../adapters/contracts/server/player-appearance/IPlayerAppearanceLifecycleServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import { Players } from '../ports/players.api-port'
 import { PlayerAppearance } from '../../../kernel/shared'
 
 @injectable()
@@ -11,6 +12,7 @@ export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecy
     @inject(IPedAppearanceServer as any) private readonly pedAdapter: IPedAppearanceServer,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
+    @inject(Players as any) private readonly players: Players,
   ) {
     super()
   }
@@ -25,7 +27,12 @@ export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecy
     }
 
     this.applyServerSideAppearance(ped, appearance)
-    this.events.emit('opencore:appearance:apply', parseInt(playerSrc, 10), appearance)
+    const target = this.resolveTarget(playerSrc)
+    if (!target) {
+      return { success: false, errors: ['Player not found'] }
+    }
+
+    this.events.emit('opencore:appearance:apply', target, appearance)
     return { success: true, appearance }
   }
 
@@ -43,8 +50,14 @@ export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecy
     const ped = this.playerServer.getPed(playerSrc)
     if (ped === 0) return false
     this.pedAdapter.setDefaultComponentVariation(ped)
-    this.events.emit('opencore:appearance:reset', parseInt(playerSrc, 10))
+    const target = this.resolveTarget(playerSrc)
+    if (!target) return false
+    this.events.emit('opencore:appearance:reset', target)
     return true
+  }
+
+  private resolveTarget(playerSrc: string) {
+    return this.players.getByClient(Number(playerSrc))
   }
 
   private applyServerSideAppearance(
