@@ -144,6 +144,7 @@ export class SpawnService {
 
   private async ensureNetworkReady(): Promise<void> {
     const start = this.runtime.getGameTimer()
+    loggers.spawn.debug('Waiting for network readiness')
     while (!this.platform.networkIsSessionStarted()) {
       if (this.runtime.getGameTimer() - start > NETWORK_TIMEOUT_MS) {
         loggers.spawn.error('Network session did not start in time')
@@ -151,6 +152,7 @@ export class SpawnService {
       }
       await delay(0)
     }
+    loggers.spawn.debug('Network ready confirmed')
   }
 
   private closeLoadingScreens(): void {
@@ -164,6 +166,7 @@ export class SpawnService {
 
   private async setPlayerModel(model: string): Promise<void> {
     const modelHash = this.platform.getHashKey(model)
+    loggers.spawn.debug('Setting player model', { model, modelHash })
 
     if (!this.platform.isModelInCdimage(modelHash) || !this.platform.isModelValid(modelHash)) {
       loggers.spawn.error('Invalid model requested', { model })
@@ -197,6 +200,7 @@ export class SpawnService {
       ped = this.platform.getLocalPlayerPed()
     }
 
+    loggers.spawn.debug('Local ped resolved', { ped })
     return ped
   }
 

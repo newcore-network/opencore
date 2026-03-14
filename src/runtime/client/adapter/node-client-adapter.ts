@@ -3,6 +3,8 @@ import { IPedAppearanceClient } from '../../../adapters/contracts/client/IPedApp
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { IClientLocalPlayerBridge } from './local-player-bridge'
 import { NodeClientLocalPlayerBridge } from './node-local-player-bridge'
+import { IClientLogConsole } from '../../../adapters/contracts/client/IClientLogConsole'
+import { installNodeClientLogConsole, NodeClientLogConsole } from './node-log-console'
 import { NodeClientPlatformBridge } from './node-platform-bridge'
 import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
@@ -42,6 +44,11 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
         IClientPlatformBridge as InjectionToken<IClientPlatformBridge>,
         NodeClientPlatformBridge,
       )
+      ctx.bindSingleton(
+        IClientLogConsole as InjectionToken<IClientLogConsole>,
+        NodeClientLogConsole,
+      )
+      installNodeClientLogConsole(new NodeClientLogConsole())
     },
   })
 }

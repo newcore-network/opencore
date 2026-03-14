@@ -1,3 +1,4 @@
+export * from './IClientLogConsole'
 export * from './IClientLocalPlayerBridge'
 export * from './IClientPlatformBridge'
 export * from './IClientRuntimeBridge'
