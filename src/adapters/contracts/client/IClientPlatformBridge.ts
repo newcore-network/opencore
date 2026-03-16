@@ -12,21 +12,6 @@ export interface TextDrawOptions {
   center?: boolean
 }
 
-export interface MarkerDrawOptions {
-  type: number
-  position: Vector3
-  direction?: Vector3
-  rotation?: Vector3
-  scale: Vector3
-  color: { r: number; g: number; b: number; a: number }
-  bobUpAndDown: boolean
-  faceCamera: boolean
-  rotate: boolean
-  textureDict?: string
-  textureName?: string
-  drawOnEnts: boolean
-}
-
 export class IClientPlatformBridge {
   getLocalPlayerPed(): number {
     return 0
@@ -310,32 +295,6 @@ export class IClientPlatformBridge {
   setEntityCollision(_entity: number, _toggle: boolean): void {}
   shutdownLoadingScreen(): void {}
   shutdownLoadingScreenNui(): void {}
-  addBlipForCoord(_position: Vector3): number {
-    return 0
-  }
-  addBlipForEntity(_entity: number): number {
-    return 0
-  }
-  addBlipForRadius(_position: Vector3, _radius: number): number {
-    return 0
-  }
-  doesBlipExist(_handle: number): boolean {
-    return false
-  }
-  removeBlip(_handle: number): void {}
-  setBlipCoords(_handle: number, _position: Vector3): void {}
-  setBlipRoute(_handle: number, _enabled: boolean): void {}
-  setBlipRouteColour(_handle: number, _color: number): void {}
-  setBlipSprite(_handle: number, _sprite: number): void {}
-  setBlipColour(_handle: number, _color: number): void {}
-  setBlipScale(_handle: number, _scale: number): void {}
-  setBlipAsShortRange(_handle: number, _toggle: boolean): void {}
-  setBlipDisplay(_handle: number, _displayId: number): void {}
-  setBlipCategory(_handle: number, _index: number): void {}
-  setBlipFlashes(_handle: number, _toggle: boolean): void {}
-  setBlipAlpha(_handle: number, _alpha: number): void {}
-  setBlipName(_handle: number, _label: string): void {}
-  drawMarker(_options: MarkerDrawOptions): void {}
   setNotificationTextEntry(_type: string): void {}
   addTextComponentString(_text: string): void {}
   drawNotification(_blink: boolean, _saveToBrief: boolean): void {}

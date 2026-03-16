@@ -1,90 +1,95 @@
 import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
-import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
-import { IClientMarkerBridge } from '../../../adapters/contracts/client/ui/IClientMarkerBridge'
+import {
+  IClientMarkerBridge,
+  type ClientMarkerDefinition,
+} from '../../../adapters/contracts/client/ui/IClientMarkerBridge'
 
 export interface MarkerOptions {
+  variant?: number
   type?: number
+  size?: Vector3
   scale?: Vector3
   rotation?: Vector3
   color?: { r: number; g: number; b: number; a: number }
+  bob?: boolean
   bobUpAndDown?: boolean
   faceCamera?: boolean
   rotate?: boolean
   drawOnEnts?: boolean
+  visible?: boolean
 }
 
 export interface ManagedMarker {
   id: string
-  position: Vector3
-  options: Required<MarkerOptions>
-  visible: boolean
+  definition: ClientMarkerDefinition
 }
 
 const DEFAULT_OPTIONS: Required<MarkerOptions> = {
+  variant: 1,
   type: 1,
+  size: { x: 1.0, y: 1.0, z: 1.0 },
   scale: { x: 1.0, y: 1.0, z: 1.0 },
   rotation: { x: 0, y: 0, z: 0 },
   color: { r: 255, g: 0, b: 0, a: 200 },
+  bob: false,
   bobUpAndDown: false,
   faceCamera: false,
   rotate: false,
   drawOnEnts: false,
+  visible: true,
 }
 
 @injectable()
 export class MarkerService {
   private activeMarkers: Map<string, ManagedMarker> = new Map()
-  private tickHandle: unknown = null
   private idCounter = 0
 
-  constructor(
-    @inject(IClientMarkerBridge as any) private readonly markers: IClientMarkerBridge,
-    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
-  ) {}
+  constructor(@inject(IClientMarkerBridge as any) private readonly markers: IClientMarkerBridge) {}
 
   create(position: Vector3, options: MarkerOptions = {}): string {
     const id = `marker_${++this.idCounter}`
+    const definition = this.buildDefinition(position, options)
+    this.markers.create(id, definition)
     this.activeMarkers.set(id, {
       id,
-      position,
-      options: { ...DEFAULT_OPTIONS, ...options },
-      visible: true,
+      definition,
     })
-    this.ensureTickRunning()
     return id
   }
 
   remove(id: string): boolean {
-    const deleted = this.activeMarkers.delete(id)
-    this.checkTickNeeded()
-    return deleted
+    const removed = this.markers.remove(id)
+    if (removed) this.activeMarkers.delete(id)
+    return removed
   }
 
   removeAll(): void {
+    this.markers.clear()
     this.activeMarkers.clear()
-    this.stopTick()
   }
 
   setPosition(id: string, position: Vector3): boolean {
     const marker = this.activeMarkers.get(id)
     if (!marker) return false
-    marker.position = position
-    return true
+    const updated = this.markers.update(id, { position })
+    if (!updated) return false
+    marker.definition = { ...marker.definition, position }
+    return updated
   }
 
   setOptions(id: string, options: Partial<MarkerOptions>): boolean {
     const marker = this.activeMarkers.get(id)
     if (!marker) return false
-    marker.options = { ...marker.options, ...options }
-    return true
+    const patch = this.normalizeOptions(options)
+    const updated = this.markers.update(id, patch)
+    if (!updated) return false
+    marker.definition = { ...marker.definition, ...patch }
+    return updated
   }
 
   setVisible(id: string, visible: boolean): boolean {
-    const marker = this.activeMarkers.get(id)
-    if (!marker) return false
-    marker.visible = visible
-    return true
+    return this.setOptions(id, { visible })
   }
 
   get(id: string): ManagedMarker | undefined {
@@ -95,41 +100,27 @@ export class MarkerService {
   }
 
   drawOnce(position: Vector3, options: MarkerOptions = {}): void {
-    this.drawMarker(position, { ...DEFAULT_OPTIONS, ...options })
+    this.markers.draw(this.buildDefinition(position, options))
   }
 
-  private ensureTickRunning(): void {
-    if (this.tickHandle !== null) return
-    this.tickHandle = this.runtime.setTick(() => {
-      for (const marker of this.activeMarkers.values()) {
-        if (!marker.visible) continue
-        this.drawMarker(marker.position, marker.options)
-      }
-    })
+  exists(id: string): boolean {
+    return this.markers.exists(id)
   }
 
-  private drawMarker(position: Vector3, options: Required<MarkerOptions>): void {
-    this.markers.draw({
-      type: options.type,
+  private buildDefinition(position: Vector3, options: MarkerOptions): ClientMarkerDefinition {
+    return {
       position,
-      rotation: options.rotation,
-      scale: options.scale,
-      color: options.color,
-      bobUpAndDown: options.bobUpAndDown,
-      faceCamera: options.faceCamera,
-      rotate: options.rotate,
-      drawOnEnts: options.drawOnEnts,
-    })
-  }
-
-  private stopTick(): void {
-    if (this.tickHandle !== null) {
-      this.runtime.clearTick(this.tickHandle)
-      this.tickHandle = null
+      ...this.normalizeOptions({ ...DEFAULT_OPTIONS, ...options }),
     }
   }
 
-  private checkTickNeeded(): void {
-    if (this.activeMarkers.size === 0) this.stopTick()
+  private normalizeOptions(options: Partial<MarkerOptions>): Partial<ClientMarkerDefinition> {
+    const { type, variant, scale, size, bob, bobUpAndDown, ...rest } = options
+    return {
+      ...rest,
+      variant: variant ?? type,
+      size: size ?? scale,
+      bob: bob ?? bobUpAndDown,
+    }
   }
 }

@@ -10,11 +10,11 @@ import { IClientMarkerBridge } from '../../../adapters/contracts/client/ui/IClie
 import { IClientNotificationBridge } from '../../../adapters/contracts/client/ui/IClientNotificationBridge'
 import { IClientWebViewBridge } from '../../../adapters/contracts/client/ui/webview/IClientWebViewBridge'
 import { installNodeClientLogConsole, NodeClientLogConsole } from './node-log-console'
+import { NodeClientBlipBridge } from './node-blip-bridge'
+import { NodeClientMarkerBridge } from './node-marker-bridge'
 import { NodeClientPlatformBridge } from './node-platform-bridge'
 import { NodeClientSpawnBridge } from './node-spawn-bridge'
 import { NodeClientWebViewBridge } from './node-webview-bridge'
-import { PlatformBlipBridge } from './platform-blip-bridge'
-import { PlatformMarkerBridge } from './platform-marker-bridge'
 import { PlatformNotificationBridge } from './platform-notification-bridge'
 import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
@@ -58,10 +58,10 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
         IClientSpawnBridge as InjectionToken<IClientSpawnBridge>,
         NodeClientSpawnBridge,
       )
-      ctx.bindSingleton(IClientBlipBridge as InjectionToken<IClientBlipBridge>, PlatformBlipBridge)
+      ctx.bindSingleton(IClientBlipBridge as InjectionToken<IClientBlipBridge>, NodeClientBlipBridge)
       ctx.bindSingleton(
         IClientMarkerBridge as InjectionToken<IClientMarkerBridge>,
-        PlatformMarkerBridge,
+        NodeClientMarkerBridge,
       )
       ctx.bindSingleton(
         IClientNotificationBridge as InjectionToken<IClientNotificationBridge>,
