@@ -1,5 +1,5 @@
 import { di } from '../runtime/client/client-container'
-import { IPedAppearanceClient } from './contracts/client/IPedAppearanceClient'
+import { IGtaPedAppearanceBridge } from './contracts/client/IGtaPedAppearanceBridge'
 import { IHasher } from './contracts/IHasher'
 import { EventsAPI } from './contracts/transport/events.api'
 import { MessagingTransport } from './contracts/transport/messaging.transport'
@@ -28,8 +28,8 @@ export async function registerClientCapabilities(): Promise<void> {
     di.registerInstance(RpcAPI as any, transport.rpc)
   }
 
-  if (!di.isRegistered(IPedAppearanceClient as any)) {
-    di.registerSingleton(IPedAppearanceClient as any, NodePedAppearanceClient)
+  if (!di.isRegistered(IGtaPedAppearanceBridge as any)) {
+    di.registerSingleton(IGtaPedAppearanceBridge as any, NodePedAppearanceClient)
   }
 
   if (!di.isRegistered(IHasher as any)) {

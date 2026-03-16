@@ -1,8 +1,9 @@
 import type { InjectionToken } from 'tsyringe'
-import { IPedAppearanceClient } from '../../../adapters/contracts/client/IPedAppearanceClient'
+import { IGtaPedAppearanceBridge } from '../../../adapters/contracts/client/IGtaPedAppearanceBridge'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { IClientLocalPlayerBridge } from './local-player-bridge'
 import { NodeClientLocalPlayerBridge } from './node-local-player-bridge'
+import { NodeClientNotificationBridge } from './node-notification-bridge'
 import { IClientLogConsole } from '../../../adapters/contracts/client/IClientLogConsole'
 import { IClientSpawnBridge } from '../../../adapters/contracts/client/spawn/IClientSpawnBridge'
 import { IClientBlipBridge } from '../../../adapters/contracts/client/ui/IClientBlipBridge'
@@ -15,7 +16,6 @@ import { NodeClientMarkerBridge } from './node-marker-bridge'
 import { NodeClientPlatformBridge } from './node-platform-bridge'
 import { NodeClientSpawnBridge } from './node-spawn-bridge'
 import { NodeClientWebViewBridge } from './node-webview-bridge'
-import { PlatformNotificationBridge } from './platform-notification-bridge'
 import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
 import { defineClientAdapter, type OpenCoreClientAdapter } from './client-adapter'
@@ -38,7 +38,7 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
       const transport = new NodeMessagingTransport('client')
       ctx.bindMessagingTransport(transport)
       ctx.bindSingleton(
-        IPedAppearanceClient as InjectionToken<IPedAppearanceClient>,
+        IGtaPedAppearanceBridge as InjectionToken<IGtaPedAppearanceBridge>,
         NodePedAppearanceClient,
       )
       ctx.bindSingleton(IHasher as InjectionToken<IHasher>, NodeHasher)
@@ -65,7 +65,7 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
       )
       ctx.bindSingleton(
         IClientNotificationBridge as InjectionToken<IClientNotificationBridge>,
-        PlatformNotificationBridge,
+        NodeClientNotificationBridge,
       )
       ctx.bindSingleton(
         IClientWebViewBridge as InjectionToken<IClientWebViewBridge>,

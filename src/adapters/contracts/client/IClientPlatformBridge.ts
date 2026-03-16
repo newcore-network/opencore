@@ -295,29 +295,9 @@ export class IClientPlatformBridge {
   setEntityCollision(_entity: number, _toggle: boolean): void {}
   shutdownLoadingScreen(): void {}
   shutdownLoadingScreenNui(): void {}
-  setNotificationTextEntry(_type: string): void {}
   addTextComponentString(_text: string): void {}
-  drawNotification(_blink: boolean, _saveToBrief: boolean): void {}
-  beginTextCommandThefeedPost(_type: string): void {}
-  endTextCommandThefeedPostMessagetext(
-    _textureDict: string,
-    _textureName: string,
-    _flash: boolean,
-    _iconType: number,
-    _sender: string,
-    _subject: string,
-  ): void {}
-  setNotificationBackgroundColor(_color: number): void {}
-  setNotificationMessage(
-    _textureDict: string,
-    _textureName: string,
-    _flash: boolean,
-    _iconType: number,
-    _title: string,
-    _subtitle: string,
-  ): void {}
-  beginTextCommandDisplayHelp(_type: string): void {}
   addTextComponentSubstringPlayerName(_text: string): void {}
+  beginTextCommandDisplayHelp(_type: string): void {}
   endTextCommandDisplayHelp(
     _shape: number,
     _loop: boolean,
