@@ -1,6 +1,5 @@
 import { inject, injectable } from 'tsyringe'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
-import { Players } from '../ports/players.api-port'
 import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
 import type {
   RespawnPlayerRequest,
@@ -10,10 +9,7 @@ import type {
 
 @injectable()
 export class NodePlayerLifecycleServer extends IPlayerLifecycleServer {
-  constructor(
-    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
-    @inject(Players as any) private readonly players: Players,
-  ) {
+  constructor(@inject(EventsAPI as any) private readonly events: EventsAPI<'server'>) {
     super()
   }
 
@@ -44,6 +40,7 @@ export class NodePlayerLifecycleServer extends IPlayerLifecycleServer {
   }
 
   private resolveTarget(playerSrc: string) {
-    return this.players.getByClient(Number(playerSrc))
+    const clientId = Number(playerSrc)
+    return Number.isFinite(clientId) && clientId > 0 ? clientId : undefined
   }
 }
