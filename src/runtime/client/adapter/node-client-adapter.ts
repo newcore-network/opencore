@@ -58,7 +58,10 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
         IClientSpawnBridge as InjectionToken<IClientSpawnBridge>,
         NodeClientSpawnBridge,
       )
-      ctx.bindSingleton(IClientBlipBridge as InjectionToken<IClientBlipBridge>, NodeClientBlipBridge)
+      ctx.bindSingleton(
+        IClientBlipBridge as InjectionToken<IClientBlipBridge>,
+        NodeClientBlipBridge,
+      )
       ctx.bindSingleton(
         IClientMarkerBridge as InjectionToken<IClientMarkerBridge>,
         NodeClientMarkerBridge,

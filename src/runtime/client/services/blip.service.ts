@@ -26,9 +26,7 @@ export class BlipService {
   private blips: Map<string, ManagedBlip> = new Map()
   private idCounter = 0
 
-  constructor(
-    @inject(IClientBlipBridge as any) private readonly bridge: IClientBlipBridge,
-  ) {}
+  constructor(@inject(IClientBlipBridge as any) private readonly bridge: IClientBlipBridge) {}
 
   create(position: Vector3, options: BlipOptions = {}): string {
     const id = `blip_${++this.idCounter}`
@@ -98,7 +96,10 @@ export class BlipService {
     return this.bridge.exists(id)
   }
 
-  private buildDefinition(base: Partial<ClientBlipDefinition>, options: BlipOptions): ClientBlipDefinition {
+  private buildDefinition(
+    base: Partial<ClientBlipDefinition>,
+    options: BlipOptions,
+  ): ClientBlipDefinition {
     return {
       ...base,
       ...this.normalizeOptions({ ...DEFAULT_OPTIONS, ...options }),
