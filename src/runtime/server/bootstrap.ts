@@ -1,8 +1,10 @@
-import { IEngineEvents } from '../../adapters'
-import { registerServerCapabilities } from '../../adapters/register-capabilities'
+import { IEngineEvents, IPlatformContext } from '../../adapters'
+import { IExports } from '../../adapters/contracts/IExports'
 import { EventsAPI } from '../../adapters/contracts/transport/events.api'
 import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
+import { createNodeServerAdapter } from './adapter/node-server-adapter'
+import { installServerAdapter } from './adapter/registry'
 import { PrincipalProviderContract } from './contracts/index'
 import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binaryService'
 import { getServerControllerRegistry } from './decorators/controller'
@@ -109,9 +111,14 @@ export async function initServer(
     scope: getFrameworkModeScope(ctx.mode),
   })
 
-  // Register platform-specific capabilities (adapters)
-  await registerServerCapabilities()
-  loggers.bootstrap.debug('Platform capabilities registered')
+  // Register platform-specific capabilities through the selected server adapter.
+  await installServerAdapter(options.adapter ?? createNodeServerAdapter())
+
+  const platformContext = GLOBAL_CONTAINER.resolve(IPlatformContext as any) as IPlatformContext
+  loggers.bootstrap.debug('Loading server Adapter ', {
+    adapter: options.adapter?.name ?? 'node',
+    game: platformContext.gameProfile,
+  })
 
   const dependenciesToWaitFor: Promise<any>[] = []
   if (ctx.mode === 'RESOURCE') {
@@ -230,6 +237,8 @@ function createCoreDependency(coreName: string): Promise<void> {
     }
 
     // 1. Register listener FIRST (before any requests)
+    const exportsService = GLOBAL_CONTAINER.resolve(IExports as any) as IExports
+
     const onReady = () => {
       if (!resolved) {
         loggers.bootstrap.debug(`Core '${coreName}' detected via 'core:ready' event!`)
@@ -244,8 +253,9 @@ function createCoreDependency(coreName: string): Promise<void> {
     const checkReady = () => {
       if (resolved) return
       try {
-        const globalExports = (globalThis as any).exports
-        const isReady = globalExports?.[coreName]?.isCoreReady?.()
+        const isReady = exportsService
+          .getResource<{ isCoreReady?: () => boolean }>(coreName)
+          ?.isCoreReady?.()
         loggers.bootstrap.debug(`Polling isCoreReady export: ${isReady}`)
         if (isReady === true) {
           loggers.bootstrap.debug(`Core '${coreName}' detected via isCoreReady export!`)

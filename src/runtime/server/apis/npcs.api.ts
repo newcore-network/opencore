@@ -3,15 +3,13 @@ import { v4 as uuid } from 'uuid'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
+import { INpcLifecycleServer } from '../../../adapters/contracts/server/npc-lifecycle/INpcLifecycleServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
 import { coreLogger } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { WorldContext } from '../../core/world'
 import { NPC, NpcAdapters, NpcSession } from '../entities/npc'
 import { NpcSpawnOptions, NpcSpawnResult, SerializedNpcData } from '../types/npc.types'
-
-const DEFAULT_PED_TYPE = 4
-const DEFAULT_SPAWN_TIMEOUT_MS = 2000
 
 /**
  * Server-side API responsible for the full NPC (ped) lifecycle:
@@ -34,6 +32,7 @@ export class Npcs {
   constructor(
     @inject(WorldContext) private readonly world: WorldContext,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
+    @inject(INpcLifecycleServer as any) private readonly npcLifecycle: INpcLifecycleServer,
     @inject(IPedServer as any) private readonly pedServer: IPedServer,
     @inject(IHasher as any) private readonly hasher: IHasher,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
@@ -41,6 +40,7 @@ export class Npcs {
     this.adapters = {
       entityServer: this.entityServer,
       pedServer: this.pedServer,
+      npcLifecycle: this.npcLifecycle,
     }
   }
 
@@ -64,7 +64,6 @@ export class Npcs {
       position,
       heading = 0,
       networked = true,
-      pedType = DEFAULT_PED_TYPE,
       routingBucket = 0,
       persistent = false,
       metadata,
@@ -81,38 +80,31 @@ export class Npcs {
     }
 
     const modelHash = typeof model === 'string' ? this.hasher.getHashKey(model) : model
-    const handle = this.pedServer.create(
-      pedType,
-      modelHash,
-      position.x,
-      position.y,
-      position.z,
-      heading,
-      networked,
-    )
-
-    if (!handle || handle <= 0) {
+    let lifecycleResult: { handle: number; netId?: number }
+    try {
+      lifecycleResult = await Promise.resolve(
+        this.npcLifecycle.create({
+          model: typeof model === 'string' ? model : String(model),
+          modelHash,
+          position,
+          heading,
+          networked,
+          routingBucket,
+          persistent,
+        }),
+      )
+    } catch (error: unknown) {
       return {
         result: {
           success: false,
-          error: 'Failed to create NPC ped entity',
+          error: error instanceof Error ? error.message : 'Failed to create NPC ped entity',
         },
       }
     }
 
-    const spawnOk = await this.waitForSpawn(handle)
-    if (!spawnOk) {
-      this.safeDeleteHandle(handle)
-      return {
-        result: {
-          success: false,
-          error: `NPC spawn timed out after ${DEFAULT_SPAWN_TIMEOUT_MS}ms`,
-        },
-      }
-    }
-
+    const handle = lifecycleResult.handle
     const resolvedModel = typeof model === 'string' ? model : modelHash.toString()
-    const netId = networked ? this.resolveNetId(handle) : undefined
+    const netId = lifecycleResult.netId
     const session: NpcSession = {
       id: npcId,
       handle,
@@ -125,13 +117,6 @@ export class Npcs {
     }
 
     const npc = new NPC(session, this.adapters)
-    if (routingBucket !== 0) {
-      npc.setRoutingBucket(routingBucket)
-    }
-    if (persistent) {
-      this.entityServer.setOrphanMode(handle, 2)
-    }
-
     if (metadata) {
       for (const [key, value] of Object.entries(metadata)) {
         npc.setMeta(key, value)
@@ -455,11 +440,6 @@ export class Npcs {
     return Array.from(this.npcById.values()).map((npc) => npc.serialize())
   }
 
-  private resolveNetId(handle: number): number | undefined {
-    const netId = this.pedServer.getNetworkIdFromEntity(handle)
-    return netId > 0 ? netId : undefined
-  }
-
   private removeFromRegistry(npc: NPC): void {
     this.npcById.delete(npc.npcId)
     this.idByHandle.delete(npc.getHandle())
@@ -468,35 +448,4 @@ export class Npcs {
     }
     this.world.remove(npc.id)
   }
-
-  private safeDeleteHandle(handle: number): void {
-    try {
-      if (this.entityServer.doesExist(handle)) {
-        this.pedServer.delete(handle)
-      }
-    } catch (error: unknown) {
-      coreLogger.warn('Failed to cleanup NPC handle after spawn failure', {
-        handle,
-        error: error instanceof Error ? error.message : String(error),
-      })
-    }
-  }
-
-  private async waitForSpawn(
-    handle: number,
-    timeoutMs: number = DEFAULT_SPAWN_TIMEOUT_MS,
-  ): Promise<boolean> {
-    const startedAt = Date.now()
-    while (!this.entityServer.doesExist(handle)) {
-      if (Date.now() - startedAt > timeoutMs) {
-        return false
-      }
-      await sleep(0)
-    }
-    return true
-  }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }

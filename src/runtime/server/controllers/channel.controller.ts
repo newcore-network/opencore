@@ -318,7 +318,7 @@ export class ChannelExportController {
   /**
    * Cleans up channels owned by a resource when it stops.
    */
-  @OnRuntimeEvent('onServerResourceStop')
+  @OnRuntimeEvent(RUNTIME_EVENTS.serverResourceStop)
   onResourceStop(resourceName: string) {
     const channelsToDelete: string[] = []
 
@@ -340,3 +340,4 @@ export class ChannelExportController {
     }
   }
 }
+import { RUNTIME_EVENTS } from '../../../adapters/contracts/runtime'

@@ -1,5 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters/contracts/IExports'
+import { IResourceInfo } from '../../../../adapters/contracts/IResourceInfo'
 import { AppError } from '../../../../kernel/error/app.error'
 import { loggers } from '../../../../kernel/logger'
 import { CommandMetadata } from '../../decorators/command'
@@ -44,7 +45,10 @@ export class RemoteCommandImplementation extends CommandExecutionPort {
     return this.commands.get(commandName.toLowerCase())?.meta
   }
 
-  constructor(@inject(IExports as any) private exportsService: IExports) {
+  constructor(
+    @inject(IExports as any) private exportsService: IExports,
+    @inject(IResourceInfo as any) private readonly resourceInfo: IResourceInfo,
+  ) {
     super()
   }
 
@@ -75,7 +79,7 @@ export class RemoteCommandImplementation extends CommandExecutionPort {
    */
   register(metadata: CommandMetadata, handler: (...args: any[]) => any): void {
     const commandKey = metadata.command.toLowerCase()
-    const resourceName = GetCurrentResourceName()
+    const resourceName = this.resourceInfo.getCurrentResourceName()
 
     loggers.command.debug(`Registering command locally`, {
       command: metadata.command,
@@ -143,7 +147,7 @@ export class RemoteCommandImplementation extends CommandExecutionPort {
     if (!entry) {
       loggers.command.error(`Handler not found for remote command: ${commandName}`, {
         command: commandName,
-        resource: GetCurrentResourceName(),
+        resource: this.resourceInfo.getCurrentResourceName(),
       })
       throw new AppError('COMMAND:NOT_FOUND', `Command not found: ${commandName}`, 'server')
     }

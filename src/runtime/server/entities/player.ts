@@ -1,8 +1,16 @@
 import { IPlayerInfo } from '../../../adapters'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../../adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import type {
+  RespawnPlayerRequest,
+  SpawnPlayerRequest,
+  TeleportPlayerRequest,
+} from '../../../adapters/contracts/server/player-lifecycle/types'
 import type { PlayerIdentifier } from '../../../adapters/contracts/types/identifier'
+import { loggers } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
@@ -18,6 +26,8 @@ import { NativeHandle } from 'src/runtime/core/nativehandle'
 export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
+  playerLifecycle: IPlayerLifecycleServer
+  playerStateSync: IPlayerStateSyncServer
   entityServer: IEntityServer
   events: EventsAPI<'server'>
   defaultSpawnModel: string
@@ -36,6 +46,7 @@ export interface PlayerAdapters {
  */
 export class Player extends BaseEntity implements Spatial, NativeHandle {
   private _position: Vector3
+  private _model: string | undefined
 
   /**
    * Creates a new Player entity instance.
@@ -174,7 +185,15 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param vector - The target coordinates (x, y, z).
    */
   teleport(vector: Vector3): void {
-    this.emit('opencore:spawner:teleport', vector)
+    const request: TeleportPlayerRequest = { position: vector }
+    void Promise.resolve(
+      this.adapters.playerLifecycle.teleport(this.clientID.toString(), request),
+    ).catch((error: unknown) => {
+      loggers.spawn.error('Failed to teleport player', {
+        clientID: this.clientID,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
   }
 
   /**
@@ -184,7 +203,27 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param model - The ped model to use (default from platform capabilities)
    */
   spawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
-    this.emit('opencore:spawner:spawn', { position: vector, model })
+    const request: SpawnPlayerRequest = { position: vector, model }
+    void Promise.resolve(
+      this.adapters.playerLifecycle.spawn(this.clientID.toString(), request),
+    ).catch((error: unknown) => {
+      loggers.spawn.error('Failed to spawn player', {
+        clientID: this.clientID,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
+  }
+
+  respawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
+    const request: RespawnPlayerRequest = { position: vector, model }
+    void Promise.resolve(
+      this.adapters.playerLifecycle.respawn(this.clientID.toString(), request),
+    ).catch((error: unknown) => {
+      loggers.spawn.error('Failed to respawn player', {
+        clientID: this.clientID,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -205,35 +244,18 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   // ─────────────────────────────────────────────────────────────────
 
   /**
-   * Sets the routing bucket (virtual world/dimension) for the player.
-   * Players in different buckets cannot see or interact with each other.
-   *
-   * @param bucket - The bucket ID (0 is the default shared world).
-   */
-  setRoutingBucket(bucket: number): void {
-    this.adapters.playerServer.setRoutingBucket(this.clientID.toString(), bucket)
-    this._dimension = bucket
-  }
-
-  /**
-   * Gets the current routing bucket.
-   */
-  getRoutingBucket(): number {
-    return this.adapters.playerServer.getRoutingBucket(this.clientID.toString())
-  }
-
-  /**
    * Sets the player dimension (alias for setRoutingBucket).
    */
   override set dimension(value: number) {
-    this.setRoutingBucket(value)
+    this.adapters.playerServer.setDimension(this.clientID.toString(), value)
+    this._dimension = value
   }
 
   /**
    * Gets the player dimension (alias for getRoutingBucket).
    */
   override get dimension(): number {
-    return this.getRoutingBucket()
+    return this.adapters.playerServer.getDimension(this.clientID.toString())
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -339,8 +361,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * Gets the current health of the player's ped.
    */
   getHealth(): number {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    return this.adapters.entityServer.getHealth(ped)
+    return this.adapters.playerStateSync.getHealth(this.clientID.toString())
   }
 
   /**
@@ -349,16 +370,14 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param health - Health value to set (platform-specific range).
    */
   setHealth(health: number): void {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    this.adapters.entityServer.setHealth(ped, health)
+    this.adapters.playerStateSync.setHealth(this.clientID.toString(), health)
   }
 
   /**
    * Gets the current armor of the player's ped.
    */
   getArmor(): number {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    return this.adapters.entityServer.getArmor(ped)
+    return this.adapters.playerStateSync.getArmor(this.clientID.toString())
   }
 
   /**
@@ -367,8 +386,16 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param armor - Armor value to set (typically 0-100).
    */
   setArmor(armor: number): void {
-    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
-    this.adapters.entityServer.setArmor(ped, armor)
+    this.adapters.playerStateSync.setArmor(this.clientID.toString(), armor)
+  }
+
+  get model(): string | undefined {
+    return this._model
+  }
+
+  set model(model: string) {
+    this.adapters.playerServer.setModel(this.clientID.toString(), model)
+    this._model = model
   }
 
   /**

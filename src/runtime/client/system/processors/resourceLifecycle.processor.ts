@@ -1,6 +1,7 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { coreLogger, LogDomain } from '../../../../kernel/logger'
+import { IClientRuntimeBridge } from '../../adapter/runtime-bridge'
 import { METADATA_KEYS } from '../metadata-client.keys'
 
 const clientLifecycle = coreLogger.child('Lifecycle', LogDomain.CLIENT)
@@ -9,12 +10,16 @@ const clientLifecycle = coreLogger.child('Lifecycle', LogDomain.CLIENT)
 export class ResourceStartProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.RESOURCE_START
 
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
+
   process(target: any, methodName: string) {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
-    const currentResource = GetCurrentResourceName()
+    const currentResource = this.runtime.getCurrentResourceName()
 
-    on('onClientResourceStart', async (resourceName: string) => {
+    this.runtime.on('onClientResourceStart', async (resourceName: string) => {
       if (resourceName !== currentResource) return
 
       try {
@@ -39,12 +44,16 @@ export class ResourceStartProcessor implements DecoratorProcessor {
 export class ResourceStopProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.RESOURCE_STOP
 
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
+
   process(target: any, methodName: string) {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
-    const currentResource = GetCurrentResourceName()
+    const currentResource = this.runtime.getCurrentResourceName()
 
-    on('onClientResourceStop', async (resourceName: string) => {
+    this.runtime.on('onClientResourceStop', async (resourceName: string) => {
       if (resourceName !== currentResource) return
 
       try {

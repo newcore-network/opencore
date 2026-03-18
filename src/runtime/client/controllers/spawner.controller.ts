@@ -1,4 +1,5 @@
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { loggers } from '../../../kernel/logger'
 import { Controller, OnNet } from '../decorators'
 import { SpawnService } from '../services'
 
@@ -8,6 +9,7 @@ export class SpawnerController {
 
   @OnNet('opencore:spawner:spawn')
   async handleSpawn(data: { position: Vector3; model: string }) {
+    loggers.spawn.debug('Spawn event received', data)
     await this.spawnService.spawn(data.position, data.model)
   }
 

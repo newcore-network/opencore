@@ -1,12 +1,15 @@
 import { inject, injectable } from 'tsyringe'
 import { IPlayerInfo } from '../../../../adapters'
-import { IPlatformCapabilities } from '../../../../adapters/contracts/IPlatformCapabilities'
+import { IPlatformContext } from '../../../../adapters/contracts/IPlatformContext'
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../../../adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
 import { BaseEntity } from '../../../core/entity'
 import { WorldContext } from '../../../core/world'
+import { createLocalServerPlayer } from '../../adapter/registry'
 import { Player, type PlayerAdapters } from '../../entities'
 import { Players } from '../../ports/players.api-port'
 import { PlayerSessionLifecyclePort } from '../../ports/internal/player-session-lifecycle.port'
@@ -30,17 +33,22 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     @inject(WorldContext) private readonly world: WorldContext,
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(IPlayerLifecycleServer as any)
+    private readonly playerLifecycle: IPlayerLifecycleServer,
+    @inject(IPlayerStateSyncServer as any)
+    private readonly playerStateSync: IPlayerStateSyncServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
-    @inject(IPlatformCapabilities as any)
-    private readonly platformCapabilities: IPlatformCapabilities,
+    @inject(IPlatformContext as any)
+    private readonly platformContext: IPlatformContext,
   ) {
-    const defaultSpawnModel =
-      this.platformCapabilities.getConfig<string>('defaultSpawnModel') ?? 'mp_m_freemode_01'
+    const defaultSpawnModel = this.platformContext.defaultSpawnModel
 
     this.playerAdapters = {
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
+      playerLifecycle: this.playerLifecycle,
+      playerStateSync: this.playerStateSync,
       entityServer: this.entityServer,
       events: this.events,
       defaultSpawnModel,
@@ -68,7 +76,7 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
       meta: {},
     }
 
-    const player = new Player(session, this.playerAdapters)
+    const player = createLocalServerPlayer(session, this.playerAdapters)
     this.world.add(player)
     loggers.session.debug('Player session bound', {
       clientID,

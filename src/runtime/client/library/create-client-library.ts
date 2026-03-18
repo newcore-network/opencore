@@ -1,3 +1,5 @@
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
+import { di } from '../client-container'
 import { coreLogger } from '../../../kernel/logger'
 import {
   buildLibraryEventId,
@@ -25,6 +27,9 @@ export function createClientLibrary(
   const base = createLibraryBase(name, opts)
   const logger = coreLogger.client(`Library:${base.name}`)
   const emitInternal = base.emit
+  const events = di.isRegistered(EventsAPI as any)
+    ? (di.resolve(EventsAPI as any) as EventsAPI<'client'>)
+    : null
 
   return {
     ...base,
@@ -47,7 +52,11 @@ export function createClientLibrary(
       emitLibraryEvent(eventId, envelope)
     },
     emitServer(eventName, payload) {
-      emitNet(base.buildEventName(eventName), payload)
+      if (!events) {
+        throw new Error('[OpenCore] Client events transport is not registered.')
+      }
+
+      events.emit(base.buildEventName(eventName), payload)
     },
     getLogger() {
       return logger

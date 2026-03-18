@@ -1,5 +1,4 @@
 import { GLOBAL_CONTAINER } from '../kernel/di/container'
-import { CfxPlatform } from './cfx/cfx-platform'
 import { NodePlatform } from './node/node-platform'
 import {
   getCurrentPlatformName,
@@ -23,7 +22,6 @@ export type Platform = 'cfx' | 'node' | string
 // ─────────────────────────────────────────────────────────────────
 
 // Register CitizenFX platform (high priority)
-registerPlatform(CfxPlatform)
 
 // Register Node.js fallback platform (low priority)
 registerPlatform(NodePlatform)
@@ -47,7 +45,7 @@ export function detectPlatform(): Platform {
  *
  * @remarks
  * This function registers adapters needed by the SERVER runtime only.
- * Client-side adapters are registered separately via `registerClientCapabilities`.
+ * Client-side adapters are now installed through `Client.init({ adapter })`.
  *
  * The function uses the Platform Registry to automatically detect and register
  * the appropriate platform adapters. You can also force a specific platform

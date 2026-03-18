@@ -1,3 +1,5 @@
+import { DEFAULT_RUNTIME_EVENT_MAP, type RuntimeEventMap, type RuntimeEventName } from './runtime'
+
 export abstract class IEngineEvents {
   /**
    * Registers a handler for a local (server-side) event.
@@ -6,6 +8,14 @@ export abstract class IEngineEvents {
    * @param handler - The callback to invoke when the event is emitted
    */
   abstract on(eventName: string, handler?: (...args: any[]) => void): void
+
+  onRuntime(eventName: RuntimeEventName, handler?: (...args: any[]) => void): void {
+    this.on(this.getRuntimeEventMap()[eventName] ?? eventName, handler)
+  }
+
+  getRuntimeEventMap(): RuntimeEventMap {
+    return DEFAULT_RUNTIME_EVENT_MAP
+  }
 
   /**
    * Emits a local event.

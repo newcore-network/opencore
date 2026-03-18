@@ -6,6 +6,8 @@ import {
   IEntityServer,
   type SetPositionOptions,
 } from '../../src/adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../src/adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../src/adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../src/adapters/contracts/server/IPlayerServer'
 import type { PlayerIdentifier } from '../../src/adapters/contracts/types/identifier'
 import { Vector3 } from '../../src/kernel'
@@ -38,6 +40,8 @@ export class MockPlayerServer extends IPlayerServer {
   }
 
   drop(_playerSrc: string, _reason: string): void {}
+
+  setModel(_playerSrc: string, _model: string): void {}
 
   getIdentifier(playerSrc: string, identifierType: string): string | undefined {
     const identifiers = this.playerIdentifiers.get(playerSrc)
@@ -77,9 +81,9 @@ export class MockPlayerServer extends IPlayerServer {
     return '127.0.0.1:30120'
   }
 
-  setRoutingBucket(_playerSrc: string, _bucket: number): void {}
+  setDimension(_playerSrc: string, _bucket: number): void {}
 
-  getRoutingBucket(playerSrc: string): number {
+  getDimension(playerSrc: string): number {
     return this.routingBuckets.get(playerSrc) ?? 0
   }
 
@@ -146,9 +150,9 @@ export class MockEntityServer extends IEntityServer {
 
   setOrphanMode(_handle: number, _mode: number): void {}
 
-  setRoutingBucket(_handle: number, _bucket: number): void {}
+  setDimension(_handle: number, _bucket: number): void {}
 
-  getRoutingBucket(_handle: number): number {
+  getDimension(_handle: number): number {
     return 0
   }
 
@@ -182,11 +186,30 @@ export class MockEventsAPI extends EventsAPI<'server'> {
   emit(_event: string, _targetOrArg?: number | number[] | 'all' | any, ..._args: any[]): void {}
 }
 
+export class MockPlayerLifecycleServer extends IPlayerLifecycleServer {
+  spawn(): void {}
+  teleport(): void {}
+  respawn(): void {}
+}
+
+export class MockPlayerStateSyncServer extends IPlayerStateSyncServer {
+  getHealth(): number {
+    return 200
+  }
+  setHealth(): void {}
+  getArmor(): number {
+    return 0
+  }
+  setArmor(): void {}
+}
+
 /**
  * Shared mock instances for tests.
  */
 export const mockPlayerInfo = new MockPlayerInfo()
 export const mockPlayerServer = new MockPlayerServer()
+export const mockPlayerLifecycle = new MockPlayerLifecycleServer()
+export const mockPlayerStateSync = new MockPlayerStateSyncServer()
 export const mockEntityServer = new MockEntityServer()
 export const mockEventsAPI = new MockEventsAPI()
 
@@ -197,6 +220,8 @@ export function createMockPlayerAdapters(): PlayerAdapters {
   return {
     playerInfo: mockPlayerInfo,
     playerServer: mockPlayerServer,
+    playerLifecycle: mockPlayerLifecycle,
+    playerStateSync: mockPlayerStateSync,
     entityServer: mockEntityServer,
     events: mockEventsAPI,
     defaultSpawnModel: 'mp_m_freemode_01',

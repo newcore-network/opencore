@@ -1,4 +1,5 @@
 import { LogDomainLabels, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
+import { getClientLogConsole } from '../client-log-console'
 import { LogTransport } from './transport.interface'
 
 export interface SimpleConsoleTransportOptions {
@@ -47,6 +48,8 @@ export class SimpleConsoleTransport implements LogTransport {
 
   write(entry: LogEntry): void {
     const { level, domain, message, timestamp, context, error } = entry
+    const output = getClientLogConsole()
+    const capabilities = output.getCapabilities()
 
     const levelLabel = LogLevelLabels[level].padEnd(5)
     const domainLabel = LogDomainLabels[domain]
@@ -75,24 +78,26 @@ export class SimpleConsoleTransport implements LogTransport {
     // Output the main log line
     const logLine = parts.join(' ')
 
-    // Choose the appropriate console method
+    // Choose the appropriate client log sink
     switch (level) {
       case LogLevel.TRACE:
+        output.trace(logLine)
+        break
       case LogLevel.DEBUG:
-        console.debug(logLine)
+        output.debug(logLine)
         break
       case LogLevel.INFO:
-        console.info(logLine)
+        output.info(logLine)
         break
       case LogLevel.WARN:
-        console.warn(logLine)
+        output.warn(logLine)
         break
       case LogLevel.ERROR:
       case LogLevel.FATAL:
-        console.error(logLine)
+        output.error(logLine)
         break
       default:
-        console.log(logLine)
+        output.info(logLine)
     }
 
     // Output context only if enabled and present
@@ -100,13 +105,16 @@ export class SimpleConsoleTransport implements LogTransport {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { source, domain: _, ...rest } = context
       if (Object.keys(rest).length > 0) {
-        console.debug('  context:', JSON.stringify(rest))
+        output.debug(
+          '  context:',
+          capabilities.supportsStructuredData ? rest : JSON.stringify(rest),
+        )
       }
     }
 
     // Output error stack if present
     if (error?.stack) {
-      console.error('  stack:', error.stack)
+      output.error('  stack:', error.stack)
     }
   }
 }

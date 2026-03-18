@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "1.0.5-beta.1",
+  "version": "1.0.5-beta.2",
   "description": "Secure, event-driven TypeScript Framework & Runtime engine for CitizenFX (Cfx).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,6 +33,26 @@
       "types": "./dist/runtime/client/index.d.ts",
       "import": "./dist/runtime/client/index.js",
       "require": "./dist/runtime/client/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "import": "./dist/contracts.js",
+      "require": "./dist/contracts.js"
+    },
+    "./contracts/client": {
+      "types": "./dist/contracts/client.d.ts",
+      "import": "./dist/contracts/client.js",
+      "require": "./dist/contracts/client.js"
+    },
+    "./contracts/server": {
+      "types": "./dist/contracts/server.d.ts",
+      "import": "./dist/contracts/server.js",
+      "require": "./dist/contracts/server.js"
+    },
+    "./kernel": {
+      "types": "./dist/kernel-public.d.ts",
+      "import": "./dist/kernel-public.js",
+      "require": "./dist/kernel-public.js"
     },
     "./package.json": "./package.json"
   },
@@ -79,8 +99,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
-    "@citizenfx/client": "2.0.22443-1",
-    "@citizenfx/server": "2.0.22443-1",
     "@types/node": "^25.0.3",
     "@vitest/coverage-v8": "^4.0.16",
     "dependency-cruiser": "^17.3.6",

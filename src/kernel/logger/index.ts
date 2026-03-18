@@ -1,5 +1,10 @@
 // Core Logger (internal framework use)
 export { coreLogger, loggers } from './core-logger'
+export {
+  getClientLogConsole,
+  resetClientLogConsoleForTests,
+  setClientLogConsole,
+} from './client-log-console'
 export type { LoggerConfig } from './logger.config'
 
 // Config
@@ -15,6 +20,7 @@ export {
 
 // Service
 export { ChildLogger, LoggerService } from './logger.service'
+export type { ClientLogConsoleCapabilities } from '../../adapters/contracts/client/IClientLogConsole'
 export type { LogContext, LogEntry } from './logger.types'
 export { LogDomain, LogDomainLabels, LogLevel, LogLevelLabels, parseLogLevel } from './logger.types'
 export type { BufferedTransportOptions, LogOutputFormat } from './transports/buffered.transport'

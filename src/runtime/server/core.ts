@@ -8,6 +8,7 @@ import {
   type ServerInitOptions,
   type ServerRuntimeOptions,
 } from './runtime'
+import { OpenCoreServerAdapter } from './adapter'
 
 export let _mode: FrameworkMode
 
@@ -15,11 +16,19 @@ export interface OpenCoreInitOptions extends ServerInitOptions {
   plugins?: OpenCorePlugin[]
 }
 
+let _pendingAdapter: OpenCoreServerAdapter | undefined
+
+export function useAdapter(adapter: OpenCoreServerAdapter): void {
+  _pendingAdapter = adapter
+}
+
 function createConfigAccessor(options: ServerRuntimeOptions) {
+  const runtimeOptions = { ...options }
+
   return {
     get<T = any>(key: string): T | undefined {
       const segments = key.split('.').filter(Boolean)
-      let current: unknown = options
+      let current: unknown = runtimeOptions
 
       for (const segment of segments) {
         if (typeof current !== 'object' || current === null) {
@@ -34,6 +43,10 @@ function createConfigAccessor(options: ServerRuntimeOptions) {
 }
 
 export async function init(options: OpenCoreInitOptions) {
+  if (!options.adapter && _pendingAdapter) {
+    options = { ...options, adapter: _pendingAdapter }
+  }
+
   const resolved: ServerRuntimeOptions = resolveRuntimeOptions(options)
   _mode = resolved.mode
 

@@ -1,5 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports } from '../../../../adapters/contracts/IExports'
+import { IResourceInfo } from '../../../../adapters/contracts/IResourceInfo'
 import { loggers } from '../../../../kernel/logger'
 import { RGB } from '../../../../kernel/utils/rgb'
 import { Channel } from '../../concepts/channel'
@@ -68,10 +69,11 @@ export class RemoteChannelImplementation extends Channels {
 
   constructor(
     @inject(IExports as any) private exportsService: IExports,
+    @inject(IResourceInfo as any) resourceInfo: IResourceInfo,
     private readonly players: Players,
   ) {
     super()
-    this.resourceName = GetCurrentResourceName()
+    this.resourceName = resourceInfo.getCurrentResourceName()
   }
 
   /**

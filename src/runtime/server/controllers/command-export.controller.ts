@@ -307,7 +307,7 @@ export class CommandExportController implements InternalCommandsExports {
       if (!allowed) {
         const errorMessage = message || `Rate limit exceeded for command: ${commandName}`
         if (onExceed === 'KICK') {
-          DropPlayer(player.clientID.toString(), errorMessage)
+          player.kick(errorMessage)
         }
         throw new SecurityError(onExceed || 'LOG', errorMessage, { clientID: player.clientID })
       }

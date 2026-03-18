@@ -1,11 +1,12 @@
 // Framework functions
 export { onFrameworkEvent } from './bus/internal-event.bus'
-export { init } from './core'
+export { init, useAdapter } from './core'
 
 // API
 export * from './apis'
 export * from './decorators'
 export * from './library'
+export * from './adapter'
 export * from './contracts'
 export * from './ports/players.api-port'
 export * from './ports/authorization.api-port'

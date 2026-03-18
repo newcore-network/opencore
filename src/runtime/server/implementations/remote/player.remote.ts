@@ -1,10 +1,13 @@
 import { inject, injectable } from 'tsyringe'
 import { IExports, IPlayerInfo } from '../../../../adapters'
-import { IPlatformCapabilities } from '../../../../adapters/contracts/IPlatformCapabilities'
+import { IPlatformContext } from '../../../../adapters/contracts/IPlatformContext'
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../../adapters/contracts/server/IEntityServer'
+import { IPlayerLifecycleServer } from '../../../../adapters/contracts/server/player-lifecycle/IPlayerLifecycleServer'
+import { IPlayerStateSyncServer } from '../../../../adapters/contracts/server/player-state/IPlayerStateSyncServer'
 import { IPlayerServer } from '../../../../adapters/contracts/server/IPlayerServer'
 import { loggers } from '../../../../kernel/logger'
+import { createLocalServerPlayer, createRemoteServerPlayer } from '../../adapter/registry'
 import { Player, type PlayerAdapters } from '../../entities'
 import { getRuntimeContext } from '../../runtime'
 import { InternalPlayerExports, SerializedPlayerData } from '../../types/core-exports.types'
@@ -30,18 +33,23 @@ export class RemotePlayerImplementation extends Players {
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IExports as any) private readonly exportsService: IExports,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
+    @inject(IPlayerLifecycleServer as any)
+    private readonly playerLifecycle: IPlayerLifecycleServer,
+    @inject(IPlayerStateSyncServer as any)
+    private readonly playerStateSync: IPlayerStateSyncServer,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
-    @inject(IPlatformCapabilities as any)
-    private readonly platformCapabilities: IPlatformCapabilities,
+    @inject(IPlatformContext as any)
+    private readonly platformContext: IPlatformContext,
   ) {
     super()
-    const defaultSpawnModel =
-      this.platformCapabilities.getConfig<string>('defaultSpawnModel') ?? 'mp_m_freemode_01'
+    const defaultSpawnModel = this.platformContext.defaultSpawnModel
 
     this.playerAdapters = {
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
+      playerLifecycle: this.playerLifecycle,
+      playerStateSync: this.playerStateSync,
       entityServer: this.entityServer,
       events: this.events,
       defaultSpawnModel,
@@ -65,30 +73,8 @@ export class RemotePlayerImplementation extends Players {
     return coreExports
   }
 
-  /**
-   * Creates a local Player instance from serialized data.
-   *
-   * @remarks
-   * The returned Player is hydrated with session data from CORE,
-   * including accountID, identifiers, metadata, and states.
-   */
   private createPlayerFromData(data: SerializedPlayerData): Player {
-    const player = new Player(
-      {
-        clientID: data.clientID,
-        accountID: data.accountID,
-        identifiers: data.identifiers,
-        meta: data.meta,
-      },
-      this.playerAdapters,
-    )
-
-    // Restore state flags
-    for (const state of data.states) {
-      player.addState(state)
-    }
-
-    return player
+    return createRemoteServerPlayer(data, this.playerAdapters)
   }
 
   /**
@@ -105,7 +91,7 @@ export class RemotePlayerImplementation extends Players {
         error: error instanceof Error ? error.message : String(error),
       })
       // Fallback to basic player
-      return new Player({ clientID, meta: {} }, this.playerAdapters)
+      return createLocalServerPlayer({ clientID, meta: {} }, this.playerAdapters)
     }
   }
 

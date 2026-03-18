@@ -1,5 +1,6 @@
 import { NativeHandle } from 'src/runtime/core/nativehandle'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
+import { INpcLifecycleServer } from '../../../adapters/contracts/server/npc-lifecycle/INpcLifecycleServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
@@ -9,6 +10,7 @@ import { SerializedNpcData } from '../types/npc.types'
 export interface NpcAdapters {
   entityServer: IEntityServer
   pedServer: IPedServer
+  npcLifecycle: INpcLifecycleServer
 }
 
 /**
@@ -184,7 +186,7 @@ export class NPC extends BaseEntity implements Spatial, NativeHandle {
    */
   setRoutingBucket(bucket: number): void {
     if (!this.exists) return
-    this.adapters.entityServer.setRoutingBucket(this.session.handle, bucket)
+    this.adapters.entityServer.setDimension(this.session.handle, bucket)
     this.session.routingBucket = bucket
     this._dimension = bucket
   }
@@ -195,7 +197,7 @@ export class NPC extends BaseEntity implements Spatial, NativeHandle {
    * @returns Routing bucket.
    */
   getRoutingBucket(): number {
-    return this.adapters.entityServer.getRoutingBucket(this.session.handle)
+    return this.adapters.entityServer.getDimension(this.session.handle)
   }
 
   /**
@@ -326,7 +328,7 @@ export class NPC extends BaseEntity implements Spatial, NativeHandle {
    */
   delete(): void {
     if (!this.exists) return
-    this.adapters.pedServer.delete(this.session.handle)
+    void this.adapters.npcLifecycle.delete({ handle: this.session.handle })
   }
 
   /**

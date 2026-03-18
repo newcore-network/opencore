@@ -10,7 +10,7 @@ import { IEngineEvents } from '../contracts/IEngineEvents'
  * This implementation provides a mock event system for testing purposes.
  */
 @injectable()
-export class NodeEngineEvents implements IEngineEvents {
+export class NodeEngineEvents extends IEngineEvents {
   private eventEmitter = new EventEmitter()
 
   on(eventName: string, handler?: (...args: any[]) => void): void {

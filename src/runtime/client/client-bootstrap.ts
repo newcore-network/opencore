@@ -1,6 +1,11 @@
-import { registerClientCapabilities } from '../../adapters/register-client-capabilities'
 import { MetadataScanner } from '../../kernel/di/metadata.scanner'
 import { loggers } from '../../kernel/logger'
+import {
+  assertClientAdapterCompatibility,
+  getActiveClientAdapterName,
+  getCurrentClientResourceName,
+  installClientAdapter,
+} from './adapter/registry'
 import { di } from './client-container'
 import {
   type ClientInitOptions,
@@ -9,7 +14,6 @@ import {
   setClientRuntimeContext,
 } from './client-runtime'
 import { getClientControllerRegistry } from './decorators'
-import { playerClientLoader } from './player/player.loader'
 import {
   BlipService,
   Camera,
@@ -19,6 +23,7 @@ import {
   NotificationService,
   PedService,
   ProgressService,
+  ClientSessionBridgeService,
   SpawnService,
   StreamingService,
   TextUIService,
@@ -26,7 +31,8 @@ import {
   VehicleService,
 } from './services'
 import { registerSystemClient } from './system/processors.register'
-import { NuiBridge } from './ui-bridge'
+import { WebViewBridge } from './webview-bridge'
+import { WebViewService } from './webview.service'
 
 /**
  * Services that have an init() method which registers global runtime event listeners.
@@ -35,14 +41,18 @@ import { NuiBridge } from './ui-bridge'
  * - Registered in DI for ALL modes (so they can be injected and used)
  * - Only initialized (.init() called) in CORE mode to avoid duplicate event handlers
  */
-const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService] as const
+const SERVICES_WITH_GLOBAL_LISTENERS: Array<
+  new (
+    ...args: any[]
+  ) => { init?: () => Promise<void> | void }
+> = [SpawnService, ClientSessionBridgeService]
 
 /**
  * All client services that should be available in the DI container
  */
 // const ALL_CLIENT_SERVICES = [
 //   SpawnService,
-//   NuiBridge,
+//   WebViewBridge,
 //   NotificationService,
 //   TextUIService,
 //   ProgressService,
@@ -55,18 +65,6 @@ const SERVICES_WITH_GLOBAL_LISTENERS = [SpawnService] as const
 // ] as const
 
 /**
- * Get current resource name safely
- */
-function getCurrentResourceNameSafe(): string {
-  const fn = (globalThis as any).GetCurrentResourceName
-  if (typeof fn === 'function') {
-    const name = fn()
-    if (typeof name === 'string' && name.trim()) return name
-  }
-  return 'default'
-}
-
-/**
  * Register singleton services in the DI container
  *
  * @remarks
@@ -75,20 +73,26 @@ function getCurrentResourceNameSafe(): string {
  */
 function registerServices() {
   // Register all client services in DI (available in all modes)
-  di.registerSingleton(SpawnService, SpawnService)
-  di.registerSingleton(NuiBridge, NuiBridge)
-  di.registerSingleton(NotificationService, NotificationService)
-  di.registerSingleton(TextUIService, TextUIService)
-  di.registerSingleton(ProgressService, ProgressService)
-  di.registerSingleton(MarkerService, MarkerService)
-  di.registerSingleton(BlipService, BlipService)
-  di.registerSingleton(Camera, Camera)
-  di.registerSingleton(CameraEffectsRegistry, CameraEffectsRegistry)
-  di.registerSingleton(Cinematic, Cinematic)
-  di.registerSingleton(VehicleClientService, VehicleClientService)
-  di.registerSingleton(VehicleService, VehicleService)
-  di.registerSingleton(PedService, PedService)
-  di.registerSingleton(StreamingService, StreamingService)
+  if (!di.isRegistered(SpawnService)) di.registerSingleton(SpawnService, SpawnService)
+  if (!di.isRegistered(WebViewService)) di.registerSingleton(WebViewService, WebViewService)
+  if (!di.isRegistered(WebViewBridge)) di.registerSingleton(WebViewBridge, WebViewBridge)
+  if (!di.isRegistered(NotificationService))
+    di.registerSingleton(NotificationService, NotificationService)
+  if (!di.isRegistered(TextUIService)) di.registerSingleton(TextUIService, TextUIService)
+  if (!di.isRegistered(ProgressService)) di.registerSingleton(ProgressService, ProgressService)
+  if (!di.isRegistered(ClientSessionBridgeService))
+    di.registerSingleton(ClientSessionBridgeService, ClientSessionBridgeService)
+  if (!di.isRegistered(MarkerService)) di.registerSingleton(MarkerService, MarkerService)
+  if (!di.isRegistered(BlipService)) di.registerSingleton(BlipService, BlipService)
+  if (!di.isRegistered(Camera)) di.registerSingleton(Camera, Camera)
+  if (!di.isRegistered(CameraEffectsRegistry))
+    di.registerSingleton(CameraEffectsRegistry, CameraEffectsRegistry)
+  if (!di.isRegistered(Cinematic)) di.registerSingleton(Cinematic, Cinematic)
+  if (!di.isRegistered(VehicleClientService))
+    di.registerSingleton(VehicleClientService, VehicleClientService)
+  if (!di.isRegistered(VehicleService)) di.registerSingleton(VehicleService, VehicleService)
+  if (!di.isRegistered(PedService)) di.registerSingleton(PedService, PedService)
+  if (!di.isRegistered(StreamingService)) di.registerSingleton(StreamingService, StreamingService)
 }
 
 /**
@@ -134,16 +138,17 @@ async function tryImportAutoLoad() {
  */
 export async function initClientCore(options: ClientInitOptions = {}) {
   const mode: ClientMode = options.mode ?? 'CORE'
-  const resourceName = getCurrentResourceNameSafe()
-
-  // Register system processors early (needed for MetadataScanner)
-  // These processors are safe - they just process metadata, they don't register event handlers
-  // Each resource bundle needs its own copy registered in its DI container
-  registerSystemClient()
 
   // Check if already initialized
   const existingContext = getClientRuntimeContext()
   if (existingContext?.isInitialized) {
+    assertClientAdapterCompatibility(options.adapter)
+
+    // Register system processors for the active bundle if needed.
+    registerSystemClient()
+
+    const resourceName = getCurrentClientResourceName()
+
     // If already initialized, only scan controllers for this resource
     if (mode === 'RESOURCE' || mode === 'STANDALONE') {
       await tryImportAutoLoad()
@@ -159,15 +164,24 @@ export async function initClientCore(options: ClientInitOptions = {}) {
     )
   }
 
+  await installClientAdapter(options.adapter)
+  loggers.bootstrap.debug('Client adapter registered', {
+    adapter: getActiveClientAdapterName() ?? 'unknown',
+  })
+
+  const resourceName = getCurrentClientResourceName()
+
+  // Register system processors early (needed for MetadataScanner)
+  // These processors are safe - they just process metadata, they don't register event handlers
+  // Each resource bundle needs its own copy registered in its DI container
+  registerSystemClient()
+
   // Set runtime context
   setClientRuntimeContext({
     mode,
     resourceName,
     isInitialized: true,
   })
-
-  // Register client-side adapters (IPedAppearanceClient, IHasher)
-  await registerClientCapabilities()
 
   // Register all services in DI (available in all modes)
   registerServices()
@@ -176,17 +190,11 @@ export async function initClientCore(options: ClientInitOptions = {}) {
   // This is where services that register global event handlers are initialized
   await bootstrapServices(mode)
 
-  // Player loader (only in CORE mode)
-  if (mode === 'CORE') {
-    playerClientLoader()
-  }
-
   // Import framework controllers (only in CORE mode)
   // These controllers listen to global events and should only be registered once
   if (mode === 'CORE') {
     await import('./controllers/spawner.controller')
     await import('./controllers/appearance.controller')
-    await import('./controllers/player-sync.controller')
   }
 
   await tryImportAutoLoad()

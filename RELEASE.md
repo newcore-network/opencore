@@ -1,58 +1,58 @@
-## OpenCore Framework v1.0.5-beta.1
+## OpenCore Framework v1.0.5-beta.2
 
 ### Highlights
-
-- Major runtime evolution with channels, RPC/events transport, plugins, and library APIs.
-- Large architecture and cleanup pass across the codebase.
-- Expanded benchmark coverage and refreshed benchmark results for this beta cycle.
-- Clearer separation between public API surface and runtime implementations (ports/contracts vs local/remote implementations).
-- Core runtime primitives are now more explicit and reusable (`BaseEntity`, `Spatial`, `World`, library core).
+- Added an explicit server adapter API for platform-specific runtimes.
+- Player creation and remote hydration now support adapter-owned subclasses while preserving the public `Player` type.
+- Added an explicit client adapter API and removed the built-in `ClientPlayer` singleton.
+- Added client UI bridges for markers, blips, and notifications.
+- Added lifecycle services for NPC and Vehicle management.
+- Improved Player management with spawn, teleport, and respawn actions.
 
 ### New Features
-
-- Channels and chat API ecosystem:
-  - Added a comprehensive channel system (radio, phone, team, admin, proximity).
-  - Added communication controller examples and extensive JSDoc for channel APIs.
-  - Exported channel API ports and removed legacy channel implementation paths.
-- Messaging transport and RPC/events:
-  - Introduced a unified messaging transport architecture with `EventsAPI` and `RpcAPI`.
-  - Added stronger typed runtime contexts for server/client events and RPC.
-  - Added/expanded RPC decorator and handler support (`@OnRPC`) with integration tests.
-- Runtime surface expansion:
-  - Consolidated core concepts around reusable runtime primitives (`BaseEntity`, `Spatial`, `World`) exported from runtime core.
-  - Added Appearance API wrapper for validation/apply/reset flows.
-  - Added Camera and Cinematic services, cinematic builder, and typed lifecycle payloads.
-  - Added ped abstractions (Cfx + Node implementations) and server-side NPC lifecycle APIs.
-  - Added first-class runtime library factories (`createServerLibrary`, `createClientLibrary`) and dedicated library event bus/processors.
-- Public API boundary and port model:
-  - Server public API now explicitly exports API ports (`players.api-port`, `authorization.api-port`, `channel.api-port`) through `runtime/server/api`.
-  - Internal runtime ports were isolated under `ports/internal` (`command-execution`, `player-session-lifecycle`) to mark non-public contracts.
-  - Runtime services were moved toward explicit local/remote implementations under `runtime/server/implementations/*`.
-- Security and validation flow:
-  - Principal/authorization and command/net validation paths were tightened through contract-based security handlers and observers.
-  - Runtime config and validation behavior were expanded and benchmarked (including validation-heavy and error-path scenarios).
-- Plugin model:
-  - Added server plugin kernel MVP with extensible API hooks.
-  - Added client-side plugin system and plugin lifecycle hook after server initialization.
-- Autoload and developer experience:
-  - Added autoload for user server controllers.
-  - Improved client controller autoloading and metadata scanning error handling.
-- Benchmark system:
-  - Added broad benchmark suites for BinaryService, SchemaGenerator, EntitySystem, AppearanceValidation, EventInterceptor, RuntimeConfig.
-  - Added load benchmarks for RPC concurrency, validation, and request lifecycle.
+- `Server.init()` now accepts `adapter` to install a single server adapter during bootstrap.
+- Added public server adapter helpers in `@open-core/framework/server` for custom adapter packages.
+- Added adapter-aware Player serialization hooks for CORE/RESOURCE flows.
+- `Client.init()` now accepts `adapter` to install a single client adapter during bootstrap.
+- Added client runtime bridge contracts so event processors, WebView callbacks, key mappings, and ticks no longer depend directly on CFX globals.
+- Added client UI bridges for markers, blips, and notifications.
+- Added lifecycle services and contracts for NPC and Vehicle management.
+- Added `ISpawnActions` interface and implementation for managing player spawn, teleport, and respawn actions.
+- Added `ClientLoggerBridge` to abstract client-side logging from direct console calls.
+- Added `playerCommand` runtime event.
+- Added RedM-specific ped appearance adapter and client services for RDR3 profile appearance logic.
+- Added runtime platform and game profile detection with duplicate DI registration prevention.
+- Added `useAdapter()` function to pre-set the client adapter before initialization.
+- Added project-level adapter injection and runtime hints for server and client adapters.
+- Added WebView abstraction for client UI interactions.
+- Renamed routing bucket methods to dimension.
+- Added dedicated client and server contract files with updated exports and package entry points.
 
 ### Breaking Changes
+- Server bootstrap now defaults to the built-in Node adapter when no explicit runtime adapter is provided.
+- Platform-specific Player APIs should move into adapter packages through Player subclassing/module augmentation.
+- `ClientPlayer` is no longer exported from `@open-core/framework/client`.
+- Client bootstrap no longer uses `register-client-capabilities`; external adapters should be installed through `Client.init({ adapter })`.
+- `WebViewBridge` is now the preferred embedded UI abstraction; `OnView` now represents WebView callbacks directly, while `NuiBridge` and `NUI` remain as deprecated compatibility aliases.
 
-- Service-to-API/implementation migration in multiple modules (notably `*Service` naming changes).
-- Channel/chat APIs were renamed and moved (`ChannelService` -> `Channels`, `ChatService` -> `Chat`, moved to `apis/`).
-- Transport contracts changed from legacy net transport shape to MessagingTransport + Events/RPC APIs.
-- Port/file naming was normalized (`player-directory` -> `players.api-port`, `principal.port` -> `authorization.api-port`, plus related API file renames).
-- Public vs internal contracts are stricter: `api-port` exports are public surface, while `ports/internal/*` are runtime internals and should not be consumed directly.
-- Deprecated methods, stale docs, and obsolete examples were removed.
-- Import paths and shared types were normalized/centralized (including parallel compute types and decorator/binary file naming updates).
+### Bug Fixes
+- Fixed lint issues and removed unused variables.
+- Fixed exportation issues.
+- Added tests for lint and unused variable fixes.
 
 ### Notes
-
-This beta is a major milestone for OpenCore: cleaner runtime boundaries, stronger extension points, and richer communication primitives while keeping decorator-driven DX.
-
-Simple CLI context: OpenCore CLI now supports cleaner non-interactive build output for CI environments (for example `opencore build --output=plain`).
+- Migration path for external adapters:
+  1. Create an adapter with `defineServerAdapter({ name, register(ctx) { ... } })`.
+  2. Register platform contracts inside `register(ctx)` with `bindSingleton`, `bindInstance`, or `bindMessagingTransport`.
+  3. If you extend `Player`, provide `ctx.usePlayerAdapter({ createLocal, createRemote, serialize, hydrate })`.
+  4. Pass the adapter to `Server.init({ mode, adapter })` in both CORE and RESOURCE resources.
+- RESOURCE hydration now validates adapter identity before rebuilding remote `Player` instances.
+- Client adapter migration path:
+  1. Create an adapter with `defineClientAdapter({ name, register(ctx) { ... } })`.
+  2. Register transport, appearance, hashing, and runtime bridge contracts inside `register(ctx)`.
+  3. Pass the adapter to `Client.init({ mode, adapter })`.
+- Client files now safe to remove from core once moved to external adapter packages:
+  - `src/adapters/register-client-capabilities.ts`
+  - `src/adapters/fivem/fivem-ped-appearance-client.ts`
+  - `src/adapters/redm/redm-ped-appearance-client.ts`
+  - `src/adapters/node/node-ped-appearance-client.ts`
+  - Any remaining client-only transport/runtime bindings that your external adapter reimplements.

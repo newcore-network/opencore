@@ -65,8 +65,10 @@ export const loggers = {
   exports: coreLogger.framework('Exports'),
   /** Tick handlers (server) */
   tick: coreLogger.framework('Tick'),
-  /** NUI callbacks (client) */
-  nui: coreLogger.client('NUI'),
+  /** Embedded WebView callbacks (client) */
+  webView: coreLogger.client('WebView'),
+  /** @deprecated Use webView instead. */
+  nui: coreLogger.client('WebView'),
   /** Spawn service (client) */
   spawn: coreLogger.client('Spawn'),
   /** */

@@ -14,7 +14,13 @@ import {
 } from './processors/resourceLifecycle.processor'
 import { TickProcessor } from './processors/tick.processor'
 
+let processorsRegistered = false
+
 export function registerSystemClient() {
+  if (processorsRegistered) {
+    return
+  }
+
   // Core processors
   di.register('DecoratorProcessor', { useClass: KeyMappingProcessor })
   di.register('DecoratorProcessor', { useClass: TickProcessor })
@@ -30,4 +36,10 @@ export function registerSystemClient() {
   di.register('DecoratorProcessor', { useClass: ResourceStartProcessor })
   di.register('DecoratorProcessor', { useClass: ResourceStopProcessor })
   di.register('DecoratorProcessor', { useClass: GameEventProcessor })
+
+  processorsRegistered = true
+}
+
+export function __resetClientProcessorRegistrationForTests(): void {
+  processorsRegistered = false
 }
