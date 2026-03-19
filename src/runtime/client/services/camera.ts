@@ -1,33 +1,20 @@
 import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
-import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import {
+  type ClientCameraCreateOptions as CameraCreateOptions,
+  type ClientCameraRenderOptions as CameraRenderOptions,
+  type ClientCameraRotation as CameraRotation,
+  type ClientCameraShakeOptions as CameraShakeOptions,
+  type ClientCameraTransform as CameraTransform,
+  IClientCameraPort,
+} from '../../../adapters/contracts/client/camera/IClientCameraPort'
 
-export interface CameraRotation {
-  x: number
-  y: number
-  z: number
-}
-
-export interface CameraTransform {
-  position: Vector3
-  rotation?: CameraRotation
-  fov?: number
-}
-
-export interface CameraCreateOptions {
-  camName?: string
-  active?: boolean
-  transform?: CameraTransform
-}
-
-export interface CameraRenderOptions {
-  ease?: boolean
-  easeTimeMs?: number
-}
-
-export interface CameraShakeOptions {
-  type: string
-  amplitude: number
+export type {
+  CameraCreateOptions,
+  CameraRenderOptions,
+  CameraRotation,
+  CameraShakeOptions,
+  CameraTransform,
 }
 
 @injectable()
@@ -35,17 +22,10 @@ export class Camera {
   private activeCam: number | null = null
   private rendering = false
 
-  constructor(
-    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
-  ) {}
+  constructor(@inject(IClientCameraPort as any) private readonly cameras: IClientCameraPort) {}
 
   create(options: CameraCreateOptions = {}): number {
-    const cam = this.platform.createCam(
-      options.camName ?? 'DEFAULT_SCRIPTED_CAMERA',
-      options.active ?? false,
-    )
-
-    if (options.transform) this.setTransform(cam, options.transform)
+    const cam = this.cameras.create(options)
     if (options.active) this.activeCam = cam
     return cam
   }
@@ -55,19 +35,13 @@ export class Camera {
   }
 
   setActive(cam: number, active: boolean): void {
-    this.platform.setCamActive(cam, active)
+    this.cameras.setActive(cam, active)
     if (active) this.activeCam = cam
     else if (this.activeCam === cam) this.activeCam = null
   }
 
   render(enable: boolean, options: CameraRenderOptions = {}): void {
-    this.platform.renderScriptCams(
-      enable,
-      options.ease ?? false,
-      options.easeTimeMs ?? 0,
-      true,
-      true,
-    )
+    this.cameras.render(enable, options)
     this.rendering = enable
   }
 
@@ -76,43 +50,41 @@ export class Camera {
   }
 
   destroy(cam: number, destroyActiveCam = false): void {
-    this.platform.destroyCam(cam, destroyActiveCam)
+    this.cameras.destroy(cam, destroyActiveCam)
     if (this.activeCam === cam) this.activeCam = null
   }
 
   destroyAll(destroyActiveCam = false): void {
-    this.platform.destroyAllCams(destroyActiveCam)
+    this.cameras.destroyAll(destroyActiveCam)
     this.activeCam = null
   }
 
   setPosition(cam: number, position: Vector3): void {
-    this.platform.setCamCoord(cam, position)
+    this.cameras.setPosition(cam, position)
   }
 
   setRotation(cam: number, rotation: CameraRotation, rotationOrder = 2): void {
-    this.platform.setCamRot(cam, rotation, rotationOrder)
+    this.cameras.setRotation(cam, rotation, rotationOrder)
   }
 
   setFov(cam: number, fov: number): void {
-    this.platform.setCamFov(cam, fov)
+    this.cameras.setFov(cam, fov)
   }
 
   setTransform(cam: number, transform: CameraTransform): void {
-    this.setPosition(cam, transform.position)
-    if (transform.rotation) this.setRotation(cam, transform.rotation)
-    if (typeof transform.fov === 'number') this.setFov(cam, transform.fov)
+    this.cameras.setTransform(cam, transform)
   }
 
   pointAtCoords(cam: number, position: Vector3): void {
-    this.platform.pointCamAtCoord(cam, position)
+    this.cameras.pointAtCoords(cam, position)
   }
 
   pointAtEntity(cam: number, entity: number, offset: Vector3 = { x: 0, y: 0, z: 0 }): void {
-    this.platform.pointCamAtEntity(cam, entity, offset)
+    this.cameras.pointAtEntity(cam, entity, offset)
   }
 
   stopPointing(cam: number): void {
-    this.platform.stopCamPointing(cam)
+    this.cameras.stopPointing(cam)
   }
 
   interpolate(
@@ -122,22 +94,16 @@ export class Camera {
     easeLocation = true,
     easeRotation = true,
   ): void {
-    this.platform.setCamActiveWithInterp(
-      toCam,
-      fromCam,
-      durationMs,
-      easeLocation ? 1 : 0,
-      easeRotation ? 1 : 0,
-    )
+    this.cameras.interpolate(fromCam, toCam, durationMs, easeLocation, easeRotation)
     this.activeCam = toCam
   }
 
   shake(cam: number, options: CameraShakeOptions): void {
-    this.platform.shakeCam(cam, options.type, options.amplitude)
+    this.cameras.shake(cam, options)
   }
 
   stopShaking(cam: number, stopImmediately = true): void {
-    this.platform.stopCamShaking(cam, stopImmediately)
+    this.cameras.stopShaking(cam, stopImmediately)
   }
 
   reset(options: CameraRenderOptions = {}): void {

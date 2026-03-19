@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 
 export interface VehicleSpawnOptions {
   model: string
@@ -46,6 +47,7 @@ export interface VehicleMods {
 export class VehicleService {
   constructor(
     @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {}
 
   async spawn(options: VehicleSpawnOptions): Promise<number> {
@@ -86,8 +88,7 @@ export class VehicleService {
       )
     }
     if (plate) this.platform.setVehicleNumberPlateText(vehicle, plate)
-    if (warpIntoVehicle)
-      this.platform.taskWarpPedIntoVehicle(this.platform.getLocalPlayerPed(), vehicle, seatIndex)
+    if (warpIntoVehicle) this.platform.taskWarpPedIntoVehicle(this.localPlayer.getHandle(), vehicle, seatIndex)
     return vehicle
   }
 
@@ -101,7 +102,7 @@ export class VehicleService {
   deleteCurrentVehicle(): void {
     const vehicle = this.getCurrentVehicle()
     if (vehicle) {
-      this.platform.taskLeaveVehicle(this.platform.getLocalPlayerPed(), vehicle, 16)
+      this.platform.taskLeaveVehicle(this.localPlayer.getHandle(), vehicle, 16)
       setTimeout(() => this.delete(vehicle), 1000)
     }
   }
@@ -127,28 +128,27 @@ export class VehicleService {
   }
 
   getClosest(radius = 10.0): number | null {
-    const playerPed = this.platform.getLocalPlayerPed()
-    return this.platform.getClosestVehicle(this.platform.getEntityCoords(playerPed), radius)
+    return this.platform.getClosestVehicle(this.localPlayer.getPosition(), radius)
   }
 
   isPlayerInVehicle(): boolean {
-    return this.platform.isPedInAnyVehicle(this.platform.getLocalPlayerPed())
+    return this.platform.isPedInAnyVehicle(this.localPlayer.getHandle())
   }
 
   getCurrentVehicle(): number | null {
-    const ped = this.platform.getLocalPlayerPed()
+    const ped = this.localPlayer.getHandle()
     if (!this.platform.isPedInAnyVehicle(ped)) return null
     return this.platform.getVehiclePedIsIn(ped, false)
   }
 
   getLastVehicle(): number | null {
-    return this.platform.getVehiclePedIsIn(this.platform.getLocalPlayerPed(), true)
+    return this.platform.getVehiclePedIsIn(this.localPlayer.getHandle(), true)
   }
 
   isPlayerDriver(): boolean {
     const vehicle = this.getCurrentVehicle()
     if (!vehicle) return false
-    return this.platform.getPedInVehicleSeat(vehicle, -1) === this.platform.getLocalPlayerPed()
+    return this.platform.getPedInVehicleSeat(vehicle, -1) === this.localPlayer.getHandle()
   }
 
   setMods(vehicle: number, mods: VehicleMods): void {

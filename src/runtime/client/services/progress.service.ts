@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
+import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 
 export interface ProgressOptions {
   label: string
@@ -44,6 +45,7 @@ export class ProgressService {
   constructor(
     @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
     @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+    @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {}
 
   async start(options: ProgressOptions): Promise<boolean> {
@@ -80,7 +82,7 @@ export class ProgressService {
   private async startProgress(): Promise<void> {
     if (!this.state) return
     const { options } = this.state
-    const ped = this.platform.getLocalPlayerPed()
+    const ped = this.localPlayer.getHandle()
 
     if (options.animation) {
       await this.loadAnimDict(options.animation.dict)
@@ -99,7 +101,7 @@ export class ProgressService {
     if (options.prop) {
       await this.loadModel(options.prop.model)
       const propHash = this.platform.getHashKey(options.prop.model)
-      const coords = this.platform.getEntityCoords(ped)
+      const coords = this.localPlayer.getPosition()
       this.propHandle = this.platform.createObject(propHash, coords, true, true, true)
       this.platform.attachEntityToEntity(
         this.propHandle,
@@ -183,7 +185,7 @@ export class ProgressService {
   }
 
   private cleanup(completed: boolean): void {
-    const ped = this.platform.getLocalPlayerPed()
+    const ped = this.localPlayer.getHandle()
     if (this.state?.options.animation) {
       this.platform.stopAnimTask(
         ped,

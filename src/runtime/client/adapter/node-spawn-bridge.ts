@@ -1,18 +1,23 @@
 import { injectable } from 'tsyringe'
-import { IClientSpawnBridge } from '../../../adapters/contracts/client/spawn/IClientSpawnBridge'
+import { IClientSpawnPort } from '../../../adapters/contracts/client/spawn/IClientSpawnPort'
 import type {
   RespawnRequest,
+  SpawnExecutionResult,
   SpawnRequest,
   TeleportRequest,
 } from '../../../adapters/contracts/client/spawn/types'
 
 @injectable()
-export class NodeClientSpawnBridge extends IClientSpawnBridge {
+export class NodeClientSpawnBridge extends IClientSpawnPort {
   async waitUntilReady(_timeoutMs?: number): Promise<void> {}
 
-  async spawn(_request: SpawnRequest): Promise<void> {}
+  async spawn(_request: SpawnRequest): Promise<SpawnExecutionResult> {
+    return {}
+  }
 
-  async respawn(_request: RespawnRequest): Promise<void> {}
+  async respawn(_request: RespawnRequest): Promise<SpawnExecutionResult> {
+    return {}
+  }
 
   async teleport(_request: TeleportRequest): Promise<void> {}
 }

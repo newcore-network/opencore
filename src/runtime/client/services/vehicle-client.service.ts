@@ -3,6 +3,7 @@ import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
+import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 import {
   SerializedVehicleData,
   VehicleCreateOptions,
@@ -22,6 +23,7 @@ export class VehicleClientService {
     @inject(EventsAPI as any) private readonly events: EventsAPI<'client'>,
     @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
     @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+    @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {
     this.registerEventHandlers()
   }
@@ -66,28 +68,27 @@ export class VehicleClientService {
   }
 
   getClosestVehicle(radius = 10.0): number | null {
-    const playerPed = this.platform.getLocalPlayerPed()
-    return this.platform.getClosestVehicle(this.platform.getEntityCoords(playerPed), radius)
+    return this.platform.getClosestVehicle(this.localPlayer.getPosition(), radius)
   }
 
   isPlayerInVehicle(): boolean {
-    return this.platform.isPedInAnyVehicle(this.platform.getLocalPlayerPed())
+    return this.platform.isPedInAnyVehicle(this.localPlayer.getHandle())
   }
 
   getCurrentVehicle(): number | null {
-    const ped = this.platform.getLocalPlayerPed()
+    const ped = this.localPlayer.getHandle()
     if (!this.platform.isPedInAnyVehicle(ped)) return null
     return this.platform.getVehiclePedIsIn(ped, false)
   }
 
   getLastVehicle(): number | null {
-    return this.platform.getVehiclePedIsIn(this.platform.getLocalPlayerPed(), true)
+    return this.platform.getVehiclePedIsIn(this.localPlayer.getHandle(), true)
   }
 
   isPlayerDriver(): boolean {
     const vehicle = this.getCurrentVehicle()
     if (!vehicle) return false
-    return this.platform.getPedInVehicleSeat(vehicle, -1) === this.platform.getLocalPlayerPed()
+    return this.platform.getPedInVehicleSeat(vehicle, -1) === this.localPlayer.getHandle()
   }
 
   getSpeed(vehicle: number): number {
@@ -140,7 +141,7 @@ export class VehicleClientService {
 
   warpIntoVehicle(vehicle: number, seatIndex: number = -1): void {
     if (!this.platform.doesEntityExist(vehicle)) return
-    this.platform.taskWarpPedIntoVehicle(this.platform.getLocalPlayerPed(), vehicle, seatIndex)
+    this.platform.taskWarpPedIntoVehicle(this.localPlayer.getHandle(), vehicle, seatIndex)
   }
 
   setHeading(vehicle: number, heading: number): void {

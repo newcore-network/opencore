@@ -6,6 +6,10 @@ export interface SpawnRequest {
   heading?: number
 }
 
+export interface SpawnExecutionResult {
+  localPlayerHandle?: number
+}
+
 export interface TeleportRequest {
   position: Vector3
   heading?: number

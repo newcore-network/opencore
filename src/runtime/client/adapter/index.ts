@@ -1,5 +1,7 @@
 export * from './client-adapter'
+export * from '../../../adapters/contracts/client/camera/IClientCameraPort'
 export * from '../../../adapters/contracts/client/IClientLogConsole'
+export * from '../../../adapters/contracts/client/spawn/IClientSpawnPort'
 export * from '../../../adapters/contracts/client/spawn/IClientSpawnBridge'
 export * from '../../../adapters/contracts/client/ui/IClientBlipBridge'
 export * from '../../../adapters/contracts/client/ui/IClientMarkerBridge'

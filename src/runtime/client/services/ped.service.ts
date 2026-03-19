@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 
 export interface PedSpawnOptions {
   model: string
@@ -36,6 +37,7 @@ export class PedService {
 
   constructor(
     @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {}
 
   async spawn(options: PedSpawnOptions): Promise<{ id: string; handle: number }> {
@@ -169,8 +171,8 @@ export class PedService {
   }
 
   getClosest(radius = 10.0, excludePlayer = true): number | null {
-    const playerPed = this.platform.getLocalPlayerPed()
-    const handle = this.platform.getClosestPed(this.platform.getEntityCoords(playerPed), radius)
+    const playerPed = this.localPlayer.getHandle()
+    const handle = this.platform.getClosestPed(this.localPlayer.getPosition(), radius)
     if (!handle) return null
     if (excludePlayer && handle === playerPed) return null
     return handle
@@ -180,7 +182,7 @@ export class PedService {
     return this.platform.getNearbyPeds(
       position,
       radius,
-      excludePlayer ? this.platform.getLocalPlayerPed() : undefined,
+      excludePlayer ? this.localPlayer.getHandle() : undefined,
     )
   }
 
