@@ -18,32 +18,36 @@ export class NodeClientLogConsole extends IClientLogConsole {
   }
 
   trace(message: string, details?: unknown): void {
-    this.write(console.debug, message, details)
+    this.write('debug', message, details)
   }
 
   debug(message: string, details?: unknown): void {
-    this.write(console.debug, message, details)
+    this.write('debug', message, details)
   }
 
   info(message: string, details?: unknown): void {
-    this.write(console.info, message, details)
+    this.write('info', message, details)
   }
 
   warn(message: string, details?: unknown): void {
-    this.write(console.warn, message, details)
+    this.write('warn', message, details)
   }
 
   error(message: string, details?: unknown): void {
-    this.write(console.error, message, details)
+    this.write('error', message, details)
   }
 
-  private write(method: (...args: unknown[]) => void, message: string, details?: unknown): void {
+  private write(
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    details?: unknown,
+  ): void {
     if (details === undefined) {
-      method(message)
+      console[level](message)
       return
     }
 
-    method(message, details)
+    console[level](message, details)
   }
 }
 
