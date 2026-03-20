@@ -26,6 +26,7 @@ export class WebViewBridge<
       focused?: boolean
       cursor?: boolean
       inputPassthrough?: boolean
+      chatMode?: boolean
     } = {},
   ): void {
     this.service.create({ id: this.viewId, url, ...options })
@@ -36,6 +37,10 @@ export class WebViewBridge<
   }
   exists(): boolean {
     return this.service.exists(this.viewId)
+  }
+
+  getCapabilities() {
+    return this.service.getCapabilities()
   }
 
   send<K extends keyof TSend & string>(action: K, data: TSend[K]): void {
@@ -74,6 +79,9 @@ export class WebViewBridge<
 
   blur(): void {
     this.service.blur(this.viewId)
+  }
+  markAsChat(): void {
+    this.service.markAsChat(this.viewId)
   }
   setVisible(visible: boolean): void {
     visible ? this.service.show(this.viewId) : this.service.hide(this.viewId)

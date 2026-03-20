@@ -1,4 +1,5 @@
 import { inject } from 'tsyringe'
+import { z } from 'zod'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { AppError, SecurityError } from '../../../kernel/error'
 import { loggers } from '../../../kernel/logger'
@@ -76,7 +77,7 @@ export class CommandExportController implements InternalCommandsExports {
    * (registered by RESOURCE mode instances).
    */
   @Public()
-  @OnNet('core:execute-command')
+  @OnNet('core:execute-command', z.tuple([z.string().min(1), z.array(z.string())]))
   async onCommandReceived(player: Player, command: string, args: string[]) {
     try {
       if (command.startsWith('/')) command = command.slice(1)

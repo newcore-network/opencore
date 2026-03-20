@@ -14,6 +14,7 @@ export abstract class IClientWebViewBridge {
   abstract hide(viewId: string): void
   abstract focus(viewId: string, options?: WebViewFocusOptions): void
   abstract blur(viewId: string): void
+  abstract markAsChat(viewId: string): void
   abstract send(viewId: string, event: string, payload: unknown): void
   abstract onMessage(handler: (message: WebViewMessage) => void | Promise<void>): () => void
 }

@@ -229,6 +229,7 @@ export class Vehicles {
       ...options,
       position: spawnPosition,
       heading: spawnHeading,
+      plate: ownership.type === 'player' ? player.name : 'anom',
       ownership,
     })
     if (result.success) {

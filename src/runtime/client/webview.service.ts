@@ -19,6 +19,7 @@ const FALLBACK_CAPABILITIES: WebViewCapabilities = {
   supportsBidirectionalMessaging: true,
   supportsExecute: false,
   supportsHeadless: false,
+  supportsChatMode: false,
 }
 
 function createFallbackBridge(): IClientWebViewBridge {
@@ -38,6 +39,7 @@ function createFallbackBridge(): IClientWebViewBridge {
       runtime.setWebViewInputPassthrough(options?.inputPassthrough ?? false)
     },
     blur: () => runtime.setWebViewFocus(false, false),
+    markAsChat: () => {},
     send: (viewId, event, payload) => {
       runtime.sendWebViewMessage(
         JSON.stringify({ __opencoreWebView: true, viewId, action: event, data: payload }),
@@ -97,6 +99,9 @@ export class WebViewService {
   }
   blur(viewId: string): void {
     this.bridge.blur(viewId)
+  }
+  markAsChat(viewId: string): void {
+    this.bridge.markAsChat(viewId)
   }
   send(viewId: string, event: string, payload: unknown): void {
     this.bridge.send(viewId, event, payload)

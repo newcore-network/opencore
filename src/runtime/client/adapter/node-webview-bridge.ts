@@ -14,6 +14,7 @@ const NODE_WEBVIEW_CAPABILITIES: WebViewCapabilities = {
   supportsBidirectionalMessaging: false,
   supportsExecute: false,
   supportsHeadless: false,
+  supportsChatMode: false,
 }
 
 @injectable()
@@ -35,6 +36,7 @@ export class NodeClientWebViewBridge extends IClientWebViewBridge {
   hide(_viewId: string): void {}
   focus(_viewId: string, _options?: WebViewFocusOptions): void {}
   blur(_viewId: string): void {}
+  markAsChat(_viewId: string): void {}
   send(_viewId: string, _event: string, _payload: unknown): void {}
   onMessage(_handler: (message: WebViewMessage) => void | Promise<void>): () => void {
     return () => {}
