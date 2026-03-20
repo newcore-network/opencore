@@ -1,9 +1,8 @@
 import { inject, injectable } from 'tsyringe'
+import { IClientVehiclePort } from '../../../adapters/contracts/client/vehicle/IClientVehiclePort'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { Vector3 } from '../../../kernel/utils/vector3'
-import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
-import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 import {
   SerializedVehicleData,
   VehicleCreateOptions,
@@ -21,9 +20,8 @@ export class VehicleClientService {
 
   constructor(
     @inject(EventsAPI as any) private readonly events: EventsAPI<'client'>,
-    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientVehiclePort as any) private readonly vehicles: IClientVehiclePort,
     @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
-    @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {
     this.registerEventHandlers()
   }
@@ -68,47 +66,41 @@ export class VehicleClientService {
   }
 
   getClosestVehicle(radius = 10.0): number | null {
-    return this.platform.getClosestVehicle(this.localPlayer.getPosition(), radius)
+    return this.vehicles.getClosest(radius)
   }
 
   isPlayerInVehicle(): boolean {
-    return this.platform.isPedInAnyVehicle(this.localPlayer.getHandle())
+    return this.vehicles.isLocalPlayerInVehicle()
   }
 
   getCurrentVehicle(): number | null {
-    const ped = this.localPlayer.getHandle()
-    if (!this.platform.isPedInAnyVehicle(ped)) return null
-    return this.platform.getVehiclePedIsIn(ped, false)
+    return this.vehicles.getCurrentForLocalPlayer()
   }
 
   getLastVehicle(): number | null {
-    return this.platform.getVehiclePedIsIn(this.localPlayer.getHandle(), true)
+    return this.vehicles.getLastForLocalPlayer()
   }
 
   isPlayerDriver(): boolean {
     const vehicle = this.getCurrentVehicle()
     if (!vehicle) return false
-    return this.platform.getPedInVehicleSeat(vehicle, -1) === this.localPlayer.getHandle()
+    return this.vehicles.isLocalPlayerDriver(vehicle)
   }
 
   getSpeed(vehicle: number): number {
-    if (!this.platform.doesEntityExist(vehicle)) return 0
-    return this.platform.getEntitySpeed(vehicle) * 3.6
+    return this.vehicles.getSpeed(vehicle) * 3.6
   }
 
   getNetworkId(vehicle: number): number {
-    if (!this.platform.doesEntityExist(vehicle)) return 0
-    return this.platform.networkGetNetworkIdFromEntity(vehicle)
+    return this.vehicles.getNetworkId(vehicle)
   }
 
   getVehicleFromNetworkId(networkId: number): number {
-    if (!this.platform.networkDoesEntityExistWithNetworkId(networkId)) return 0
-    return this.platform.networkGetEntityFromNetworkId(networkId)
+    return this.vehicles.getFromNetworkId(networkId)
   }
 
   getVehicleState<T = any>(vehicle: number, key: string): T | undefined {
-    if (!this.platform.doesEntityExist(vehicle)) return undefined
-    return this.platform.getEntityState<T>(vehicle, key)
+    return this.vehicles.getState<T>(vehicle, key)
   }
 
   setDoorsLocked(networkId: number, locked: boolean): void {
@@ -140,110 +132,39 @@ export class VehicleClientService {
   }
 
   warpIntoVehicle(vehicle: number, seatIndex: number = -1): void {
-    if (!this.platform.doesEntityExist(vehicle)) return
-    this.platform.taskWarpPedIntoVehicle(this.localPlayer.getHandle(), vehicle, seatIndex)
+    this.vehicles.warpLocalPlayerInto(vehicle, seatIndex)
   }
 
   setHeading(vehicle: number, heading: number): void {
-    if (!this.platform.doesEntityExist(vehicle)) return
-    this.platform.setEntityHeading(vehicle, heading)
+    this.vehicles.setHeading(vehicle, heading)
   }
 
   getPosition(vehicle: number): Vector3 | null {
-    if (!this.platform.doesEntityExist(vehicle)) return null
-    return this.platform.getEntityCoords(vehicle)
+    return this.vehicles.getPosition(vehicle)
   }
 
   getHeading(vehicle: number): number {
-    if (!this.platform.doesEntityExist(vehicle)) return 0
-    return this.platform.getEntityHeading(vehicle)
+    return this.vehicles.getHeading(vehicle)
   }
 
   getModel(vehicle: number): number {
-    if (!this.platform.doesEntityExist(vehicle)) return 0
-    return this.platform.getEntityModel(vehicle)
+    return this.vehicles.getModel(vehicle)
   }
 
   getPlate(vehicle: number): string {
-    if (!this.platform.doesEntityExist(vehicle)) return ''
-    return this.platform.getVehicleNumberPlateText(vehicle)
+    return this.vehicles.getPlate(vehicle)
   }
 
   applyMods(vehicle: number, mods: Record<string, any>): void {
-    if (!this.platform.doesEntityExist(vehicle)) return
-    this.platform.setVehicleModKit(vehicle, 0)
-    if (mods.spoiler !== undefined) this.platform.setVehicleMod(vehicle, 0, mods.spoiler, false)
-    if (mods.frontBumper !== undefined)
-      this.platform.setVehicleMod(vehicle, 1, mods.frontBumper, false)
-    if (mods.rearBumper !== undefined)
-      this.platform.setVehicleMod(vehicle, 2, mods.rearBumper, false)
-    if (mods.sideSkirt !== undefined) this.platform.setVehicleMod(vehicle, 3, mods.sideSkirt, false)
-    if (mods.exhaust !== undefined) this.platform.setVehicleMod(vehicle, 4, mods.exhaust, false)
-    if (mods.frame !== undefined) this.platform.setVehicleMod(vehicle, 5, mods.frame, false)
-    if (mods.grille !== undefined) this.platform.setVehicleMod(vehicle, 6, mods.grille, false)
-    if (mods.hood !== undefined) this.platform.setVehicleMod(vehicle, 7, mods.hood, false)
-    if (mods.fender !== undefined) this.platform.setVehicleMod(vehicle, 8, mods.fender, false)
-    if (mods.rightFender !== undefined)
-      this.platform.setVehicleMod(vehicle, 9, mods.rightFender, false)
-    if (mods.roof !== undefined) this.platform.setVehicleMod(vehicle, 10, mods.roof, false)
-    if (mods.engine !== undefined) this.platform.setVehicleMod(vehicle, 11, mods.engine, false)
-    if (mods.brakes !== undefined) this.platform.setVehicleMod(vehicle, 12, mods.brakes, false)
-    if (mods.transmission !== undefined)
-      this.platform.setVehicleMod(vehicle, 13, mods.transmission, false)
-    if (mods.horns !== undefined) this.platform.setVehicleMod(vehicle, 14, mods.horns, false)
-    if (mods.suspension !== undefined)
-      this.platform.setVehicleMod(vehicle, 15, mods.suspension, false)
-    if (mods.armor !== undefined) this.platform.setVehicleMod(vehicle, 16, mods.armor, false)
-    if (mods.turbo !== undefined) this.platform.toggleVehicleMod(vehicle, 18, mods.turbo)
-    if (mods.xenon !== undefined) this.platform.toggleVehicleMod(vehicle, 22, mods.xenon)
-    if (mods.wheelType !== undefined) this.platform.setVehicleWheelType(vehicle, mods.wheelType)
-    if (mods.wheels !== undefined) this.platform.setVehicleMod(vehicle, 23, mods.wheels, false)
-    if (mods.windowTint !== undefined) this.platform.setVehicleWindowTint(vehicle, mods.windowTint)
-    if (mods.livery !== undefined) this.platform.setVehicleLivery(vehicle, mods.livery)
-    if (mods.plateStyle !== undefined)
-      this.platform.setVehicleNumberPlateTextIndex(vehicle, mods.plateStyle)
-    if (mods.neonEnabled !== undefined) {
-      this.platform.setVehicleNeonLightEnabled(vehicle, 0, mods.neonEnabled[0])
-      this.platform.setVehicleNeonLightEnabled(vehicle, 1, mods.neonEnabled[1])
-      this.platform.setVehicleNeonLightEnabled(vehicle, 2, mods.neonEnabled[2])
-      this.platform.setVehicleNeonLightEnabled(vehicle, 3, mods.neonEnabled[3])
-    }
-    if (mods.neonColor !== undefined) {
-      this.platform.setVehicleNeonLightsColour(
-        vehicle,
-        mods.neonColor[0],
-        mods.neonColor[1],
-        mods.neonColor[2],
-      )
-    }
-    if (mods.extras) {
-      for (const [extraId, enabled] of Object.entries(mods.extras)) {
-        this.platform.setVehicleExtra(vehicle, Number(extraId), !enabled)
-      }
-    }
-    if (mods.pearlescentColor !== undefined || mods.wheelColor !== undefined) {
-      const [currentPearl, currentWheel] = this.platform.getVehicleExtraColours(vehicle)
-      this.platform.setVehicleExtraColours(
-        vehicle,
-        mods.pearlescentColor ?? currentPearl,
-        mods.wheelColor ?? currentWheel,
-      )
-    }
+    this.vehicles.applyMods(vehicle, mods)
   }
 
   repair(vehicle: number): void {
-    if (!this.platform.doesEntityExist(vehicle)) return
-    this.platform.setVehicleFixed(vehicle)
-    this.platform.setVehicleDeformationFixed(vehicle)
-    this.platform.setVehicleUndriveable(vehicle, false)
-    this.platform.setVehicleEngineOn(vehicle, true, true, false)
-    this.platform.setVehicleEngineHealth(vehicle, 1000.0)
-    this.platform.setVehiclePetrolTankHealth(vehicle, 1000.0)
+    this.vehicles.repair(vehicle)
   }
 
   setFuel(vehicle: number, level: number): void {
-    if (!this.platform.doesEntityExist(vehicle)) return
-    this.platform.setVehicleFuelLevel(vehicle, Math.max(0, Math.min(100, level)))
+    this.vehicles.setFuel(vehicle, level)
   }
 
   private registerEventHandlers(): void {
@@ -303,12 +224,12 @@ export class VehicleClientService {
 
     this.events.on('opencore:vehicle:modified', (_ctx, data: { networkId: number; mods: any }) => {
       const veh = this.getVehicleFromNetworkId(data.networkId)
-      if (veh && this.platform.doesEntityExist(veh)) this.applyMods(veh, data.mods)
+      if (veh && this.vehicles.exists(veh)) this.applyMods(veh, data.mods)
     })
 
     this.events.on('opencore:vehicle:repaired', (_ctx, networkId: number) => {
       const veh = this.getVehicleFromNetworkId(networkId)
-      if (veh && this.platform.doesEntityExist(veh)) this.repair(veh)
+      if (veh && this.vehicles.exists(veh)) this.repair(veh)
     })
 
     this.events.on(
@@ -324,7 +245,7 @@ export class VehicleClientService {
     const started = this.runtime.getGameTimer()
     while (this.runtime.getGameTimer() - started < 5000) {
       const veh = this.getVehicleFromNetworkId(networkId)
-      if (veh && this.platform.doesEntityExist(veh)) return veh
+      if (veh && this.vehicles.exists(veh)) return veh
       await new Promise((r) => setTimeout(r, 0))
     }
     return null

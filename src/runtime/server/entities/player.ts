@@ -64,10 +64,14 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   }
 
   getHeading(): number {
-    return this.adapters.entityServer.getHeading(this.clientID)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
+    if (!ped || ped === 0) return 0
+    return this.adapters.entityServer.getHeading(ped)
   }
   setHeading(heading: number): void {
-    this.adapters.entityServer.setHeading(this.clientID, heading)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
+    if (!ped || ped === 0) return
+    this.adapters.entityServer.setHeading(ped, heading)
   }
 
   getHandle(): number {

@@ -15,14 +15,20 @@ import { installNodeClientLogConsole, NodeClientLogConsole } from './node-log-co
 import { NodeClientBlipBridge } from './node-blip-bridge'
 import { NodeClientCameraPort } from './node-camera-port'
 import { NodeClientMarkerBridge } from './node-marker-bridge'
+import { NodeClientPedPort } from './node-ped-port'
 import { NodeClientPlatformBridge } from './node-platform-bridge'
+import { NodeClientProgressPort } from './node-progress-port'
 import { NodeClientSpawnBridge } from './node-spawn-bridge'
+import { NodeClientVehiclePort } from './node-vehicle-port'
 import { NodeClientWebViewBridge } from './node-webview-bridge'
 import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
 import { defineClientAdapter, type OpenCoreClientAdapter } from './client-adapter'
 import { IClientRuntimeBridge } from './runtime-bridge'
 import { IClientCameraPort } from '../../../adapters/contracts/client/camera/IClientCameraPort'
+import { IClientPedPort } from '../../../adapters/contracts/client/ped/IClientPedPort'
+import { IClientProgressPort } from '../../../adapters/contracts/client/progress/IClientProgressPort'
+import { IClientVehiclePort } from '../../../adapters/contracts/client/vehicle/IClientVehiclePort'
 
 /**
  * Default client adapter used when no runtime adapter is provided.
@@ -61,6 +67,12 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
         IClientCameraPort as InjectionToken<IClientCameraPort>,
         NodeClientCameraPort,
       )
+      ctx.bindSingleton(
+        IClientVehiclePort as InjectionToken<IClientVehiclePort>,
+        NodeClientVehiclePort,
+      )
+      ctx.bindSingleton(IClientPedPort as InjectionToken<IClientPedPort>, NodeClientPedPort)
+      ctx.bindSingleton(IClientProgressPort as InjectionToken<IClientProgressPort>, NodeClientProgressPort)
       ctx.bindSingleton(
         IClientSpawnPort as InjectionToken<IClientSpawnPort>,
         NodeClientSpawnBridge,
