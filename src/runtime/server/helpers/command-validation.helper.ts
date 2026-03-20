@@ -12,19 +12,23 @@ export async function validateAndExecuteCommand(
   handler: (...args: any[]) => any,
 ): Promise<any> {
   const paramNames = meta.expectsPlayer ? meta.paramNames.slice(1) : meta.paramNames
+  const defaultParams = meta.expectsPlayer
+    ? (meta.defaultParams ?? []).slice(1)
+    : (meta.defaultParams ?? [])
   let schema: z.ZodTypeAny | undefined = meta.schema
 
   if (!meta.expectsPlayer) {
     if (args.length > 0) {
-      throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
-        usage: meta.usage,
+      const usage = resolveCommandUsage(meta, paramNames, defaultParams)
+      throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${usage}`, 'client', {
+        usage,
       })
     }
     return await handler()
   }
 
   if (!schema) {
-    schema = generateSchemaFromTypes(meta.paramTypes)
+    schema = generateSchemaFromTypes(meta.paramTypes, meta.defaultParams)
 
     if (!schema) {
       if (paramNames.length > 0) {
@@ -67,8 +71,9 @@ export async function validateAndExecuteCommand(
     }
 
     const validated = await schema.parseAsync(inputObj).catch(() => {
-      throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
-        usage: meta.usage,
+      const usage = resolveCommandUsage(meta, paramNames, defaultParams)
+      throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${usage}`, 'client', {
+        usage,
       })
     })
 
@@ -82,8 +87,9 @@ export async function validateAndExecuteCommand(
     const processedArgs = processTupleSchema(schema, args)
 
     const validated = await schema.parseAsync(processedArgs).catch(() => {
-      throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${meta.usage}`, 'client', {
-        usage: meta.usage,
+      const usage = resolveCommandUsage(meta, paramNames, defaultParams)
+      throw new AppError('GAME:BAD_REQUEST', `Incorrect usage, use: ${usage}`, 'client', {
+        usage,
       })
     })
 
@@ -107,4 +113,20 @@ export async function validateAndExecuteCommand(
 
   // fallback
   return await handler(player)
+}
+
+function resolveCommandUsage(
+  meta: CommandMetadata,
+  paramNames: string[],
+  defaultParams: boolean[],
+): string {
+  if (meta.usage?.trim()) {
+    return meta.usage
+  }
+
+  const renderedParams = paramNames.map((name, index) =>
+    defaultParams[index] ? `[${name}]` : `<${name}>`,
+  )
+
+  return `/${meta.command}${renderedParams.length > 0 ? ` ${renderedParams.join(' ')}` : ''}`
 }
