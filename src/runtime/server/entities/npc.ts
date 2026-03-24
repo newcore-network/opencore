@@ -1,4 +1,3 @@
-import { NativeHandle } from 'src/runtime/core/nativehandle'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
 import { INpcLifecycleServer } from '../../../adapters/contracts/server/npc-lifecycle/INpcLifecycleServer'
 import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
@@ -6,6 +5,7 @@ import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
 import { SerializedNpcData } from '../types/npc.types'
+import { NativeHandle } from '../../core'
 
 export interface NpcAdapters {
   entityServer: IEntityServer

@@ -6,7 +6,7 @@ import type { CommandErrorObserverContract } from '../../../../src/runtime/serve
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
 import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { createTestPlayer } from '../../../helpers'
-import { CommandExecutionPort } from 'src/runtime/server/services'
+import { CommandExecutionPort } from '../../../../src/runtime/server/services'
 
 vi.mock('../../../../src/runtime/server/runtime', () => ({
   getRuntimeContext: vi.fn(() => ({ mode: 'RESOURCE' })),

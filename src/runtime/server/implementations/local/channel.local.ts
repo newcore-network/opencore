@@ -1,5 +1,5 @@
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
-import { RGB } from 'src/kernel'
+import { RGB } from '../../../../kernel/utils'
 import { inject, injectable } from 'tsyringe'
 import { Player } from '../../entities'
 import { Channels } from '../../ports/channel.api-port'

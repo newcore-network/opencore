@@ -17,7 +17,7 @@ import { Spatial } from '../../core/spatial'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.types'
 import { SerializedPlayerData } from '../types/core-exports.types'
-import { NativeHandle } from 'src/runtime/core/nativehandle'
+import { NativeHandle } from '../../core'
 
 /**
  * Adapter bundle for player operations.

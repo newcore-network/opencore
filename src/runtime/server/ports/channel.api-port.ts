@@ -1,4 +1,4 @@
-import { RGB } from 'src/kernel'
+import { RGB } from '../../../kernel/utils'
 import { Channel } from '../concepts/channel'
 import { Player } from '../entities'
 import { ChannelMetadata, ChannelType, IChannelValidator } from '../types'

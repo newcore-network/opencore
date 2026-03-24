@@ -6,7 +6,7 @@ import { CommandExportController } from '../../../../src/runtime/server/controll
 import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports.types'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
-import { CommandExecutionPort } from 'src/runtime/server/services'
+import { CommandExecutionPort } from '../../../../src/runtime/server/services'
 
 describe('CommandExportController', () => {
   let controller: CommandExportController

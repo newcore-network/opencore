@@ -13,8 +13,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
-    "baseUrl": ".",
-
     "types": ["@types/node"],
     "noEmit": true
   },
