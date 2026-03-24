@@ -1,6 +1,6 @@
 import {
+  getLogDomainLabel,
   LogDomain,
-  LogDomainLabels,
   type LogEntry,
   LogLevel,
   LogLevelLabels,
@@ -95,7 +95,7 @@ export class ConsoleTransport implements LogTransport {
     const { level, domain, message, timestamp, context, error } = entry
 
     const levelLabel = LogLevelLabels[level].padEnd(5)
-    const domainLabel = LogDomainLabels[domain]
+    const domainLabel = getLogDomainLabel(domain)
     const levelColor = this.colors ? LEVEL_COLORS[level] : ''
     const domainColor = this.colors ? DOMAIN_COLORS[domain] : ''
     const reset = this.colors ? COLORS.reset : ''
