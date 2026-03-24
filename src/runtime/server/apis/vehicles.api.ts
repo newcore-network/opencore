@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
@@ -14,6 +14,7 @@ import {
   VehicleSpawnResult,
 } from '../types/vehicle.types'
 import { Players } from '../ports/players.api-port'
+import { Bind } from '../decorators/bind'
 
 export interface VehicleCreateForPlayerOptions
   extends Omit<VehicleCreateOptions, 'position' | 'ownership'> {
@@ -36,7 +37,7 @@ const DEFAULT_PLAYER_VEHICLE_OFFSET: Vector3 = { x: 0, y: 3, z: 0 }
  * All vehicle creation MUST go through this service to ensure security.
  * Uses CreateVehicleServerSetter for server-authoritative spawning.
  */
-@injectable()
+@Bind('singleton')
 export class Vehicles {
   /**
    * Internal registry of all managed vehicles indexed by Network ID

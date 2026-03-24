@@ -12,6 +12,7 @@
  * - Do not pass untrusted code as compute functions.
  */
 
+import { performance } from 'node:perf_hooks'
 import { WorkerMessage, WorkerResponse } from '../../types/parallel.types'
 
 /**

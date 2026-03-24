@@ -1,7 +1,8 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { coreLogger } from '../../../kernel/logger'
 import { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
+import { Bind } from '../decorators/bind'
 import { Vehicles } from './vehicles.api'
 
 /**
@@ -16,7 +17,7 @@ import { Vehicles } from './vehicles.api'
  * - Modification limits
  * - Audit logging
  */
-@injectable()
+@Bind('singleton')
 export class VehicleModification {
   constructor(
     @inject(Vehicles) private readonly vehicleService: Vehicles,

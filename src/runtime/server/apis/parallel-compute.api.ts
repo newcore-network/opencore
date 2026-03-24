@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks'
 import { injectable } from 'tsyringe'
 import { v4 as uuid } from 'uuid'
 import { Vector3 } from '../../../kernel'
