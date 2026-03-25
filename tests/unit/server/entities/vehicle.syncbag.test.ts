@@ -1,6 +1,9 @@
 import 'reflect-metadata'
 import { describe, expect, it, vi } from 'vitest'
-import type { EntityStateBag, IEntityServer } from '../../../../src/adapters/contracts/server/IEntityServer'
+import type {
+  EntityStateBag,
+  IEntityServer,
+} from '../../../../src/adapters/contracts/server/IEntityServer'
 import type { IVehicleServer } from '../../../../src/adapters/contracts/server/IVehicleServer'
 import { Vehicle } from '../../../../src/runtime/server/entities/vehicle'
 

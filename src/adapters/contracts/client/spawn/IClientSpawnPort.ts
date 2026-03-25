@@ -1,9 +1,4 @@
-import type {
-  RespawnRequest,
-  SpawnExecutionResult,
-  SpawnRequest,
-  TeleportRequest,
-} from './types'
+import type { RespawnRequest, SpawnExecutionResult, SpawnRequest, TeleportRequest } from './types'
 
 export abstract class IClientSpawnPort {
   /**

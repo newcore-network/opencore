@@ -72,11 +72,11 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
         NodeClientVehiclePort,
       )
       ctx.bindSingleton(IClientPedPort as InjectionToken<IClientPedPort>, NodeClientPedPort)
-      ctx.bindSingleton(IClientProgressPort as InjectionToken<IClientProgressPort>, NodeClientProgressPort)
       ctx.bindSingleton(
-        IClientSpawnPort as InjectionToken<IClientSpawnPort>,
-        NodeClientSpawnBridge,
+        IClientProgressPort as InjectionToken<IClientProgressPort>,
+        NodeClientProgressPort,
       )
+      ctx.bindSingleton(IClientSpawnPort as InjectionToken<IClientSpawnPort>, NodeClientSpawnBridge)
       ctx.bindFactory(IClientSpawnBridge as InjectionToken<IClientSpawnBridge>, () =>
         ctx.container.resolve(IClientSpawnPort as InjectionToken<IClientSpawnPort>),
       )

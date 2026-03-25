@@ -70,7 +70,9 @@ describe('ParallelCompute', () => {
 
   it('supports distributed execution with chunking and merging', async () => {
     const service = new ParallelCompute()
-    const execute = vi.fn(async (message: { input: number[] }) => message.input.map((value) => value * 2))
+    const execute = vi.fn(async (message: { input: number[] }) =>
+      message.input.map((value) => value * 2),
+    )
 
     ;(service as any).pool = {
       execute,

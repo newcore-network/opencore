@@ -132,7 +132,7 @@ export class BufferedTransport implements LogTransport {
     const entries = this.buffer.map((entry) => ({
       timestamp: entry.timestamp,
       level: LogLevelLabels[entry.level],
-       domain: getLogDomainLabel(entry.domain),
+      domain: getLogDomainLabel(entry.domain),
       source: entry.context?.source,
       message: entry.message,
       context: this.cleanContext(entry.context),

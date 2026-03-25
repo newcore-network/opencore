@@ -9,7 +9,9 @@ export type { ProgressOptions, ProgressState }
 
 @injectable()
 export class ProgressService {
-  constructor(@inject(IClientProgressPort as any) private readonly progressPort: IClientProgressPort) {}
+  constructor(
+    @inject(IClientProgressPort as any) private readonly progressPort: IClientProgressPort,
+  ) {}
 
   async start(options: ProgressOptions): Promise<boolean> {
     return this.progressPort.start(options)

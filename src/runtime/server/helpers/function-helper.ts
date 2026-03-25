@@ -1,5 +1,7 @@
 export function getParameterNames(func: (...args: any[]) => any): string[] {
-  return parseParameterTokens(func).map((arg) => arg.replace(/=[\s\S]*/, '').trim()).filter(Boolean)
+  return parseParameterTokens(func)
+    .map((arg) => arg.replace(/=[\s\S]*/, '').trim())
+    .filter(Boolean)
 }
 
 export function getDefaultParameterIndices(func: (...args: any[]) => any): boolean[] {

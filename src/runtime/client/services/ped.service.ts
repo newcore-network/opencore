@@ -97,7 +97,11 @@ export class PedService {
   }
 
   getNearby(position: Vector3, radius: number, excludePlayer = true): number[] {
-    return this.pedsPort.getNearby(position, radius, excludePlayer ? this.localPlayer.getHandle() : undefined)
+    return this.pedsPort.getNearby(
+      position,
+      radius,
+      excludePlayer ? this.localPlayer.getHandle() : undefined,
+    )
   }
 
   lookAtEntity(handle: number, entity: number, duration = -1): void {
