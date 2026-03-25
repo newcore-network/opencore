@@ -75,7 +75,10 @@
     "bench": "npx tsx benchmark/index.ts",
     "bench:core": "npx tsx benchmark/index.ts --core",
     "bench:load": "npx vitest run --project benchmark",
-    "bench:all": "npx tsx benchmark/index.ts --all"
+    "bench:all": "npx tsx benchmark/index.ts --all",
+    "validate": "pnpm check && pnpm typecheck && pnpm test",
+    "lint-staged": "lint-staged",
+    "prepare": "husky"
   },
   "keywords": [
     "framework",
@@ -105,9 +108,16 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "graphviz": "^0.0.9",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
     "tinybench": "^6.0.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.1"
+  },
+  "lint-staged": {
+    "*.{js,cjs,mjs,ts,tsx,json,md}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   }
 }
