@@ -14,6 +14,7 @@ import { loggers } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.types'
 import { SerializedPlayerData } from '../types/core-exports.types'
@@ -172,7 +173,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param type - Message type for styling
    */
   send(message: string, type: 'chat' | 'error' | 'success' | 'warning' = 'chat'): void {
-    this.emit('core:chat:send', message, type)
+    this.emit(SYSTEM_EVENTS.chat.send, message, type)
   }
 
   // ─────────────────────────────────────────────────────────────────

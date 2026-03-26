@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
 import type { IResourceInfo } from '../../../../src/adapters/contracts/IResourceInfo'
+import { buildRemoteCommandExecuteEventName } from '../../../../src/runtime/shared/types/system-types'
 import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { RemoteCommandExecutionController } from '../../../../src/runtime/server/controllers/remote-command-execution.controller'
 import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
@@ -68,7 +69,7 @@ describe('RemoteCommandExecutionController', () => {
   describe('event registration', () => {
     it('should register event handler with correct event name', () => {
       expect(mockEngineEvents.on).toHaveBeenCalledWith(
-        'opencore:command:execute:test-resource',
+        buildRemoteCommandExecuteEventName('test-resource'),
         expect.any(Function),
       )
     })

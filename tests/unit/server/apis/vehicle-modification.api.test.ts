@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 import { describe, expect, it, vi } from 'vitest'
+import { SYSTEM_EVENTS } from '../../../../src/runtime/shared/types/system-types'
 import { VehicleModification } from '../../../../src/runtime/server/apis/vehicle-modification.api'
 
 describe('VehicleModification', () => {
@@ -42,7 +43,7 @@ describe('VehicleModification', () => {
     })
 
     expect(success).toBe(true)
-    expect(events.emit).toHaveBeenCalledWith('opencore:vehicle:modified', 'all', {
+    expect(events.emit).toHaveBeenCalledWith(SYSTEM_EVENTS.vehicle.modified, 'all', {
       networkId: 10,
       mods: {
         spoiler: 50,
@@ -80,7 +81,7 @@ describe('VehicleModification', () => {
 
     expect(success).toBe(true)
     expect(events.emit).toHaveBeenCalledWith(
-      'opencore:vehicle:modified',
+      SYSTEM_EVENTS.vehicle.modified,
       'all',
       expect.objectContaining({
         networkId: 15,

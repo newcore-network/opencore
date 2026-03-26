@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../src/adapters/contracts/IEngineEvents'
+import { buildRemoteCommandExecuteEventName } from '../../../src/runtime/shared/types/system-types'
 import type { CommandErrorObserverContract } from '../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../src/runtime/server/controllers/command-export.controller'
 import type { CommandMetadata } from '../../../src/runtime/server/decorators/command'
@@ -103,7 +104,7 @@ describe('Command Ports Integration', () => {
       await exportController.executeCommand(1, 'remote-heal', ['arg'])
 
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:medical-resource',
+        buildRemoteCommandExecuteEventName('medical-resource'),
         1,
         'remote-heal',
         ['arg'],
@@ -157,7 +158,7 @@ describe('Command Ports Integration', () => {
       // Execute police command
       await exportController.executeCommand(1, 'police-arrest', [])
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:police-resource',
+        buildRemoteCommandExecuteEventName('police-resource'),
         expect.any(Number),
         'police-arrest',
         expect.any(Array),
@@ -168,7 +169,7 @@ describe('Command Ports Integration', () => {
       // Execute medical command
       await exportController.executeCommand(1, 'medical-revive', [])
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:medical-resource',
+        buildRemoteCommandExecuteEventName('medical-resource'),
         expect.any(Number),
         'medical-revive',
         expect.any(Array),
@@ -234,7 +235,7 @@ describe('Command Ports Integration', () => {
 
       // Verify CORE emitted local event to resource (not network event)
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:test-resource',
+        buildRemoteCommandExecuteEventName('test-resource'),
         1,
         'resource-cmd',
         ['arg1'],
@@ -444,7 +445,7 @@ describe('Command Ports Integration', () => {
 
       // Should delegate to resource via local event
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:police-resource',
+        buildRemoteCommandExecuteEventName('police-resource'),
         1,
         'arrest',
         ['player123'],

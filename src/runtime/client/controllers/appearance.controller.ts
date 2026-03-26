@@ -1,5 +1,6 @@
 import { inject } from 'tsyringe'
 import { PlayerAppearance } from '../../../kernel/shared'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { Controller, OnNet } from '../decorators'
 import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 import { AppearanceService } from '../services/appearance.service'
@@ -11,7 +12,7 @@ export class AppearanceTestClientController {
     @inject(AppearanceService as any) private readonly appearanceService: AppearanceService,
     @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {}
-  @OnNet('opencore:appearance:apply')
+  @OnNet(SYSTEM_EVENTS.appearance.apply)
   async onApply(appearance: PlayerAppearance): Promise<void> {
     loggers.netEvent.debug('appearance:apply received', {
       appearance,
@@ -19,7 +20,7 @@ export class AppearanceTestClientController {
     const ped = this.localPlayer.getHandle()
     await this.appearanceService.applyAppearance(ped, appearance)
   }
-  @OnNet('opencore:appearance:reset')
+  @OnNet(SYSTEM_EVENTS.appearance.reset)
   onReset(): void {
     loggers.netEvent.debug('appearance:reset received')
     const ped = this.localPlayer.getHandle()

@@ -2,6 +2,7 @@ import { inject, injectable } from 'tsyringe'
 import { IClientVehiclePort } from '../../../adapters/contracts/client/vehicle/IClientVehiclePort'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { IClientRuntimeBridge } from '../adapter/runtime-bridge'
 import {
   SerializedVehicleData,
@@ -32,7 +33,7 @@ export class VehicleClientService {
     return new Promise((resolve) => {
       const requestId = this.requestIdCounter++
       this.pendingCreations.set(requestId, resolve)
-      this.events.emit('opencore:vehicle:create', { ...options, _requestId: requestId })
+      this.events.emit(SYSTEM_EVENTS.vehicle.create, { ...options, _requestId: requestId })
       setTimeout(() => {
         if (!this.pendingCreations.has(requestId)) return
         this.pendingCreations.delete(requestId)
@@ -44,7 +45,7 @@ export class VehicleClientService {
   async deleteVehicle(networkId: number): Promise<boolean> {
     return new Promise((resolve) => {
       this.pendingDeletes.set(networkId, resolve)
-      this.events.emit('opencore:vehicle:delete', networkId)
+      this.events.emit(SYSTEM_EVENTS.vehicle.delete, networkId)
       setTimeout(() => {
         if (!this.pendingDeletes.has(networkId)) return
         this.pendingDeletes.delete(networkId)
@@ -56,7 +57,7 @@ export class VehicleClientService {
   async repairVehicle(networkId: number): Promise<boolean> {
     return new Promise((resolve) => {
       this.pendingRepairs.set(networkId, resolve)
-      this.events.emit('opencore:vehicle:repair', networkId)
+      this.events.emit(SYSTEM_EVENTS.vehicle.repair, networkId)
       setTimeout(() => {
         if (!this.pendingRepairs.has(networkId)) return
         this.pendingRepairs.delete(networkId)
@@ -104,13 +105,13 @@ export class VehicleClientService {
   }
 
   setDoorsLocked(networkId: number, locked: boolean): void {
-    this.events.emit('opencore:vehicle:setLocked', networkId, locked)
+    this.events.emit(SYSTEM_EVENTS.vehicle.setLocked, networkId, locked)
   }
 
   async getVehicleData(networkId: number): Promise<SerializedVehicleData | null> {
     return new Promise((resolve) => {
       this.pendingData.set(networkId, resolve)
-      this.events.emit('opencore:vehicle:getData', networkId)
+      this.events.emit(SYSTEM_EVENTS.vehicle.getData, networkId)
       setTimeout(() => {
         if (!this.pendingData.has(networkId)) return
         this.pendingData.delete(networkId)
@@ -122,7 +123,7 @@ export class VehicleClientService {
   async getPlayerVehicles(): Promise<SerializedVehicleData[]> {
     return new Promise((resolve) => {
       this.pendingPlayerVehicles = resolve
-      this.events.emit('opencore:vehicle:getPlayerVehicles')
+      this.events.emit(SYSTEM_EVENTS.vehicle.getPlayerVehicles)
       setTimeout(() => {
         if (!this.pendingPlayerVehicles) return
         this.pendingPlayerVehicles = null
@@ -169,7 +170,7 @@ export class VehicleClientService {
 
   private registerEventHandlers(): void {
     this.events.on(
-      'opencore:vehicle:createResult',
+      SYSTEM_EVENTS.vehicle.createResult,
       (_ctx, result: VehicleSpawnResult & { _requestId?: number }) => {
         if (result._requestId === undefined) return
         const callback = this.pendingCreations.get(result._requestId)
@@ -180,7 +181,7 @@ export class VehicleClientService {
     )
 
     this.events.on(
-      'opencore:vehicle:deleteResult',
+      SYSTEM_EVENTS.vehicle.deleteResult,
       (_ctx, result: { networkId: number; success: boolean }) => {
         const callback = this.pendingDeletes.get(result.networkId)
         if (!callback) return
@@ -190,7 +191,7 @@ export class VehicleClientService {
     )
 
     this.events.on(
-      'opencore:vehicle:repairResult',
+      SYSTEM_EVENTS.vehicle.repairResult,
       (_ctx, result: { networkId: number; success: boolean }) => {
         const callback = this.pendingRepairs.get(result.networkId)
         if (!callback) return
@@ -199,7 +200,7 @@ export class VehicleClientService {
       },
     )
 
-    this.events.on('opencore:vehicle:dataResult', (_ctx, data: SerializedVehicleData | null) => {
+    this.events.on(SYSTEM_EVENTS.vehicle.dataResult, (_ctx, data: SerializedVehicleData | null) => {
       if (!data) return
       const callback = this.pendingData.get(data.networkId)
       if (!callback) return
@@ -208,32 +209,35 @@ export class VehicleClientService {
     })
 
     this.events.on(
-      'opencore:vehicle:playerVehiclesResult',
+      SYSTEM_EVENTS.vehicle.playerVehiclesResult,
       (_ctx, vehicles: SerializedVehicleData[]) => {
         this.pendingPlayerVehicles?.(vehicles)
         this.pendingPlayerVehicles = null
       },
     )
 
-    this.events.on('opencore:vehicle:created', async (_ctx, data: SerializedVehicleData) => {
+    this.events.on(SYSTEM_EVENTS.vehicle.created, async (_ctx, data: SerializedVehicleData) => {
       const veh = await this.waitForVehicle(data.networkId)
       if (!veh) return
       if (data.mods && Object.keys(data.mods).length > 0) this.applyMods(veh, data.mods)
       if (data.metadata?.fuel !== undefined) this.setFuel(veh, data.metadata.fuel)
     })
 
-    this.events.on('opencore:vehicle:modified', (_ctx, data: { networkId: number; mods: any }) => {
-      const veh = this.getVehicleFromNetworkId(data.networkId)
-      if (veh && this.vehicles.exists(veh)) this.applyMods(veh, data.mods)
-    })
+    this.events.on(
+      SYSTEM_EVENTS.vehicle.modified,
+      (_ctx, data: { networkId: number; mods: any }) => {
+        const veh = this.getVehicleFromNetworkId(data.networkId)
+        if (veh && this.vehicles.exists(veh)) this.applyMods(veh, data.mods)
+      },
+    )
 
-    this.events.on('opencore:vehicle:repaired', (_ctx, networkId: number) => {
+    this.events.on(SYSTEM_EVENTS.vehicle.repaired, (_ctx, networkId: number) => {
       const veh = this.getVehicleFromNetworkId(networkId)
       if (veh && this.vehicles.exists(veh)) this.repair(veh)
     })
 
     this.events.on(
-      'opencore:vehicle:warpInto',
+      SYSTEM_EVENTS.vehicle.warpInto,
       async (_ctx, networkId: number, seatIndex: number = -1) => {
         const veh = await this.waitForVehicle(networkId)
         if (veh) this.warpIntoVehicle(veh, seatIndex)

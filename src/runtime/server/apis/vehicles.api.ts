@@ -6,6 +6,7 @@ import { IVehicleLifecycleServer } from '../../../adapters/contracts/server/vehi
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { coreLogger } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { Player } from '../entities/player'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import {
@@ -173,7 +174,7 @@ export class Vehicles {
         totalVehicles: this.vehiclesByNetworkId.size,
       })
 
-      this.events.emit('opencore:vehicle:created', 'all', vehicle.serialize())
+      this.events.emit(SYSTEM_EVENTS.vehicle.created, 'all', vehicle.serialize())
 
       return {
         networkId,
@@ -360,7 +361,7 @@ export class Vehicles {
       totalVehicles: this.vehiclesByNetworkId.size,
     })
 
-    this.events.emit('opencore:vehicle:deleted', 'all', networkId)
+    this.events.emit(SYSTEM_EVENTS.vehicle.deleted, 'all', networkId)
 
     return true
   }

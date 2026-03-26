@@ -8,6 +8,7 @@ import type {
 import { IPlatformContext } from '../../../adapters/contracts/IPlatformContext'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 
 @injectable()
 export class NodeVehicleLifecycleServer extends IVehicleLifecycleServer {
@@ -48,6 +49,6 @@ export class NodeVehicleLifecycleServer extends IVehicleLifecycleServer {
   warpPlayerIntoVehicle(request: WarpPlayerIntoVehicleRequest): void {
     const clientId = Number(request.playerSrc)
     if (Number.isNaN(clientId)) return
-    this.events.emit('opencore:vehicle:warpInto', clientId, request.networkId, request.seatIndex)
+    this.events.emit(SYSTEM_EVENTS.vehicle.warpInto, clientId, request.networkId, request.seatIndex)
   }
 }

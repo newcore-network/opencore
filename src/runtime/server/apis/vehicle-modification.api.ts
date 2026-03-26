@@ -1,6 +1,7 @@
 import { inject } from 'tsyringe'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { coreLogger } from '../../../kernel/logger'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
 import { Bind } from '../decorators/bind'
 import { Vehicles } from './vehicles.api'
@@ -71,7 +72,7 @@ export class VehicleModification {
       mods: Object.keys(validatedMods),
     })
 
-    this.events.emit('opencore:vehicle:modified', 'all', {
+    this.events.emit(SYSTEM_EVENTS.vehicle.modified, 'all', {
       networkId,
       mods: validatedMods,
     })
@@ -218,7 +219,7 @@ export class VehicleModification {
 
     coreLogger.info('Vehicle modifications reset', { networkId, requestedBy })
 
-    this.events.emit('opencore:vehicle:modified', 'all', {
+    this.events.emit(SYSTEM_EVENTS.vehicle.modified, 'all', {
       networkId,
       mods: defaultMods,
     })
