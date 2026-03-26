@@ -8,6 +8,7 @@ import { IPedServer } from '../../../adapters/contracts/server/IPedServer'
 import { coreLogger } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { WorldContext } from '../../core/world'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { NPC, NpcAdapters, NpcSession } from '../entities/npc'
 import { NpcSpawnOptions, NpcSpawnResult, SerializedNpcData } from '../types/npc.types'
 
@@ -334,7 +335,7 @@ export class Npcs {
       remainingNpcs: this.npcById.size,
     })
 
-    this.events.emit('opencore:npc:deleted', 'all', npc.npcId)
+    this.events.emit(SYSTEM_EVENTS.npc.deleted, 'all', npc.npcId)
 
     return true
   }

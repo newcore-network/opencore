@@ -14,10 +14,11 @@ import { loggers } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.types'
 import { SerializedPlayerData } from '../types/core-exports.types'
-import { NativeHandle } from 'src/runtime/core/nativehandle'
+import { NativeHandle } from '../../core'
 
 /**
  * Adapter bundle for player operations.
@@ -64,10 +65,14 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   }
 
   getHeading(): number {
-    return this.adapters.entityServer.getHeading(this.clientID)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
+    if (!ped || ped === 0) return 0
+    return this.adapters.entityServer.getHeading(ped)
   }
   setHeading(heading: number): void {
-    this.adapters.entityServer.setHeading(this.clientID, heading)
+    const ped = this.adapters.playerServer.getPed(this.clientID.toString())
+    if (!ped || ped === 0) return
+    this.adapters.entityServer.setHeading(ped, heading)
   }
 
   getHandle(): number {
@@ -168,7 +173,7 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param type - Message type for styling
    */
   send(message: string, type: 'chat' | 'error' | 'success' | 'warning' = 'chat'): void {
-    this.emit('core:chat:send', message, type)
+    this.emit(SYSTEM_EVENTS.chat.send, message, type)
   }
 
   // ─────────────────────────────────────────────────────────────────

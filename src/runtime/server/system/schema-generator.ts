@@ -21,7 +21,14 @@ function typeToZodSchema(type: any): z.ZodType | undefined {
   }
 }
 
-export function generateSchemaFromTypes(paramTypes: any[]): z.ZodTuple | undefined {
+function applyOptional(schema: z.ZodTypeAny, optional: boolean): z.ZodTypeAny {
+  return optional ? schema.optional() : schema
+}
+
+export function generateSchemaFromTypes(
+  paramTypes: any[],
+  defaultParams: boolean[] = [],
+): z.ZodTuple | undefined {
   if (!paramTypes || paramTypes.length === 0) return z.tuple([])
   if (paramTypes[0] !== Player) {
     throw new AppError(
@@ -33,10 +40,10 @@ export function generateSchemaFromTypes(paramTypes: any[]): z.ZodTuple | undefin
   if (paramTypes.length === 1) return z.tuple([])
 
   const argSchemas: z.ZodTypeAny[] = []
-  for (const t of paramTypes.slice(1)) {
+  for (const [index, t] of paramTypes.slice(1).entries()) {
     const s = typeToZodSchema(t)
     if (!s) return undefined
-    argSchemas.push(s)
+    argSchemas.push(applyOptional(s, defaultParams[index + 1] ?? false))
   }
 
   return z.tuple(argSchemas as any)

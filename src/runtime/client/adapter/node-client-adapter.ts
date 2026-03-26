@@ -6,20 +6,29 @@ import { NodeClientLocalPlayerBridge } from './node-local-player-bridge'
 import { NodeClientNotificationBridge } from './node-notification-bridge'
 import { IClientLogConsole } from '../../../adapters/contracts/client/IClientLogConsole'
 import { IClientSpawnBridge } from '../../../adapters/contracts/client/spawn/IClientSpawnBridge'
+import { IClientSpawnPort } from '../../../adapters/contracts/client/spawn/IClientSpawnPort'
 import { IClientBlipBridge } from '../../../adapters/contracts/client/ui/IClientBlipBridge'
 import { IClientMarkerBridge } from '../../../adapters/contracts/client/ui/IClientMarkerBridge'
 import { IClientNotificationBridge } from '../../../adapters/contracts/client/ui/IClientNotificationBridge'
 import { IClientWebViewBridge } from '../../../adapters/contracts/client/ui/webview/IClientWebViewBridge'
 import { installNodeClientLogConsole, NodeClientLogConsole } from './node-log-console'
 import { NodeClientBlipBridge } from './node-blip-bridge'
+import { NodeClientCameraPort } from './node-camera-port'
 import { NodeClientMarkerBridge } from './node-marker-bridge'
+import { NodeClientPedPort } from './node-ped-port'
 import { NodeClientPlatformBridge } from './node-platform-bridge'
+import { NodeClientProgressPort } from './node-progress-port'
 import { NodeClientSpawnBridge } from './node-spawn-bridge'
+import { NodeClientVehiclePort } from './node-vehicle-port'
 import { NodeClientWebViewBridge } from './node-webview-bridge'
 import { IClientPlatformBridge } from './platform-bridge'
 import { NodeClientRuntimeBridge } from './node-runtime-bridge'
 import { defineClientAdapter, type OpenCoreClientAdapter } from './client-adapter'
 import { IClientRuntimeBridge } from './runtime-bridge'
+import { IClientCameraPort } from '../../../adapters/contracts/client/camera/IClientCameraPort'
+import { IClientPedPort } from '../../../adapters/contracts/client/ped/IClientPedPort'
+import { IClientProgressPort } from '../../../adapters/contracts/client/progress/IClientProgressPort'
+import { IClientVehiclePort } from '../../../adapters/contracts/client/vehicle/IClientVehiclePort'
 
 /**
  * Default client adapter used when no runtime adapter is provided.
@@ -55,8 +64,21 @@ export function createNodeClientAdapter(): OpenCoreClientAdapter {
         NodeClientPlatformBridge,
       )
       ctx.bindSingleton(
-        IClientSpawnBridge as InjectionToken<IClientSpawnBridge>,
-        NodeClientSpawnBridge,
+        IClientCameraPort as InjectionToken<IClientCameraPort>,
+        NodeClientCameraPort,
+      )
+      ctx.bindSingleton(
+        IClientVehiclePort as InjectionToken<IClientVehiclePort>,
+        NodeClientVehiclePort,
+      )
+      ctx.bindSingleton(IClientPedPort as InjectionToken<IClientPedPort>, NodeClientPedPort)
+      ctx.bindSingleton(
+        IClientProgressPort as InjectionToken<IClientProgressPort>,
+        NodeClientProgressPort,
+      )
+      ctx.bindSingleton(IClientSpawnPort as InjectionToken<IClientSpawnPort>, NodeClientSpawnBridge)
+      ctx.bindFactory(IClientSpawnBridge as InjectionToken<IClientSpawnBridge>, () =>
+        ctx.container.resolve(IClientSpawnPort as InjectionToken<IClientSpawnPort>),
       )
       ctx.bindSingleton(
         IClientBlipBridge as InjectionToken<IClientBlipBridge>,

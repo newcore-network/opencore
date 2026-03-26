@@ -6,7 +6,6 @@
  * structured-cloned messages.
  */
 
-import * as path from 'node:path'
 import { Worker } from 'node:worker_threads'
 import {
   WorkerInfo,
@@ -86,7 +85,7 @@ class NativeWorker {
 
   constructor(
     id: number,
-    workerScriptPath: string,
+    workerSource: string,
     callbacks: {
       onExit: (workerId: number, code: number | null) => void
       onError: (workerId: number, error: Error) => void
@@ -94,7 +93,7 @@ class NativeWorker {
   ) {
     this.id = id
 
-    this.worker = new Worker(workerScriptPath)
+    this.worker = new Worker(workerSource, { eval: true })
     this.worker.on('message', (response: WorkerResponse) => {
       const handlers = this.pendingResponses.get(response.id)
       if (handlers) {
@@ -196,13 +195,46 @@ export class WorkerPool extends SimpleEventEmitter {
   private workerIdCounter = 0
   private cleanupInterval: ReturnType<typeof setInterval> | null = null
   private isShuttingDown = false
-  private workerScriptPath: string
+  private workerSource: string
 
   constructor(config: Partial<WorkerPoolConfig> = {}) {
     super()
     this.config = { ...DEFAULT_CONFIG, ...config }
 
-    this.workerScriptPath = path.join(__dirname, 'native-worker.entry.js')
+    this.workerSource = `
+const { parentPort } = require('worker_threads')
+const { performance } = require('perf_hooks')
+
+if (!parentPort) {
+  throw new Error('native worker must be executed inside a Worker thread')
+}
+
+function executeCompute(functionBody, input) {
+  const fn = new Function('input', 'return (' + functionBody + ')(input)')
+  return fn(input)
+}
+
+parentPort.on('message', (message) => {
+  const startTime = performance.now()
+
+  try {
+    const result = executeCompute(message.functionBody, message.input)
+    parentPort.postMessage({
+      id: message.id,
+      success: true,
+      result,
+      executionTime: performance.now() - startTime,
+    })
+  } catch (error) {
+    parentPort.postMessage({
+      id: message.id,
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+      executionTime: performance.now() - startTime,
+    })
+  }
+})
+`
 
     // Start cleanup interval
     this.cleanupInterval = setInterval(() => this.cleanupIdleWorkers(), 10000)
@@ -327,7 +359,7 @@ export class WorkerPool extends SimpleEventEmitter {
   private spawnWorker(): NativeWorker | null {
     try {
       const id = this.workerIdCounter++
-      const worker = new NativeWorker(id, this.workerScriptPath, {
+      const worker = new NativeWorker(id, this.workerSource, {
         onExit: (workerId, code) => {
           const existing = this.workers.get(workerId)
           if (!existing) return

@@ -1,4 +1,4 @@
-import { LogDomainLabels, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
+import { getLogDomainLabel, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
 import { getClientLogConsole } from '../client-log-console'
 import { LogTransport } from './transport.interface'
 
@@ -52,7 +52,7 @@ export class SimpleConsoleTransport implements LogTransport {
     const capabilities = output.getCapabilities()
 
     const levelLabel = LogLevelLabels[level].padEnd(5)
-    const domainLabel = LogDomainLabels[domain]
+    const domainLabel = getLogDomainLabel(domain)
 
     // Build the log line without ANSI codes
     const parts: string[] = []

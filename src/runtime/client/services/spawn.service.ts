@@ -1,9 +1,8 @@
 import { inject, injectable } from 'tsyringe'
 import { loggers, PlayerAppearance } from '../../../kernel'
 import { Vector3 } from '../../../kernel/utils/vector3'
-import { IClientPlatformBridge } from '../adapter/platform-bridge'
 import { AppearanceService } from './appearance.service'
-import { IClientSpawnBridge } from '../../../adapters/contracts/client/spawn/IClientSpawnBridge'
+import { IClientSpawnPort } from '../../../adapters/contracts/client/spawn/IClientSpawnPort'
 
 interface SpawnOptions {
   appearance?: PlayerAppearance
@@ -16,8 +15,7 @@ export class SpawnService {
 
   constructor(
     private readonly appearanceService: AppearanceService,
-    @inject(IClientSpawnBridge as any) private readonly spawnBridge: IClientSpawnBridge,
-    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientSpawnPort as any) private readonly spawnPort: IClientSpawnPort,
   ) {}
 
   async init(): Promise<void> {
@@ -39,11 +37,11 @@ export class SpawnService {
 
     try {
       loggers.spawn.debug('Waiting for spawn bridge readiness')
-      await this.spawnBridge.waitUntilReady()
+      await this.spawnPort.waitUntilReady()
       loggers.spawn.debug('Spawn bridge ready, executing spawn', { position, model, heading })
-      await this.spawnBridge.spawn({ position, model, heading })
+      const outcome = await this.spawnPort.spawn({ position, model, heading })
 
-      const ped = this.platform.getLocalPlayerPed()
+      const ped = outcome.localPlayerHandle ?? 0
       if (ped !== 0) {
         if (options?.appearance) {
           loggers.spawn.debug('Applying post-spawn appearance', { ped })
@@ -69,12 +67,12 @@ export class SpawnService {
   }
 
   async teleportTo(position: Vector3, heading?: number): Promise<void> {
-    await this.spawnBridge.teleport({ position, heading })
+    await this.spawnPort.teleport({ position, heading })
   }
 
   async respawn(position: Vector3, heading = 0.0): Promise<void> {
-    await this.spawnBridge.waitUntilReady()
-    await this.spawnBridge.respawn({ position, heading })
+    await this.spawnPort.waitUntilReady()
+    await this.spawnPort.respawn({ position, heading })
     this.spawned = true
     loggers.spawn.info('Player respawned', {
       position: { x: position.x, y: position.y, z: position.z },

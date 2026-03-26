@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { EventsAPI } from '../../../../src/adapters/contracts/transport/events.api'
+import { SYSTEM_EVENTS } from '../../../../src/runtime/shared/types/system-types'
 import { Player } from '../../../../src/runtime/server/entities/player'
 import { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import { ChannelType } from '../../../../src/runtime/server/types/channel.types'
@@ -184,7 +185,7 @@ describe('ChannelService', () => {
     it('should broadcast message to channel subscribers', () => {
       channelService.broadcast('test-channel', mockPlayer1, 'Hello everyone!')
 
-      expect(mockEventsAPI.emit).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
+      expect(mockEventsAPI.emit).toHaveBeenCalledWith(SYSTEM_EVENTS.chat.addMessage, [1, 2], {
         args: ['Player1', 'Hello everyone!'],
         color: { r: 255, g: 255, b: 255 },
       })
@@ -197,7 +198,7 @@ describe('ChannelService', () => {
         b: 200,
       })
 
-      expect(mockEventsAPI.emit).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
+      expect(mockEventsAPI.emit).toHaveBeenCalledWith(SYSTEM_EVENTS.chat.addMessage, [1, 2], {
         args: ['CustomAuthor', 'Test message'],
         color: { r: 100, g: 150, b: 200 },
       })
@@ -206,7 +207,7 @@ describe('ChannelService', () => {
     it('should broadcast system message', () => {
       channelService.broadcastSystem('test-channel', 'System announcement')
 
-      expect(mockEventsAPI.emit).toHaveBeenCalledWith('core:chat:addMessage', [1, 2], {
+      expect(mockEventsAPI.emit).toHaveBeenCalledWith(SYSTEM_EVENTS.chat.addMessage, [1, 2], {
         args: ['SYSTEM', 'System announcement'],
         color: { r: 0, g: 191, b: 255 },
       })

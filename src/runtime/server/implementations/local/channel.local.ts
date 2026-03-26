@@ -1,6 +1,7 @@
 import { EventsAPI } from '../../../../adapters/contracts/transport/events.api'
-import { RGB } from 'src/kernel'
+import { RGB } from '../../../../kernel/utils'
 import { inject, injectable } from 'tsyringe'
+import { SYSTEM_EVENTS } from '../../../shared/types/system-types'
 import { Player } from '../../entities'
 import { Channels } from '../../ports/channel.api-port'
 import { IChannelValidator, ChannelMetadata, ChannelType } from '../../types'
@@ -117,7 +118,7 @@ export class LocalChannelImplementation extends Channels {
       return
     }
 
-    this.events.emit('core:chat:addMessage', targetIds, {
+    this.events.emit(SYSTEM_EVENTS.chat.addMessage, targetIds, {
       args: [author ?? sender.name, message],
       color: color,
     })
@@ -141,7 +142,7 @@ export class LocalChannelImplementation extends Channels {
       return
     }
 
-    this.events.emit('core:chat:addMessage', targetIds, {
+    this.events.emit(SYSTEM_EVENTS.chat.addMessage, targetIds, {
       args: [author, message],
       color: color,
     })

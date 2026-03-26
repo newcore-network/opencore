@@ -5,6 +5,7 @@ export interface WebViewCapabilities {
   supportsBidirectionalMessaging: boolean
   supportsExecute: boolean
   supportsHeadless: boolean
+  supportsChatMode: boolean
 }
 
 export interface WebViewDefinition {
@@ -14,6 +15,7 @@ export interface WebViewDefinition {
   focused?: boolean
   cursor?: boolean
   inputPassthrough?: boolean
+  chatMode?: boolean
 }
 
 export interface WebViewFocusOptions {

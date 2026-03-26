@@ -3,7 +3,7 @@ import {
   IClientNotificationBridge,
   type ClientNotificationDefinition,
 } from '../../../adapters/contracts/client/ui/IClientNotificationBridge'
-import { IClientPlatformBridge } from '../adapter/platform-bridge'
+import { IClientLocalPlayerBridge } from '../adapter/local-player-bridge'
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error'
 
@@ -21,7 +21,7 @@ export class NotificationService {
   constructor(
     @inject(IClientNotificationBridge as any)
     private readonly notifications: IClientNotificationBridge,
-    @inject(IClientPlatformBridge as any) private readonly platform: IClientPlatformBridge,
+    @inject(IClientLocalPlayerBridge as any) private readonly localPlayer: IClientLocalPlayerBridge,
   ) {}
 
   show(message: string, blink = false): void {
@@ -64,7 +64,7 @@ export class NotificationService {
     this.notifications.show({
       kind: 'floating',
       message,
-      worldPosition: this.platform.getEntityCoords(this.platform.getLocalPlayerPed()),
+      worldPosition: this.localPlayer.getPosition(),
     })
   }
 

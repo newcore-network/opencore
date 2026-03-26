@@ -32,5 +32,9 @@ export function processTupleSchema(schema: z.ZodTuple, args: unknown[]): unknown
     }
   }
 
+  if (args.length < items.length) {
+    return [...args, ...Array.from({ length: items.length - args.length }, () => undefined)]
+  }
+
   return args
 }

@@ -18,12 +18,12 @@ export type RpcTarget = number | number[] | 'all'
 export type RpcCallTarget = number | number[]
 
 type RpcCallArgs<C extends RuntimeContext> = C extends 'server'
-  ? [target: RpcCallTarget, ...args: any[]]
-  : [...args: any[]]
+  ? [target: RpcCallTarget, ...args: unknown[]]
+  : [...args: unknown[]]
 
 type RpcNotifyArgs<C extends RuntimeContext> = C extends 'server'
-  ? [target: RpcTarget, ...args: any[]]
-  : [...args: any[]]
+  ? [target: RpcTarget, ...args: unknown[]]
+  : [...args: unknown[]]
 
 /**
  * Remote Procedure Call API.
@@ -56,7 +56,7 @@ export abstract class RpcAPI<C extends RuntimeContext> {
    * The handler receives a {@link RpcContext}. In server environments this usually includes
    * the `clientId` of the caller (via {@link EventContext}).
    */
-  abstract on<TArgs extends any[], TResult>(
+  abstract on<TArgs extends readonly unknown[], TResult>(
     name: string,
     handler: (ctx: RpcContext, ...args: TArgs) => TResult | Promise<TResult>,
   ): void

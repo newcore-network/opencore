@@ -2,6 +2,7 @@ import { inject } from 'tsyringe'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { IResourceInfo } from '../../../adapters/contracts/IResourceInfo'
 import { loggers } from '../../../kernel/logger'
+import { buildRemoteCommandExecuteEventName } from '../../shared/types/system-types'
 import { CommandErrorObserverContract } from '../contracts/security/command-error-observer.contract'
 import { Controller } from '../decorators'
 import { normalizeToAppError } from '../helpers/normalize-app-error'
@@ -61,7 +62,7 @@ export class RemoteCommandExecutionController {
    */
   private registerEventHandler(): void {
     const resourceName = this.resourceInfo.getCurrentResourceName()
-    const eventName = `opencore:command:execute:${resourceName}`
+    const eventName = buildRemoteCommandExecuteEventName(resourceName)
 
     this.engineEvents.on(
       eventName,

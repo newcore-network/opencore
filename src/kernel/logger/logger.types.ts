@@ -65,6 +65,52 @@ export const LogDomainLabels: Record<LogDomain, string> = {
   [LogDomain.EXTERNAL]: 'EXTERNAL',
 }
 
+declare const __OPENCORE_RESOURCE_NAME__: string | undefined
+
+function normalizeResourceName(resourceName: string): string {
+  return resourceName.trim().replace(/^\[(.*)\]$/, '$1')
+}
+
+function getInjectedResourceName(): string | undefined {
+  if (
+    typeof __OPENCORE_RESOURCE_NAME__ === 'string' &&
+    normalizeResourceName(__OPENCORE_RESOURCE_NAME__).length > 0
+  ) {
+    return normalizeResourceName(__OPENCORE_RESOURCE_NAME__)
+  }
+
+  const fn = (globalThis as { GetCurrentResourceName?: unknown }).GetCurrentResourceName
+  if (typeof fn === 'function') {
+    try {
+      const value = fn()
+      if (typeof value === 'string' && normalizeResourceName(value).length > 0) {
+        return normalizeResourceName(value)
+      }
+    } catch {
+      // Ignore runtime lookup failures and fall back to default labels.
+    }
+  }
+
+  return undefined
+}
+
+export function getLogDomainLabel(domain: LogDomain): string {
+  if (domain !== LogDomain.FRAMEWORK) {
+    return LogDomainLabels[domain]
+  }
+
+  const resourceName = getInjectedResourceName()
+  if (!resourceName) {
+    return LogDomainLabels[domain]
+  }
+
+  if (resourceName.toLowerCase() === 'core') {
+    return 'CORE'
+  }
+
+  return resourceName.toUpperCase()
+}
+
 /**
  * Additional contextual information that can be attached to any log entry.
  * Useful for tracing, debugging, and correlation.

@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { IEngineEvents } from '../../../../src/adapters/contracts/IEngineEvents'
 import { AppError } from '../../../../src/kernel/error'
+import { buildRemoteCommandExecuteEventName } from '../../../../src/runtime/shared/types/system-types'
 import type { CommandErrorObserverContract } from '../../../../src/runtime/server/contracts/security/command-error-observer.contract'
 import { CommandExportController } from '../../../../src/runtime/server/controllers/command-export.controller'
 import type { Players } from '../../../../src/runtime/server/ports/players.api-port'
 import type { CommandRegistrationDto } from '../../../../src/runtime/server/types/core-exports.types'
 import { createAuthenticatedPlayer, createTestPlayer } from '../../../helpers'
-import { CommandExecutionPort } from 'src/runtime/server/services'
+import { CommandExecutionPort } from '../../../../src/runtime/server/services'
 
 describe('CommandExportController', () => {
   let controller: CommandExportController
@@ -166,7 +167,7 @@ describe('CommandExportController', () => {
 
       // Should emit event to resource via adapter
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:my-resource',
+        buildRemoteCommandExecuteEventName('my-resource'),
         1,
         'remotecmd',
         ['arg1', 'arg2'],
@@ -192,7 +193,7 @@ describe('CommandExportController', () => {
       await controller.executeCommand(1, 'remote', [])
 
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:my-resource',
+        buildRemoteCommandExecuteEventName('my-resource'),
         1,
         'remote',
         [],
@@ -241,7 +242,7 @@ describe('CommandExportController', () => {
       await controller.executeCommand(1, 'noargs', [])
 
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:test-resource',
+        buildRemoteCommandExecuteEventName('test-resource'),
         1,
         'noargs',
         [],
@@ -369,7 +370,7 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(1, 'cmd1', [])
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:resource-a',
+        buildRemoteCommandExecuteEventName('resource-a'),
         expect.any(Number),
         'cmd1',
         expect.any(Array),
@@ -379,7 +380,7 @@ describe('CommandExportController', () => {
 
       await controller.executeCommand(1, 'cmd2', [])
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:resource-b',
+        buildRemoteCommandExecuteEventName('resource-b'),
         expect.any(Number),
         'cmd2',
         expect.any(Array),
@@ -613,7 +614,7 @@ describe('CommandExportController', () => {
 
       // Should delegate to resource
       expect(mockEngineEvents.emit).toHaveBeenCalledWith(
-        'opencore:command:execute:test-resource',
+        buildRemoteCommandExecuteEventName('test-resource'),
         1,
         'test',
         ['arg1'],

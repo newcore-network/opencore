@@ -1,9 +1,12 @@
 export abstract class IClientRuntimeBridge {
   abstract getCurrentResourceName(): string
-  abstract on(eventName: string, handler: (...args: any[]) => void | Promise<void>): void
+  abstract on<TArgs extends readonly unknown[]>(
+    eventName: string,
+    handler: (...args: TArgs) => void | Promise<void>,
+  ): void
   abstract registerCommand(
     commandName: string,
-    handler: (...args: any[]) => void,
+    handler: (...args: unknown[]) => void,
     restricted: boolean,
   ): void
   abstract registerKeyMapping(
@@ -18,7 +21,7 @@ export abstract class IClientRuntimeBridge {
 
   registerWebViewCallback(
     eventName: string,
-    handler: (data: any, cb: (response: unknown) => void) => void | Promise<void>,
+    handler: (data: unknown, cb: (response: unknown) => void) => void | Promise<void>,
   ): void {
     this.registerNuiCallback(eventName, handler)
   }
@@ -37,10 +40,13 @@ export abstract class IClientRuntimeBridge {
 
   abstract registerNuiCallback(
     eventName: string,
-    handler: (data: any, cb: (response: unknown) => void) => void | Promise<void>,
+    handler: (data: unknown, cb: (response: unknown) => void) => void | Promise<void>,
   ): void
   abstract sendNuiMessage(message: string): void
   abstract setNuiFocus(hasFocus: boolean, hasCursor: boolean): void
   abstract setNuiFocusKeepInput(keepInput: boolean): void
-  abstract registerExport(exportName: string, handler: (...args: any[]) => any): void
+  abstract registerExport<TArgs extends readonly unknown[], TResult = unknown>(
+    exportName: string,
+    handler: (...args: TArgs) => TResult,
+  ): void
 }

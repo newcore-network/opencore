@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
@@ -6,6 +6,7 @@ import { IVehicleLifecycleServer } from '../../../adapters/contracts/server/vehi
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { coreLogger } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { Player } from '../entities/player'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import {
@@ -14,6 +15,7 @@ import {
   VehicleSpawnResult,
 } from '../types/vehicle.types'
 import { Players } from '../ports/players.api-port'
+import { Bind } from '../decorators/bind'
 
 export interface VehicleCreateForPlayerOptions
   extends Omit<VehicleCreateOptions, 'position' | 'ownership'> {
@@ -36,7 +38,7 @@ const DEFAULT_PLAYER_VEHICLE_OFFSET: Vector3 = { x: 0, y: 3, z: 0 }
  * All vehicle creation MUST go through this service to ensure security.
  * Uses CreateVehicleServerSetter for server-authoritative spawning.
  */
-@injectable()
+@Bind('singleton')
 export class Vehicles {
   /**
    * Internal registry of all managed vehicles indexed by Network ID
@@ -172,7 +174,7 @@ export class Vehicles {
         totalVehicles: this.vehiclesByNetworkId.size,
       })
 
-      this.events.emit('opencore:vehicle:created', 'all', vehicle.serialize())
+      this.events.emit(SYSTEM_EVENTS.vehicle.created, 'all', vehicle.serialize())
 
       return {
         networkId,
@@ -229,6 +231,7 @@ export class Vehicles {
       ...options,
       position: spawnPosition,
       heading: spawnHeading,
+      plate: ownership.type === 'player' ? player.name : 'anom',
       ownership,
     })
     if (result.success) {
@@ -358,7 +361,7 @@ export class Vehicles {
       totalVehicles: this.vehiclesByNetworkId.size,
     })
 
-    this.events.emit('opencore:vehicle:deleted', 'all', networkId)
+    this.events.emit(SYSTEM_EVENTS.vehicle.deleted, 'all', networkId)
 
     return true
   }

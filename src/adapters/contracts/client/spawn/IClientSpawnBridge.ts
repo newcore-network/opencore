@@ -1,8 +1,6 @@
-import type { RespawnRequest, SpawnRequest, TeleportRequest } from './types'
+import { IClientSpawnPort } from './IClientSpawnPort'
 
-export abstract class IClientSpawnBridge {
-  abstract waitUntilReady(timeoutMs?: number): Promise<void>
-  abstract spawn(request: SpawnRequest): Promise<void>
-  abstract respawn(request: RespawnRequest): Promise<void>
-  abstract teleport(request: TeleportRequest): Promise<void>
-}
+/**
+ * @deprecated Use IClientSpawnPort for new runtime integrations.
+ */
+export abstract class IClientSpawnBridge extends IClientSpawnPort {}

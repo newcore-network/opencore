@@ -1,7 +1,9 @@
 import { inject } from 'tsyringe'
+import { z } from 'zod'
 import { IEngineEvents } from '../../../adapters/contracts/IEngineEvents'
 import { AppError, SecurityError } from '../../../kernel/error'
 import { loggers } from '../../../kernel/logger'
+import { buildRemoteCommandExecuteEventName, SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { CommandErrorObserverContract } from '../contracts/security/command-error-observer.contract'
 import { Controller, Export, Public } from '../decorators'
 import { OnNet } from '../decorators/onNet'
@@ -76,7 +78,7 @@ export class CommandExportController implements InternalCommandsExports {
    * (registered by RESOURCE mode instances).
    */
   @Public()
-  @OnNet('core:execute-command')
+  @OnNet(SYSTEM_EVENTS.command.execute, z.tuple([z.string().min(1), z.array(z.string())]))
   async onCommandReceived(player: Player, command: string, args: string[]) {
     try {
       if (command.startsWith('/')) command = command.slice(1)
@@ -238,7 +240,7 @@ export class CommandExportController implements InternalCommandsExports {
       await this.validateSecurity(player, commandName, remoteEntry.metadata.security)
 
       // Delegate to resource via local event (server-to-server, not network)
-      const eventName = `opencore:command:execute:${remoteEntry.resourceName}`
+      const eventName = buildRemoteCommandExecuteEventName(remoteEntry.resourceName)
       this.engineEvents.emit(eventName, clientID, commandName, args)
       loggers.command.debug(`Delegated remote command execution to ${remoteEntry.resourceName}`, {
         command: commandName,

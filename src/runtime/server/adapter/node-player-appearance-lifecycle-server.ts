@@ -5,6 +5,7 @@ import { IPlayerAppearanceLifecycleServer } from '../../../adapters/contracts/se
 import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
 import { Players } from '../ports/players.api-port'
 import { PlayerAppearance } from '../../../kernel/shared'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 
 @injectable()
 export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecycleServer {
@@ -32,7 +33,7 @@ export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecy
       return { success: false, errors: ['Player not found'] }
     }
 
-    this.events.emit('opencore:appearance:apply', target, appearance)
+    this.events.emit(SYSTEM_EVENTS.appearance.apply, target, appearance)
     return { success: true, appearance }
   }
 
@@ -52,7 +53,7 @@ export class NodePlayerAppearanceLifecycleServer extends IPlayerAppearanceLifecy
     this.pedAdapter.setDefaultComponentVariation(ped)
     const target = this.resolveTarget(playerSrc)
     if (!target) return false
-    this.events.emit('opencore:appearance:reset', target)
+    this.events.emit(SYSTEM_EVENTS.appearance.reset, target)
     return true
   }
 

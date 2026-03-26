@@ -19,6 +19,7 @@ import { BinaryProcessManager } from './system/managers/binary-process.manager'
 import { SessionRecoveryService } from './services/session-recovery.local'
 import type { PluginInstallContext, PluginRegistry } from './library/plugin'
 import { registerServicesServer } from './services/services.register'
+import { SYSTEM_EVENTS } from '../shared/types/system-types'
 import { METADATA_KEYS } from './system/metadata-server.keys'
 import { registerSystemServer } from './system/processors.register'
 
@@ -207,15 +208,15 @@ export async function initServer(
     const events = GLOBAL_CONTAINER.resolve(EventsAPI as any) as EventsAPI<'server'>
 
     // 1. Broadast to resources already running
-    engineEvents.emit('core:ready')
-    events.emit('core:ready', 'all')
+    engineEvents.emit(SYSTEM_EVENTS.core.ready)
+    events.emit(SYSTEM_EVENTS.core.ready, 'all')
 
-    // 2. Listen for 'core:request-ready' for resources starting late (hot-reload)
-    engineEvents.on('core:request-ready', () => {
-      engineEvents.emit('core:ready')
+    // 2. Listen for '_systemcore:request-ready' for resources starting late (hot-reload)
+    engineEvents.on(SYSTEM_EVENTS.core.requestReady, () => {
+      engineEvents.emit(SYSTEM_EVENTS.core.ready)
     })
 
-    loggers.bootstrap.info(`'core:ready' logic initialized and broadcasted`)
+    loggers.bootstrap.info(`'${SYSTEM_EVENTS.core.ready}' logic initialized and broadcasted`)
   }
 
   const logLevelLabel = LogLevelLabels[getLogLevel()]
@@ -241,13 +242,15 @@ function createCoreDependency(coreName: string): Promise<void> {
 
     const onReady = () => {
       if (!resolved) {
-        loggers.bootstrap.debug(`Core '${coreName}' detected via 'core:ready' event!`)
+        loggers.bootstrap.debug(
+          `Core '${coreName}' detected via '${SYSTEM_EVENTS.core.ready}' event!`,
+        )
         cleanup()
         resolve()
       }
     }
-    engineEvents.on('core:ready', onReady)
-    loggers.bootstrap.debug(`Listening for 'core:ready' event from Core`)
+    engineEvents.on(SYSTEM_EVENTS.core.ready, onReady)
+    loggers.bootstrap.debug(`Listening for '${SYSTEM_EVENTS.core.ready}' event from Core`)
 
     // 2. Check if already ready via export (Polling)
     const checkReady = () => {
@@ -273,8 +276,10 @@ function createCoreDependency(coreName: string): Promise<void> {
     // 3. Request status (for hot-reload cases where Core is already up)
     // This is sent AFTER registering the listener so we can receive the response
     if (!resolved) {
-      loggers.bootstrap.debug(`Requesting Core status via 'core:request-ready' event`)
-      engineEvents.emit('core:request-ready')
+      loggers.bootstrap.debug(
+        `Requesting Core status via '${SYSTEM_EVENTS.core.requestReady}' event`,
+      )
+      engineEvents.emit(SYSTEM_EVENTS.core.requestReady)
     }
 
     // 4. Timeout protection
@@ -286,7 +291,7 @@ function createCoreDependency(coreName: string): Promise<void> {
         cleanup()
         reject(
           new Error(
-            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit 'core:ready' or expose 'isCoreReady' within ${CORE_WAIT_TIMEOUT}ms.`,
+            `[OpenCore] Timeout waiting for CORE '${coreName}'. The Core did not emit '${SYSTEM_EVENTS.core.ready}' or expose 'isCoreReady' within ${CORE_WAIT_TIMEOUT}ms.`,
           ),
         )
       }

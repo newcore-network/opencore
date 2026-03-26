@@ -22,7 +22,14 @@ export {
 export { ChildLogger, LoggerService } from './logger.service'
 export type { ClientLogConsoleCapabilities } from '../../adapters/contracts/client/IClientLogConsole'
 export type { LogContext, LogEntry } from './logger.types'
-export { LogDomain, LogDomainLabels, LogLevel, LogLevelLabels, parseLogLevel } from './logger.types'
+export {
+  getLogDomainLabel,
+  LogDomain,
+  LogDomainLabels,
+  LogLevel,
+  LogLevelLabels,
+  parseLogLevel,
+} from './logger.types'
 export type { BufferedTransportOptions, LogOutputFormat } from './transports/buffered.transport'
 export { BufferedTransport } from './transports/buffered.transport'
 export type { ConsoleTransportOptions } from './transports/console.transport'
