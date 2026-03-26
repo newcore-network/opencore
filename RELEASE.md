@@ -1,58 +1,22 @@
-## OpenCore Framework v1.0.5-beta.2
+## OpenCore Framework v1.0.5
 
-### Highlights
-- Added an explicit server adapter API for platform-specific runtimes.
-- Player creation and remote hydration now support adapter-owned subclasses while preserving the public `Player` type.
-- Added an explicit client adapter API and removed the built-in `ClientPlayer` singleton.
-- Added client UI bridges for markers, blips, and notifications.
-- Added lifecycle services for NPC and Vehicle management.
-- Improved Player management with spawn, teleport, and respawn actions.
+### Added
+- Added new client adapter ports for camera, ped, vehicle, progress, spawn, local player, runtime bridge, and WebView integration, with matching node runtime implementations.
+- Added support for WebView chat mode, richer client UI/runtime abstractions, and cleaner adapter-facing contracts/exports.
+- Added server-side improvements for command handling, including command validation, default function parameter support, and standardized system event names.
+- Added more coverage around parallel compute, vehicle modification, vehicle sync state, player state sync, adapters, and command execution flows.
+- Added Husky pre-commit and pre-push hooks for local quality checks.
 
-### New Features
-- `Server.init()` now accepts `adapter` to install a single server adapter during bootstrap.
-- Added public server adapter helpers in `@open-core/framework/server` for custom adapter packages.
-- Added adapter-aware Player serialization hooks for CORE/RESOURCE flows.
-- `Client.init()` now accepts `adapter` to install a single client adapter during bootstrap.
-- Added client runtime bridge contracts so event processors, WebView callbacks, key mappings, and ticks no longer depend directly on CFX globals.
-- Added client UI bridges for markers, blips, and notifications.
-- Added lifecycle services and contracts for NPC and Vehicle management.
-- Added `ISpawnActions` interface and implementation for managing player spawn, teleport, and respawn actions.
-- Added `ClientLoggerBridge` to abstract client-side logging from direct console calls.
-- Added `playerCommand` runtime event.
-- Added RedM-specific ped appearance adapter and client services for RDR3 profile appearance logic.
-- Added runtime platform and game profile detection with duplicate DI registration prevention.
-- Added `useAdapter()` function to pre-set the client adapter before initialization.
-- Added project-level adapter injection and runtime hints for server and client adapters.
-- Added WebView abstraction for client UI interactions.
-- Renamed routing bucket methods to dimension.
-- Added dedicated client and server contract files with updated exports and package entry points.
+### Changed
+- Refactored client services to rely on explicit adapter ports instead of direct runtime assumptions, especially for camera, ped, progress, spawn, and vehicle flows.
+- Refactored logging so logger writes use string log levels and runtime log domain labels are derived dynamically from the active resource.
+- Refactored worker execution to use inline worker scripts with performance tracking in the parallel compute pipeline.
+- Updated package/tooling setup to TypeScript 6 and refreshed package exports, scripts, and dependency configuration.
 
-### Breaking Changes
-- Server bootstrap now defaults to the built-in Node adapter when no explicit runtime adapter is provided.
-- Platform-specific Player APIs should move into adapter packages through Player subclassing/module augmentation.
-- `ClientPlayer` is no longer exported from `@open-core/framework/client`.
-- Client bootstrap no longer uses `register-client-capabilities`; external adapters should be installed through `Client.init({ adapter })`.
-- `WebViewBridge` is now the preferred embedded UI abstraction; `OnView` now represents WebView callbacks directly, while `NuiBridge` and `NUI` remain as deprecated compatibility aliases.
-
-### Bug Fixes
-- Fixed lint issues and removed unused variables.
-- Fixed exportation issues.
-- Added tests for lint and unused variable fixes.
+### Fixed
+- Fixed command schema handling so exported/remote commands support default parameters more reliably.
+- Fixed transport/event contract alignment across node events and RPC layers.
+- Fixed several test, lint, and export consistency issues while expanding automated coverage.
 
 ### Notes
-- Migration path for external adapters:
-  1. Create an adapter with `defineServerAdapter({ name, register(ctx) { ... } })`.
-  2. Register platform contracts inside `register(ctx)` with `bindSingleton`, `bindInstance`, or `bindMessagingTransport`.
-  3. If you extend `Player`, provide `ctx.usePlayerAdapter({ createLocal, createRemote, serialize, hydrate })`.
-  4. Pass the adapter to `Server.init({ mode, adapter })` in both CORE and RESOURCE resources.
-- RESOURCE hydration now validates adapter identity before rebuilding remote `Player` instances.
-- Client adapter migration path:
-  1. Create an adapter with `defineClientAdapter({ name, register(ctx) { ... } })`.
-  2. Register transport, appearance, hashing, and runtime bridge contracts inside `register(ctx)`.
-  3. Pass the adapter to `Client.init({ mode, adapter })`.
-- Client files now safe to remove from core once moved to external adapter packages:
-  - `src/adapters/register-client-capabilities.ts`
-  - `src/adapters/fivem/fivem-ped-appearance-client.ts`
-  - `src/adapters/redm/redm-ped-appearance-client.ts`
-  - `src/adapters/node/node-ped-appearance-client.ts`
-  - Any remaining client-only transport/runtime bindings that your external adapter reimplements.
+- This release covers the full `master...v1` delta and keeps the release notes compact by grouping related adapter/runtime refactors instead of listing each port separately.
