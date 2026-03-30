@@ -36,6 +36,12 @@ export interface SerializedPlayerData {
 
   /** Active state flags (dead, cuffed, etc.) */
   states: string[]
+
+  /** Optional adapter-owned payload used to hydrate extended Player instances. */
+  adapter?: {
+    name: string
+    payload?: Record<string, unknown>
+  }
 }
 
 /**

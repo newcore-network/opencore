@@ -1,3 +1,4 @@
+import type { RuntimeEventName } from '../../../adapters/contracts/runtime'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 
 /**
@@ -24,7 +25,7 @@ import { METADATA_KEYS } from '../system/metadata-server.keys'
  * }
  * ```
  */
-export function OnRuntimeEvent(event: string) {
+export function OnRuntimeEvent(event: RuntimeEventName) {
   return (target: any, propertyKey: string) => {
     Reflect.defineMetadata(METADATA_KEYS.RUNTIME_EVENT, { event }, target, propertyKey)
   }

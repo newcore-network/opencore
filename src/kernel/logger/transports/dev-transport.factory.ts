@@ -33,7 +33,7 @@ export interface DevTransportOptions {
  */
 export function detectEnvironment(): RuntimeEnvironment {
   // Check for CitizenFX globals
-  if (typeof GetCurrentResourceName === 'function') {
+  if (typeof (globalThis as any).GetCurrentResourceName === 'function') {
     return 'cfx'
   }
   return 'node'

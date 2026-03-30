@@ -1,7 +1,11 @@
 import { z } from 'zod'
 import { ClassConstructor } from '../../../kernel/di/class-constructor'
 import { Player } from '../entities/player'
-import { getParameterNames, getSpreadParameterIndices } from '../helpers/function-helper'
+import {
+  getDefaultParameterIndices,
+  getParameterNames,
+  getSpreadParameterIndices,
+} from '../helpers/function-helper'
 import { METADATA_KEYS } from '../system/metadata-server.keys'
 import { SecurityMetadata } from '../types/core-exports.types'
 
@@ -40,6 +44,8 @@ export interface CommandMetadata extends CommandConfig {
   security?: SecurityMetadata
   /** True if the last parameter uses the spread operator (...args) */
   hasSpreadParam?: boolean
+  /** True when a parameter defines a JS default value. */
+  defaultParams?: boolean[]
 }
 
 type ServerCommandHandler = (() => any) | ((player: Player, ...args: any[]) => any)
@@ -150,6 +156,7 @@ export function Command(configOrName: string | CommandConfig, schema?: z.ZodType
     }
 
     const paramNames = getParameterNames(descriptor.value)
+    const defaultParams = getDefaultParameterIndices(descriptor.value)
     const spreadIndices = getSpreadParameterIndices(descriptor.value)
     const hasSpreadParam = spreadIndices.length > 0 && spreadIndices[spreadIndices.length - 1]
 
@@ -161,6 +168,7 @@ export function Command(configOrName: string | CommandConfig, schema?: z.ZodType
       paramNames,
       expectsPlayer,
       hasSpreadParam,
+      defaultParams,
     }
 
     Reflect.defineMetadata(METADATA_KEYS.COMMAND, metadata, target, propertyKey)

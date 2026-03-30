@@ -1,14 +1,13 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
 import { IHasher } from '../../../adapters/contracts/IHasher'
-import {
-  IPlatformCapabilities,
-  PlatformFeatures,
-} from '../../../adapters/contracts/IPlatformCapabilities'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { IEntityServer } from '../../../adapters/contracts/server/IEntityServer'
-import { IPlayerServer } from '../../../adapters/contracts/server/IPlayerServer'
+import { IVehicleLifecycleServer } from '../../../adapters/contracts/server/vehicle-lifecycle/IVehicleLifecycleServer'
 import { IVehicleServer } from '../../../adapters/contracts/server/IVehicleServer'
 import { coreLogger } from '../../../kernel/logger'
+import { Vector3 } from '../../../kernel/utils/vector3'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
+import { Player } from '../entities/player'
 import { Vehicle, type VehicleAdapters } from '../entities/vehicle'
 import {
   SerializedVehicleData,
@@ -16,6 +15,15 @@ import {
   VehicleSpawnResult,
 } from '../types/vehicle.types'
 import { Players } from '../ports/players.api-port'
+import { Bind } from '../decorators/bind'
+
+export interface VehicleCreateForPlayerOptions
+  extends Omit<VehicleCreateOptions, 'position' | 'ownership'> {
+  offset?: Vector3
+  seatIndex?: number
+}
+
+const DEFAULT_PLAYER_VEHICLE_OFFSET: Vector3 = { x: 0, y: 3, z: 0 }
 
 /**
  * Server-side service for managing vehicle entities.
@@ -30,7 +38,7 @@ import { Players } from '../ports/players.api-port'
  * All vehicle creation MUST go through this service to ensure security.
  * Uses CreateVehicleServerSetter for server-authoritative spawning.
  */
-@injectable()
+@Bind('singleton')
 export class Vehicles {
   /**
    * Internal registry of all managed vehicles indexed by Network ID
@@ -46,10 +54,9 @@ export class Vehicles {
     @inject(Players as any) private readonly playerDirectory: Players,
     @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
     @inject(IVehicleServer as any) private readonly vehicleServer: IVehicleServer,
-    @inject(IPlatformCapabilities as any)
-    private readonly platformCapabilities: IPlatformCapabilities,
+    @inject(IVehicleLifecycleServer as any)
+    private readonly vehicleLifecycle: IVehicleLifecycleServer,
     @inject(IHasher as any) private readonly hasher: IHasher,
-    @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
   ) {
     this.vehicleAdapters = {
@@ -87,32 +94,14 @@ export class Vehicles {
 
       const modelHash = typeof model === 'string' ? this.hasher.getHashKey(model) : model
 
-      const serverVehicleCreationEnabled =
-        this.platformCapabilities.getConfig<boolean>('enableServerVehicleCreation') ??
-        this.platformCapabilities.isFeatureSupported(PlatformFeatures.SERVER_ENTITIES)
-
-      if (!serverVehicleCreationEnabled) {
-        const profile = this.platformCapabilities.getConfig<string>('gameProfile') ?? 'unknown'
-        return {
-          networkId: 0,
-          handle: 0,
-          success: false,
-          error: `Server vehicle creation is disabled for profile '${profile}'`,
-        }
-      }
-
-      const vehicleType =
-        this.platformCapabilities.getConfig<string>('defaultVehicleType') ?? 'automobile'
-      const handle = this.vehicleServer.createServerSetter(
+      const { handle, networkId } = await this.vehicleLifecycle.create({
+        model: typeof model === 'string' ? model : String(model),
         modelHash,
-        vehicleType,
-        position.x,
-        position.y,
-        position.z,
+        position,
         heading,
-      )
+      })
 
-      if (!handle || handle === 0) {
+      if (!Number.isFinite(handle) || handle < 0) {
         coreLogger.error('Failed to create vehicle', { model, position })
         return {
           networkId: 0,
@@ -125,8 +114,6 @@ export class Vehicles {
       while (!this.entityServer.doesExist(handle)) {
         await new Promise((resolve) => setTimeout(resolve, 0))
       }
-
-      const networkId = this.vehicleServer.getNetworkIdFromEntity(handle)
 
       const vehicleOwnership = {
         clientID: ownership?.clientID,
@@ -173,16 +160,21 @@ export class Vehicles {
       }
 
       this.vehiclesByNetworkId.set(networkId, vehicle)
+      let ownershipComp: string = vehicleOwnership.type
+
+      if (vehicleOwnership.type === 'player') {
+        ownershipComp = `${vehicleOwnership.type}:${ownership?.clientID}`
+      }
 
       coreLogger.info('Vehicle created', {
         networkId,
         model,
-        ownership: vehicleOwnership.type,
+        ownership: ownershipComp,
         persistent,
         totalVehicles: this.vehiclesByNetworkId.size,
       })
 
-      this.events.emit('opencore:vehicle:created', 'all', vehicle.serialize())
+      this.events.emit(SYSTEM_EVENTS.vehicle.created, 'all', vehicle.serialize())
 
       return {
         networkId,
@@ -213,10 +205,10 @@ export class Vehicles {
    * @returns Spawn result
    */
   async createForPlayer(
-    clientID: number,
-    options: VehicleCreateOptions,
+    playerOrClientID: Player | number,
+    options: VehicleCreateForPlayerOptions,
   ): Promise<VehicleSpawnResult> {
-    const player = this.playerDirectory.getByClient(clientID)
+    const player = this.resolvePlayer(playerOrClientID)
     if (!player) {
       return {
         networkId: 0,
@@ -227,19 +219,52 @@ export class Vehicles {
     }
 
     const ownership = {
-      clientID,
+      clientID: player.clientID,
       accountID: player.accountID,
       type: 'player' as const,
     }
 
+    const spawnPosition = this.getSpawnPositionForPlayer(player, options.offset)
+    const spawnHeading = options.heading ?? player.getHeading()
+
     const result = await this.create({
       ...options,
+      position: spawnPosition,
+      heading: spawnHeading,
+      plate: ownership.type === 'player' ? player.name : 'anom',
       ownership,
     })
     if (result.success) {
-      this.events.emit('opencore:vehicle:warpInto', clientID, result.networkId, -1)
+      const seatIndex = options.seatIndex ?? -1
+      await Promise.resolve(
+        this.vehicleLifecycle.warpPlayerIntoVehicle({
+          playerSrc: player.clientID.toString(),
+          networkId: result.networkId,
+          seatIndex,
+        }),
+      )
     }
     return result
+  }
+
+  private resolvePlayer(playerOrClientID: Player | number): Player | undefined {
+    return typeof playerOrClientID === 'number'
+      ? this.playerDirectory.getByClient(playerOrClientID)
+      : playerOrClientID
+  }
+
+  private getSpawnPositionForPlayer(
+    player: Player,
+    offset: Vector3 = DEFAULT_PLAYER_VEHICLE_OFFSET,
+  ): Vector3 {
+    const position = player.getPosition()
+    const headingRadians = (player.getHeading() * Math.PI) / 180
+
+    return {
+      x: position.x + Math.sin(headingRadians) * offset.y + Math.cos(headingRadians) * offset.x,
+      y: position.y + Math.cos(headingRadians) * offset.y - Math.sin(headingRadians) * offset.x,
+      z: position.z + offset.z,
+    }
   }
 
   /**
@@ -336,7 +361,7 @@ export class Vehicles {
       totalVehicles: this.vehiclesByNetworkId.size,
     })
 
-    this.events.emit('opencore:vehicle:deleted', 'all', networkId)
+    this.events.emit(SYSTEM_EVENTS.vehicle.deleted, 'all', networkId)
 
     return true
   }
@@ -387,10 +412,7 @@ export class Vehicles {
     const player = this.playerDirectory.getByClient(clientID)
     if (!player) return false
 
-    const playerPed = this.playerServer.getPed(player.clientID.toString())
-    if (!playerPed || playerPed === 0) return false
-
-    const playerPos = this.entityServer.getCoords(playerPed)
+    const playerPos = player.getPosition()
     const vehiclePos = vehicle.position
 
     const distance = Math.sqrt(

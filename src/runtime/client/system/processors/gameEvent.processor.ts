@@ -1,6 +1,7 @@
-import { injectable } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 import { DecoratorProcessor } from '../../../../kernel/di/decorator-processor'
 import { coreLogger, LogDomain } from '../../../../kernel/logger'
+import { IClientRuntimeBridge } from '../../adapter/runtime-bridge'
 import { GameEventParsers } from '../../types/game-events'
 import { METADATA_KEYS } from '../metadata-client.keys'
 
@@ -25,12 +26,16 @@ interface GameEventMetadata {
 export class GameEventProcessor implements DecoratorProcessor {
   readonly metadataKey = METADATA_KEYS.GAME_EVENT
 
+  constructor(
+    @inject(IClientRuntimeBridge as any) private readonly runtime: IClientRuntimeBridge,
+  ) {}
+
   process(target: any, methodName: string, metadata: GameEventMetadata) {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
     const { eventName, autoParse } = metadata
 
-    on('gameEventTriggered', async (name: string, args: number[]) => {
+    this.runtime.on('gameEventTriggered', async (name: string, args: number[]) => {
       if (name !== eventName) return
 
       try {

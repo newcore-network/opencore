@@ -1,5 +1,5 @@
 import { HeadBlendData } from '../../kernel/shared'
-import { IPedAppearanceClient } from '../contracts/client/IPedAppearanceClient'
+import { IGtaPedAppearanceBridge } from '../contracts/client/IGtaPedAppearanceBridge'
 
 /**
  * Node.js stub implementation of client-side ped appearance adapter.
@@ -8,7 +8,7 @@ import { IPedAppearanceClient } from '../contracts/client/IPedAppearanceClient'
  * This is a no-op implementation for testing in Node.js environment.
  * All methods return default values or do nothing.
  */
-export class NodePedAppearanceClient extends IPedAppearanceClient {
+export class NodePedAppearanceClient extends IGtaPedAppearanceBridge {
   setComponentVariation(): void {}
   setPropIndex(): void {}
   clearProp(): void {}

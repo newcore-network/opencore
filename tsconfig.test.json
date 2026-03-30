@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["@citizenfx/server", "@citizenfx/client", "node", "vitest/globals"],
+    "types": ["node", "vitest/globals"],
     "noEmit": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

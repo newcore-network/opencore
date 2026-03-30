@@ -1,16 +1,11 @@
 export function getParameterNames(func: (...args: any[]) => any): string[] {
-  const stripped = func
-    .toString()
-    .replace(/\/\/.*$/gm, '')
-    .replace(/\/\*[\s\S]*?\*\//gm, '')
-
-  const args = stripped
-    .slice(stripped.indexOf('(') + 1, stripped.indexOf(')'))
-    .split(',')
+  return parseParameterTokens(func)
     .map((arg) => arg.replace(/=[\s\S]*/, '').trim())
     .filter(Boolean)
+}
 
-  return args
+export function getDefaultParameterIndices(func: (...args: any[]) => any): boolean[] {
+  return parseParameterTokens(func).map((arg) => arg.includes('='))
 }
 
 /**
@@ -30,4 +25,17 @@ export function getSpreadParameterIndices(func: (...args: any[]) => any): boolea
     .filter(Boolean)
 
   return args.map((arg) => arg.startsWith('...'))
+}
+
+function parseParameterTokens(func: (...args: any[]) => any): string[] {
+  const stripped = func
+    .toString()
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//gm, '')
+
+  return stripped
+    .slice(stripped.indexOf('(') + 1, stripped.indexOf(')'))
+    .split(',')
+    .map((arg) => arg.trim())
+    .filter(Boolean)
 }

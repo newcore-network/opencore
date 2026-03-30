@@ -67,14 +67,14 @@ export class NodeEntityServer extends IEntityServer {
     // No-op in Node
   }
 
-  setRoutingBucket(handle: number, bucket: number): void {
+  setDimension(handle: number, bucket: number): void {
     const entity = this.entities.get(handle)
     if (entity) {
       entity.bucket = bucket
     }
   }
 
-  getRoutingBucket(handle: number): number {
+  getDimension(handle: number): number {
     return this.entities.get(handle)?.bucket ?? 0
   }
 

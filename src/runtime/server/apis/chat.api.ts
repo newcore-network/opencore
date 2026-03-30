@@ -1,6 +1,7 @@
 import { inject, injectable } from 'tsyringe'
 import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { RGB } from '../../../kernel/utils/rgb'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { Player } from '../entities/player'
 import { Players } from '../ports/players.api-port'
 
@@ -25,7 +26,7 @@ export class Chat {
    * @param color - Message color (RGB). Defaults to white.
    */
   broadcast(message: string, author: string = 'SYSTEM', color: RGB = { r: 255, g: 255, b: 255 }) {
-    this.events.emit('core:chat:message', 'all', {
+    this.events.emit(SYSTEM_EVENTS.chat.message, 'all', {
       args: [author, message],
       color: color,
     })
@@ -45,7 +46,7 @@ export class Chat {
     author: string = 'Private',
     color: RGB = { r: 200, g: 200, b: 200 },
   ) {
-    this.events.emit('core:chat:addMessage', player.clientID, {
+    this.events.emit(SYSTEM_EVENTS.chat.addMessage, player.clientID, {
       args: [author, message],
       color: color,
     })
@@ -57,7 +58,7 @@ export class Chat {
    * @param player - Target player.
    */
   clearChat(player: Player) {
-    this.events.emit('core:chat:clear', player.clientID)
+    this.events.emit(SYSTEM_EVENTS.chat.clear, player.clientID)
   }
 
   /**
@@ -75,7 +76,7 @@ export class Chat {
     color: RGB = { r: 255, g: 255, b: 255 },
   ) {
     const targetIds = players.map((p) => (typeof p === 'number' ? p : p.clientID))
-    this.events.emit('core:chat:addMessage', targetIds, {
+    this.events.emit(SYSTEM_EVENTS.chat.addMessage, targetIds, {
       args: [author, message],
       color: color,
     })
@@ -130,6 +131,6 @@ export class Chat {
    * Clear chat for all connected players.
    */
   clearChatAll() {
-    this.events.emit('core:chat:clear', 'all')
+    this.events.emit(SYSTEM_EVENTS.chat.clear, 'all')
   }
 }

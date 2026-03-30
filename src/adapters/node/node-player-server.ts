@@ -17,6 +17,7 @@ export class NodePlayerServer extends IPlayerServer {
       ping: number
       endpoint: string
       routingBucket: number
+      model?: string
     }
   >()
   private droppedPlayers: string[] = []
@@ -28,6 +29,13 @@ export class NodePlayerServer extends IPlayerServer {
   drop(playerSrc: string, _reason: string): void {
     this.droppedPlayers.push(playerSrc)
     this.players.delete(playerSrc)
+  }
+
+  setModel(playerSrc: string, model: string): void {
+    const player = this.players.get(playerSrc)
+    if (player) {
+      player.model = model
+    }
   }
 
   getIdentifier(playerSrc: string, identifierType: string): string | undefined {
@@ -75,14 +83,14 @@ export class NodePlayerServer extends IPlayerServer {
     return this.players.get(playerSrc)?.endpoint ?? ''
   }
 
-  setRoutingBucket(playerSrc: string, bucket: number): void {
+  setDimension(playerSrc: string, bucket: number): void {
     const player = this.players.get(playerSrc)
     if (player) {
       player.routingBucket = bucket
     }
   }
 
-  getRoutingBucket(playerSrc: string): number {
+  getDimension(playerSrc: string): number {
     return this.players.get(playerSrc)?.routingBucket ?? 0
   }
 

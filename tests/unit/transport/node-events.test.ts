@@ -23,8 +23,8 @@ describe('NodeEvents', () => {
   // ═══════════════════════════════════════════════════════════════════════════
   describe('on + emit', () => {
     it('should receive events emitted to a specific clientId target', async () => {
-      let receivedCtx: any
-      let receivedArgs: any[] = []
+      let receivedCtx: { clientId?: number; raw?: unknown } | undefined
+      let receivedArgs: readonly unknown[] = []
 
       events.on('test:event', (ctx, ...args) => {
         receivedCtx = ctx
@@ -36,12 +36,12 @@ describe('NodeEvents', () => {
       await waitForEventProcessing()
 
       expect(receivedCtx).toBeDefined()
-      expect(receivedCtx.clientId).toBe(42)
+      expect(receivedCtx?.clientId).toBe(42)
       expect(receivedArgs).toEqual(['hello', 'world'])
     })
 
     it('should receive events emitted to "all"', async () => {
-      let receivedCtx: any
+      let receivedCtx: { clientId?: number; raw?: unknown } | undefined
 
       events.on('broadcast', (ctx) => {
         receivedCtx = ctx
@@ -52,7 +52,7 @@ describe('NodeEvents', () => {
       await waitForEventProcessing()
 
       expect(receivedCtx).toBeDefined()
-      expect(receivedCtx.clientId).toBe(-1)
+      expect(receivedCtx?.clientId).toBe(-1)
     })
 
     it('should emit to each clientId in an array target', async () => {
@@ -72,7 +72,7 @@ describe('NodeEvents', () => {
     })
 
     it('should treat non-target first arg as payload', async () => {
-      let receivedArgs: any[] = []
+      let receivedArgs: readonly unknown[] = []
 
       events.on('payload:first', (_ctx, ...args) => {
         receivedArgs = args
@@ -92,8 +92,8 @@ describe('NodeEvents', () => {
   // ═══════════════════════════════════════════════════════════════════════════
   describe('simulateClientEvent', () => {
     it('should simulate an event from a specific client', async () => {
-      let receivedCtx: any
-      let receivedArgs: any[] = []
+      let receivedCtx: { clientId?: number; raw?: unknown } | undefined
+      let receivedArgs: readonly unknown[] = []
 
       events.on('client:action', (ctx, ...args) => {
         receivedCtx = ctx
@@ -104,8 +104,8 @@ describe('NodeEvents', () => {
 
       await waitForEventProcessing()
 
-      expect(receivedCtx.clientId).toBe(7)
-      expect(receivedCtx.raw).toBe(7)
+      expect(receivedCtx?.clientId).toBe(7)
+      expect(receivedCtx?.raw).toBe(7)
       expect(receivedArgs).toEqual(['arg1', 'arg2'])
     })
 

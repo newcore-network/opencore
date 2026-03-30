@@ -220,13 +220,13 @@ export class Vehicle extends BaseEntity implements Spatial, NativeHandle {
     if (!this.exists) {
       return this.session.routingBucket
     }
-    return this.adapters.entityServer.getRoutingBucket(this.session.handle)
+    return this.adapters.entityServer.getDimension(this.session.handle)
   }
 
   /** Sets routing bucket and updates local dimension snapshot. */
   setRoutingBucket(bucket: number): void {
     if (!this.exists) return
-    this.adapters.entityServer.setRoutingBucket(this.session.handle, bucket)
+    this.adapters.entityServer.setDimension(this.session.handle, bucket)
     this.session.routingBucket = bucket
     this._dimension = bucket
   }

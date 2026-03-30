@@ -8,18 +8,18 @@ type NodeTarget = number | number[] | 'all'
 export class NodeEvents extends EventsAPI<RuntimeContext> {
   private readonly emitter = new EventEmitter()
 
-  on(
+  on<TArgs extends readonly unknown[]>(
     event: string,
-    handler: (ctx: { clientId?: number; raw?: unknown }, ...args: any[]) => any,
+    handler: (ctx: { clientId?: number; raw?: unknown }, ...args: TArgs) => unknown,
   ): void {
-    this.emitter.on(event, (ctx: { clientId?: number; raw?: unknown }, ...args: any[]) => {
-      void Promise.resolve(handler(ctx, ...args)).catch((err) => {
+    this.emitter.on(event, (ctx: { clientId?: number; raw?: unknown }, ...args: unknown[]) => {
+      void Promise.resolve(handler(ctx, ...(args as unknown as TArgs))).catch((err) => {
         loggers.netEvent.error(`handler error for '${event}'`, {}, err)
       })
     })
   }
 
-  emit(event: string, targetOrArg?: NodeTarget | any, ...args: any[]): void {
+  emit(event: string, targetOrArg?: NodeTarget | unknown, ...args: unknown[]): void {
     if (targetOrArg === 'all' || typeof targetOrArg === 'number' || Array.isArray(targetOrArg)) {
       const target = (targetOrArg ?? 'all') as NodeTarget
       const payloadArgs = args
@@ -43,7 +43,7 @@ export class NodeEvents extends EventsAPI<RuntimeContext> {
     this.emitter.emit(event, { clientId: -1, raw: -1 }, targetOrArg, ...args)
   }
 
-  simulateClientEvent(event: string, clientId: number, ...args: any[]): void {
+  simulateClientEvent(event: string, clientId: number, ...args: unknown[]): void {
     this.emitter.emit(event, { clientId, raw: clientId }, ...args)
   }
 

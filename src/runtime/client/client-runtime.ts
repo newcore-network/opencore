@@ -38,6 +38,9 @@ export interface ClientInitOptions {
    */
   mode?: ClientMode
 
+  /** Optional runtime adapter for non-node client environments. */
+  adapter?: import('./adapter').OpenCoreClientAdapter
+
   /**
    * Optional client plugins installed before bootstrap.
    */
@@ -76,4 +79,8 @@ export function setClientRuntimeContext(ctx: ClientRuntimeContext): void {
  */
 export function isClientInitialized(): boolean {
   return runtimeContext?.isInitialized ?? false
+}
+
+export function __resetClientRuntimeContextForTests(): void {
+  runtimeContext = null
 }

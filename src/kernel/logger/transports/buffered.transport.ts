@@ -1,4 +1,4 @@
-import { LogDomainLabels, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
+import { getLogDomainLabel, type LogEntry, LogLevel, LogLevelLabels } from '../logger.types'
 import { LogTransport } from './transport.interface'
 
 /**
@@ -132,7 +132,7 @@ export class BufferedTransport implements LogTransport {
     const entries = this.buffer.map((entry) => ({
       timestamp: entry.timestamp,
       level: LogLevelLabels[entry.level],
-      domain: LogDomainLabels[entry.domain],
+      domain: getLogDomainLabel(entry.domain),
       source: entry.context?.source,
       message: entry.message,
       context: this.cleanContext(entry.context),
@@ -152,7 +152,7 @@ export class BufferedTransport implements LogTransport {
       .map((entry) => {
         const time = entry.timestamp.replace('T', ' ').slice(0, 23)
         const level = LogLevelLabels[entry.level].padEnd(5)
-        const domain = LogDomainLabels[entry.domain].padEnd(8)
+        const domain = getLogDomainLabel(entry.domain).padEnd(8)
         const source = entry.context?.source ? `[${entry.context.source}]` : ''
 
         let line = `${time} | ${domain} | ${level} | ${source} ${entry.message}`
@@ -176,7 +176,7 @@ export class BufferedTransport implements LogTransport {
     const rows = this.buffer.map((entry) => [
       entry.timestamp,
       LogLevelLabels[entry.level],
-      LogDomainLabels[entry.domain],
+      getLogDomainLabel(entry.domain),
       entry.context?.source ?? '',
       `"${entry.message.replace(/"/g, '""')}"`,
       JSON.stringify(this.cleanContext(entry.context)),

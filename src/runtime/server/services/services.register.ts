@@ -45,27 +45,41 @@ export function registerServicesServer(ctx: RuntimeContext) {
 
   if (features.players.enabled) {
     if (features.players.provider === 'local' || mode === 'CORE') {
-      GLOBAL_CONTAINER.registerSingleton(LocalPlayerImplementation)
-      GLOBAL_CONTAINER.register(Players as any, { useToken: LocalPlayerImplementation })
-      GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, {
-        useToken: LocalPlayerImplementation,
-      })
+      if (!GLOBAL_CONTAINER.isRegistered(LocalPlayerImplementation)) {
+        GLOBAL_CONTAINER.registerSingleton(LocalPlayerImplementation)
+      }
+      if (!GLOBAL_CONTAINER.isRegistered(Players as any)) {
+        GLOBAL_CONTAINER.register(Players as any, { useToken: LocalPlayerImplementation })
+      }
+      if (!GLOBAL_CONTAINER.isRegistered(PlayerSessionLifecyclePort as any)) {
+        GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, {
+          useToken: LocalPlayerImplementation,
+        })
+      }
     } else {
-      GLOBAL_CONTAINER.registerSingleton(Players as any, RemotePlayerImplementation)
+      if (!GLOBAL_CONTAINER.isRegistered(Players as any)) {
+        GLOBAL_CONTAINER.registerSingleton(Players as any, RemotePlayerImplementation)
+      }
     }
   }
 
   if (mode === 'RESOURCE' && features.players.enabled) {
-    GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, {
-      useFactory: () => {
-        throw new Error('[OpenCore] PlayerSessionLifecyclePort is not available in RESOURCE mode')
-      },
-    })
+    if (!GLOBAL_CONTAINER.isRegistered(PlayerSessionLifecyclePort as any)) {
+      GLOBAL_CONTAINER.register(PlayerSessionLifecyclePort as any, {
+        useFactory: () => {
+          throw new Error('[OpenCore] PlayerSessionLifecyclePort is not available in RESOURCE mode')
+        },
+      })
+    }
   }
 
   if (features.sessionLifecycle.enabled && mode !== 'RESOURCE') {
-    GLOBAL_CONTAINER.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
-    GLOBAL_CONTAINER.registerSingleton(SessionRecoveryService, SessionRecoveryService)
+    if (!GLOBAL_CONTAINER.isRegistered(PlayerPersistenceService)) {
+      GLOBAL_CONTAINER.registerSingleton(PlayerPersistenceService, PlayerPersistenceService)
+    }
+    if (!GLOBAL_CONTAINER.isRegistered(SessionRecoveryService)) {
+      GLOBAL_CONTAINER.registerSingleton(SessionRecoveryService, SessionRecoveryService)
+    }
   }
 
   if (features.principal.enabled) {
@@ -77,36 +91,54 @@ export function registerServicesServer(ctx: RuntimeContext) {
           DefaultPrincipalProvider,
         )
       }
-      GLOBAL_CONTAINER.registerSingleton(LocalPrincipalService)
-      GLOBAL_CONTAINER.register(Authorization as any, { useToken: LocalPrincipalService })
+      if (!GLOBAL_CONTAINER.isRegistered(LocalPrincipalService)) {
+        GLOBAL_CONTAINER.registerSingleton(LocalPrincipalService)
+      }
+      if (!GLOBAL_CONTAINER.isRegistered(Authorization as any)) {
+        GLOBAL_CONTAINER.register(Authorization as any, { useToken: LocalPrincipalService })
+      }
     } else {
       // RESOURCE: Remote principal service delegates to CORE
-      GLOBAL_CONTAINER.registerSingleton(Authorization as any, RemotePrincipalImplementation)
+      if (!GLOBAL_CONTAINER.isRegistered(Authorization as any)) {
+        GLOBAL_CONTAINER.registerSingleton(Authorization as any, RemotePrincipalImplementation)
+      }
     }
   }
 
   if (features.commands.enabled) {
     if (features.commands.provider === 'local' || mode === 'CORE') {
       // CORE/STANDALONE: local command execution
-      GLOBAL_CONTAINER.registerSingleton(LocalCommandImplementation)
-      GLOBAL_CONTAINER.register(CommandExecutionPort as any, {
-        useToken: LocalCommandImplementation,
-      })
+      if (!GLOBAL_CONTAINER.isRegistered(LocalCommandImplementation)) {
+        GLOBAL_CONTAINER.registerSingleton(LocalCommandImplementation)
+      }
+      if (!GLOBAL_CONTAINER.isRegistered(CommandExecutionPort as any)) {
+        GLOBAL_CONTAINER.register(CommandExecutionPort as any, {
+          useToken: LocalCommandImplementation,
+        })
+      }
     } else {
       // RESOURCE: remote command execution (delegates to CORE)
-      GLOBAL_CONTAINER.registerSingleton(CommandExecutionPort as any, RemoteCommandImplementation)
+      if (!GLOBAL_CONTAINER.isRegistered(CommandExecutionPort as any)) {
+        GLOBAL_CONTAINER.registerSingleton(CommandExecutionPort as any, RemoteCommandImplementation)
+      }
     }
   }
 
   if (features.chat.enabled) {
     if (mode === 'RESOURCE') {
       // RESOURCE: remote channel management (delegates to CORE)
-      GLOBAL_CONTAINER.registerSingleton(Channels as any, RemoteChannelImplementation)
+      if (!GLOBAL_CONTAINER.isRegistered(Channels as any)) {
+        GLOBAL_CONTAINER.registerSingleton(Channels as any, RemoteChannelImplementation)
+      }
     } else {
       // CORE/STANDALONE: local channel management
-      GLOBAL_CONTAINER.registerSingleton(Channels as any, LocalChannelImplementation)
+      if (!GLOBAL_CONTAINER.isRegistered(Channels as any)) {
+        GLOBAL_CONTAINER.registerSingleton(Channels as any, LocalChannelImplementation)
+      }
     }
-    GLOBAL_CONTAINER.registerSingleton(Chat)
+    if (!GLOBAL_CONTAINER.isRegistered(Chat)) {
+      GLOBAL_CONTAINER.registerSingleton(Chat)
+    }
   }
 
   if (!GLOBAL_CONTAINER.isRegistered(Npcs)) {

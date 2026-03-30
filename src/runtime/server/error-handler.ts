@@ -1,8 +1,18 @@
+import { GLOBAL_CONTAINER } from '../../kernel/di/container'
 import { AppError, isAppError } from '../../kernel/error/app.error'
 import { ErrorOrigin } from '../../kernel/error/common.error-codes'
 import { loggers } from '../../kernel/logger'
+import { EventsAPI } from '../../adapters/contracts/transport/events.api'
 
 import { CommandMetadata } from './decorators/command'
+
+function getServerEvents(): EventsAPI<'server'> | null {
+  if (!GLOBAL_CONTAINER.isRegistered(EventsAPI as any)) {
+    return null
+  }
+
+  return GLOBAL_CONTAINER.resolve(EventsAPI as any) as EventsAPI<'server'>
+}
 
 function normalizeError(error: unknown, origin: ErrorOrigin): AppError {
   if (isAppError(error)) {
@@ -30,16 +40,19 @@ export function handleCommandError(error: unknown, meta: CommandMetadata, player
   })
 
   if (playerId !== null) {
+    const events = getServerEvents()
+    if (!events) return
+
     switch (appError.code) {
       case 'ECONOMY:INSUFFICIENT_FUNDS':
       case 'AUTH:PERMISSION_DENIED':
       case 'AUTH:UNAUTHORIZED':
-        emitNet('chat:addMessage', playerId, {
+        events.emit('chat:addMessage', playerId, {
           args: ['^1Error', appError.message],
         })
         break
       default:
-        emitNet('chat:addMessage', playerId, {
+        events.emit('chat:addMessage', playerId, {
           args: ['^1Error', 'Ha ocurrido un error interno.'],
         })
         break

@@ -1,6 +1,14 @@
 import { initClientCore } from './client-bootstrap'
+import type { OpenCoreClientAdapter } from './adapter'
+import { installClientAdapter } from './adapter/registry'
 import { ClientInitOptions } from './client-runtime'
 import { installClientPlugins } from './library/plugin/install-client-plugins'
+
+let pendingAdapter: OpenCoreClientAdapter | undefined
+
+export function useAdapter(adapter: OpenCoreClientAdapter): void {
+  pendingAdapter = adapter
+}
 
 /**
  * Initialize the OpenCore client framework
@@ -20,6 +28,11 @@ import { installClientPlugins } from './library/plugin/install-client-plugins'
  * ```
  */
 export async function init(options: ClientInitOptions = {}) {
+  if (!options.adapter && pendingAdapter) {
+    options = { ...options, adapter: pendingAdapter }
+  }
+
+  await installClientAdapter(options.adapter)
   await installClientPlugins(options.plugins ?? [], options)
   await initClientCore(options)
 }

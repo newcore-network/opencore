@@ -13,9 +13,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
-    "baseUrl": ".",
-
-    "types": ["@citizenfx/server", "@citizenfx/client", "@types/node"],
+    "types": ["@types/node"],
     "noEmit": true
   },
   "include": ["src", "tests", "examples"],

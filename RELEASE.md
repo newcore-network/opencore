@@ -1,58 +1,22 @@
-## OpenCore Framework v1.0.0-beta.1
+## OpenCore Framework v1.0.5
 
-### Highlights
+### Added
+- Added new client adapter ports for camera, ped, vehicle, progress, spawn, local player, runtime bridge, and WebView integration, with matching node runtime implementations.
+- Added support for WebView chat mode, richer client UI/runtime abstractions, and cleaner adapter-facing contracts/exports.
+- Added server-side improvements for command handling, including command validation, default function parameter support, and standardized system event names.
+- Added more coverage around parallel compute, vehicle modification, vehicle sync state, player state sync, adapters, and command execution flows.
+- Added Husky pre-commit and pre-push hooks for local quality checks.
 
-- Major runtime evolution with channels, RPC/events transport, plugins, and library APIs.
-- Large architecture and cleanup pass across the codebase.
-- Expanded benchmark coverage and refreshed benchmark results for this beta cycle.
-- Clearer separation between public API surface and runtime implementations (ports/contracts vs local/remote implementations).
-- Core runtime primitives are now more explicit and reusable (`BaseEntity`, `Spatial`, `World`, library core).
+### Changed
+- Refactored client services to rely on explicit adapter ports instead of direct runtime assumptions, especially for camera, ped, progress, spawn, and vehicle flows.
+- Refactored logging so logger writes use string log levels and runtime log domain labels are derived dynamically from the active resource.
+- Refactored worker execution to use inline worker scripts with performance tracking in the parallel compute pipeline.
+- Updated package/tooling setup to TypeScript 6 and refreshed package exports, scripts, and dependency configuration.
 
-### New Features
-
-- Channels and chat API ecosystem:
-  - Added a comprehensive channel system (radio, phone, team, admin, proximity).
-  - Added communication controller examples and extensive JSDoc for channel APIs.
-  - Exported channel API ports and removed legacy channel implementation paths.
-- Messaging transport and RPC/events:
-  - Introduced a unified messaging transport architecture with `EventsAPI` and `RpcAPI`.
-  - Added stronger typed runtime contexts for server/client events and RPC.
-  - Added/expanded RPC decorator and handler support (`@OnRPC`) with integration tests.
-- Runtime surface expansion:
-  - Consolidated core concepts around reusable runtime primitives (`BaseEntity`, `Spatial`, `World`) exported from runtime core.
-  - Added Appearance API wrapper for validation/apply/reset flows.
-  - Added Camera and Cinematic services, cinematic builder, and typed lifecycle payloads.
-  - Added ped abstractions (Cfx + Node implementations) and server-side NPC lifecycle APIs.
-  - Added first-class runtime library factories (`createServerLibrary`, `createClientLibrary`) and dedicated library event bus/processors.
-- Public API boundary and port model:
-  - Server public API now explicitly exports API ports (`players.api-port`, `authorization.api-port`, `channel.api-port`) through `runtime/server/api`.
-  - Internal runtime ports were isolated under `ports/internal` (`command-execution`, `player-session-lifecycle`) to mark non-public contracts.
-  - Runtime services were moved toward explicit local/remote implementations under `runtime/server/implementations/*`.
-- Security and validation flow:
-  - Principal/authorization and command/net validation paths were tightened through contract-based security handlers and observers.
-  - Runtime config and validation behavior were expanded and benchmarked (including validation-heavy and error-path scenarios).
-- Plugin model:
-  - Added server plugin kernel MVP with extensible API hooks.
-  - Added client-side plugin system and plugin lifecycle hook after server initialization.
-- Autoload and developer experience:
-  - Added autoload for user server controllers.
-  - Improved client controller autoloading and metadata scanning error handling.
-- Benchmark system:
-  - Added broad benchmark suites for BinaryService, SchemaGenerator, EntitySystem, AppearanceValidation, EventInterceptor, RuntimeConfig.
-  - Added load benchmarks for RPC concurrency, validation, and request lifecycle.
-
-### Breaking Changes
-
-- Service-to-API/implementation migration in multiple modules (notably `*Service` naming changes).
-- Channel/chat APIs were renamed and moved (`ChannelService` -> `Channels`, `ChatService` -> `Chat`, moved to `apis/`).
-- Transport contracts changed from legacy net transport shape to MessagingTransport + Events/RPC APIs.
-- Port/file naming was normalized (`player-directory` -> `players.api-port`, `principal.port` -> `authorization.api-port`, plus related API file renames).
-- Public vs internal contracts are stricter: `api-port` exports are public surface, while `ports/internal/*` are runtime internals and should not be consumed directly.
-- Deprecated methods, stale docs, and obsolete examples were removed.
-- Import paths and shared types were normalized/centralized (including parallel compute types and decorator/binary file naming updates).
+### Fixed
+- Fixed command schema handling so exported/remote commands support default parameters more reliably.
+- Fixed transport/event contract alignment across node events and RPC layers.
+- Fixed several test, lint, and export consistency issues while expanding automated coverage.
 
 ### Notes
-
-This beta is a major milestone for OpenCore: cleaner runtime boundaries, stronger extension points, and richer communication primitives while keeping decorator-driven DX.
-
-Simple CLI context: OpenCore CLI now supports cleaner non-interactive build output for CI environments (for example `opencore build --output=plain`).
+- This release covers the full `master...v1` delta and keeps the release notes compact by grouping related adapter/runtime refactors instead of listing each port separately.

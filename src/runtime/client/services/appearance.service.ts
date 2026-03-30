@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe'
-import { IPedAppearanceClient } from '../../../adapters/contracts/client/IPedAppearanceClient'
+import { IGtaPedAppearanceBridge } from '../../../adapters/contracts/client/IGtaPedAppearanceBridge'
 import { IHasher } from '../../../adapters/contracts/IHasher'
 import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/shared'
 
@@ -25,7 +25,7 @@ import { AppearanceValidationResult, PlayerAppearance } from '../../../kernel/sh
 @injectable()
 export class AppearanceService {
   constructor(
-    @inject(IPedAppearanceClient as any) private pedAdapter: IPedAppearanceClient,
+    @inject(IGtaPedAppearanceBridge as any) private pedAdapter: IGtaPedAppearanceBridge,
     @inject(IHasher as any) private hasher: IHasher,
   ) {}
 
@@ -338,7 +338,10 @@ export class AppearanceService {
    * @param ped - Ped entity handle
    */
   setDefaultAppearance(ped: number): void {
-    this.pedAdapter.setDefaultComponentVariation(ped)
+    const adapter = this.pedAdapter as any
+    if (typeof adapter?.setDefaultComponentVariation === 'function') {
+      adapter.setDefaultComponentVariation(ped)
+    }
   }
 
   /**

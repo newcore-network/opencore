@@ -120,27 +120,25 @@ export abstract class IEntityServer {
    * Sets entity routing bucket (virtual world/dimension).
    *
    * @remarks
-   * Not all platforms support routing buckets.
-   * Use IPlatformCapabilities.supportsRoutingBuckets to check support.
+   * Platform-specific behavior may vary.
    *
    * @param handle - Entity handle
    * @param bucket - Routing bucket ID
    */
-  abstract setRoutingBucket(handle: number, bucket: number): void
+  abstract setDimension(handle: number, bucket: number): void
 
   /**
    * Gets entity routing bucket (virtual world/dimension).
    * @param handle - Entity handle
    * @returns Routing bucket ID (0 is default world)
    */
-  abstract getRoutingBucket(handle: number): number
+  abstract getDimension(handle: number): number
 
   /**
    * Gets the state bag interface for an entity.
    *
    * @remarks
-   * Not all platforms support state bags.
-   * Use IPlatformCapabilities.supportsStateBags to check support.
+   * Platform-specific behavior may vary.
    *
    * @param handle - Entity handle
    */
@@ -173,34 +171,6 @@ export abstract class IEntityServer {
    * @param armor - Armor value
    */
   abstract setArmor(handle: number, armor: number): void
-
-  /**
-   * Gets entity dimension (alias for getRoutingBucket).
-   *
-   * @remarks
-   * This is a cross-platform alias. Some platforms call it "dimension",
-   * others call it "routing bucket" or "virtual world".
-   *
-   * @param handle - Entity handle
-   * @returns Dimension ID
-   */
-  getDimension(handle: number): number {
-    return this.getRoutingBucket(handle)
-  }
-
-  /**
-   * Sets entity dimension (alias for setRoutingBucket).
-   *
-   * @remarks
-   * This is a cross-platform alias. Some platforms call it "dimension",
-   * others call it "routing bucket" or "virtual world".
-   *
-   * @param handle - Entity handle
-   * @param dimension - Dimension ID
-   */
-  setDimension(handle: number, dimension: number): void {
-    this.setRoutingBucket(handle, dimension)
-  }
 }
 
 /**

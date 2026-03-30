@@ -1,6 +1,9 @@
-import { inject, injectable } from 'tsyringe'
+import { inject } from 'tsyringe'
+import { EventsAPI } from '../../../adapters/contracts/transport/events.api'
 import { coreLogger } from '../../../kernel/logger'
+import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { VehicleModificationOptions, VehicleMods } from '../types/vehicle.types'
+import { Bind } from '../decorators/bind'
 import { Vehicles } from './vehicles.api'
 
 /**
@@ -15,9 +18,12 @@ import { Vehicles } from './vehicles.api'
  * - Modification limits
  * - Audit logging
  */
-@injectable()
+@Bind('singleton')
 export class VehicleModification {
-  constructor(@inject(Vehicles) private readonly vehicleService: Vehicles) {}
+  constructor(
+    @inject(Vehicles) private readonly vehicleService: Vehicles,
+    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
+  ) {}
 
   /**
    * Applies modifications to a vehicle with validation.
@@ -66,7 +72,7 @@ export class VehicleModification {
       mods: Object.keys(validatedMods),
     })
 
-    emitNet('opencore:vehicle:modified', -1, {
+    this.events.emit(SYSTEM_EVENTS.vehicle.modified, 'all', {
       networkId,
       mods: validatedMods,
     })
@@ -213,7 +219,7 @@ export class VehicleModification {
 
     coreLogger.info('Vehicle modifications reset', { networkId, requestedBy })
 
-    emitNet('opencore:vehicle:modified', -1, {
+    this.events.emit(SYSTEM_EVENTS.vehicle.modified, 'all', {
       networkId,
       mods: defaultMods,
     })
