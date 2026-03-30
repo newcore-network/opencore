@@ -6,9 +6,9 @@
 [![website](https://img.shields.io/badge/web-opencorejs.dev-black?style=flat-square)](https://opencorejs.dev)
 
 
-# OpenCore Framework - Open Stable beta
+# OpenCore Framework - Stable v1
 
-OpenCore is a TypeScript multiplayer runtime framework targeting CitizenFX runtimes (Cfx) via adapters.
+OpenCore is a TypeScript multiplayer runtime framework targeting CitizenFX runtimes (Cfx/RageMP) via adapters.
 
 It is not a gamemode or RP framework. It provides:
 
@@ -276,12 +276,6 @@ pnpm lint
 pnpm lint:fix
 pnpm format
 ```
-
-## Ecosystem
-
-OpenCore is designed to be extended via separate packages/resources.
-
-- `@open-core/identity`: identity and permission system
 
 ## License
 
