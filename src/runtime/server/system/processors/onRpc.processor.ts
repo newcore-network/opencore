@@ -129,11 +129,25 @@ export class OnRpcProcessor implements DecoratorProcessor {
         throw error
       }
 
-      if (hasNoDeclaredParams) {
-        return handler()
-      }
+      try {
+        if (hasNoDeclaredParams) {
+          return await handler()
+        }
 
-      return handler(player, ...validatedArgs)
+        return await handler(player, ...validatedArgs)
+      } catch (error) {
+        loggers.netEvent.error(
+          `Handler error in RPC`,
+          {
+            event: metadata.eventName,
+            handler: handlerName,
+            playerId: player.clientID,
+            accountId: player.accountID,
+          },
+          error as Error,
+        )
+        throw error
+      }
     })
 
     loggers.netEvent.debug(`Registered RPC: ${metadata.eventName} -> ${handlerName}`)

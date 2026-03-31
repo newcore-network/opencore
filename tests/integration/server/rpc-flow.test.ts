@@ -1,6 +1,8 @@
 import 'reflect-metadata'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
+import { loggers } from '../../../src/kernel/logger'
+import { RpcPublicError } from '../../../src/adapters/contracts/transport/rpc-error'
 import { NodeRpc } from '../../../src/adapters/node/transport/node.rpc'
 import type { RpcHandlerOptions } from '../../../src/runtime/server/decorators/onRPC'
 import { Public } from '../../../src/runtime/server/decorators/public'
@@ -59,6 +61,7 @@ describe('OnRpcProcessor – Server RPC Flow', () => {
     } as any
 
     processor = new OnRpcProcessor(mockPlayerService, rpc)
+    vi.spyOn(loggers.netEvent, 'error').mockImplementation(() => undefined)
   })
 
   afterEach(() => {
@@ -267,6 +270,74 @@ describe('OnRpcProcessor – Server RPC Flow', () => {
       )
 
       expect(instance.handlerCalled).toBe(false)
+    })
+  })
+
+  describe('Handler errors', () => {
+    it('should log and rethrow unexpected handler errors', async () => {
+      class TestController {
+        async handle(_player: Player) {
+          throw new Error('db connection string: secret')
+        }
+      }
+
+      const instance = new TestController()
+      const metadata = buildMeta('rpc:error:unexpected', z.tuple([]), [Player])
+
+      const mockPlayer = createMockPlayer({ clientID: 7, accountID: 'acc-7' })
+      vi.mocked(mockPlayerService.getByClient).mockReturnValue(mockPlayer)
+
+      processor.process(instance, 'handle', metadata)
+
+      const handler = (rpc as any).handlers.get('rpc:error:unexpected')
+
+      await expect(handler({ requestId: 'req-1', clientId: 7 })).rejects.toThrow(
+        'db connection string: secret',
+      )
+
+      expect(loggers.netEvent.error).toHaveBeenCalledWith(
+        'Handler error in RPC',
+        expect.objectContaining({
+          event: 'rpc:error:unexpected',
+          handler: 'TestController.handle',
+          playerId: 7,
+          accountId: 'acc-7',
+        }),
+        expect.any(Error),
+      )
+    })
+
+    it('should log and rethrow public handler errors', async () => {
+      class TestController {
+        async handle(_player: Player) {
+          throw new RpcPublicError('Character not found', 'CharacterLookupError')
+        }
+      }
+
+      const instance = new TestController()
+      const metadata = buildMeta('rpc:error:public', z.tuple([]), [Player])
+
+      const mockPlayer = createMockPlayer({ clientID: 8, accountID: 'acc-8' })
+      vi.mocked(mockPlayerService.getByClient).mockReturnValue(mockPlayer)
+
+      processor.process(instance, 'handle', metadata)
+
+      const handler = (rpc as any).handlers.get('rpc:error:public')
+
+      await expect(handler({ requestId: 'req-2', clientId: 8 })).rejects.toThrow(
+        'Character not found',
+      )
+
+      expect(loggers.netEvent.error).toHaveBeenCalledWith(
+        'Handler error in RPC',
+        expect.objectContaining({
+          event: 'rpc:error:public',
+          handler: 'TestController.handle',
+          playerId: 8,
+          accountId: 'acc-8',
+        }),
+        expect.any(Error),
+      )
     })
   })
 

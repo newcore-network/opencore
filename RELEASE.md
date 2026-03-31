@@ -1,22 +1,20 @@
-## OpenCore Framework v1.0.5
+## OpenCore Framework v1.0.6
 
 ### Added
-- Added new client adapter ports for camera, ped, vehicle, progress, spawn, local player, runtime bridge, and WebView integration, with matching node runtime implementations.
-- Added support for WebView chat mode, richer client UI/runtime abstractions, and cleaner adapter-facing contracts/exports.
-- Added server-side improvements for command handling, including command validation, default function parameter support, and standardized system event names.
-- Added more coverage around parallel compute, vehicle modification, vehicle sync state, player state sync, adapters, and command execution flows.
-- Added Husky pre-commit and pre-push hooks for local quality checks.
+- Added `RpcPublicError` and `serializeRpcError()` for safe RPC error exposure.
+- Added `PUBLIC_RPC_ERROR_MESSAGE` as the default public message for unexpected RPC failures.
+- Added transport exports for RPC error helpers through `src/adapters/contracts/transport`.
+- Added unit and integration coverage for RPC error serialization and server RPC flow logging.
 
 ### Changed
-- Refactored client services to rely on explicit adapter ports instead of direct runtime assumptions, especially for camera, ped, progress, spawn, and vehicle flows.
-- Refactored logging so logger writes use string log levels and runtime log domain labels are derived dynamically from the active resource.
-- Refactored worker execution to use inline worker scripts with performance tracking in the parallel compute pipeline.
-- Updated package/tooling setup to TypeScript 6 and refreshed package exports, scripts, and dependency configuration.
+- Updated server RPC processing to log handler failures with event, handler, player, and account context.
+- Updated RPC handling to preserve explicit public errors while masking unexpected internal errors.
+- Refined the RPC path so invalid payloads and session issues are logged with clearer warnings.
 
 ### Fixed
-- Fixed command schema handling so exported/remote commands support default parameters more reliably.
-- Fixed transport/event contract alignment across node events and RPC layers.
-- Fixed several test, lint, and export consistency issues while expanding automated coverage.
+- Fixed RPC error leakage by sanitizing unexpected exceptions before they are returned to the client.
+- Fixed RPC logger behavior so exposed errors can pass through with their original message and name.
+- Fixed contract alignment across transport, server RPC processing, and test coverage.
 
 ### Notes
-- This release covers the full `master...v1` delta and keeps the release notes compact by grouping related adapter/runtime refactors instead of listing each port separately.
+- This release tracks the `fix/rpc-logger` merge request (#51) and keeps the release note focused on the RPC error-handling changes.
