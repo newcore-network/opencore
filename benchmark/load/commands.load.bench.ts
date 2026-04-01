@@ -141,6 +141,7 @@ describe('Commands Load Benchmarks', () => {
       const timings: number[] = []
       let successCount = 0
       let errorCount = 0
+      const scenarioStart = performance.now()
 
       const promises = players.map(async (player) => {
         const start = performance.now()
@@ -155,6 +156,7 @@ describe('Commands Load Benchmarks', () => {
       })
 
       await Promise.all(promises)
+      const scenarioEnd = performance.now()
 
       const metrics = calculateLoadMetrics(
         timings,
@@ -162,6 +164,7 @@ describe('Commands Load Benchmarks', () => {
         playerCount,
         successCount,
         errorCount,
+        scenarioEnd - scenarioStart,
       )
 
       expect(metrics.successCount).toBe(playerCount)

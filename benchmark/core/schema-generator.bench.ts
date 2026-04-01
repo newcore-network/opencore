@@ -3,7 +3,7 @@ import { Bench } from 'tinybench'
 import { z } from 'zod'
 import { Player } from '../../src/runtime/server/entities/player'
 import { generateSchemaFromTypes } from '../../src/runtime/server/system/schema-generator'
-import { processTupleSchema } from '../../src/runtime/server/helpers/process-tuple-schema'
+import { processTupleSchema } from '../../src/runtime/shared/helpers/process-tuple-schema'
 
 /**
  * Benchmarks for the automatic schema generation system and tuple processing.

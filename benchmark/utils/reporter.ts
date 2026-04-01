@@ -55,6 +55,7 @@ export function generateTextReport(report: BenchmarkReport): string {
       output += `  ${metric.name} (${metric.playerCount} players)\n`
       output += `    Operations:  ${metric.totalOperations} (${metric.successCount} success, ${metric.errorCount} errors)\n`
       output += `    Error Rate:  ${(metric.errorRate * 100).toFixed(2)}%\n`
+      output += `    Duration:    ${formatTime(metric.durationMs)}\n`
       output += `    Mean:        ${formatTime(metric.mean)}\n`
       output += `    Min:         ${formatTime(metric.min)}\n`
       output += `    Max:         ${formatTime(metric.max)}\n`
@@ -62,6 +63,7 @@ export function generateTextReport(report: BenchmarkReport): string {
       output += `    p95:         ${formatTime(metric.p95)}\n`
       output += `    p99:         ${formatTime(metric.p99)}\n`
       output += `    Throughput:  ${formatOpsPerSec(metric.throughput)}\n`
+      output += `    Success/sec: ${formatOpsPerSec(metric.successThroughput)}\n`
       output += '\n'
     }
   }
@@ -225,12 +227,14 @@ function generateLoadSection(metrics: LoadTestMetrics[]): string {
             <th>Operations</th>
             <th>Success</th>
             <th>Errors</th>
-            <th>Error Rate</th>
-            <th>Mean</th>
-            <th>p95</th>
-            <th>p99</th>
-            <th>Throughput</th>
-          </tr>
+             <th>Error Rate</th>
+             <th>Duration</th>
+             <th>Mean</th>
+             <th>p95</th>
+             <th>p99</th>
+             <th>Throughput</th>
+             <th>Success/sec</th>
+           </tr>
         </thead>
         <tbody>
   `
@@ -244,10 +248,12 @@ function generateLoadSection(metrics: LoadTestMetrics[]): string {
             <td class="success">${metric.successCount}</td>
             <td class="error">${metric.errorCount}</td>
             <td class="${metric.errorRate > 0.05 ? 'error' : 'success'}">${(metric.errorRate * 100).toFixed(2)}%</td>
+            <td class="metric-value">${formatTime(metric.durationMs)}</td>
             <td class="metric-value">${formatTime(metric.mean)}</td>
             <td class="metric-value">${formatTime(metric.p95)}</td>
             <td class="metric-value">${formatTime(metric.p99)}</td>
             <td class="metric-value">${formatOpsPerSec(metric.throughput)}</td>
+            <td class="metric-value">${formatOpsPerSec(metric.successThroughput)}</td>
           </tr>
     `
   }

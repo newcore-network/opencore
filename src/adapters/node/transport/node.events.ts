@@ -7,11 +7,27 @@ type NodeTarget = number | number[] | 'all'
 
 export class NodeEvents extends EventsAPI<RuntimeContext> {
   private readonly emitter = new EventEmitter()
+  private readonly asyncHandlers = new Map<
+    string,
+    Set<(ctx: { clientId?: number; raw?: unknown }, ...args: unknown[]) => unknown>
+  >()
 
   on<TArgs extends readonly unknown[]>(
     event: string,
     handler: (ctx: { clientId?: number; raw?: unknown }, ...args: TArgs) => unknown,
   ): void {
+    let handlers = this.asyncHandlers.get(event)
+    if (!handlers) {
+      handlers = new Set()
+      this.asyncHandlers.set(event, handlers)
+    }
+    handlers.add(
+      handler as unknown as (
+        ctx: { clientId?: number; raw?: unknown },
+        ...args: unknown[]
+      ) => unknown,
+    )
+
     this.emitter.on(event, (ctx: { clientId?: number; raw?: unknown }, ...args: unknown[]) => {
       void Promise.resolve(handler(ctx, ...(args as unknown as TArgs))).catch((err) => {
         loggers.netEvent.error(`handler error for '${event}'`, {}, err)
@@ -47,7 +63,24 @@ export class NodeEvents extends EventsAPI<RuntimeContext> {
     this.emitter.emit(event, { clientId, raw: clientId }, ...args)
   }
 
+  async simulateClientEventAsync(
+    event: string,
+    clientId: number,
+    ...args: unknown[]
+  ): Promise<void> {
+    const handlers = this.asyncHandlers.get(event)
+    if (!handlers || handlers.size === 0) {
+      return
+    }
+
+    const ctx = { clientId, raw: clientId }
+    await Promise.allSettled(
+      Array.from(handlers, (handler) => Promise.resolve(handler(ctx, ...args))),
+    )
+  }
+
   clearHandlers(): void {
     this.emitter.removeAllListeners()
+    this.asyncHandlers.clear()
   }
 }

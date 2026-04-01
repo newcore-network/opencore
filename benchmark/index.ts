@@ -74,158 +74,32 @@ async function runCoreBenchmarks(): Promise<BenchmarkMetrics[]> {
 
   const results: BenchmarkMetrics[] = []
 
-  // Metadata Scanner
-  console.log('Running MetadataScanner benchmark...')
-  const scannerBench = await runMetadataScannerBenchmark()
-  await scannerBench.warmup()
-  await scannerBench.run()
-  for (const task of scannerBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
+  const collectResults = async (label: string, createBench: () => Promise<any>) => {
+    console.log(`Running ${label} benchmark...`)
+    const bench = await createBench()
+    await bench.run()
+
+    for (const task of bench.tasks) {
+      if (task.result) {
+        results.push(convertTinybenchResult({ ...task.result, name: task.name }))
+      }
     }
   }
 
-  // Dependency Injection
-  console.log('Running DependencyInjection benchmark...')
-  const diBench = await runDependencyInjectionBenchmark()
-  await diBench.warmup()
-  await diBench.run()
-  for (const task of diBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Validation
-  console.log('Running Validation benchmark...')
-  const validationBench = await runValidationBenchmark()
-  await validationBench.warmup()
-  await validationBench.run()
-  for (const task of validationBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Rate Limiter
-  console.log('Running RateLimiter benchmark...')
-  const rateLimiterBench = await runRateLimiterBenchmark()
-  await rateLimiterBench.warmup()
-  await rateLimiterBench.run()
-  for (const task of rateLimiterBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  console.log('Running AccessControl benchmark...')
-  const accessControlBench = await runAccessControlBenchmark()
-  await accessControlBench.warmup()
-  await accessControlBench.run()
-  for (const task of accessControlBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Event Bus
-  console.log('Running EventBus benchmark...')
-  const eventBusBench = await runEventBusBenchmark()
-  await eventBusBench.warmup()
-  await eventBusBench.run()
-  for (const task of eventBusBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Decorators
-  console.log('Running Decorators benchmark...')
-  const decoratorsBench = await runDecoratorsBenchmark()
-  await decoratorsBench.warmup()
-  await decoratorsBench.run()
-  for (const task of decoratorsBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // ParallelCompute
-  console.log('Running ParallelCompute benchmark...')
-  const parallelBench = await runParallelComputeBenchmark()
-  await parallelBench.warmup()
-  await parallelBench.run()
-  for (const task of parallelBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // BinaryService
-  console.log('Running BinaryService benchmark...')
-  const binaryBench = await runBinaryServiceBenchmark()
-  await binaryBench.warmup()
-  await binaryBench.run()
-  for (const task of binaryBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // SchemaGenerator
-  console.log('Running SchemaGenerator benchmark...')
-  const schemaBench = await runSchemaGeneratorBenchmark()
-  await schemaBench.warmup()
-  await schemaBench.run()
-  for (const task of schemaBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // EntitySystem
-  console.log('Running EntitySystem benchmark...')
-  const entityBench = await runEntitySystemBenchmark()
-  await entityBench.warmup()
-  await entityBench.run()
-  for (const task of entityBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // AppearanceValidation
-  console.log('Running AppearanceValidation benchmark...')
-  const appearanceBench = await runAppearanceValidationBenchmark()
-  await appearanceBench.warmup()
-  await appearanceBench.run()
-  for (const task of appearanceBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // EventInterceptor
-  console.log('Running EventInterceptor benchmark...')
-  const interceptorBench = await runEventInterceptorBenchmark()
-  await interceptorBench.warmup()
-  await interceptorBench.run()
-  for (const task of interceptorBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // RuntimeConfig
-  console.log('Running RuntimeConfig benchmark...')
-  const runtimeBench = await runRuntimeConfigBenchmark()
-  await runtimeBench.warmup()
-  await runtimeBench.run()
-  for (const task of runtimeBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
+  await collectResults('MetadataScanner', runMetadataScannerBenchmark)
+  await collectResults('DependencyInjection', runDependencyInjectionBenchmark)
+  await collectResults('Validation', runValidationBenchmark)
+  await collectResults('RateLimiter', runRateLimiterBenchmark)
+  await collectResults('AccessControl', runAccessControlBenchmark)
+  await collectResults('EventBus', runEventBusBenchmark)
+  await collectResults('Decorators', runDecoratorsBenchmark)
+  await collectResults('ParallelCompute', runParallelComputeBenchmark)
+  await collectResults('BinaryService', runBinaryServiceBenchmark)
+  await collectResults('SchemaGenerator', runSchemaGeneratorBenchmark)
+  await collectResults('EntitySystem', runEntitySystemBenchmark)
+  await collectResults('AppearanceValidation', runAppearanceValidationBenchmark)
+  await collectResults('EventInterceptor', runEventInterceptorBenchmark)
+  await collectResults('RuntimeConfig', runRuntimeConfigBenchmark)
 
   return results
 }
@@ -264,7 +138,8 @@ async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
 
     vitest.on('close', (code) => {
       if (code !== 0) {
-        console.warn(`\n⚠️  Vitest exited with code ${code}`)
+        reject(new Error(`Vitest benchmark project exited with code ${code}`))
+        return
       }
 
       const metrics = readCollectedMetrics()
@@ -273,8 +148,7 @@ async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
     })
 
     vitest.on('error', (err) => {
-      console.error('Error spawning vitest:', err)
-      resolve([])
+      reject(err)
     })
   })
 }
