@@ -1,20 +1,16 @@
-## OpenCore Framework v1.0.6
+## OpenCore Framework v1.0.7
 
 ### Added
 - Added `RpcPublicError` and `serializeRpcError()` for safe RPC error exposure.
-- Added `PUBLIC_RPC_ERROR_MESSAGE` as the default public message for unexpected RPC failures.
-- Added transport exports for RPC error helpers through `src/adapters/contracts/transport`.
-- Added unit and integration coverage for RPC error serialization and server RPC flow logging.
+- Added structured benchmark suites and reporting.
 
 ### Changed
-- Updated server RPC processing to log handler failures with event, handler, player, and account context.
-- Updated RPC handling to preserve explicit public errors while masking unexpected internal errors.
-- Refined the RPC path so invalid payloads and session issues are logged with clearer warnings.
+- Updated server RPC logging and error handling for clearer failures.
+- Updated benchmark metrics to include duration tracking and line-delimited JSON output.
 
 ### Fixed
 - Fixed RPC error leakage by sanitizing unexpected exceptions before they are returned to the client.
-- Fixed RPC logger behavior so exposed errors can pass through with their original message and name.
-- Fixed contract alignment across transport, server RPC processing, and test coverage.
+- Fixed `PlayerPersistenceService` bootstrap so `PlayerPersistenceContract` implementations run on session load.
 
 ### Notes
-- This release tracks the `fix/rpc-logger` merge request (#51) and keeps the release note focused on the RPC error-handling changes.
+- This release tracks the current branch changes for RPC logging, benchmarks, and session persistence.
