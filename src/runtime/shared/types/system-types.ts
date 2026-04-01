@@ -30,6 +30,9 @@ export const SYSTEM_EVENTS = {
   command: {
     execute: systemEvent('command', 'execute'),
   },
+  framework: {
+    dispatch: systemEvent('framework', 'dispatch'),
+  },
   spawner: {
     spawn: systemEvent('spawner', 'spawn'),
     teleport: systemEvent('spawner', 'teleport'),
