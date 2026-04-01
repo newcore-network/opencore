@@ -5,9 +5,11 @@ import { GLOBAL_CONTAINER, MetadataScanner } from '../../kernel/di/index'
 import { getLogLevel, LogLevelLabels, loggers } from '../../kernel/logger'
 import { createNodeServerAdapter } from './adapter/node-server-adapter'
 import { installServerAdapter } from './adapter/registry'
+import { configureFrameworkEventBridge } from './bus/internal-event.bus'
 import { PrincipalProviderContract } from './contracts/index'
 import { BinaryServiceMetadata, getServerBinaryServiceRegistry } from './decorators/binaryService'
 import { getServerControllerRegistry } from './decorators/controller'
+import { Players } from './ports/players.api-port'
 import {
   getFrameworkModeScope,
   type RuntimeContext,
@@ -147,6 +149,14 @@ export async function initServer(
   // 1. Register Core Services (WorldContext, PlayerService, etc.)
   registerServicesServer(ctx)
   loggers.bootstrap.debug('Core services registered')
+
+  configureFrameworkEventBridge({
+    mode: ctx.mode,
+    engineEvents: GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents,
+    players: GLOBAL_CONTAINER.isRegistered(Players as any)
+      ? (GLOBAL_CONTAINER.resolve(Players as any) as Players)
+      : undefined,
+  })
 
   // 2. Load Controllers (Framework & User controllers)
   // This is where user services get registered if they are decorated with @injectable()

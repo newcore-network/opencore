@@ -1,16 +1,10 @@
-## OpenCore Framework v1.0.7
+## OpenCore Framework v1.0.8
 
 ### Added
-- Added `RpcPublicError` and `serializeRpcError()` for safe RPC error exposure.
-- Added structured benchmark suites and reporting.
+- Added framework event bridging from `CORE` to `RESOURCE` for `@OnFrameworkEvent` listeners.
 
 ### Changed
-- Updated server RPC logging and error handling for clearer failures.
-- Updated benchmark metrics to include duration tracking and line-delimited JSON output.
+- Updated `@OnRuntimeEvent` and `@OnFrameworkEvent` documentation to clarify handler arguments and cross-context behavior.
 
 ### Fixed
-- Fixed RPC error leakage by sanitizing unexpected exceptions before they are returned to the client.
-- Fixed `PlayerPersistenceService` bootstrap so `PlayerPersistenceContract` implementations run on session load.
-
-### Notes
-- This release tracks the current branch changes for RPC logging, benchmarks, and session persistence.
+- Fixed `@OnFrameworkEvent` delivery so built-in framework lifecycle events can reach `RESOURCE` listeners with hydrated payloads.
