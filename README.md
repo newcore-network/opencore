@@ -227,34 +227,37 @@ Note: `pnpm test` does not run benchmarks.
 
 ## Benchmarks
 
-There are two benchmark suites:
-
-- Core benchmarks (Tinybench)
-- Load benchmarks (Vitest project `benchmark`)
+Benchmarks are split by value, so the default run focuses on framework features that matter for real servers.
 
 ```bash
-pnpm bench:core
+pnpm bench
+pnpm bench:value
+pnpm bench:gold
+pnpm bench:startup
+pnpm bench:diagnostic
+pnpm bench:soak
 pnpm bench:load
 pnpm bench:all
 ```
 
+- `bench` / `bench:value`: value-focused suite. Commands, net events, RPC, lifecycle, ticks, binary path, bootstrap.
+- `bench:gold`: hot-path load scenarios only.
+- `bench:startup`: startup and registration cost.
+- `bench:diagnostic`: internal and low-level synthetic benchmarks.
+- `bench:soak`: long-running stress scenario.
+
 ### Snapshot (latest local run)
 
-These values are a small extract from the latest local run (`1.0.0-beta.1`, Feb 26, 2026). Results vary by machine.
+Use `benchmark/reports/` as the source of truth. Results vary by machine and should be compared relatively, not treated as product guarantees.
 
-- **Core**
-  - BinaryService - classify response type: `~18.25M ops/sec` (mean `~0.055μs`, p95 `~0.076μs`)
-  - EventInterceptor - getStatistics (1000 events): `~17.78M ops/sec` (mean `~0.056μs`)
-  - RuntimeConfig - resolve CORE mode: `~10.49M ops/sec` (mean `~0.095μs`)
-  - Decorators - define metadata (Command): `~6.92M ops/sec` (mean `~0.145μs`)
-  - EventBus - multiple event types: `~2.57M ops/sec` (mean `~0.390μs`)
-  - DI - resolve simple service: `~1.78M ops/sec` (mean `~0.560μs`)
-- **Load**
-  - Commands - 500 players (validated): `~4.78M ops/sec` (p95 `~0.008ms`)
-  - Pipeline - validated (500 players): `~4.79M ops/sec` (p95 `~0.024ms`)
-  - Pipeline - full (500 players): `~2.34M ops/sec` (p95 `~0.011ms`)
-  - RPC - schema generation complex (500 methods): `~705K ops/sec` (p95 `~0.335ms`)
-  - Commands - 500 players (concurrent): `~6.31K ops/sec` (p95 `~76.00ms`)
+- Primary benchmark targets:
+  - full command execution
+  - full net event handling
+  - RPC processing
+  - player lifecycle churn
+  - tick budget impact
+  - bootstrap cost
+  - binary transport cost
 
 Full reports and methodology are available in benchmark/README.md.
 

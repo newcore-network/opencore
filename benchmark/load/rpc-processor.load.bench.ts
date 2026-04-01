@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { Player } from '../../src/runtime/server/entities/player'
 import { generateSchemaFromTypes } from '../../src/runtime/server/system/schema-generator'
-import { processTupleSchema } from '../../src/runtime/server/helpers/process-tuple-schema'
+import { processTupleSchema } from '../../src/runtime/shared/helpers/process-tuple-schema'
 import { getAllScenarios } from '../utils/load-scenarios'
 import { calculateLoadMetrics, reportLoadMetric } from '../utils/metrics'
 
@@ -183,6 +183,7 @@ describe('RPC Processor Load Benchmarks', () => {
     for (const count of scenarios) {
       it(`Concurrent ${count} RPCs (Promise.all)`, async () => {
         const timings: number[] = []
+        const scenarioStart = performance.now()
 
         const rpcs = Array.from({ length: count }, (_, i) => {
           return async () => {
@@ -198,6 +199,7 @@ describe('RPC Processor Load Benchmarks', () => {
         })
 
         await Promise.all(rpcs.map((fn) => fn()))
+        const scenarioEnd = performance.now()
 
         const metrics = calculateLoadMetrics(
           timings,
@@ -205,6 +207,7 @@ describe('RPC Processor Load Benchmarks', () => {
           count,
           count,
           0,
+          scenarioEnd - scenarioStart,
         )
         expect(metrics.successCount).toBe(count)
         reportLoadMetric(metrics)

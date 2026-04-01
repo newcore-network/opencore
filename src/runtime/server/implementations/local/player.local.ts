@@ -16,6 +16,49 @@ import { PlayerSessionLifecyclePort } from '../../ports/internal/player-session-
 import { PlayerSession } from '../../types/player-session.types'
 import { LinkedID } from '../../services'
 
+class NoopPlayerLifecycleServer extends IPlayerLifecycleServer {
+  spawn(): void {}
+  teleport(): void {}
+  respawn(): void {}
+}
+
+class NoopPlayerStateSyncServer extends IPlayerStateSyncServer {
+  getHealth(): number {
+    return 200
+  }
+
+  setHealth(): void {}
+
+  getArmor(): number {
+    return 0
+  }
+
+  setArmor(): void {}
+}
+
+const DEFAULT_PLATFORM_CONTEXT: IPlatformContext = {
+  platformName: 'node',
+  displayName: 'Node.js',
+  identifierTypes: ['license'],
+  maxPlayers: undefined,
+  gameProfile: 'common',
+  defaultSpawnModel: 'mp_m_freemode_01',
+  defaultVehicleType: 'automobile',
+  enableServerVehicleCreation: true,
+}
+
+function isEntityServer(value: unknown): value is IEntityServer {
+  return (
+    !!value && typeof value === 'object' && typeof (value as IEntityServer).getCoords === 'function'
+  )
+}
+
+function isEventsAPI(value: unknown): value is EventsAPI<'server'> {
+  return (
+    !!value && typeof value === 'object' && typeof (value as EventsAPI<'server'>).on === 'function'
+  )
+}
+
 /**
  * Service responsible for managing the lifecycle of player sessions.
  * It acts as the central registry for all connected players, mapping FiveM client IDs
@@ -34,23 +77,68 @@ export class LocalPlayerImplementation implements Players, PlayerSessionLifecycl
     @inject(IPlayerInfo as any) private readonly playerInfo: IPlayerInfo,
     @inject(IPlayerServer as any) private readonly playerServer: IPlayerServer,
     @inject(IPlayerLifecycleServer as any)
-    private readonly playerLifecycle: IPlayerLifecycleServer,
+    private readonly playerLifecycle?: IPlayerLifecycleServer,
     @inject(IPlayerStateSyncServer as any)
-    private readonly playerStateSync: IPlayerStateSyncServer,
-    @inject(IEntityServer as any) private readonly entityServer: IEntityServer,
-    @inject(EventsAPI as any) private readonly events: EventsAPI<'server'>,
+    private readonly playerStateSync?: IPlayerStateSyncServer,
+    @inject(IEntityServer as any) private readonly entityServer?: IEntityServer,
+    @inject(EventsAPI as any) private readonly events?: EventsAPI<'server'>,
     @inject(IPlatformContext as any)
-    private readonly platformContext: IPlatformContext,
+    private readonly platformContext?: IPlatformContext,
   ) {
-    const defaultSpawnModel = this.platformContext.defaultSpawnModel
+    let resolvedPlayerLifecycle = this.playerLifecycle
+    let resolvedPlayerStateSync = this.playerStateSync
+    let resolvedEntityServer = this.entityServer
+    let resolvedEvents = this.events
+
+    // Backward compatibility for tests/benchmarks still using the old 5-arg constructor.
+    if (
+      !resolvedEntityServer &&
+      isEntityServer(resolvedPlayerLifecycle) &&
+      isEventsAPI(resolvedPlayerStateSync)
+    ) {
+      resolvedEntityServer = resolvedPlayerLifecycle
+      resolvedEvents = resolvedPlayerStateSync
+      resolvedPlayerLifecycle = new NoopPlayerLifecycleServer()
+      resolvedPlayerStateSync = new NoopPlayerStateSyncServer()
+    }
+
+    resolvedPlayerLifecycle ??= new NoopPlayerLifecycleServer()
+    resolvedPlayerStateSync ??= new NoopPlayerStateSyncServer()
+    resolvedEntityServer ??= {
+      doesExist: () => true,
+      getCoords: () => ({ x: 0, y: 0, z: 0 }),
+      setCoords: () => {},
+      setPosition: () => {},
+      getHeading: () => 0,
+      setHeading: () => {},
+      getModel: () => 0,
+      delete: () => {},
+      setOrphanMode: () => {},
+      setDimension: () => {},
+      getDimension: () => 0,
+      getStateBag: () => ({
+        set: () => undefined,
+        get: () => undefined,
+      }),
+      getHealth: () => 200,
+      setHealth: () => {},
+      getArmor: () => 0,
+      setArmor: () => {},
+    }
+    resolvedEvents ??= {
+      on: () => {},
+      emit: () => {},
+    } as EventsAPI<'server'>
+
+    const defaultSpawnModel = (this.platformContext ?? DEFAULT_PLATFORM_CONTEXT).defaultSpawnModel
 
     this.playerAdapters = {
       playerInfo: this.playerInfo,
       playerServer: this.playerServer,
-      playerLifecycle: this.playerLifecycle,
-      playerStateSync: this.playerStateSync,
-      entityServer: this.entityServer,
-      events: this.events,
+      playerLifecycle: resolvedPlayerLifecycle,
+      playerStateSync: resolvedPlayerStateSync,
+      entityServer: resolvedEntityServer,
+      events: resolvedEvents,
       defaultSpawnModel,
     }
   }

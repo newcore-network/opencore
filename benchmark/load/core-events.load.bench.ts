@@ -102,6 +102,7 @@ describe('Core Events Load Benchmarks', () => {
       const players = PlayerFactory.createPlayers(playerCount)
       const timings: number[] = []
       let successCount = 0
+      const scenarioStart = performance.now()
 
       const promises = players.map(async (player) => {
         const start = performance.now()
@@ -115,6 +116,7 @@ describe('Core Events Load Benchmarks', () => {
       })
 
       await Promise.all(promises)
+      const scenarioEnd = performance.now()
 
       unsubscribe()
 
@@ -124,6 +126,7 @@ describe('Core Events Load Benchmarks', () => {
         playerCount,
         successCount,
         0,
+        scenarioEnd - scenarioStart,
       )
 
       expect(handlerCallCount).toBe(playerCount)

@@ -1,11 +1,12 @@
 export interface BenchmarkMetrics {
   name: string
+  suite: 'startup' | 'diagnostic'
   iterations: number
   mean: number
   min: number
   max: number
   median: number
-  p95: number
+  p75: number
   p99: number
   stdDev: number
   opsPerSec: number
@@ -14,11 +15,13 @@ export interface BenchmarkMetrics {
 
 export interface LoadTestMetrics {
   name: string
+  suite: 'gold' | 'startup' | 'diagnostic' | 'soak'
   playerCount: number
   totalOperations: number
   successCount: number
   errorCount: number
   timings: number[]
+  durationMs: number
   mean: number
   min: number
   max: number
@@ -26,7 +29,16 @@ export interface LoadTestMetrics {
   p95: number
   p99: number
   throughput: number
+  successThroughput: number
   errorRate: number
+}
+
+function getCurrentLoadSuite(): LoadTestMetrics['suite'] {
+  const suite = process.env.BENCHMARK_SUITE
+  if (suite === 'gold' || suite === 'startup' || suite === 'diagnostic' || suite === 'soak') {
+    return suite
+  }
+  return 'diagnostic'
 }
 
 export function calculateMetrics(timings: number[], name: string): BenchmarkMetrics {
@@ -49,12 +61,13 @@ export function calculateMetrics(timings: number[], name: string): BenchmarkMetr
 
   return {
     name,
+    suite: 'diagnostic',
     iterations: timings.length,
     mean,
     min,
     max,
     median,
-    p95,
+    p75: percentile(sorted, 75),
     p99,
     stdDev,
     opsPerSec,
@@ -68,15 +81,21 @@ export function calculateLoadMetrics(
   playerCount: number,
   successCount: number,
   errorCount: number,
+  totalDurationMs?: number,
 ): LoadTestMetrics {
+  const totalOperations = successCount + errorCount
+  const durationMs = totalDurationMs ?? timings.reduce((acc, timing) => acc + timing, 0)
+
   if (timings.length === 0) {
     return {
       name,
+      suite: getCurrentLoadSuite(),
       playerCount,
-      totalOperations: successCount + errorCount,
+      totalOperations,
       successCount,
       errorCount,
       timings: [],
+      durationMs,
       mean: 0,
       min: 0,
       max: 0,
@@ -84,7 +103,8 @@ export function calculateLoadMetrics(
       p95: 0,
       p99: 0,
       throughput: 0,
-      errorRate: errorCount / (successCount + errorCount) || 0,
+      successThroughput: 0,
+      errorRate: errorCount / totalOperations || 0,
     }
   }
 
@@ -97,16 +117,19 @@ export function calculateLoadMetrics(
   const p95 = percentile(sorted, 95)
   const p99 = percentile(sorted, 99)
 
-  const totalTime = Math.max(...timings)
-  const throughput = (successCount / totalTime) * 1000
+  const safeDurationMs = durationMs > 0 ? durationMs : sum
+  const throughput = (totalOperations / safeDurationMs) * 1000
+  const successThroughput = (successCount / safeDurationMs) * 1000
 
   return {
     name,
+    suite: getCurrentLoadSuite(),
     playerCount,
-    totalOperations: successCount + errorCount,
+    totalOperations,
     successCount,
     errorCount,
     timings: sorted,
+    durationMs: safeDurationMs,
     mean,
     min,
     max,
@@ -114,7 +137,8 @@ export function calculateLoadMetrics(
     p95,
     p99,
     throughput,
-    errorRate: errorCount / (successCount + errorCount) || 0,
+    successThroughput,
+    errorRate: errorCount / totalOperations || 0,
   }
 }
 

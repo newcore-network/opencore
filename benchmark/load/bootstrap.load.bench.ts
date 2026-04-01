@@ -47,6 +47,24 @@ describe('Bootstrap Load Benchmarks', () => {
   let commandService: LocalCommandImplementation
   let processor: CommandProcessor
 
+  function collectScanMetrics(name: string, controllers: Array<new (...args: any[]) => object>, iterations = 5) {
+    const timings: number[] = []
+
+    for (let i = 0; i < iterations; i++) {
+      commandService = new LocalCommandImplementation()
+      processor = new CommandProcessor(commandService)
+      const scanner = new MetadataScanner([processor])
+
+      const start = performance.now()
+      scanner.scan(controllers)
+      const end = performance.now()
+
+      timings.push(end - start)
+    }
+
+    return calculateLoadMetrics(timings, name, controllers.length, iterations, 0)
+  }
+
   beforeEach(() => {
     resetCitizenFxMocks()
 
@@ -55,79 +73,44 @@ describe('Bootstrap Load Benchmarks', () => {
   })
 
   it('Bootstrap - Scan 1 controller', async () => {
-    const scanner = new MetadataScanner([processor])
+    const metrics = collectScanMetrics('Bootstrap - 1 controller', [TestController1])
 
-    const start = performance.now()
-    scanner.scan([TestController1])
-    const end = performance.now()
-
-    const timing = end - start
-    expect(timing).toBeLessThan(100)
-
-    console.log(`[LOAD] Bootstrap - 1 controller: ${timing.toFixed(2)}ms`)
+    expect(metrics.successCount).toBeGreaterThan(0)
+    reportLoadMetric(metrics)
   })
 
   it('Bootstrap - Scan 3 controllers', async () => {
-    const scanner = new MetadataScanner([processor])
+    const metrics = collectScanMetrics('Bootstrap - 3 controllers', [
+      TestController1,
+      TestController2,
+      TestController3,
+    ])
 
-    const start = performance.now()
-    scanner.scan([TestController1, TestController2, TestController3])
-    const end = performance.now()
-
-    const timing = end - start
-    expect(timing).toBeLessThan(200)
-
-    console.log(`[LOAD] Bootstrap - 3 controllers: ${timing.toFixed(2)}ms`)
+    expect(metrics.successCount).toBeGreaterThan(0)
+    reportLoadMetric(metrics)
   })
 
   it('Bootstrap - Scan 10 controllers (simulated)', async () => {
-    const scanner = new MetadataScanner([processor])
-
     const controllers = Array.from({ length: 10 }, () => TestController1)
+    const metrics = collectScanMetrics('Bootstrap - 10 controllers', controllers)
 
-    const start = performance.now()
-    scanner.scan(controllers)
-    const end = performance.now()
-
-    const timing = end - start
-    expect(timing).toBeLessThan(500)
-
-    console.log(`[LOAD] Bootstrap - 10 controllers: ${timing.toFixed(2)}ms`)
+    expect(metrics.successCount).toBeGreaterThan(0)
+    reportLoadMetric(metrics)
   })
 
   it('Bootstrap - Scan 50 controllers (simulated)', async () => {
-    const scanner = new MetadataScanner([processor])
-
     const controllers = Array.from({ length: 50 }, () => TestController1)
+    const metrics = collectScanMetrics('Bootstrap - 50 controllers', controllers)
 
-    const start = performance.now()
-    scanner.scan(controllers)
-    const end = performance.now()
-
-    const timing = end - start
-    expect(timing).toBeLessThan(2000)
-
-    console.log(`[LOAD] Bootstrap - 50 controllers: ${timing.toFixed(2)}ms`)
+    expect(metrics.successCount).toBeGreaterThan(0)
+    reportLoadMetric(metrics)
   })
 
   it('Bootstrap - Scan 100 controllers (simulated)', async () => {
-    const scanner = new MetadataScanner([processor])
-
     const controllers = Array.from({ length: 100 }, () => TestController1)
+    const metrics = collectScanMetrics('Bootstrap - 100 controllers', controllers)
 
-    const timings: number[] = []
-    const iterations = 5
-
-    for (let i = 0; i < iterations; i++) {
-      const start = performance.now()
-      scanner.scan(controllers)
-      const end = performance.now()
-      timings.push(end - start)
-    }
-
-    const metrics = calculateLoadMetrics(timings, 'Bootstrap - 100 controllers', 100, iterations, 0)
-
-    expect(metrics.mean).toBeLessThan(5000)
+    expect(metrics.successCount).toBeGreaterThan(0)
 
     reportLoadMetric(metrics)
   })
