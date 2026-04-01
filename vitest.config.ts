@@ -47,8 +47,48 @@ export default defineConfig({
       },
       {
         test: {
-          name: 'benchmark',
-          include: ['benchmark/load/**/*.load.bench.ts'],
+          name: 'benchmark-gold',
+          include: [
+            'benchmark/load/command-full.load.bench.ts',
+            'benchmark/load/net-events-full.load.bench.ts',
+            'benchmark/load/rpc-processor.load.bench.ts',
+            'benchmark/load/player-lifecycle.load.bench.ts',
+            'benchmark/load/tick.load.bench.ts',
+            'benchmark/load/binary-service.load.bench.ts',
+          ],
+          setupFiles: ['./tests/setup.ts'],
+          globals: true,
+        },
+      },
+      {
+        test: {
+          name: 'benchmark-startup',
+          include: ['benchmark/load/bootstrap.load.bench.ts'],
+          setupFiles: ['./tests/setup.ts'],
+          globals: true,
+        },
+      },
+      {
+        test: {
+          name: 'benchmark-diagnostic',
+          include: [
+            'benchmark/load/commands.load.bench.ts',
+            'benchmark/load/net-events.load.bench.ts',
+            'benchmark/load/pipeline.load.bench.ts',
+            'benchmark/load/core-events.load.bench.ts',
+            'benchmark/load/guards.load.bench.ts',
+            'benchmark/load/services.load.bench.ts',
+            'benchmark/load/player-manager.load.bench.ts',
+            'benchmark/load/throttle.load.bench.ts',
+          ],
+          setupFiles: ['./tests/setup.ts'],
+          globals: true,
+        },
+      },
+      {
+        test: {
+          name: 'benchmark-soak',
+          include: ['benchmark/load/stress-test.load.bench.ts'],
           setupFiles: ['./tests/setup.ts'],
           globals: true,
         },

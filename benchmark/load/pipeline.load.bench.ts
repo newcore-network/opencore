@@ -240,14 +240,6 @@ describe('Pipeline Load Benchmarks', () => {
     it(`Pipeline - ${playerCount} players, full pipeline (Command → Guard → Service → EventBus → Zod → Response)`, async () => {
       const players = PlayerFactory.createPlayers(playerCount, { rank: 1 })
       const timings: number[] = []
-      const stageTimings = {
-        commandLookup: [] as number[],
-        zodValidation: [] as number[],
-        guardCheck: [] as number[],
-        serviceExecution: [] as number[],
-        eventBusEmit: [] as number[],
-        total: [] as number[],
-      }
 
       for (const player of players) {
         if (player.accountID) {
@@ -259,43 +251,13 @@ describe('Pipeline Load Benchmarks', () => {
         }
       }
 
+      const initialEmissions = eventBusEmissions
+
       for (const player of players) {
-        const totalStart = performance.now()
-
-        const lookupStart = performance.now()
-        const entry = (commandService as any).commands.get('full')
-        const lookupEnd = performance.now()
-        stageTimings.commandLookup.push(lookupEnd - lookupStart)
-
-        if (!entry) continue
-
-        const zodStart = performance.now()
-        let validatedArgs: any[] = ['100', '200']
-        try {
-          const result = await transferSchema.parseAsync(['100', '200'])
-          validatedArgs = Array.isArray(result) ? result : [result]
-        } catch (error) {
-          // ignore errors
-        }
-        const zodEnd = performance.now()
-        stageTimings.zodValidation.push(zodEnd - zodStart)
-
-        const guardStart = performance.now()
-        await accessControl.enforce(player, { rank: 1 })
-        const guardEnd = performance.now()
-        stageTimings.guardCheck.push(guardEnd - guardStart)
-
-        const serviceStart = performance.now()
-        const [amount, targetId] = validatedArgs
-        await testService.processTransfer(player, amount, targetId)
-        const serviceEnd = performance.now()
-        stageTimings.serviceExecution.push(serviceEnd - serviceStart)
-
-        stageTimings.eventBusEmit.push(0.1)
-
-        const totalEnd = performance.now()
-        stageTimings.total.push(totalEnd - totalStart)
-        timings.push(totalEnd - totalStart)
+        const start = performance.now()
+        await commandService.execute(player, 'full', ['100', '200'])
+        const end = performance.now()
+        timings.push(end - start)
       }
 
       const totalMetrics = calculateLoadMetrics(
@@ -306,59 +268,9 @@ describe('Pipeline Load Benchmarks', () => {
         0,
       )
 
-      const stageMetrics = {
-        commandLookup: calculateLoadMetrics(
-          stageTimings.commandLookup,
-          'Stage - Command Lookup',
-          playerCount,
-          playerCount,
-          0,
-        ),
-        zodValidation: calculateLoadMetrics(
-          stageTimings.zodValidation,
-          'Stage - Zod Validation',
-          playerCount,
-          playerCount,
-          0,
-        ),
-        guardCheck: calculateLoadMetrics(
-          stageTimings.guardCheck,
-          'Stage - Guard Check',
-          playerCount,
-          playerCount,
-          0,
-        ),
-        serviceExecution: calculateLoadMetrics(
-          stageTimings.serviceExecution,
-          'Stage - Service Execution',
-          playerCount,
-          playerCount,
-          0,
-        ),
-        eventBusEmit: calculateLoadMetrics(
-          stageTimings.eventBusEmit,
-          'Stage - EventBus Emit',
-          playerCount,
-          playerCount,
-          0,
-        ),
-      }
-
       expect(totalMetrics.successCount).toBe(playerCount)
+      expect(eventBusEmissions - initialEmissions).toBe(playerCount)
       reportLoadMetric(totalMetrics)
-      console.log(
-        `  └─ Command Lookup: ${stageMetrics.commandLookup.mean.toFixed(2)}ms (${(stageMetrics.commandLookup.mean / totalMetrics.mean) * 100}%)`,
-      )
-      console.log(
-        `  └─ Zod Validation: ${stageMetrics.zodValidation.mean.toFixed(2)}ms (${(stageMetrics.zodValidation.mean / totalMetrics.mean) * 100}%)`,
-      )
-      console.log(
-        `  └─ Guard Check: ${stageMetrics.guardCheck.mean.toFixed(2)}ms (${(stageMetrics.guardCheck.mean / totalMetrics.mean) * 100}%)`,
-      )
-      console.log(
-        `  └─ Service Execution: ${stageMetrics.serviceExecution.mean.toFixed(2)}ms (${(stageMetrics.serviceExecution.mean / totalMetrics.mean) * 100}%)`,
-      )
-      console.log(`  └─ EventBus Emit: ${stageMetrics.eventBusEmit.mean.toFixed(2)}ms`)
     })
   }
 })

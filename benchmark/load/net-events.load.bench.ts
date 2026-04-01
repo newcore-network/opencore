@@ -81,7 +81,7 @@ describe('Net Events Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          nodeEvents.simulateClientEvent('test:event', player.clientID, {
+          await nodeEvents.simulateClientEventAsync('test:event', player.clientID, {
             action: 'transfer',
             amount: 100,
             targetId: 123,
@@ -119,11 +119,12 @@ describe('Net Events Load Benchmarks', () => {
       const timings: number[] = []
       let successCount = 0
       let errorCount = 0
+      const scenarioStart = performance.now()
 
       const promises = players.map(async (player) => {
         const start = performance.now()
         try {
-          nodeEvents.simulateClientEvent('test:event', player.clientID, {
+          await nodeEvents.simulateClientEventAsync('test:event', player.clientID, {
             action: 'transfer',
             amount: 100,
             targetId: 123,
@@ -137,6 +138,7 @@ describe('Net Events Load Benchmarks', () => {
       })
 
       await Promise.all(promises)
+      const scenarioEnd = performance.now()
 
       const metrics = calculateLoadMetrics(
         timings,
@@ -144,6 +146,7 @@ describe('Net Events Load Benchmarks', () => {
         playerCount,
         successCount,
         errorCount,
+        scenarioEnd - scenarioStart,
       )
 
       expect(metrics.errorRate).toBeLessThan(0.1)

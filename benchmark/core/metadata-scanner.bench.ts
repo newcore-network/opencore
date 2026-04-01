@@ -2,6 +2,7 @@ import { Bench } from 'tinybench'
 import { container, injectable } from 'tsyringe'
 import type { DecoratorProcessor } from '../../src/kernel/di/decorator-processor'
 import { MetadataScanner } from '../../src/kernel/di/metadata.scanner'
+import { loggers } from '../../src/kernel/logger'
 import { METADATA_KEYS } from '../../src/runtime/server/system/metadata-server.keys'
 import { resetContainer } from '../../tests/helpers/di.helper'
 
@@ -60,6 +61,9 @@ defineCommandMeta(TestController1.prototype, 'method3', 'test3')
 defineCommandMeta(TestController2.prototype, 'method1', 'test4')
 defineCommandMeta(TestController2.prototype, 'method2', 'test5')
 defineCommandMeta(TestController3.prototype, 'method1', 'test6')
+
+loggers.scanner.info = () => {}
+loggers.scanner.debug = () => {}
 
 export async function runMetadataScannerBenchmark(): Promise<Bench> {
   const bench = new Bench({ time: 1000 })

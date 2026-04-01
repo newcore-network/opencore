@@ -38,211 +38,138 @@ function percentileHelper(sorted: number[], p: number): number {
 }
 
 function convertTinybenchResult(result: any): BenchmarkMetrics {
-  const samples = result.samples || []
-  const sorted = [...samples].sort((a: number, b: number) => a - b)
+  const latency = result.latency
+  const throughput = result.throughput
+  const samples = latency?.samples || []
+
+  if (!latency || !throughput) {
+    return {
+      name: result.name || 'unknown',
+      suite: 'diagnostic',
+      iterations: 0,
+      mean: 0,
+      min: 0,
+      max: 0,
+      median: 0,
+      p75: 0,
+      p99: 0,
+      stdDev: 0,
+      opsPerSec: 0,
+      totalTime: result.totalTime || 0,
+    }
+  }
 
   return {
     name: result.name || 'unknown',
-    iterations: samples.length,
-    mean: result.mean || 0,
-    min: result.min || 0,
-    max: result.max || 0,
-    median: percentileHelper(sorted, 50),
-    p95: percentileHelper(sorted, 95),
-    p99: percentileHelper(sorted, 99),
-    stdDev: result.sd || 0,
-    opsPerSec: result.mean ? 1000 / result.mean : 0,
+    suite: 'diagnostic',
+    iterations: latency.samplesCount || 0,
+    mean: latency.mean || 0,
+    min: latency.min || 0,
+    max: latency.max || 0,
+    median: latency.p50 || percentileHelper(samples, 50),
+    p75: latency.p75 || percentileHelper(samples, 75),
+    p99: latency.p99 || percentileHelper(samples, 99),
+    stdDev: latency.sd || 0,
+    opsPerSec: throughput.mean || 0,
     totalTime: result.totalTime || 0,
   }
 }
 
 const args = process.argv.slice(2)
-const runCore = args.includes('--core') || args.includes('--all')
-const runLoad = args.includes('--load') || args.includes('--all')
 const runAll = args.includes('--all')
+const runValue = args.includes('--value')
+const runStartup = args.includes('--startup')
+const runDiagnostic = args.includes('--diagnostic')
+const runLegacyCore = args.includes('--core')
+const runLegacyLoad = args.includes('--load')
 
-if (!runCore && !runLoad && !runAll) {
+const shouldRunStartupCore = runAll || runValue || runStartup
+const shouldRunDiagnosticCore = runAll || runDiagnostic || runLegacyCore
+const loadProjects = [
+  ...(runAll || runValue || runLegacyLoad
+    ? [{ project: 'benchmark-gold', suite: 'gold' as const }]
+    : []),
+  ...(runAll || runValue || runStartup
+    ? [{ project: 'benchmark-startup', suite: 'startup' as const }]
+    : []),
+  ...(runAll || runDiagnostic
+    ? [{ project: 'benchmark-diagnostic', suite: 'diagnostic' as const }]
+    : []),
+  ...(runAll ? [{ project: 'benchmark-soak', suite: 'soak' as const }] : []),
+]
+
+if (!runValue && !runStartup && !runDiagnostic && !runLegacyCore && !runLegacyLoad && !runAll) {
   console.log('Usage:')
-  console.log('  --core    Run core benchmarks (Tinybench)')
-  console.log('  --load    Run load benchmarks (Vitest)')
-  console.log('  --all     Run all benchmarks')
+  console.log('  --value        Run value-focused framework benchmarks')
+  console.log('  --startup      Run startup/bootstrap benchmarks')
+  console.log('  --diagnostic   Run low-level diagnostic benchmarks')
+  console.log('  --load         Run gold + startup load benchmarks')
+  console.log('  --core         Run diagnostic core benchmarks')
+  console.log('  --all          Run all benchmark suites')
   process.exit(0)
 }
 
-async function runCoreBenchmarks(): Promise<BenchmarkMetrics[]> {
-  console.log('\n🔬 Running Core Benchmarks (Tinybench)...\n')
+async function runCoreBenchmarks(
+  suite: 'startup' | 'diagnostic',
+): Promise<BenchmarkMetrics[]> {
+  console.log(`\n🔬 Running ${suite === 'startup' ? 'Startup' : 'Diagnostic'} Core Benchmarks (Tinybench)...\n`)
 
   const results: BenchmarkMetrics[] = []
 
-  // Metadata Scanner
-  console.log('Running MetadataScanner benchmark...')
-  const scannerBench = await runMetadataScannerBenchmark()
-  await scannerBench.warmup()
-  await scannerBench.run()
-  for (const task of scannerBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
+  const collectResults = async (label: string, createBench: () => Promise<any>) => {
+    console.log(`Running ${label} benchmark...`)
+    const bench = await createBench()
+    await bench.run()
+
+    for (const task of bench.tasks) {
+      if (task.result) {
+        results.push({ ...convertTinybenchResult({ ...task.result, name: task.name }), suite })
+      }
     }
   }
 
-  // Dependency Injection
-  console.log('Running DependencyInjection benchmark...')
-  const diBench = await runDependencyInjectionBenchmark()
-  await diBench.warmup()
-  await diBench.run()
-  for (const task of diBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
+  if (suite === 'startup') {
+    await collectResults('MetadataScanner', runMetadataScannerBenchmark)
+    await collectResults('DependencyInjection', runDependencyInjectionBenchmark)
+    await collectResults('SchemaGenerator', runSchemaGeneratorBenchmark)
+    return results
   }
 
-  // Validation
-  console.log('Running Validation benchmark...')
-  const validationBench = await runValidationBenchmark()
-  await validationBench.warmup()
-  await validationBench.run()
-  for (const task of validationBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Rate Limiter
-  console.log('Running RateLimiter benchmark...')
-  const rateLimiterBench = await runRateLimiterBenchmark()
-  await rateLimiterBench.warmup()
-  await rateLimiterBench.run()
-  for (const task of rateLimiterBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  console.log('Running AccessControl benchmark...')
-  const accessControlBench = await runAccessControlBenchmark()
-  await accessControlBench.warmup()
-  await accessControlBench.run()
-  for (const task of accessControlBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Event Bus
-  console.log('Running EventBus benchmark...')
-  const eventBusBench = await runEventBusBenchmark()
-  await eventBusBench.warmup()
-  await eventBusBench.run()
-  for (const task of eventBusBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // Decorators
-  console.log('Running Decorators benchmark...')
-  const decoratorsBench = await runDecoratorsBenchmark()
-  await decoratorsBench.warmup()
-  await decoratorsBench.run()
-  for (const task of decoratorsBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // ParallelCompute
-  console.log('Running ParallelCompute benchmark...')
-  const parallelBench = await runParallelComputeBenchmark()
-  await parallelBench.warmup()
-  await parallelBench.run()
-  for (const task of parallelBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // BinaryService
-  console.log('Running BinaryService benchmark...')
-  const binaryBench = await runBinaryServiceBenchmark()
-  await binaryBench.warmup()
-  await binaryBench.run()
-  for (const task of binaryBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // SchemaGenerator
-  console.log('Running SchemaGenerator benchmark...')
-  const schemaBench = await runSchemaGeneratorBenchmark()
-  await schemaBench.warmup()
-  await schemaBench.run()
-  for (const task of schemaBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // EntitySystem
-  console.log('Running EntitySystem benchmark...')
-  const entityBench = await runEntitySystemBenchmark()
-  await entityBench.warmup()
-  await entityBench.run()
-  for (const task of entityBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // AppearanceValidation
-  console.log('Running AppearanceValidation benchmark...')
-  const appearanceBench = await runAppearanceValidationBenchmark()
-  await appearanceBench.warmup()
-  await appearanceBench.run()
-  for (const task of appearanceBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // EventInterceptor
-  console.log('Running EventInterceptor benchmark...')
-  const interceptorBench = await runEventInterceptorBenchmark()
-  await interceptorBench.warmup()
-  await interceptorBench.run()
-  for (const task of interceptorBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
-
-  // RuntimeConfig
-  console.log('Running RuntimeConfig benchmark...')
-  const runtimeBench = await runRuntimeConfigBenchmark()
-  await runtimeBench.warmup()
-  await runtimeBench.run()
-  for (const task of runtimeBench.tasks) {
-    if (task.result) {
-      results.push(convertTinybenchResult({ ...task.result, name: task.name }))
-    }
-  }
+  await collectResults('Validation', runValidationBenchmark)
+  await collectResults('RateLimiter', runRateLimiterBenchmark)
+  await collectResults('AccessControl', runAccessControlBenchmark)
+  await collectResults('EventBus', runEventBusBenchmark)
+  await collectResults('Decorators', runDecoratorsBenchmark)
+  await collectResults('ParallelCompute', runParallelComputeBenchmark)
+  await collectResults('BinaryService', runBinaryServiceBenchmark)
+  await collectResults('EntitySystem', runEntitySystemBenchmark)
+  await collectResults('AppearanceValidation', runAppearanceValidationBenchmark)
+  await collectResults('EventInterceptor', runEventInterceptorBenchmark)
+  await collectResults('RuntimeConfig', runRuntimeConfigBenchmark)
 
   return results
 }
 
-async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
-  console.log('\n⚡ Running Load Benchmarks (Vitest)...\n')
+async function runLoadBenchmarks(
+  projects: Array<{ project: string; suite: 'gold' | 'startup' | 'diagnostic' | 'soak' }>,
+): Promise<LoadTestMetrics[]> {
+  console.log(`\n⚡ Running Load Benchmarks (${projects.map((entry) => entry.project).join(', ')})...\n`)
 
   clearCollectedMetrics()
 
-  return new Promise((resolve, reject) => {
+  const runProject = (entry: { project: string; suite: 'gold' | 'startup' | 'diagnostic' | 'soak' }) =>
+    new Promise<void>((resolve, reject) => {
     const isWindows = process.platform === 'win32'
     const npmCmd = isWindows ? 'npx.cmd' : 'npx'
 
-    const vitest = spawn(npmCmd, ['vitest', 'run', '--project', 'benchmark', 'benchmark/load'], {
+    const vitest = spawn(npmCmd, ['vitest', 'run', '--project', entry.project], {
       stdio: ['inherit', 'pipe', 'pipe'],
       shell: isWindows,
       cwd: process.cwd(),
+      env: {
+        ...process.env,
+        BENCHMARK_SUITE: entry.suite,
+      },
     })
 
     let output = ''
@@ -264,19 +191,24 @@ async function runLoadBenchmarks(): Promise<LoadTestMetrics[]> {
 
     vitest.on('close', (code) => {
       if (code !== 0) {
-        console.warn(`\n⚠️  Vitest exited with code ${code}`)
+        reject(new Error(`Vitest benchmark project exited with code ${code}`))
+        return
       }
-
-      const metrics = readCollectedMetrics()
-      console.log(`\n📊 Collected ${metrics.length} load test metrics\n`)
-      resolve(metrics)
+      resolve()
     })
 
     vitest.on('error', (err) => {
-      console.error('Error spawning vitest:', err)
-      resolve([])
+      reject(err)
     })
   })
+
+  for (const entry of projects) {
+    await runProject(entry)
+  }
+
+  const metrics = readCollectedMetrics()
+  console.log(`\n📊 Collected ${metrics.length} load test metrics\n`)
+  return metrics
 }
 
 async function main() {
@@ -290,12 +222,16 @@ async function main() {
     load: [] as LoadTestMetrics[],
   }
 
-  if (runCore || runAll) {
-    report.core = await runCoreBenchmarks()
+  if (shouldRunStartupCore) {
+    report.core.push(...(await runCoreBenchmarks('startup')))
   }
 
-  if (runLoad || runAll) {
-    report.load = await runLoadBenchmarks()
+  if (shouldRunDiagnosticCore) {
+    report.core.push(...(await runCoreBenchmarks('diagnostic')))
+  }
+
+  if (loadProjects.length > 0) {
+    report.load = await runLoadBenchmarks(loadProjects)
   }
 
   printReport(report)

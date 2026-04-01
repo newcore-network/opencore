@@ -94,7 +94,10 @@ describe('Net Events Full Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          nodeEvents.simulateClientEvent('test:event', player.clientID, { action: 'test', value: 123 })
+          await nodeEvents.simulateClientEventAsync('test:event', player.clientID, {
+            action: 'test',
+            value: 123,
+          })
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -131,7 +134,7 @@ describe('Net Events Full Load Benchmarks', () => {
       for (const player of players) {
         const start = performance.now()
         try {
-          nodeEvents.simulateClientEvent('test:validated', player.clientID, {
+          await nodeEvents.simulateClientEventAsync('test:validated', player.clientID, {
             action: 'transfer',
             amount: 100,
             targetId: 123,
@@ -174,7 +177,7 @@ describe('Net Events Full Load Benchmarks', () => {
         serializationTimings.push(serializationMetrics.totalTime)
 
         const start = performance.now()
-        nodeEvents.simulateClientEvent('test:event', player.clientID, payload)
+        await nodeEvents.simulateClientEventAsync('test:event', player.clientID, payload)
         const end = performance.now()
         eventTimings.push(end - start)
       }
@@ -222,7 +225,7 @@ describe('Net Events Full Load Benchmarks', () => {
             serializationTimings.push(serializationMetrics.totalTime)
 
             const start = performance.now()
-            nodeEvents.simulateClientEvent('test:event', player.clientID, payload)
+            await nodeEvents.simulateClientEventAsync('test:event', player.clientID, payload)
             const end = performance.now()
             timings.push(end - start)
           }
@@ -276,7 +279,7 @@ describe('Net Events Full Load Benchmarks', () => {
               await new Promise((resolve) => setTimeout(resolve, latency))
             }
 
-            nodeEvents.simulateClientEvent('test:event', player.clientID, payload)
+            await nodeEvents.simulateClientEventAsync('test:event', player.clientID, payload)
             const end = performance.now()
             timings.push(end - start)
           }
@@ -306,11 +309,15 @@ describe('Net Events Full Load Benchmarks', () => {
       const timings: number[] = []
       let successCount = 0
       let errorCount = 0
+      const scenarioStart = performance.now()
 
       const promises = players.map(async (player) => {
         const start = performance.now()
         try {
-          nodeEvents.simulateClientEvent('test:event', player.clientID, { action: 'test', value: 123 })
+          await nodeEvents.simulateClientEventAsync('test:event', player.clientID, {
+            action: 'test',
+            value: 123,
+          })
           const end = performance.now()
           timings.push(end - start)
           successCount++
@@ -320,6 +327,7 @@ describe('Net Events Full Load Benchmarks', () => {
       })
 
       await Promise.all(promises)
+      const scenarioEnd = performance.now()
 
       const metrics = calculateLoadMetrics(
         timings,
@@ -327,6 +335,7 @@ describe('Net Events Full Load Benchmarks', () => {
         playerCount,
         successCount,
         errorCount,
+        scenarioEnd - scenarioStart,
       )
 
       expect(metrics.errorRate).toBeLessThan(0.1)
