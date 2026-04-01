@@ -6,6 +6,7 @@ const METRICS_FILE = join(process.cwd(), 'benchmark', 'reports', '.load-metrics.
 
 interface CollectedMetric {
   name: string
+  suite: 'gold' | 'startup' | 'diagnostic' | 'soak'
   playerCount: number
   durationMs: number
   throughput: number
@@ -27,6 +28,7 @@ export function collectLoadMetric(metrics: LoadTestMetrics): void {
 
   const collected: CollectedMetric = {
     name: metrics.name,
+    suite: metrics.suite,
     playerCount: metrics.playerCount,
     durationMs: metrics.durationMs,
     throughput: metrics.throughput,
@@ -60,6 +62,7 @@ export function readCollectedMetrics(): LoadTestMetrics[] {
 
     return collected.map((c) => ({
       name: c.name,
+      suite: c.suite,
       playerCount: c.playerCount,
       totalOperations: c.successCount + c.errorCount,
       successCount: c.successCount,

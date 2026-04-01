@@ -18,6 +18,16 @@ function ensureReportsDir(): void {
   }
 }
 
+function groupBySuite<T extends { suite: string }>(metrics: T[]): Map<string, T[]> {
+  const grouped = new Map<string, T[]>()
+  for (const metric of metrics) {
+    const current = grouped.get(metric.suite) ?? []
+    current.push(metric)
+    grouped.set(metric.suite, current)
+  }
+  return grouped
+}
+
 export function generateTextReport(report: BenchmarkReport): string {
   let output = '\n'
   output += '═'.repeat(80) + '\n'
@@ -32,17 +42,20 @@ export function generateTextReport(report: BenchmarkReport): string {
     output += '  CORE BENCHMARKS (Tinybench)\n'
     output += '─'.repeat(80) + '\n\n'
 
-    for (const metric of report.core) {
-      output += `  ${metric.name}\n`
-      output += `    Iterations: ${metric.iterations}\n`
-      output += `    Mean:       ${formatTime(metric.mean)} (${formatOpsPerSec(metric.opsPerSec)})\n`
-      output += `    Min:        ${formatTime(metric.min)}\n`
-      output += `    Max:        ${formatTime(metric.max)}\n`
-      output += `    Median:     ${formatTime(metric.median)}\n`
-      output += `    p95:        ${formatTime(metric.p95)}\n`
-      output += `    p99:        ${formatTime(metric.p99)}\n`
-      output += `    Std Dev:    ${formatTime(metric.stdDev)}\n`
-      output += '\n'
+    for (const [suite, metrics] of groupBySuite(report.core)) {
+      output += `  [${suite.toUpperCase()}]\n\n`
+      for (const metric of metrics) {
+        output += `  ${metric.name}\n`
+        output += `    Iterations: ${metric.iterations}\n`
+        output += `    Mean:       ${formatTime(metric.mean)} (${formatOpsPerSec(metric.opsPerSec)})\n`
+        output += `    Min:        ${formatTime(metric.min)}\n`
+        output += `    Max:        ${formatTime(metric.max)}\n`
+        output += `    Median:     ${formatTime(metric.median)}\n`
+        output += `    p75:        ${formatTime(metric.p75)}\n`
+        output += `    p99:        ${formatTime(metric.p99)}\n`
+        output += `    Std Dev:    ${formatTime(metric.stdDev)}\n`
+        output += '\n'
+      }
     }
   }
 
@@ -51,20 +64,23 @@ export function generateTextReport(report: BenchmarkReport): string {
     output += '  LOAD BENCHMARKS (Vitest)\n'
     output += '─'.repeat(80) + '\n\n'
 
-    for (const metric of report.load) {
-      output += `  ${metric.name} (${metric.playerCount} players)\n`
-      output += `    Operations:  ${metric.totalOperations} (${metric.successCount} success, ${metric.errorCount} errors)\n`
-      output += `    Error Rate:  ${(metric.errorRate * 100).toFixed(2)}%\n`
-      output += `    Duration:    ${formatTime(metric.durationMs)}\n`
-      output += `    Mean:        ${formatTime(metric.mean)}\n`
-      output += `    Min:         ${formatTime(metric.min)}\n`
-      output += `    Max:         ${formatTime(metric.max)}\n`
-      output += `    p50:         ${formatTime(metric.p50)}\n`
-      output += `    p95:         ${formatTime(metric.p95)}\n`
-      output += `    p99:         ${formatTime(metric.p99)}\n`
-      output += `    Throughput:  ${formatOpsPerSec(metric.throughput)}\n`
-      output += `    Success/sec: ${formatOpsPerSec(metric.successThroughput)}\n`
-      output += '\n'
+    for (const [suite, metrics] of groupBySuite(report.load)) {
+      output += `  [${suite.toUpperCase()}]\n\n`
+      for (const metric of metrics) {
+        output += `  ${metric.name} (${metric.playerCount} workload)\n`
+        output += `    Operations:  ${metric.totalOperations} (${metric.successCount} success, ${metric.errorCount} errors)\n`
+        output += `    Error Rate:  ${(metric.errorRate * 100).toFixed(2)}%\n`
+        output += `    Duration:    ${formatTime(metric.durationMs)}\n`
+        output += `    Mean:        ${formatTime(metric.mean)}\n`
+        output += `    Min:         ${formatTime(metric.min)}\n`
+        output += `    Max:         ${formatTime(metric.max)}\n`
+        output += `    p50:         ${formatTime(metric.p50)}\n`
+        output += `    p95:         ${formatTime(metric.p95)}\n`
+        output += `    p99:         ${formatTime(metric.p99)}\n`
+        output += `    Throughput:  ${formatOpsPerSec(metric.throughput)}\n`
+        output += `    Success/sec: ${formatOpsPerSec(metric.successThroughput)}\n`
+        output += '\n'
+      }
     }
   }
 
@@ -183,7 +199,7 @@ function generateCoreSection(metrics: BenchmarkMetrics[]): string {
             <th>Mean</th>
             <th>Min</th>
             <th>Max</th>
-            <th>p95</th>
+            <th>p75</th>
             <th>p99</th>
             <th>Ops/sec</th>
           </tr>
@@ -199,7 +215,7 @@ function generateCoreSection(metrics: BenchmarkMetrics[]): string {
             <td class="metric-value">${formatTime(metric.mean)}</td>
             <td class="metric-value">${formatTime(metric.min)}</td>
             <td class="metric-value">${formatTime(metric.max)}</td>
-            <td class="metric-value">${formatTime(metric.p95)}</td>
+            <td class="metric-value">${formatTime(metric.p75)}</td>
             <td class="metric-value">${formatTime(metric.p99)}</td>
             <td class="metric-value">${formatOpsPerSec(metric.opsPerSec)}</td>
           </tr>
@@ -223,7 +239,7 @@ function generateLoadSection(metrics: LoadTestMetrics[]): string {
         <thead>
           <tr>
             <th>Benchmark</th>
-            <th>Players</th>
+            <th>Workload</th>
             <th>Operations</th>
             <th>Success</th>
             <th>Errors</th>

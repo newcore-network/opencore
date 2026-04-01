@@ -1,11 +1,12 @@
 export interface BenchmarkMetrics {
   name: string
+  suite: 'startup' | 'diagnostic'
   iterations: number
   mean: number
   min: number
   max: number
   median: number
-  p95: number
+  p75: number
   p99: number
   stdDev: number
   opsPerSec: number
@@ -14,6 +15,7 @@ export interface BenchmarkMetrics {
 
 export interface LoadTestMetrics {
   name: string
+  suite: 'gold' | 'startup' | 'diagnostic' | 'soak'
   playerCount: number
   totalOperations: number
   successCount: number
@@ -29,6 +31,14 @@ export interface LoadTestMetrics {
   throughput: number
   successThroughput: number
   errorRate: number
+}
+
+function getCurrentLoadSuite(): LoadTestMetrics['suite'] {
+  const suite = process.env.BENCHMARK_SUITE
+  if (suite === 'gold' || suite === 'startup' || suite === 'diagnostic' || suite === 'soak') {
+    return suite
+  }
+  return 'diagnostic'
 }
 
 export function calculateMetrics(timings: number[], name: string): BenchmarkMetrics {
@@ -51,12 +61,13 @@ export function calculateMetrics(timings: number[], name: string): BenchmarkMetr
 
   return {
     name,
+    suite: 'diagnostic',
     iterations: timings.length,
     mean,
     min,
     max,
     median,
-    p95,
+    p75: percentile(sorted, 75),
     p99,
     stdDev,
     opsPerSec,
@@ -78,6 +89,7 @@ export function calculateLoadMetrics(
   if (timings.length === 0) {
     return {
       name,
+      suite: getCurrentLoadSuite(),
       playerCount,
       totalOperations,
       successCount,
@@ -111,6 +123,7 @@ export function calculateLoadMetrics(
 
   return {
     name,
+    suite: getCurrentLoadSuite(),
     playerCount,
     totalOperations,
     successCount,
