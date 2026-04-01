@@ -16,6 +16,7 @@ import {
   validateRuntimeOptions,
 } from './runtime'
 import { BinaryProcessManager } from './system/managers/binary-process.manager'
+import { PlayerPersistenceService } from './services/persistence.service'
 import { SessionRecoveryService } from './services/session-recovery.local'
 import type { PluginInstallContext, PluginRegistry } from './library/plugin'
 import { registerServicesServer } from './services/services.register'
@@ -166,6 +167,10 @@ export async function initServer(
   loggers.bootstrap.debug('System processors registered')
 
   checkProviders(ctx)
+
+  if (ctx.features.sessionLifecycle.enabled && ctx.mode !== 'RESOURCE') {
+    GLOBAL_CONTAINER.resolve(PlayerPersistenceService).initialize()
+  }
 
   const scanner = GLOBAL_CONTAINER.resolve(MetadataScanner)
   scanner.scan(getServerControllerRegistry())
