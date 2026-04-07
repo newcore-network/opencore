@@ -26,6 +26,29 @@ export class NodeExports implements IExports {
     )
   }
 
+  getRemoteResource<T = unknown>(_resourceName: string): T {
+    throw new Error('[OpenCore] Remote exports are not supported in Node.js runtime.')
+  }
+
+  callRemoteExport<TResult = unknown>(
+    _resourceName: string,
+    _exportName: string,
+    ..._args: unknown[]
+  ): Promise<TResult> {
+    return Promise.reject(
+      new Error('[OpenCore] Remote exports are not supported in Node.js runtime.'),
+    )
+  }
+
+  waitForRemoteResource<T = unknown>(
+    _resourceName: string,
+    _options?: { exportName?: string; timeoutMs?: number; intervalMs?: number },
+  ): Promise<T> {
+    return Promise.reject(
+      new Error('[OpenCore] Remote exports are not supported in Node.js runtime.'),
+    )
+  }
+
   /**
    * Get all registered exports as an object
    */
