@@ -344,12 +344,37 @@ async function tryImportAutoLoad() {
   try {
     await import('./.opencore/autoload.server.controllers')
   } catch (err) {
-    if (err instanceof Error && err.message.includes('Cannot find module')) {
+    if (isAutoloadModuleNotFound(err)) {
       loggers.bootstrap.warn(`[Bootstrap] No server controllers autoload file found, skipping.`)
       return
     }
+
+    const message = err instanceof Error ? err.message : String(err)
+    loggers.bootstrap.error(`[Bootstrap] Failed to import server controllers autoload file.`, {
+      error: message,
+    })
     throw err
   }
+}
+
+function isAutoloadModuleNotFound(err: unknown): boolean {
+  if (!err || typeof err !== 'object') {
+    return false
+  }
+
+  const error = err as NodeJS.ErrnoException & { requireStack?: string[] }
+  const message = typeof error.message === 'string' ? error.message : ''
+  const requireStack = Array.isArray(error.requireStack) ? error.requireStack : []
+
+  if (error.code !== 'MODULE_NOT_FOUND' && !message.includes('Cannot find module')) {
+    return false
+  }
+
+  if (message.includes('autoload.server.controllers')) {
+    return true
+  }
+
+  return requireStack.some((entry) => entry.includes('autoload.server.controllers'))
 }
 
 /**

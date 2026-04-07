@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Secure, event-driven TypeScript Framework & Runtime engine for CitizenFX (Cfx).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
