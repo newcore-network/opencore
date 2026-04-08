@@ -271,6 +271,21 @@ export interface InternalPlayerExports {
   setPlayerMeta(clientID: number, key: string, value: unknown): void
 
   /**
+   * Links a persistent account to the authoritative CORE player session.
+   *
+   * @param clientID - FiveM client/server ID
+   * @param accountID - Persistent account identifier
+   */
+  linkPlayerAccount(clientID: number, accountID: string): void
+
+  /**
+   * Removes any linked account from the authoritative CORE player session.
+   *
+   * @param clientID - FiveM client/server ID
+   */
+  unlinkPlayerAccount(clientID: number): void
+
+  /**
    * Gets complete serialized player data.
    *
    * @param clientID - FiveM client/server ID

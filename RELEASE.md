@@ -1,10 +1,9 @@
-## OpenCore Framework v1.0.8
+## OpenCore Framework v1.0.10
 
 ### Added
-- Added framework event bridging from `CORE` to `RESOURCE` for `@OnFrameworkEvent` listeners.
-
-### Changed
-- Updated `@OnRuntimeEvent` and `@OnFrameworkEvent` documentation to clarify handler arguments and cross-context behavior.
+- Added authoritative CORE exports to link and unlink player accounts from remote resources.
+- Added debug logs for remote player session mutations delegated from `RESOURCE` to `CORE`.
 
 ### Fixed
-- Fixed `@OnFrameworkEvent` delivery so built-in framework lifecycle events can reach `RESOURCE` listeners with hydrated payloads.
+- Fixed `RESOURCE` player session mutations so `player.linkAccount()`, `player.unlinkAccount()`, `player.setMeta()` and state changes propagate to CORE.
+- Fixed secure `@OnNet` and `@OnRPC` handlers being blocked in sibling resources after successful authentication performed from a `RESOURCE` auth module.
