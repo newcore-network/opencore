@@ -1,6 +1,6 @@
 {
   "name": "@open-core/framework",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Secure, event-driven TypeScript Framework & Runtime engine for CitizenFX (Cfx).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -106,19 +106,19 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
-    "@types/node": "^25.5.0",
-    "@vitest/coverage-v8": "^4.1.1",
-    "dependency-cruiser": "^17.3.9",
+    "@biomejs/biome": "^2.4.12",
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.4",
+    "dependency-cruiser": "^17.3.10",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "graphviz": "^0.0.9",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.6",
+    "lint-staged": "^16.4.0",
     "tinybench": "^6.0.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2",
-    "vitest": "^4.1.1"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
   },
   "lint-staged": {
     "*.{js,cjs,mjs,ts,tsx,json,md}": [
