@@ -1,3 +1,4 @@
+import { PlayerAppearance } from '../../../kernel'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { loggers } from '../../../kernel/logger'
 import { SYSTEM_EVENTS } from '../../shared/types/system-types'
@@ -9,9 +10,18 @@ export class SpawnerController {
   constructor(private readonly spawnService: SpawnService) {}
 
   @OnNet(SYSTEM_EVENTS.spawner.spawn)
-  async handleSpawn(data: { position: Vector3; model: string }) {
+  async handleSpawn(data: {
+    position: Vector3
+    model: string
+    heading?: number
+    appearance?: PlayerAppearance
+    skipLoadingScreenShutdown?: boolean
+  }) {
     loggers.spawn.debug('Spawn event received', data)
-    await this.spawnService.spawn(data.position, data.model)
+    await this.spawnService.spawn(data.position, data.model, data.heading, {
+      appearance: data.appearance,
+      skipLoadingScreenShutdown: data.skipLoadingScreenShutdown,
+    })
   }
 
   @OnNet(SYSTEM_EVENTS.spawner.respawn)

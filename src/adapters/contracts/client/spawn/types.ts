@@ -4,6 +4,7 @@ export interface SpawnRequest {
   position: Vector3
   model: string
   heading?: number
+  skipLoadingScreenShutdown?: boolean
 }
 
 export interface SpawnExecutionResult {

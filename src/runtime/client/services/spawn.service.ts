@@ -6,6 +6,7 @@ import { IClientSpawnPort } from '../../../adapters/contracts/client/spawn/IClie
 
 interface SpawnOptions {
   appearance?: PlayerAppearance
+  skipLoadingScreenShutdown?: boolean
 }
 
 @injectable()
@@ -39,7 +40,12 @@ export class SpawnService {
       loggers.spawn.debug('Waiting for spawn bridge readiness')
       await this.spawnPort.waitUntilReady()
       loggers.spawn.debug('Spawn bridge ready, executing spawn', { position, model, heading })
-      const outcome = await this.spawnPort.spawn({ position, model, heading })
+      const outcome = await this.spawnPort.spawn({
+        position,
+        model,
+        heading,
+        skipLoadingScreenShutdown: options?.skipLoadingScreenShutdown,
+      })
 
       const ped = outcome.localPlayerHandle ?? 0
       if (ped !== 0) {
