@@ -85,7 +85,7 @@ export function Throttle(optionsOrLimit: number | ThrottleOptions, windowMs?: nu
     descriptor.value = async function (...args: any[]) {
       const player = args[0] as Player
 
-      if (player?.clientID) {
+      if (player && typeof player.clientID === 'number') {
         const service = container.resolve(RateLimiterService)
         const key = `${player.clientID}:${target.constructor.name}:${propertyKey}`
 
