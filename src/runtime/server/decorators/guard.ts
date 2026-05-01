@@ -69,7 +69,7 @@ export function Guard(options: GuardOptions) {
     const originalMethod = descriptor.value
     descriptor.value = async function (...args: any[]) {
       const player = args[0] as Player
-      if (!player || !player.clientID) {
+      if (!player || typeof player.clientID !== 'number') {
         loggers.security.warn(`@Guard misuse: First argument is not a Player`, {
           method: propertyKey,
           targetClass: target.constructor?.name,

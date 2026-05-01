@@ -1,9 +1,8 @@
-## OpenCore Framework v1.0.10
-
-### Added
-- Added authoritative CORE exports to link and unlink player accounts from remote resources.
-- Added debug logs for remote player session mutations delegated from `RESOURCE` to `CORE`.
+## OpenCore Framework v1.0.13
 
 ### Fixed
-- Fixed `RESOURCE` player session mutations so `player.linkAccount()`, `player.unlinkAccount()`, `player.setMeta()` and state changes propagate to CORE.
-- Fixed secure `@OnNet` and `@OnRPC` handlers being blocked in sibling resources after successful authentication performed from a `RESOURCE` auth module.
+- Fixed `@Guard` rejecting valid players with `clientID: 0`, which affected the first RageMP player connected to a fresh server.
+- Fixed `@Throttle` skipping rate-limit enforcement for valid players with `clientID: 0`, preventing an unthrottled first-player security bypass on RageMP.
+
+### Tests
+- Added regression coverage for `@Guard` and `@Throttle` with `clientID: 0`.
