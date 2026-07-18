@@ -9,7 +9,10 @@ import { injectable } from 'tsyringe'
  */
 @injectable()
 export class RateLimiterService {
+  private static readonly CLEANUP_INTERVAL_MS = 60_000
+
   private hits = new Map<string, number[]>()
+  private lastCleanupAt = 0
 
   /**
    * Checks whether a key is still within the rate limit window.
@@ -32,16 +35,26 @@ export class RateLimiterService {
     validTimestamps.push(now)
     this.hits.set(key, validTimestamps)
 
-    if (this.hits.size > 5000) this.cleanup()
+    if (
+      this.hits.size > 5000 ||
+      now - this.lastCleanupAt > RateLimiterService.CLEANUP_INTERVAL_MS
+    ) {
+      this.cleanup(now)
+    }
 
     return true
   }
 
   /**
    * Best-effort cleanup to prevent unbounded memory growth.
+   *
+   * @remarks
+   * Runs both on a size threshold and on a fixed time interval, so bursty churn
+   * across many distinct keys can't grow memory unbounded while staying under
+   * the size threshold between bursts.
    */
-  private cleanup() {
-    const now = Date.now()
+  private cleanup(now: number) {
+    this.lastCleanupAt = now
     for (const [key, times] of this.hits.entries()) {
       if (times.every((t) => now - t > 60000)) this.hits.delete(key)
     }
