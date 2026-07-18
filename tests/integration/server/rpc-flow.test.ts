@@ -264,9 +264,11 @@ describe('OnRpcProcessor – Server RPC Flow', () => {
 
       const handler = (rpc as any).handlers.get('validate:argcount')
 
-      // Send 2 args when object schema expects exactly 1
+      // Send 2 args when object schema expects exactly 1.
+      // The internal validation reason ("Invalid argument count") must not leak to the
+      // caller — only the generic RpcPublicError message should cross the RPC boundary.
       await expect(handler({ requestId: 'req-1', clientId: 1 }, 'arg1', 'arg2')).rejects.toThrow(
-        'Invalid argument count',
+        'Invalid RPC payload',
       )
 
       expect(instance.handlerCalled).toBe(false)
