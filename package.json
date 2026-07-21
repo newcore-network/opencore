@@ -109,7 +109,7 @@
     "@biomejs/biome": "^2.4.12",
     "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.4",
-    "dependency-cruiser": "^17.3.10",
+    "dependency-cruiser": "^18.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "graphviz": "^0.0.9",
