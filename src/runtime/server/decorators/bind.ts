@@ -1,9 +1,9 @@
-import { injectable, Lifecycle, scoped, singleton } from 'tsyringe'
+import { createBindingDecorator, type BindingScope } from '../../shared/di/binding'
 
 /**
  * Supported binding scopes for {@link Bind}.
  */
-export type BindingScope = 'singleton' | 'transient'
+export type { BindingScope } from '../../shared/di/binding'
 
 /**
  * Marks a class as injectable and binds it into the framework DI container.
@@ -22,13 +22,5 @@ export type BindingScope = 'singleton' | 'transient'
  * ```
  */
 export function Bind(scope: BindingScope = 'singleton') {
-  return (target: any) => {
-    injectable()(target)
-
-    if (scope === 'singleton') {
-      singleton()(target)
-    } else {
-      scoped(Lifecycle.ResolutionScoped)(target)
-    }
-  }
+  return createBindingDecorator(scope)
 }

@@ -1,4 +1,5 @@
 import { inject } from 'tsyringe'
+import { loggers } from '../../../kernel/logger'
 import { Controller } from '../decorators/controller'
 import { Export } from '../decorators/export'
 import { serializeServerPlayerData } from '../adapter/serialization'
@@ -75,6 +76,31 @@ export class PlayerExportController implements InternalPlayerExports {
   @Export()
   setPlayerMeta(clientID: number, key: string, value: any): void {
     this.playerService.setMeta(clientID, key, value)
+  }
+
+  @Export()
+  linkPlayerAccount(clientID: number, accountID: string): void {
+    const player = this.playerService.getByClient(clientID)
+    if (!player) return
+
+    player.linkAccount(accountID)
+    loggers.session.debug('Remote player account linked in CORE', {
+      clientID,
+      accountID,
+    })
+  }
+
+  @Export()
+  unlinkPlayerAccount(clientID: number): void {
+    const player = this.playerService.getByClient(clientID)
+    if (!player) return
+
+    const previousAccountID = player.accountID
+    player.unlinkAccount()
+    loggers.session.debug('Remote player account unlinked in CORE', {
+      clientID,
+      accountID: previousAccountID,
+    })
   }
 
   // ═══════════════════════════════════════════════════════════════

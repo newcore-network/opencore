@@ -1,12 +1,25 @@
 import 'reflect-metadata'
 import { container } from 'tsyringe'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   _serverControllerRegistryByResource,
   Controller,
   getServerControllerRegistry,
 } from '../../../../src/runtime/server/decorators/controller'
+import { Guard } from '../../../../src/runtime/server/decorators/guard'
+import { Public } from '../../../../src/runtime/server/decorators/public'
+import { RequiresState } from '../../../../src/runtime/server/decorators/requiresState'
+import { Throttle } from '../../../../src/runtime/server/decorators/throttle'
+import { Authorization } from '../../../../src/runtime/server/ports/authorization.api-port'
+import { RateLimiterService } from '../../../../src/runtime/server/services/rate-limiter.service'
+import { SecurityError } from '../../../../src/kernel'
 import { METADATA_KEYS } from '../../../../src/runtime/server/system/metadata-server.keys'
+
+interface MockPlayer {
+  clientID: number
+  name: string
+  hasState?: (state: string) => boolean
+}
 
 describe('@Controller decorator', () => {
   beforeEach(() => {
@@ -169,6 +182,195 @@ describe('@Controller decorator', () => {
       const result = await instance.fetchData()
 
       expect(result).toBe('async-data')
+    })
+  })
+
+  describe('default decorations', () => {
+    beforeEach(() => {
+      container.clearInstances()
+      container.registerSingleton(RateLimiterService)
+
+      const mockPrincipal = {
+        enforce: vi.fn().mockResolvedValue(undefined),
+      }
+      container.registerInstance(Authorization as any, mockPrincipal as any)
+    })
+
+    it('should apply default guard to methods without explicit @Guard', async () => {
+      @Controller({ guard: { rank: 2 } })
+      class DefaultGuardController {
+        action(_player: MockPlayer) {
+          return 'executed'
+        }
+      }
+
+      const prototype = DefaultGuardController.prototype
+      expect(Reflect.hasMetadata('core:guard', prototype, 'action')).toBe(true)
+
+      const meta = Reflect.getMetadata('core:guard', prototype, 'action')
+      expect(meta.rank).toBe(2)
+
+      const instance = new DefaultGuardController()
+      const player: MockPlayer = { clientID: 1, name: 'Player' }
+      const result = await instance.action.call(instance, player)
+      expect(result).toBe('executed')
+    })
+
+    it('should not override explicit @Guard with controller default', () => {
+      @Controller({ guard: { rank: 1 } })
+      class OverrideGuardController {
+        @Guard({ rank: 5 })
+        adminAction() {}
+
+        userAction() {}
+      }
+
+      const prototype = OverrideGuardController.prototype
+      expect(Reflect.getMetadata('core:guard', prototype, 'adminAction').rank).toBe(5)
+      expect(Reflect.getMetadata('core:guard', prototype, 'userAction').rank).toBe(1)
+    })
+
+    it('should apply default throttle with object options', async () => {
+      @Controller({ throttle: { limit: 2, windowMs: 1000 } })
+      class DefaultThrottleController {
+        action(_player: MockPlayer) {
+          return 'executed'
+        }
+      }
+
+      const prototype = DefaultThrottleController.prototype
+      expect(Reflect.hasMetadata(METADATA_KEYS.THROTTLE, prototype, 'action')).toBe(true)
+
+      const instance = new DefaultThrottleController()
+      const player: MockPlayer = { clientID: 1, name: 'Player' }
+
+      await instance.action.call(instance, player)
+      await instance.action.call(instance, player)
+      await expect(instance.action.call(instance, player)).rejects.toThrow(SecurityError)
+    })
+
+    it('should apply default throttle with tuple syntax', async () => {
+      @Controller({ throttle: [2, 1000] })
+      class TupleThrottleController {
+        action(_player: MockPlayer) {
+          return 'executed'
+        }
+      }
+
+      const instance = new TupleThrottleController()
+      const player: MockPlayer = { clientID: 1, name: 'Player' }
+
+      await instance.action.call(instance, player)
+      await instance.action.call(instance, player)
+      await expect(instance.action.call(instance, player)).rejects.toThrow(SecurityError)
+    })
+
+    it('should not override explicit @Throttle with controller default', () => {
+      @Controller({ throttle: { limit: 10, windowMs: 1000 } })
+      class OverrideThrottleController {
+        @Throttle({ limit: 1, windowMs: 5000 })
+        sensitiveAction() {}
+
+        normalAction() {}
+      }
+
+      const prototype = OverrideThrottleController.prototype
+      const sensitiveMeta = Reflect.getMetadata(
+        METADATA_KEYS.THROTTLE,
+        prototype,
+        'sensitiveAction',
+      )
+      const normalMeta = Reflect.getMetadata(METADATA_KEYS.THROTTLE, prototype, 'normalAction')
+
+      expect(sensitiveMeta.limit).toBe(1)
+      expect(normalMeta.limit).toBe(10)
+    })
+
+    it('should apply default @RequiresState to methods without it', async () => {
+      @Controller({ requiresState: { missing: ['dead'] } })
+      class DefaultStateController {
+        revive(_player: MockPlayer) {
+          return 'revived'
+        }
+      }
+
+      const prototype = DefaultStateController.prototype
+      expect(Reflect.hasMetadata(METADATA_KEYS.REQUIRES_STATE, prototype, 'revive')).toBe(true)
+
+      const instance = new DefaultStateController()
+      const player: MockPlayer = { clientID: 1, name: 'Player', hasState: () => false }
+      const result = await instance.revive.call(instance, player)
+      expect(result).toBe('revived')
+    })
+
+    it('should not override explicit @RequiresState with controller default', () => {
+      @Controller({ requiresState: { missing: ['dead'] } })
+      class OverrideStateController {
+        @RequiresState({ has: ['admin'] })
+        adminAction() {}
+
+        userAction() {}
+      }
+
+      const prototype = OverrideStateController.prototype
+      const adminMeta = Reflect.getMetadata(METADATA_KEYS.REQUIRES_STATE, prototype, 'adminAction')
+      const userMeta = Reflect.getMetadata(METADATA_KEYS.REQUIRES_STATE, prototype, 'userAction')
+
+      expect(adminMeta.has).toContain('admin')
+      expect(userMeta.missing).toContain('dead')
+    })
+
+    it('should apply default @Public to methods without it', () => {
+      @Controller({ public: true })
+      class DefaultPublicController {
+        action1() {}
+
+        @Public()
+        explicitPublic() {}
+      }
+
+      const prototype = DefaultPublicController.prototype
+      expect(Reflect.getMetadata(METADATA_KEYS.PUBLIC, prototype, 'action1')).toBe(true)
+      expect(Reflect.getMetadata(METADATA_KEYS.PUBLIC, prototype, 'explicitPublic')).toBe(true)
+    })
+
+    it('should apply multiple defaults simultaneously', () => {
+      @Controller({
+        guard: { permission: 'user.authenticated' },
+        throttle: { limit: 5, windowMs: 1000 },
+      })
+      class MultiDefaultController {
+        action() {}
+      }
+
+      const prototype = MultiDefaultController.prototype
+      expect(Reflect.hasMetadata('core:guard', prototype, 'action')).toBe(true)
+      expect(Reflect.hasMetadata(METADATA_KEYS.THROTTLE, prototype, 'action')).toBe(true)
+    })
+
+    it('should not affect getters or properties', () => {
+      @Controller({ guard: { rank: 1 } })
+      class WithGetterController {
+        get value() {
+          return 42
+        }
+
+        action() {}
+      }
+
+      const prototype = WithGetterController.prototype
+      expect(Reflect.hasMetadata('core:guard', prototype, 'value')).toBe(false)
+      expect(Reflect.hasMetadata('core:guard', prototype, 'action')).toBe(true)
+    })
+
+    it('should store options in controller metadata', () => {
+      const options = { guard: { rank: 3 } }
+
+      @Controller(options)
+      class MetaController {}
+
+      const meta = Reflect.getMetadata(METADATA_KEYS.CONTROLLER, MetaController)
+      expect(meta.options).toBe(options)
     })
   })
 })

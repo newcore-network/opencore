@@ -141,6 +141,44 @@ export class ExampleNetController {
 - `@Throttle(limit, windowMs)`
 - `@RequiresState({ missing: [...] })`
 
+### Exports
+
+`@Export()` defines a public resource API. Adapters may expose both direct/local access through `getResource()` and an optional explicit async helper layer through `getRemoteResource()` / `waitForRemoteResource()`.
+
+```ts
+import { Controller, Export } from '@open-core/framework/server'
+import { IExports } from '@open-core/framework/contracts/server'
+
+@Controller()
+export class DatabaseController {
+  @Export('pingDatabase')
+  async pingDatabase() {
+    return { success: true }
+  }
+}
+
+interface DatabaseExports {
+  pingDatabase(): Promise<{ success: boolean }>
+}
+
+class ExampleConsumer {
+  constructor(private readonly exportsService: IExports) {}
+
+  async ping() {
+    const database = await this.exportsService.waitForRemoteResource<DatabaseExports>('database', {
+      exportName: 'pingDatabase',
+    })
+
+    return database.pingDatabase()
+  }
+}
+```
+
+Guidance:
+
+- `getResource()` is for local/synchronous resolution used by framework internals.
+- `waitForRemoteResource()` / `getRemoteResource()` are optional adapter utilities for explicit async resource-to-resource calls.
+
 ### Library events
 
 Use library wrappers to emit domain events and `@OnLibraryEvent()` to observe them.

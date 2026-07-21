@@ -11,11 +11,15 @@ export type { LoggerConfig } from './logger.config'
 export { createLoggerConfig, DEFAULT_LOGGER_CONFIG } from './logger.config'
 // Environment utilities
 export {
+  detectEnvironmentSide,
   getLogLevel,
+  getRuntimeSide,
   isClientEnvironment,
+  isClientSide,
   isDebugMode,
   isFiveMEnvironment,
   isServerEnvironment,
+  isServerSide,
 } from './logger.env'
 
 // Service

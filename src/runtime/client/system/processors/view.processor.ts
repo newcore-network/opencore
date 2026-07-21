@@ -10,12 +10,13 @@ export class ViewProcessor implements DecoratorProcessor {
 
   constructor(@inject(WebViewService as any) private readonly webviews: WebViewService) {}
 
-  process(target: any, methodName: string, metadata: { eventName: string }) {
+  process(target: any, methodName: string, metadata: { eventName: string; viewId?: string }) {
     const handler = target[methodName].bind(target)
     const handlerName = `${target.constructor.name}.${methodName}`
 
     this.webviews.onMessage(async (message) => {
       if (message.event !== metadata.eventName) return
+      if (metadata.viewId && message.viewId !== metadata.viewId) return
       try {
         await handler(message.payload)
       } catch (error) {
@@ -30,6 +31,8 @@ export class ViewProcessor implements DecoratorProcessor {
       }
     })
 
-    loggers.webView.debug(`Registered WebView callback: ${metadata.eventName} -> ${handlerName}`)
+    loggers.webView.debug(
+      `Registered WebView callback: ${metadata.eventName}${metadata.viewId ? ` [viewId=${metadata.viewId}]` : ''} -> ${handlerName}`,
+    )
   }
 }

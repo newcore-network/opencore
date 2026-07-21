@@ -39,6 +39,10 @@ export function detectEnvironmentSide(): 'client' | 'server' | 'node' {
   return 'node'
 }
 
+export function getRuntimeSide(): 'client' | 'server' | 'node' {
+  return detectEnvironmentSide()
+}
+
 /**
  * Detects if we're running in a FiveM client environment.
  */
@@ -46,11 +50,19 @@ export function isClientEnvironment(): boolean {
   return detectEnvironmentSide() === 'client'
 }
 
+export function isClientSide(): boolean {
+  return isClientEnvironment()
+}
+
 /**
  * Detects if we're running in a FiveM server environment.
  */
 export function isServerEnvironment(): boolean {
   return detectEnvironmentSide() === 'server'
+}
+
+export function isServerSide(): boolean {
+  return isServerEnvironment()
 }
 
 /**

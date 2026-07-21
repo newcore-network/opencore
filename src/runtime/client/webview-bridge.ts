@@ -117,3 +117,10 @@ function resolveWebViewService(): WebViewService {
 
 export const WebView = new WebViewBridge(resolveWebViewService)
 export const NUI = WebView
+
+export function createWebView<
+  TSend extends Record<string, any> = Record<string, any>,
+  TReceive extends Record<string, any> = Record<string, any>,
+>(viewId: string): WebViewBridge<TSend, TReceive> {
+  return new WebViewBridge(resolveWebViewService, viewId)
+}

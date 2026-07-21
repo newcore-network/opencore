@@ -34,6 +34,10 @@ export interface PlayerAdapters {
   defaultSpawnModel: string
 }
 
+export interface PlayerSpawnOptions {
+  skipLoadingScreenShutdown?: boolean
+}
+
 /**
  * Core-level representation of a connected player on the server.
  *
@@ -207,8 +211,16 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
    * @param vector - The spawn coordinates
    * @param model - The ped model to use (default from platform capabilities)
    */
-  spawn(vector: Vector3, model = this.adapters.defaultSpawnModel): void {
-    const request: SpawnPlayerRequest = { position: vector, model }
+  spawn(
+    vector: Vector3,
+    model = this.adapters.defaultSpawnModel,
+    options?: PlayerSpawnOptions,
+  ): void {
+    const request: SpawnPlayerRequest = {
+      position: vector,
+      model,
+      skipLoadingScreenShutdown: options?.skipLoadingScreenShutdown,
+    }
     void Promise.resolve(
       this.adapters.playerLifecycle.spawn(this.clientID.toString(), request),
     ).catch((error: unknown) => {

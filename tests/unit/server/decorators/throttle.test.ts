@@ -56,6 +56,23 @@ describe('@Throttle decorator', () => {
       await expect(instance.action.call(instance, player)).rejects.toThrow(SecurityError)
     })
 
+    it('should rate limit player with clientID 0', async () => {
+      class TestController {
+        @Throttle(1, 5000)
+        action(_player: MockPlayer) {
+          return 'executed'
+        }
+      }
+
+      const player: MockPlayer = { clientID: 0, name: 'FirstPlayer' }
+      const instance = new TestController()
+
+      const result = await instance.action.call(instance, player)
+
+      expect(result).toBe('executed')
+      await expect(instance.action.call(instance, player)).rejects.toThrow(SecurityError)
+    })
+
     it('should use default window of 1000ms when only limit provided', async () => {
       class TestController {
         @Throttle(2)

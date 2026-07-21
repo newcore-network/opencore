@@ -223,6 +223,28 @@ describe('@Guard decorator', () => {
       expect(result).toBe('action-result')
     })
 
+    it('should accept player with clientID 0', async () => {
+      const mockPrincipal = {
+        enforce: vi.fn().mockResolvedValue(undefined),
+      }
+      container.registerInstance(Authorization as any, mockPrincipal as any)
+
+      class TestController {
+        @Guard({ rank: 1 })
+        protectedAction(_player: MockPlayer) {
+          return 'action-result'
+        }
+      }
+
+      const player: MockPlayer = { clientID: 0, name: 'FirstPlayer' }
+      const instance = new TestController()
+
+      const result = await instance.protectedAction.call(instance, player)
+
+      expect(result).toBe('action-result')
+      expect(mockPrincipal.enforce).toHaveBeenCalledWith(player, { rank: 1 })
+    })
+
     it('should pass all arguments to original method', async () => {
       class TestController {
         @Guard({ rank: 1 })

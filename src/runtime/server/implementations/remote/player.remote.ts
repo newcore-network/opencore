@@ -74,7 +74,80 @@ export class RemotePlayerImplementation extends Players {
   }
 
   private createPlayerFromData(data: SerializedPlayerData): Player {
-    return createRemoteServerPlayer(data, this.playerAdapters)
+    const player = createRemoteServerPlayer(data, this.playerAdapters)
+    this.attachAuthoritativeMutators(player)
+    return player
+  }
+
+  /**
+   * Proxies remote session mutations to CORE so security-critical data remains authoritative.
+   */
+  private attachAuthoritativeMutators(player: Player): void {
+    const core = this.core
+    const originalSetMeta = player.setMeta.bind(player)
+    const originalLinkAccount = player.linkAccount.bind(player)
+    const originalUnlinkAccount = player.unlinkAccount.bind(player)
+    const originalAddState = player.addState.bind(player)
+    const originalRemoveState = player.removeState.bind(player)
+    const originalToggleState = player.toggleState.bind(player)
+
+    player.setMeta = <T = unknown>(key: string, value: T): void => {
+      core.setPlayerMeta(player.clientID, key, value)
+      originalSetMeta(key, value)
+      loggers.session.debug('Remote player meta delegated to CORE', {
+        clientID: player.clientID,
+        key,
+      })
+    }
+
+    player.linkAccount = (accountID): void => {
+      core.linkPlayerAccount(player.clientID, accountID.toString())
+      originalLinkAccount(accountID)
+      loggers.session.debug('Remote player linkAccount delegated to CORE', {
+        clientID: player.clientID,
+        accountID: accountID.toString(),
+      })
+    }
+
+    player.unlinkAccount = (): void => {
+      const previousAccountID = player.accountID
+      core.unlinkPlayerAccount(player.clientID)
+      originalUnlinkAccount()
+      loggers.session.debug('Remote player unlinkAccount delegated to CORE', {
+        clientID: player.clientID,
+        accountID: previousAccountID,
+      })
+    }
+
+    player.addState = (state: string): void => {
+      core.addPlayerState(player.clientID, state)
+      originalAddState(state)
+      loggers.session.debug('Remote player state added in CORE', {
+        clientID: player.clientID,
+        state,
+      })
+    }
+
+    player.removeState = (state: string): void => {
+      core.removePlayerState(player.clientID, state)
+      originalRemoveState(state)
+      loggers.session.debug('Remote player state removed in CORE', {
+        clientID: player.clientID,
+        state,
+      })
+    }
+
+    player.toggleState = (state: string, force?: boolean): boolean => {
+      const next = force ?? !player.hasState(state)
+      if (next) {
+        player.addState(state)
+      } else {
+        player.removeState(state)
+      }
+
+      originalToggleState(state, next)
+      return next
+    }
   }
 
   /**

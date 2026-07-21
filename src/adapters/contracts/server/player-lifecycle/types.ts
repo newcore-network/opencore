@@ -6,6 +6,7 @@ export interface SpawnPlayerRequest {
   model?: string
   heading?: number
   appearance?: PlayerAppearance
+  skipLoadingScreenShutdown?: boolean
 }
 
 export interface TeleportPlayerRequest {

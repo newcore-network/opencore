@@ -1,4 +1,8 @@
-import { Bind, BindingScope } from './bind'
+import {
+  createBindingDecorator,
+  createServiceDecorator,
+  type BindingScope,
+} from '../../shared/di/binding'
 
 /**
  * Marks a class as a framework-managed Service.
@@ -24,7 +28,7 @@ import { Bind, BindingScope } from './bind'
  * ```
  */
 export function Service(options?: { scope?: BindingScope }) {
-  return Bind(options?.scope ?? 'singleton')
+  return createServiceDecorator(options)
 }
 
 /**
@@ -52,5 +56,5 @@ export function Service(options?: { scope?: BindingScope }) {
  * ```
  */
 export function Repo(options?: { scope?: BindingScope }) {
-  return Bind(options?.scope ?? 'singleton')
+  return createBindingDecorator(options?.scope ?? 'singleton')
 }
