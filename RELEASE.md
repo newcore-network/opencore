@@ -1,4 +1,4 @@
-## OpenCore Framework v1.1.0
+## OpenCore Framework v1.1.1
 
 ### Added
 - Added CodeQL analysis for JavaScript and TypeScript on `master`, `develop`, pull requests, and a weekly schedule.
