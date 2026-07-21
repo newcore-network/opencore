@@ -122,10 +122,14 @@ export class OnRpcProcessor implements DecoratorProcessor {
           }
           validatedArgs = [schema.parse(args[0])]
         }
-      } catch (_error) {
+      } catch (error) {
         loggers.netEvent.warn(`Invalid RPC payload`, {
           event: metadata.eventName,
           clientId,
+          validationError:
+            error instanceof Error
+              ? { name: error.name, message: error.message, stack: error.stack }
+              : String(error),
         })
         throw new RpcPublicError('Invalid RPC payload')
       }

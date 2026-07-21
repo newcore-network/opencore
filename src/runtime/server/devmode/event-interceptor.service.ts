@@ -52,7 +52,7 @@ class RingBuffer<T> {
  */
 @injectable()
 export class EventInterceptorService extends IDevModeInterceptor {
-  private static readonly MAX_PENDING_AGE_MS = 5 * 60 * 1000
+  private static readonly MAX_PENDING_EVENTS = 10_000
 
   private enabled = false
   private historyBuffer: RingBuffer<DevEvent>
@@ -296,16 +296,14 @@ export class EventInterceptorService extends IDevModeInterceptor {
   }
 
   /**
-   * Drops pending events that never reached `completeEvent`/`failEvent` (e.g. because
-   * the surrounding call threw before either was invoked), so `pendingEvents` can't
-   * grow unbounded over the lifetime of a long-running server.
+   * Caps pending events so instrumentation cannot grow unbounded without imposing an
+   * arbitrary execution timeout on legitimate long-running operations.
    */
   private prunePendingEvents(): void {
-    const now = Date.now()
-    for (const [id, event] of this.pendingEvents) {
-      if (now - event.timestamp > EventInterceptorService.MAX_PENDING_AGE_MS) {
-        this.pendingEvents.delete(id)
-      }
+    while (this.pendingEvents.size >= EventInterceptorService.MAX_PENDING_EVENTS) {
+      const oldestId = this.pendingEvents.keys().next().value
+      if (oldestId === undefined) return
+      this.pendingEvents.delete(oldestId)
     }
   }
 

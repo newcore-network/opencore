@@ -74,25 +74,22 @@ describe('EventInterceptorService', () => {
   })
 
   describe('pending event pruning', () => {
-    it('drops pending events that never complete before they can leak forever', () => {
+    it('keeps long-running events pending until they complete', () => {
       vi.useFakeTimers()
       vi.setSystemTime(0)
 
-      const staleId = interceptor.recordCommand('never-completed', [])
+      const longRunningId = interceptor.recordCommand('long-running', [])
 
-      // Past the 5-minute staleness window.
+      // A later event must not invalidate an operation that runs longer than five minutes.
       vi.setSystemTime(5 * 60 * 1000 + 1)
-
-      // Recording a new event triggers the sweep of stale pending entries.
       const freshId = interceptor.recordCommand('fresh', [])
 
-      // The stale entry is gone, so completing it now is a no-op.
-      interceptor.completeEvent(staleId, 'late', Date.now())
+      interceptor.completeEvent(longRunningId, 'late', 0)
       interceptor.completeEvent(freshId, 'ok', Date.now())
 
       const history = interceptor.getEventHistory()
-      expect(history).toHaveLength(1)
-      expect(history[0].name).toBe('fresh')
+      expect(history.map((event) => event.name)).toEqual(['long-running', 'fresh'])
+      expect(history[0].duration).toBe(5 * 60 * 1000 + 1)
     })
   })
 

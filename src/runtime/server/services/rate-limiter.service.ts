@@ -11,7 +11,7 @@ import { injectable } from 'tsyringe'
 export class RateLimiterService {
   private static readonly CLEANUP_INTERVAL_MS = 60_000
 
-  private hits = new Map<string, number[]>()
+  private hits = new Map<string, { timestamps: number[]; windowMs: number }>()
   private lastCleanupAt = 0
 
   /**
@@ -24,7 +24,9 @@ export class RateLimiterService {
    */
   checkLimit(key: string, limit: number, windowMs: number): boolean {
     const now = Date.now()
-    const timestamps = this.hits.get(key) || []
+    const existing = this.hits.get(key)
+    const timestamps = existing?.timestamps || []
+    const retentionWindowMs = Math.max(existing?.windowMs || 0, windowMs)
 
     const validTimestamps = timestamps.filter((t) => now - t < windowMs)
 
@@ -32,8 +34,14 @@ export class RateLimiterService {
       return false
     }
 
-    validTimestamps.push(now)
-    this.hits.set(key, validTimestamps)
+    const retainedTimestamps = timestamps.filter((t) => now - t < retentionWindowMs)
+    retainedTimestamps.push(now)
+    this.hits.set(key, {
+      timestamps: retainedTimestamps,
+      // Retain entries for the longest window ever used for a key so cleanup
+      // cannot remove hits that may still enforce a configured throttle.
+      windowMs: retentionWindowMs,
+    })
 
     if (
       this.hits.size > 5000 ||
@@ -55,8 +63,8 @@ export class RateLimiterService {
    */
   private cleanup(now: number) {
     this.lastCleanupAt = now
-    for (const [key, times] of this.hits.entries()) {
-      if (times.every((t) => now - t > 60000)) this.hits.delete(key)
+    for (const [key, entry] of this.hits.entries()) {
+      if (entry.timestamps.every((t) => now - t >= entry.windowMs)) this.hits.delete(key)
     }
   }
 }
