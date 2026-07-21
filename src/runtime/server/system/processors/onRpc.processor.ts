@@ -2,6 +2,7 @@ import { inject, injectable } from 'tsyringe'
 import z from 'zod'
 import { AppError } from '../../../../'
 import { RpcAPI } from '../../../../adapters/contracts/transport/rpc.api'
+import { RpcPublicError } from '../../../../adapters/contracts/transport/rpc-error'
 import { type DecoratorProcessor } from '../../../../kernel/di/index'
 import { loggers } from '../../../../kernel/logger'
 import { Player } from '../../entities/player'
@@ -125,8 +126,12 @@ export class OnRpcProcessor implements DecoratorProcessor {
         loggers.netEvent.warn(`Invalid RPC payload`, {
           event: metadata.eventName,
           clientId,
+          validationError:
+            error instanceof Error
+              ? { name: error.name, message: error.message, stack: error.stack }
+              : String(error),
         })
-        throw error
+        throw new RpcPublicError('Invalid RPC payload')
       }
 
       try {

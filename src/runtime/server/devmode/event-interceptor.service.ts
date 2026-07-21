@@ -3,6 +3,48 @@ import { IDevModeInterceptor } from './contracts/IDevModeInterceptor'
 import { DevEvent, InterceptorOptions } from './types'
 
 /**
+ * Fixed-capacity circular buffer. Unlike `Array.push()` + `Array.shift()`,
+ * eviction of the oldest entry is O(1) instead of O(n).
+ */
+class RingBuffer<T> {
+  private buffer: T[] = []
+  private start = 0
+  private capacity: number
+
+  constructor(capacity: number) {
+    this.capacity = Math.max(1, capacity)
+  }
+
+  push(item: T): void {
+    if (this.buffer.length < this.capacity) {
+      this.buffer.push(item)
+      return
+    }
+    this.buffer[this.start] = item
+    this.start = (this.start + 1) % this.capacity
+  }
+
+  toArray(): T[] {
+    if (this.buffer.length < this.capacity) return [...this.buffer]
+    return [...this.buffer.slice(this.start), ...this.buffer.slice(0, this.start)]
+  }
+
+  clear(): void {
+    this.buffer = []
+    this.start = 0
+  }
+
+  setCapacity(capacity: number): void {
+    const newCapacity = Math.max(1, capacity)
+    if (newCapacity === this.capacity) return
+    const current = this.toArray()
+    this.capacity = newCapacity
+    this.buffer = current.slice(-newCapacity)
+    this.start = 0
+  }
+}
+
+/**
  * Implementation of the DevMode event interceptor.
  *
  * Captures and records all framework events for debugging and analysis.
@@ -10,8 +52,10 @@ import { DevEvent, InterceptorOptions } from './types'
  */
 @injectable()
 export class EventInterceptorService extends IDevModeInterceptor {
+  private static readonly MAX_PENDING_EVENTS = 10_000
+
   private enabled = false
-  private history: DevEvent[] = []
+  private historyBuffer: RingBuffer<DevEvent>
   private pendingEvents = new Map<string, DevEvent>()
   private options: InterceptorOptions
   private eventCounter = 0
@@ -24,6 +68,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       recordHistory: true,
       maxHistorySize: 1000,
     }
+    this.historyBuffer = new RingBuffer(this.options.maxHistorySize)
   }
 
   /**
@@ -32,6 +77,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
   configure(options: Partial<InterceptorOptions>): void {
     this.options = { ...this.options, ...options }
     this.enabled = this.options.enabled
+    this.historyBuffer.setCapacity(this.options.maxHistorySize)
   }
 
   onEventBefore(event: Omit<DevEvent, 'result' | 'duration'>): void {
@@ -66,11 +112,11 @@ export class EventInterceptorService extends IDevModeInterceptor {
   }
 
   getEventHistory(): DevEvent[] {
-    return [...this.history]
+    return this.historyBuffer.toArray()
   }
 
   clearHistory(): void {
-    this.history = []
+    this.historyBuffer.clear()
   }
 
   setEnabled(enabled: boolean): void {
@@ -107,6 +153,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       args,
       source,
     }
+    this.prunePendingEvents()
     this.pendingEvents.set(id, event)
     this.onEventBefore(event)
     return id
@@ -126,6 +173,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       args,
       source,
     }
+    this.prunePendingEvents()
     this.pendingEvents.set(id, event)
     this.onEventBefore(event)
     return id
@@ -144,6 +192,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
       direction: 'in',
       args,
     }
+    this.prunePendingEvents()
     this.pendingEvents.set(id, event)
     this.onEventBefore(event)
     return id
@@ -192,14 +241,16 @@ export class EventInterceptorService extends IDevModeInterceptor {
    * Gets events filtered by type.
    */
   getEventsByType(type: DevEvent['type']): DevEvent[] {
-    return this.history.filter((e) => e.type === type)
+    return this.historyBuffer.toArray().filter((e) => e.type === type)
   }
 
   /**
    * Gets events within a time range.
    */
   getEventsByTimeRange(startTime: number, endTime: number): DevEvent[] {
-    return this.history.filter((e) => e.timestamp >= startTime && e.timestamp <= endTime)
+    return this.historyBuffer
+      .toArray()
+      .filter((e) => e.timestamp >= startTime && e.timestamp <= endTime)
   }
 
   /**
@@ -216,7 +267,8 @@ export class EventInterceptorService extends IDevModeInterceptor {
     let durationCount = 0
     let errors = 0
 
-    for (const event of this.history) {
+    const history = this.historyBuffer.toArray()
+    for (const event of history) {
       byType[event.type] = (byType[event.type] || 0) + 1
       if (event.duration !== undefined) {
         totalDuration += event.duration
@@ -228,7 +280,7 @@ export class EventInterceptorService extends IDevModeInterceptor {
     }
 
     return {
-      total: this.history.length,
+      total: history.length,
       byType,
       avgDuration: durationCount > 0 ? totalDuration / durationCount : 0,
       errors,
@@ -240,9 +292,18 @@ export class EventInterceptorService extends IDevModeInterceptor {
   }
 
   private addToHistory(event: DevEvent): void {
-    this.history.push(event)
-    if (this.history.length > this.options.maxHistorySize) {
-      this.history.shift()
+    this.historyBuffer.push(event)
+  }
+
+  /**
+   * Caps pending events so instrumentation cannot grow unbounded without imposing an
+   * arbitrary execution timeout on legitimate long-running operations.
+   */
+  private prunePendingEvents(): void {
+    while (this.pendingEvents.size >= EventInterceptorService.MAX_PENDING_EVENTS) {
+      const oldestId = this.pendingEvents.keys().next().value
+      if (oldestId === undefined) return
+      this.pendingEvents.delete(oldestId)
     }
   }
 
