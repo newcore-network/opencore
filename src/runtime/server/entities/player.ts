@@ -14,6 +14,7 @@ import { loggers } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
+import type { ArgsOf, ClientEvents, NameOf } from '../../shared/types/register'
 import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.types'
@@ -163,11 +164,18 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   /**
    * Sends a network event exclusively to this specific player (client-side).
    *
+   * @remarks
+   * When typegen is active, `eventName` autocompletes to the events declared by
+   * `@Client.OnNet` handlers and `args` is checked against the matching handler signature.
+   *
    * @param eventName - The name of the event to trigger on the client.
    * @param args - Data to send to the client.
    */
-  emit(eventName: string, ...args: any[]): void {
-    this.adapters.events.emit(eventName, this.clientID, ...args)
+  emit<K extends NameOf<ClientEvents>>(
+    eventName: K,
+    ...args: ArgsOf<ClientEvents, K> extends infer A ? (A extends unknown[] ? A : any[]) : any[]
+  ): void {
+    this.adapters.events.emit(eventName, this.clientID, ...(args as unknown[]))
   }
 
   /**

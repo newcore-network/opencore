@@ -1,13 +1,11 @@
 import { injectable } from 'tsyringe'
 import { WebViewService } from './webview.service'
 import type { WebViewFocusOptions } from '../../adapters/contracts/client/ui/webview/types'
+import type { NameOf, PayloadOf, ViewReceive, ViewSend } from '../shared/types/register'
 import { di } from './client-container'
 
 @injectable()
-export class WebViewBridge<
-  TSend extends Record<string, any> = Record<string, any>,
-  TReceive extends Record<string, any> = Record<string, any>,
-> {
+export class WebViewBridge<TSend extends object = ViewSend, TReceive extends object = ViewReceive> {
   constructor(
     private readonly serviceResolver: WebViewService | (() => WebViewService),
     private readonly viewId = 'default',
@@ -43,7 +41,14 @@ export class WebViewBridge<
     return this.service.getCapabilities()
   }
 
-  send<K extends keyof TSend & string>(action: K, data: TSend[K]): void {
+  /**
+   * Sends a message to the WebView.
+   *
+   * @remarks
+   * With typegen active, `action` autocompletes to the messages the UI listens for and `data`
+   * is checked against the payload declared there.
+   */
+  send<K extends NameOf<TSend>>(action: K, data: PayloadOf<TSend, K>): void {
     this.service.send(this.viewId, action, data)
   }
 
@@ -107,8 +112,8 @@ export class WebViewBridge<
 }
 
 export class NuiBridge<
-  TSend extends Record<string, any> = Record<string, any>,
-  TReceive extends Record<string, any> = Record<string, any>,
+  TSend extends object = ViewSend,
+  TReceive extends object = ViewReceive,
 > extends WebViewBridge<TSend, TReceive> {}
 
 function resolveWebViewService(): WebViewService {
@@ -119,8 +124,8 @@ export const WebView = new WebViewBridge(resolveWebViewService)
 export const NUI = WebView
 
 export function createWebView<
-  TSend extends Record<string, any> = Record<string, any>,
-  TReceive extends Record<string, any> = Record<string, any>,
+  TSend extends object = ViewSend,
+  TReceive extends object = ViewReceive,
 >(viewId: string): WebViewBridge<TSend, TReceive> {
   return new WebViewBridge(resolveWebViewService, viewId)
 }

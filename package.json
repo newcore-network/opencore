@@ -24,6 +24,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
+    "./register": {
+      "types": "./dist/runtime/shared/types/register.d.ts",
+      "import": "./dist/runtime/shared/types/register.js",
+      "require": "./dist/runtime/shared/types/register.js"
+    },
     "./server": {
       "types": "./dist/runtime/server/index.d.ts",
       "import": "./dist/runtime/server/index.js",

@@ -1,4 +1,11 @@
 import { EventContext, RuntimeContext } from './context'
+import type {
+  ClientRpc,
+  NameOf,
+  RpcArgsOf,
+  RpcResultOf,
+  ServerRpc,
+} from '../../../runtime/shared/types/register'
 
 export interface RpcContext extends EventContext {
   /**
@@ -17,13 +24,28 @@ export interface RpcContext extends EventContext {
 export type RpcTarget = number | number[] | 'all'
 export type RpcCallTarget = number | number[]
 
-type RpcCallArgs<C extends RuntimeContext> = C extends 'server'
-  ? [target: RpcCallTarget, ...args: unknown[]]
-  : [...args: unknown[]]
+/**
+ * The map of RPCs this runtime may *invoke*.
+ *
+ * @remarks
+ * A server calls handlers registered on clients (`@Client.OnRPC`) and vice versa. Both
+ * resolve to a loose map when typegen is off.
+ *
+ * Only the invoking side is narrowed: `on()` keeps inferring from its handler, because those
+ * handlers are what the generator reads to build this map.
+ */
+type InvokeRpcMap<C extends RuntimeContext> = C extends 'server' ? ClientRpc : ServerRpc
 
-type RpcNotifyArgs<C extends RuntimeContext> = C extends 'server'
-  ? [target: RpcTarget, ...args: unknown[]]
-  : [...args: unknown[]]
+/** Coerces a resolved payload type back into a rest-parameter-compatible tuple. */
+type AsArgs<A> = A extends unknown[] ? A : unknown[]
+
+type RpcCallArgs<C extends RuntimeContext, A = unknown[]> = C extends 'server'
+  ? [target: RpcCallTarget, ...args: AsArgs<A>]
+  : [...args: AsArgs<A>]
+
+type RpcNotifyArgs<C extends RuntimeContext, A = unknown[]> = C extends 'server'
+  ? [target: RpcTarget, ...args: AsArgs<A>]
+  : [...args: AsArgs<A>]
 
 /**
  * Remote Procedure Call API.
@@ -67,7 +89,10 @@ export abstract class RpcAPI<C extends RuntimeContext> {
    * @remarks
    * Use this when you need a return value.
    */
-  abstract call<TResult = unknown>(name: string, ...args: RpcCallArgs<C>): Promise<TResult>
+  abstract call<TResult = never, K extends NameOf<InvokeRpcMap<C>> = NameOf<InvokeRpcMap<C>>>(
+    name: K,
+    ...args: RpcCallArgs<C, RpcArgsOf<InvokeRpcMap<C>, K>>
+  ): Promise<[TResult] extends [never] ? RpcResultOf<InvokeRpcMap<C>, K> : TResult>
 
   /**
    * Notify an RPC and wait for ACK. (acknowledgments)
@@ -75,5 +100,8 @@ export abstract class RpcAPI<C extends RuntimeContext> {
    * @remarks
    * Use this when you only need delivery confirmation (no return value).
    */
-  abstract notify(name: string, ...args: RpcNotifyArgs<C>): Promise<void>
+  abstract notify<K extends NameOf<InvokeRpcMap<C>>>(
+    name: K,
+    ...args: RpcNotifyArgs<C, RpcArgsOf<InvokeRpcMap<C>, K>>
+  ): Promise<void>
 }
