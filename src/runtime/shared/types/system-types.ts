@@ -3,10 +3,11 @@ type ValueOf<T> = T[keyof T]
 const SYSTEM_EVENT_NAMESPACE = 'opencore'
 const SYSTEM_CORE_EVENT_NAMESPACE = '_systemcore'
 
-const systemEvent = (scope: string, action: string) =>
+const systemEvent = <Scope extends string, Action extends string>(scope: Scope, action: Action) =>
   `${SYSTEM_EVENT_NAMESPACE}:${scope}:${action}` as const
 
-const systemCoreEvent = (action: string) => `${SYSTEM_CORE_EVENT_NAMESPACE}:${action}` as const
+const systemCoreEvent = <Action extends string>(action: Action) =>
+  `${SYSTEM_CORE_EVENT_NAMESPACE}:${action}` as const
 
 export type RemoteCommandExecuteEventName =
   `${typeof SYSTEM_EVENT_NAMESPACE}:command:execute:${string}`

@@ -3,9 +3,9 @@
  *
  * @remarks
  * Strict mode admits these so that emitting a framework event stays legal even though no
- * resource declares one. Written as a namespace pattern rather than reusing `SystemEventName`,
- * because the values in `SYSTEM_EVENTS` are template literal types (`opencore:${string}`) built
- * by helper functions, so an exact union would not match them anyway.
+ * resource declares one. Written as a namespace pattern rather than a union of `SYSTEM_EVENTS`,
+ * because not every framework event has a fixed name: `buildRemoteCommandExecuteEventName`
+ * appends the target resource (`opencore:command:execute:${string}`).
  */
 type FrameworkEventName = `opencore:${string}` | `_systemcore:${string}`
 
