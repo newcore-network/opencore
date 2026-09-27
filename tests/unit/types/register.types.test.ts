@@ -76,6 +76,11 @@ describe('strict mode', () => {
     expectTypeOf<typeof SYSTEM_EVENTS.chat.message>().toExtend<`opencore:${string}`>()
   })
 
+  it('keeps each framework event name as its literal, so typegen can read it', () => {
+    expectTypeOf<typeof SYSTEM_EVENTS.chat.message>().toEqualTypeOf<'opencore:chat:message'>()
+    expectTypeOf<typeof SYSTEM_EVENTS.core.ready>().toEqualTypeOf<'_systemcore:ready'>()
+  })
+
   it('pins SystemEventName as currently never', () => {
     expectTypeOf<[SystemEventName]>().toEqualTypeOf<[never]>()
   })
