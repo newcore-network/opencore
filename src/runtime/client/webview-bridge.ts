@@ -1,11 +1,13 @@
 import { injectable } from 'tsyringe'
 import { WebViewService } from './webview.service'
 import type { WebViewFocusOptions } from '../../adapters/contracts/client/ui/webview/types'
-import type { NameOf, PayloadOf, ViewReceive, ViewSend } from '../shared/types/register'
 import { di } from './client-container'
 
 @injectable()
-export class WebViewBridge<TSend extends object = ViewSend, TReceive extends object = ViewReceive> {
+export class WebViewBridge<
+  TSend extends Record<string, any> = Record<string, any>,
+  TReceive extends Record<string, any> = Record<string, any>,
+> {
   constructor(
     private readonly serviceResolver: WebViewService | (() => WebViewService),
     private readonly viewId = 'default',
@@ -41,14 +43,7 @@ export class WebViewBridge<TSend extends object = ViewSend, TReceive extends obj
     return this.service.getCapabilities()
   }
 
-  /**
-   * Sends a message to the WebView.
-   *
-   * @remarks
-   * With typegen active, `action` autocompletes to the messages the UI listens for and `data`
-   * is checked against the payload declared there.
-   */
-  send<K extends NameOf<TSend>>(action: K, data: PayloadOf<TSend, K>): void {
+  send<K extends keyof TSend & string>(action: K, data: TSend[K]): void {
     this.service.send(this.viewId, action, data)
   }
 
@@ -112,25 +107,20 @@ export class WebViewBridge<TSend extends object = ViewSend, TReceive extends obj
 }
 
 export class NuiBridge<
-  TSend extends object = ViewSend,
-  TReceive extends object = ViewReceive,
+  TSend extends Record<string, any> = Record<string, any>,
+  TReceive extends Record<string, any> = Record<string, any>,
 > extends WebViewBridge<TSend, TReceive> {}
 
 function resolveWebViewService(): WebViewService {
   return di.resolve(WebViewService)
 }
 
-/*
- * Annotated rather than inferred: an inferred type is resolved while the framework itself is
- * compiled, where no generated file exists, so the emitted `.d.ts` would pin the loose view map
- * and typegen could never narrow the singleton. `WebViewBridge` keeps its defaults deferred.
- */
-export const WebView: WebViewBridge = new WebViewBridge(resolveWebViewService)
-export const NUI: WebViewBridge = WebView
+export const WebView = new WebViewBridge(resolveWebViewService)
+export const NUI = WebView
 
 export function createWebView<
-  TSend extends object = ViewSend,
-  TReceive extends object = ViewReceive,
+  TSend extends Record<string, any> = Record<string, any>,
+  TReceive extends Record<string, any> = Record<string, any>,
 >(viewId: string): WebViewBridge<TSend, TReceive> {
   return new WebViewBridge(resolveWebViewService, viewId)
 }
