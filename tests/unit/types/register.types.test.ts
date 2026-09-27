@@ -8,6 +8,7 @@ import type {
   NameOf,
   PayloadOf,
   RpcArgsOf,
+  RpcCallResultOf,
   RpcResultOf,
   ServerEvents,
   ServerRpc,
@@ -99,6 +100,25 @@ describe('payload extraction', () => {
 
   it('reports a generated map as registered', () => {
     expectTypeOf<IsRegistered<GeneratedEvents>>().toEqualTypeOf<true>()
+  })
+})
+
+describe('RpcCallResultOf', () => {
+  type LooseRpc = Record<string, { args: unknown[]; result: unknown }>
+
+  it('resolves a generated name to its handler result, ignoring TResult', () => {
+    expectTypeOf<RpcCallResultOf<GeneratedRpc, 'bank:getBalance', never>>().toEqualTypeOf<number>()
+    expectTypeOf<RpcCallResultOf<GeneratedRpc, 'bank:getBalance', string>>().toEqualTypeOf<number>()
+  })
+
+  it('lets TResult type a name the generated map does not know', () => {
+    expectTypeOf<RpcCallResultOf<GeneratedRpc, 'other:rpc', string>>().toEqualTypeOf<string>()
+    expectTypeOf<RpcCallResultOf<GeneratedRpc, 'other:rpc', never>>().toEqualTypeOf<unknown>()
+  })
+
+  it('keeps TResult while typegen is off', () => {
+    expectTypeOf<RpcCallResultOf<LooseRpc, 'anything', number>>().toEqualTypeOf<number>()
+    expectTypeOf<RpcCallResultOf<LooseRpc, 'anything', never>>().toEqualTypeOf<unknown>()
   })
 })
 

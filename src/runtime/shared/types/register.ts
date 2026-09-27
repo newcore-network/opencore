@@ -179,6 +179,27 @@ export type RpcResultOf<M, K extends PropertyKey> = K extends keyof M
     : unknown
   : unknown
 
+/**
+ * The resolved value of `rpc.call(K)`.
+ *
+ * @remarks
+ * A generated name always resolves to its handler's return type, ignoring `TResult`: TypeScript
+ * infers `TResult` from the call's contextual type just as readily as from an explicit type
+ * argument, so honouring it would let `const x: Promise<string> = call('bank:getBalance')`
+ * compile against a handler returning `number`.
+ *
+ * Names outside the generated map, and every name while typegen is off, keep resolving to
+ * `TResult` (or `unknown`), so existing code relying on that inference keeps compiling.
+ */
+export type RpcCallResultOf<M, K extends PropertyKey, TResult> = [IsRegistered<M>, K] extends [
+  true,
+  keyof M,
+]
+  ? RpcResultOf<M, K>
+  : [TResult] extends [never]
+    ? unknown
+    : TResult
+
 /** Extracts the payload registered for view message `K`, defaulting to `unknown`. */
 export type PayloadOf<M, K extends PropertyKey> = K extends keyof M ? M[K] : unknown
 

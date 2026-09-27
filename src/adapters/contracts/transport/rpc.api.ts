@@ -3,7 +3,7 @@ import type {
   ClientRpc,
   NameOf,
   RpcArgsOf,
-  RpcResultOf,
+  RpcCallResultOf,
   ServerRpc,
 } from '../../../runtime/shared/types/register'
 
@@ -88,11 +88,14 @@ export abstract class RpcAPI<C extends RuntimeContext> {
    *
    * @remarks
    * Use this when you need a return value.
+   *
+   * With typegen active, a generated name resolves to its handler's return type and `TResult`
+   * is ignored for it; `TResult` only types calls to names typegen does not know.
    */
   abstract call<TResult = never, K extends NameOf<InvokeRpcMap<C>> = NameOf<InvokeRpcMap<C>>>(
     name: K,
     ...args: RpcCallArgs<C, RpcArgsOf<InvokeRpcMap<C>, K>>
-  ): Promise<[TResult] extends [never] ? RpcResultOf<InvokeRpcMap<C>, K> : TResult>
+  ): Promise<RpcCallResultOf<InvokeRpcMap<C>, K, TResult>>
 
   /**
    * Notify an RPC and wait for ACK. (acknowledgments)
