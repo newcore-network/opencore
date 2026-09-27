@@ -48,25 +48,18 @@ export abstract class EventsAPI<C extends RuntimeContext> {
 
   /**
    * Emit an event.
-   *  SERVER → CLIENT
    * Server:
-   *   - sends to client(s)
+   *   - sends to client(s); the first argument after `event` is the target
    * Client:
-   *   - sends to server, targetOrArg will be ignored
-   */
-  abstract emit(event: string, target: Player | number | number[] | 'all', ...args: unknown[]): void
-
-  /**
-   * Emit an event.
-   *  CLIENT → SERVER
-   * Server:
-   *   - sends to client(s)
-   * Client:
-   *   - sends to server, targetOrArg will be ignored
+   *   - sends to server, no target
    *
    * @remarks
    * When typegen is active, `event` autocompletes to the names declared by the receiving side
    * and `args` is checked against that handler's signature.
+   *
+   * There is deliberately no untyped overload: one accepting `(event: string, target, ...unknown[])`
+   * would match any call the typed signature rejects, silently disabling both strict mode and
+   * payload checking. With typegen off this signature is already as loose as that overload was.
    */
   abstract emit<K extends NameOf<EmitEventMap<C>>>(
     event: K,

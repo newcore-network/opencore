@@ -25,6 +25,11 @@ import { NativeHandle } from '../../core'
  * Adapter bundle for player operations.
  * Passed to Player instances by PlayerDirectory.
  */
+/** `EventsAPI<'server'>.emit` without its typegen constraints, for forwarding pre-checked args. */
+interface UntypedServerEmitter {
+  emit(event: string, target: number, ...args: unknown[]): void
+}
+
 export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
@@ -175,7 +180,10 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
     eventName: K,
     ...args: ArgsOf<ClientEvents, K> extends infer A ? (A extends unknown[] ? A : any[]) : any[]
   ): void {
-    this.adapters.events.emit(eventName, this.clientID, ...(args as unknown[]))
+    // `args` was already checked against `K` by this signature; forward it through an untyped
+    // view, since TypeScript cannot relate this method's `K` to the one `EventsAPI.emit` infers.
+    const events: UntypedServerEmitter = this.adapters.events
+    events.emit(eventName, this.clientID, ...(args as unknown[]))
   }
 
   /**
