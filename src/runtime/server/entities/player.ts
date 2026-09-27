@@ -14,6 +14,7 @@ import { loggers } from '../../../kernel/logger'
 import { Vector3 } from '../../../kernel/utils/vector3'
 import { BaseEntity } from '../../core/entity'
 import { Spatial } from '../../core/spatial'
+import type { ArgsOf, ClientEvents, NameOf } from '../../shared/types/register'
 import { SYSTEM_EVENTS } from '../../shared/types/system-types'
 import { LinkedID } from '../types/linked-id'
 import { PlayerSession } from '../types/player-session.types'
@@ -24,6 +25,11 @@ import { NativeHandle } from '../../core'
  * Adapter bundle for player operations.
  * Passed to Player instances by PlayerDirectory.
  */
+/** `EventsAPI<'server'>.emit` without its typegen constraints, for forwarding pre-checked args. */
+interface UntypedServerEmitter {
+  emit(event: string, target: number, ...args: unknown[]): void
+}
+
 export interface PlayerAdapters {
   playerInfo: IPlayerInfo
   playerServer: IPlayerServer
@@ -163,11 +169,21 @@ export class Player extends BaseEntity implements Spatial, NativeHandle {
   /**
    * Sends a network event exclusively to this specific player (client-side).
    *
+   * @remarks
+   * When typegen is active, `eventName` autocompletes to the events declared by
+   * `@Client.OnNet` handlers and `args` is checked against the matching handler signature.
+   *
    * @param eventName - The name of the event to trigger on the client.
    * @param args - Data to send to the client.
    */
-  emit(eventName: string, ...args: any[]): void {
-    this.adapters.events.emit(eventName, this.clientID, ...args)
+  emit<K extends NameOf<ClientEvents>>(
+    eventName: K,
+    ...args: ArgsOf<ClientEvents, K> extends infer A ? (A extends unknown[] ? A : any[]) : any[]
+  ): void {
+    // `args` was already checked against `K` by this signature; forward it through an untyped
+    // view, since TypeScript cannot relate this method's `K` to the one `EventsAPI.emit` infers.
+    const events: UntypedServerEmitter = this.adapters.events
+    events.emit(eventName, this.clientID, ...(args as unknown[]))
   }
 
   /**
