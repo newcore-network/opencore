@@ -120,8 +120,13 @@ function resolveWebViewService(): WebViewService {
   return di.resolve(WebViewService)
 }
 
-export const WebView = new WebViewBridge(resolveWebViewService)
-export const NUI = WebView
+/*
+ * Annotated rather than inferred: an inferred type is resolved while the framework itself is
+ * compiled, where no generated file exists, so the emitted `.d.ts` would pin the loose view map
+ * and typegen could never narrow the singleton. `WebViewBridge` keeps its defaults deferred.
+ */
+export const WebView: WebViewBridge = new WebViewBridge(resolveWebViewService)
+export const NUI: WebViewBridge = WebView
 
 export function createWebView<
   TSend extends object = ViewSend,
