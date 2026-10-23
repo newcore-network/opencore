@@ -82,6 +82,16 @@ describe('typegen inactive', () => {
     expectTypeOf<OpenCoreClientLibrary<'hud'>>().toExtend<OpenCoreClientLibrary>()
   })
 
+  it('still takes the payload as an explicit type argument', () => {
+    const rp = busAs<OpenCoreServerLibrary<'rp'>>()
+    rp.emit<Spawned>('character:spawned', { accountId: 'a', firstTime: true })
+    // @ts-expect-error firstTime is missing
+    rp.emit<Spawned>('character:spawned', { accountId: 'a' })
+    rp.on<Spawned>('character:spawned', (payload) => {
+      expectTypeOf(payload).toEqualTypeOf<Spawned | undefined>()
+    })
+  })
+
   it('stays loose for a library created from a wide name', () => {
     expectTypeOf<LibraryEventsOf<ServerLibs, string>>().toEqualTypeOf<Record<string, unknown>>()
   })

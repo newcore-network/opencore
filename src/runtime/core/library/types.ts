@@ -75,7 +75,7 @@ export interface LibraryBus<M = LooseLibraryEventMap> {
   /**
    * Subscribe to an internal event.
    */
-  on<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+  on<TPayload = unknown, K extends LibraryEventNameOf<M> = LibraryEventNameOf<M>>(
     event: K,
     handler: LibraryEventHandler<LibraryPayloadOf<M, K, TPayload>>,
   ): void
@@ -83,7 +83,7 @@ export interface LibraryBus<M = LooseLibraryEventMap> {
   /**
    * Subscribe to an internal event only once.
    */
-  once<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+  once<TPayload = unknown, K extends LibraryEventNameOf<M> = LibraryEventNameOf<M>>(
     event: K,
     handler: LibraryEventHandler<LibraryPayloadOf<M, K, TPayload>>,
   ): void
@@ -91,7 +91,7 @@ export interface LibraryBus<M = LooseLibraryEventMap> {
   /**
    * Remove an internal event handler.
    */
-  off<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+  off<TPayload = unknown, K extends LibraryEventNameOf<M> = LibraryEventNameOf<M>>(
     event: K,
     handler: LibraryEventHandler<LibraryPayloadOf<M, K, TPayload>>,
   ): void
@@ -99,7 +99,7 @@ export interface LibraryBus<M = LooseLibraryEventMap> {
   /**
    * Emit an internal event to handlers in this library.
    */
-  emit<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+  emit<TPayload = unknown, K extends LibraryEventNameOf<M> = LibraryEventNameOf<M>>(
     event: K,
     payload?: LibraryPayloadOf<M, K, TPayload>,
   ): void
