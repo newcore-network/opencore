@@ -22,7 +22,7 @@ import { emitLibraryEvent } from '../bus/library-event.bus'
  *   `opencore:<libName>:<eventName>` (or custom namespace).
  * - For request/response patterns, prefer RPC.
  */
-export function createClientLibrary<const N extends string = string>(
+export function createClientLibrary<N extends string = string>(
   name: N,
   opts?: {
     namespace?: string

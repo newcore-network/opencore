@@ -23,7 +23,7 @@ import { emitLibraryEvent } from '../bus/library-event.bus'
  *   naming convention `opencore:<libName>:<eventName>` (or custom namespace).
  * - This helper does not replace RPC for request/response flows.
  */
-export function createServerLibrary<const N extends string = string>(
+export function createServerLibrary<N extends string = string>(
   name: N,
   opts?: {
     namespace?: string

@@ -8,7 +8,7 @@ import { LibraryNamespace, OpenCoreLibraryBase } from './types'
  * The base contains only library-local events (internal bus) and namespaced
  * event-name building. External bridge behavior is added by server/client wrappers.
  */
-export function createLibraryBase<const N extends string = string>(
+export function createLibraryBase<N extends string = string>(
   name: N,
   opts?: {
     namespace?: string
