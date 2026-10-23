@@ -77,6 +77,11 @@ describe('typegen inactive', () => {
     rp.off('character:spawned', handler)
   })
 
+  it('assigns a named library to the default library type', () => {
+    expectTypeOf<OpenCoreServerLibrary<'rp'>>().toExtend<OpenCoreServerLibrary>()
+    expectTypeOf<OpenCoreClientLibrary<'hud'>>().toExtend<OpenCoreClientLibrary>()
+  })
+
   it('stays loose for a library created from a wide name', () => {
     expectTypeOf<LibraryEventsOf<ServerLibs, string>>().toEqualTypeOf<Record<string, unknown>>()
   })
@@ -132,6 +137,10 @@ describe('registered library', () => {
     rp.once('character:left', (payload) => {
       expectTypeOf(payload).toEqualTypeOf<{ accountId: string } | undefined>()
     })
+  })
+
+  it('assigns a typed library to the default library type', () => {
+    expectTypeOf<OpenCoreServerLibrary<'rp', RpEvents>>().toExtend<OpenCoreServerLibrary>()
   })
 
   it('autocompletes known names and still accepts others outside strict mode', () => {

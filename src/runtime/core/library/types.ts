@@ -155,10 +155,13 @@ export interface OpenCoreLibraryConfigAccessor<TConfig = Record<string, unknown>
  * Adds a FiveM-based external bridge on top of the internal library bus.
  *
  * `N` is the library name, kept as a literal so the bus can be typed through the
- * `serverLibraryEvents` map typegen generates for it.
+ * `serverLibraryEvents` map typegen generates for it. That map is carried by `M` rather than derived
+ * inside the body, so a named library stays assignable to the default `N = string` type.
  */
-export interface OpenCoreServerLibrary<N extends LibraryName = LibraryName>
-  extends OpenCoreLibraryBase<N, LibraryEventsOf<ServerLibraryEvents, N>> {
+export interface OpenCoreServerLibrary<
+  N extends LibraryName = LibraryName,
+  M = LibraryEventsOf<ServerLibraryEvents, N>,
+> extends OpenCoreLibraryBase<N, M> {
   side: 'server'
   emitExternal<TPayload = unknown>(eventName: LibraryEventName, payload?: TPayload): void
   emitNetExternal<TPayload = unknown>(
@@ -184,10 +187,13 @@ export interface OpenCoreServerLibrary<N extends LibraryName = LibraryName>
  * Adds a client-to-server external bridge on top of the internal library bus.
  *
  * `N` is the library name, kept as a literal so the bus can be typed through the
- * `clientLibraryEvents` map typegen generates for it.
+ * `clientLibraryEvents` map typegen generates for it. That map is carried by `M` rather than derived
+ * inside the body, so a named library stays assignable to the default `N = string` type.
  */
-export interface OpenCoreClientLibrary<N extends LibraryName = LibraryName>
-  extends OpenCoreLibraryBase<N, LibraryEventsOf<ClientLibraryEvents, N>> {
+export interface OpenCoreClientLibrary<
+  N extends LibraryName = LibraryName,
+  M = LibraryEventsOf<ClientLibraryEvents, N>,
+> extends OpenCoreLibraryBase<N, M> {
   side: 'client'
   emitServer<TPayload = unknown>(eventName: LibraryEventName, payload?: TPayload): void
   getLogger(): {
