@@ -7,7 +7,11 @@ import {
   createLibraryBase,
   createLibraryConfigAccessor,
 } from '../../core/library'
-import { LibraryEventEnvelope, OpenCoreServerLibrary } from '../../core/library/types'
+import {
+  LibraryEventEnvelope,
+  LibraryEventName,
+  OpenCoreServerLibrary,
+} from '../../core/library/types'
 import { emitLibraryEvent } from '../bus/library-event.bus'
 
 /**
@@ -19,15 +23,16 @@ import { emitLibraryEvent } from '../bus/library-event.bus'
  *   naming convention `opencore:<libName>:<eventName>` (or custom namespace).
  * - This helper does not replace RPC for request/response flows.
  */
-export function createServerLibrary(
-  name: string,
+export function createServerLibrary<N extends string = string>(
+  name: N,
   opts?: {
     namespace?: string
   },
-): OpenCoreServerLibrary {
+): OpenCoreServerLibrary<N> {
   const base = createLibraryBase(name, opts)
   const logger = coreLogger.server(`Library:${base.name}`)
-  const emitInternal = base.emit
+  // The bus underneath is untyped; the library's event map only types its public surface.
+  const emitInternal = base.emit as (event: LibraryEventName, payload?: unknown) => void
   const engineEvents = GLOBAL_CONTAINER.isRegistered(IEngineEvents as any)
     ? (GLOBAL_CONTAINER.resolve(IEngineEvents as any) as IEngineEvents)
     : null
@@ -38,7 +43,7 @@ export function createServerLibrary(
   return {
     ...base,
     side: 'server',
-    emit(eventName, payload) {
+    emit(eventName, payload?) {
       emitInternal(eventName, payload)
 
       const eventId = buildLibraryEventId(base.name, eventName)

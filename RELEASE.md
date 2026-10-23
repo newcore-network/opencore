@@ -1,18 +1,15 @@
-## OpenCore Framework v1.2.0
+## OpenCore Framework v1.3.0
 
 ### Added
-- Added the `Register` type registry, exported from `@open-core/framework/register`, which the OpenCore CLI (v1.6.0+) augments with the generated `.opencore/opencore.gen.ts` of every resource.
-- Typed `events.emit()`, `player.emit()`, `rpc.call()`, `rpc.notify()` and `WebView.send()` against the registered handlers: names autocomplete and payloads are checked against the handler signatures.
-- Typed `rpc.call()` results from the handler's return type.
-- Added strict mode, enabled through the CLI's `build.typegen.strict`, which rejects names no handler declares while still accepting the framework's own `opencore:*` events.
-- Exported the registry helper types (`ClientEvents`, `ServerEvents`, `ServerRpc`, `ClientRpc`, `Commands`, `ViewSend`, `ViewReceive`, `NameOf`, `StrictNameOf`, `ArgsOf`, `RpcArgsOf`, `RpcResultOf`, `RpcCallResultOf`, `PayloadOf`, `DropFirst`, `IsRegistered`) from the package root.
+- Typed library events through the `Register` type registry. The OpenCore CLI (vX.Y.Z+) now generates a `serverLibraryEvents` and a `clientLibraryEvents` map per resource from its `@OnLibraryEvent` listeners and, for the events no listener types, from the library's `emit()` calls.
+- `createServerLibrary()`, `createClientLibrary()` and `createLibraryBase()` keep the library name as a literal type (`OpenCoreServerLibrary<'rp'>`), so `on()`, `once()`, `off()` and `emit()` are typed against that library's events: names autocomplete and payloads are checked against the listeners.
+- `emit()` requires the payload of a generated event unless its listeners accept `undefined`.
+- In strict mode (`build.typegen.strict`), a registered library rejects event names no listener or `emit()` declares. Unlike network events, it does not admit the framework's `opencore:*` names, as library events are local to a library.
+- Exported the library helper types (`ServerLibraryEvents`, `ClientLibraryEvents`, `LooseLibraryEventMap`, `LibraryEventsOf`, `LibraryEventNameIn`, `LibraryEventNameOf`, `LibraryPayloadOf`, `LibraryEmitArgsOf`) from the package root.
 
 ### Changed
-- Without generated types every signature keeps its previous loose form, so enabling or disabling typegen requires no source changes.
-- `WebViewBridge`, `NuiBridge` and `createWebView()` now default their message maps to the registered `ViewSend` and `ViewReceive`, and accept any object type as a map.
-- Removed the untyped `emit(event: string, target, ...args: unknown[])` overload of `EventsAPI`. It matched every call the typed signature rejected; without generated types the remaining signature is equally loose.
-- For a registered RPC name, `rpc.call()` always resolves to the handler's result and ignores an explicit `TResult`. `TResult` still types calls to unregistered names.
+- `LibraryBus`, `OpenCoreLibraryBase`, `OpenCoreServerLibrary` and `OpenCoreClientLibrary` take type parameters for the library name and its event map. Both default to the previous loose form, so existing annotations such as `lib: OpenCoreServerLibrary` keep accepting any library.
+- Without generated types, or for a library typegen has not registered, every library signature keeps its previous loose form, and an explicit payload type argument (`lib.emit<Payload>(...)`) keeps working.
 
-### Fixed
-- Prevented a contextual type from overriding a registered RPC result, which let `const x: Promise<string> = rpc.call('bank:getBalance')` compile against a handler returning `number`.
-- Fixed the `WebView` and `NUI` singletons being published with a pinned loose type, which kept `send()` from ever being narrowed.
+### Notes
+- Library events are keyed by library name across the whole project. Two unrelated libraries created with the same name in different resources have their events merged, and the CLI warns when it detects it; give one of them a different name.

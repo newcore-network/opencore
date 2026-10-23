@@ -8,12 +8,12 @@ import { LibraryNamespace, OpenCoreLibraryBase } from './types'
  * The base contains only library-local events (internal bus) and namespaced
  * event-name building. External bridge behavior is added by server/client wrappers.
  */
-export function createLibraryBase(
-  name: string,
+export function createLibraryBase<N extends string = string>(
+  name: N,
   opts?: {
     namespace?: string
   },
-): OpenCoreLibraryBase {
+): OpenCoreLibraryBase<N> {
   const bus = createLibraryBus()
   const namespace: LibraryNamespace = opts?.namespace ?? `opencore:${name}`
 
