@@ -124,6 +124,10 @@ export type ViewReceive = MapOf<'viewReceive', LooseViewMap>
  * @remarks
  * Two resources listening to the same library each contribute a partial map under its name;
  * {@link ResolveMap} intersects them, so the library ends up with the events of both.
+ *
+ * Libraries are keyed by name alone, so two unrelated libraries sharing a name in different
+ * resources have their events merged too. The CLI warns when two resources create a library
+ * with the same name; give one of them a different name.
  */
 export type ServerLibraryEvents = MapOf<'serverLibraryEvents', LooseLibraryMap>
 /**
