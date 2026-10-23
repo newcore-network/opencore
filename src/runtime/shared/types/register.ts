@@ -98,6 +98,10 @@ type LooseRpcMap = Record<string, { args: unknown[]; result: unknown }>
  * `on()` handlers that read fields off `data` without narrowing first.
  */
 type LooseViewMap = Record<string, any>
+/** Loose shape of a single library's events, used whenever that library has not been generated. */
+export type LooseLibraryEventMap = Record<string, unknown>
+/** Loose shape used whenever no library events have been generated, keyed by library name. */
+type LooseLibraryMap = Record<string, LooseLibraryEventMap>
 
 /** Events the server may emit to clients — sourced from `@Client.OnNet` handlers. */
 export type ClientEvents = MapOf<'clientEvents', LooseEventMap>
@@ -113,6 +117,20 @@ export type Commands = MapOf<'commands', Record<string, unknown>>
 export type ViewSend = MapOf<'viewSend', LooseViewMap>
 /** Messages a WebView sends to the client — sourced from `@Client.OnView` handlers. */
 export type ViewReceive = MapOf<'viewReceive', LooseViewMap>
+/**
+ * Events of each server library, keyed by library name — sourced from `@Server.OnLibraryEvent`
+ * handlers and, for the events no handler listens to, from the library's `emit()` calls.
+ *
+ * @remarks
+ * Two resources listening to the same library each contribute a partial map under its name;
+ * {@link ResolveMap} intersects them, so the library ends up with the events of both.
+ */
+export type ServerLibraryEvents = MapOf<'serverLibraryEvents', LooseLibraryMap>
+/**
+ * Events of each client library, keyed by library name — sourced from `@Client.OnLibraryEvent`
+ * handlers and the library's `emit()` calls, like {@link ServerLibraryEvents}.
+ */
+export type ClientLibraryEvents = MapOf<'clientLibraryEvents', LooseLibraryMap>
 
 /**
  * True when a registry opted into strict mode (`build.typegen.strict`).
@@ -202,6 +220,52 @@ export type RpcCallResultOf<M, K extends PropertyKey, TResult> = [IsRegistered<M
 
 /** Extracts the payload registered for view message `K`, defaulting to `unknown`. */
 export type PayloadOf<M, K extends PropertyKey> = K extends keyof M ? M[K] : unknown
+
+/**
+ * The event map registered for library `N`, or the loose map when `N` has none.
+ *
+ * @remarks
+ * `N` stays `string` when a library is created from a non-literal name, and a wide name can
+ * never pick one library's map, so it falls back as well.
+ */
+export type LibraryEventsOf<Libs, N extends string> = string extends N
+  ? LooseLibraryEventMap
+  : N extends keyof Libs
+    ? Libs[N]
+    : LooseLibraryEventMap
+
+/**
+ * Narrows to the event names of a library map, against the strict flag of registry `R`.
+ *
+ * @remarks
+ * Behaves like {@link NameOf} except that strict mode admits no framework namespace: library
+ * events are local to a library, so `opencore:*` names are never legitimate there.
+ *
+ * Parameterised over the registry for the same reason as {@link ResolveMap}.
+ */
+export type LibraryEventNameIn<R, M> = string extends keyof M & string
+  ? string
+  : IsStrictIn<R> extends true
+    ? keyof M & string
+    : (keyof M & string) | (string & {})
+
+/** {@link LibraryEventNameIn} applied to the live registry. */
+export type LibraryEventNameOf<M> = LibraryEventNameIn<Register, M>
+
+/**
+ * The payload of library event `K`.
+ *
+ * @remarks
+ * A generated name always resolves to its listeners' payload. Any other name, and every name
+ * while typegen is off, resolves to `TPayload`, so a handler annotated as `(payload?: T)` keeps
+ * inferring `T` exactly as it did before library events were typed.
+ */
+export type LibraryPayloadOf<M, K extends PropertyKey, TPayload = unknown> = [
+  IsRegistered<M>,
+  K,
+] extends [true, keyof M]
+  ? M[K & keyof M]
+  : TPayload
 
 /**
  * Drops the leading parameter of a tuple.

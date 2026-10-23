@@ -1,3 +1,12 @@
+import type {
+  ClientLibraryEvents,
+  LibraryEventNameOf,
+  LibraryEventsOf,
+  LibraryPayloadOf,
+  LooseLibraryEventMap,
+  ServerLibraryEvents,
+} from '../../shared/types/register'
+
 /**
  * Unique name used to identify a library.
  */
@@ -56,27 +65,44 @@ export interface LibraryEventEnvelope<TPayload = unknown> {
  *
  * @remarks
  * This bus is pure TypeScript and does not use FiveM or network events.
+ *
+ * `M` maps each event name to its payload. When typegen registered the library, names
+ * autocomplete (and, in strict mode, are checked) and payloads are those of its
+ * `@OnLibraryEvent` listeners. Otherwise `M` is loose and every method keeps inferring the
+ * payload from `TPayload`, exactly as before.
  */
-export interface LibraryBus {
+export interface LibraryBus<M = LooseLibraryEventMap> {
   /**
    * Subscribe to an internal event.
    */
-  on<TPayload = unknown>(event: LibraryEventName, handler: LibraryEventHandler<TPayload>): void
+  on<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+    event: K,
+    handler: LibraryEventHandler<LibraryPayloadOf<M, K, TPayload>>,
+  ): void
 
   /**
    * Subscribe to an internal event only once.
    */
-  once<TPayload = unknown>(event: LibraryEventName, handler: LibraryEventHandler<TPayload>): void
+  once<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+    event: K,
+    handler: LibraryEventHandler<LibraryPayloadOf<M, K, TPayload>>,
+  ): void
 
   /**
    * Remove an internal event handler.
    */
-  off<TPayload = unknown>(event: LibraryEventName, handler: LibraryEventHandler<TPayload>): void
+  off<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+    event: K,
+    handler: LibraryEventHandler<LibraryPayloadOf<M, K, TPayload>>,
+  ): void
 
   /**
    * Emit an internal event to handlers in this library.
    */
-  emit<TPayload = unknown>(event: LibraryEventName, payload?: TPayload): void
+  emit<K extends LibraryEventNameOf<M>, TPayload = unknown>(
+    event: K,
+    payload?: LibraryPayloadOf<M, K, TPayload>,
+  ): void
 }
 
 /**
@@ -86,11 +112,12 @@ export interface LibraryBus {
  * Includes only library-local event operations and event name composition.
  * External bridge behavior is added by server/client wrappers.
  */
-export interface OpenCoreLibraryBase extends LibraryBus {
+export interface OpenCoreLibraryBase<N extends LibraryName = LibraryName, M = LooseLibraryEventMap>
+  extends LibraryBus<M> {
   /**
    * Library identifier.
    */
-  name: LibraryName
+  name: N
 
   /**
    * Event namespace used by the external bridge.
@@ -126,8 +153,12 @@ export interface OpenCoreLibraryConfigAccessor<TConfig = Record<string, unknown>
  *
  * @remarks
  * Adds a FiveM-based external bridge on top of the internal library bus.
+ *
+ * `N` is the library name, kept as a literal so the bus can be typed through the
+ * `serverLibraryEvents` map typegen generates for it.
  */
-export interface OpenCoreServerLibrary extends OpenCoreLibraryBase {
+export interface OpenCoreServerLibrary<N extends LibraryName = LibraryName>
+  extends OpenCoreLibraryBase<N, LibraryEventsOf<ServerLibraryEvents, N>> {
   side: 'server'
   emitExternal<TPayload = unknown>(eventName: LibraryEventName, payload?: TPayload): void
   emitNetExternal<TPayload = unknown>(
@@ -151,8 +182,12 @@ export interface OpenCoreServerLibrary extends OpenCoreLibraryBase {
  *
  * @remarks
  * Adds a client-to-server external bridge on top of the internal library bus.
+ *
+ * `N` is the library name, kept as a literal so the bus can be typed through the
+ * `clientLibraryEvents` map typegen generates for it.
  */
-export interface OpenCoreClientLibrary extends OpenCoreLibraryBase {
+export interface OpenCoreClientLibrary<N extends LibraryName = LibraryName>
+  extends OpenCoreLibraryBase<N, LibraryEventsOf<ClientLibraryEvents, N>> {
   side: 'client'
   emitServer<TPayload = unknown>(eventName: LibraryEventName, payload?: TPayload): void
   getLogger(): {

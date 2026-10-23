@@ -6,7 +6,11 @@ import {
   createLibraryBase,
   createLibraryConfigAccessor,
 } from '../../core/library'
-import { LibraryEventEnvelope, OpenCoreClientLibrary } from '../../core/library/types'
+import {
+  LibraryEventEnvelope,
+  LibraryEventName,
+  OpenCoreClientLibrary,
+} from '../../core/library/types'
 import { emitLibraryEvent } from '../bus/library-event.bus'
 
 /**
@@ -18,15 +22,16 @@ import { emitLibraryEvent } from '../bus/library-event.bus'
  *   `opencore:<libName>:<eventName>` (or custom namespace).
  * - For request/response patterns, prefer RPC.
  */
-export function createClientLibrary(
-  name: string,
+export function createClientLibrary<const N extends string = string>(
+  name: N,
   opts?: {
     namespace?: string
   },
-): OpenCoreClientLibrary {
+): OpenCoreClientLibrary<N> {
   const base = createLibraryBase(name, opts)
   const logger = coreLogger.client(`Library:${base.name}`)
-  const emitInternal = base.emit
+  // The bus underneath is untyped; the library's event map only types its public surface.
+  const emitInternal = base.emit as (event: LibraryEventName, payload?: unknown) => void
   const events = di.isRegistered(EventsAPI as any)
     ? (di.resolve(EventsAPI as any) as EventsAPI<'client'>)
     : null
