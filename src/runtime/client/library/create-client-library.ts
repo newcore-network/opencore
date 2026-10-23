@@ -39,7 +39,7 @@ export function createClientLibrary<const N extends string = string>(
   return {
     ...base,
     side: 'client',
-    emit(eventName, payload) {
+    emit(eventName, payload?) {
       emitInternal(eventName, payload)
 
       const eventId = buildLibraryEventId(base.name, eventName)

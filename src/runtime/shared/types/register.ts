@@ -268,6 +268,27 @@ export type LibraryPayloadOf<M, K extends PropertyKey, TPayload = unknown> = [
   : TPayload
 
 /**
+ * The payload argument of `emit(K, …)`.
+ *
+ * @remarks
+ * A generated name requires its payload unless the listeners accept `undefined`, so an event
+ * whose handlers read the payload cannot be emitted without one. Any other name keeps the
+ * optional `TPayload` argument.
+ *
+ * Handlers keep receiving `payload?:` even for generated names: a required parameter there
+ * makes TypeScript measure the event map as invariant, and a typed library would stop being
+ * assignable to the default library type.
+ */
+export type LibraryEmitArgsOf<M, K extends PropertyKey, TPayload = unknown> = [
+  IsRegistered<M>,
+  K,
+] extends [true, keyof M]
+  ? undefined extends M[K & keyof M]
+    ? [payload?: M[K & keyof M]]
+    : [payload: M[K & keyof M]]
+  : [payload?: TPayload]
+
+/**
  * Drops the leading parameter of a tuple.
  *
  * @remarks

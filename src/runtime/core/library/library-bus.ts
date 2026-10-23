@@ -36,7 +36,7 @@ export function createLibraryBus(): LibraryBus {
     on(event, onceHandler)
   }
 
-  const emit: LibraryBus['emit'] = (event, payload) => {
+  const emit: LibraryBus['emit'] = (event, payload?) => {
     const eventHandlers = handlers.get(event)
     if (!eventHandlers || eventHandlers.size === 0) return
 

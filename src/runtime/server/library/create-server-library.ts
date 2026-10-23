@@ -43,7 +43,7 @@ export function createServerLibrary<const N extends string = string>(
   return {
     ...base,
     side: 'server',
-    emit(eventName, payload) {
+    emit(eventName, payload?) {
       emitInternal(eventName, payload)
 
       const eventId = buildLibraryEventId(base.name, eventName)

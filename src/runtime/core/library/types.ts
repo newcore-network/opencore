@@ -1,5 +1,6 @@
 import type {
   ClientLibraryEvents,
+  LibraryEmitArgsOf,
   LibraryEventNameOf,
   LibraryEventsOf,
   LibraryPayloadOf,
@@ -101,7 +102,7 @@ export interface LibraryBus<M = LooseLibraryEventMap> {
    */
   emit<TPayload = unknown, K extends LibraryEventNameOf<M> = LibraryEventNameOf<M>>(
     event: K,
-    payload?: LibraryPayloadOf<M, K, TPayload>,
+    ...payload: LibraryEmitArgsOf<M, K, TPayload>
   ): void
 }
 

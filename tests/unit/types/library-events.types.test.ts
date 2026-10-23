@@ -139,6 +139,16 @@ describe('registered library', () => {
     rp.emit('character:left', { firstTime: true })
   })
 
+  it('requires the payload of a generated event', () => {
+    const rp = busAs<RpBus>()
+    // @ts-expect-error character:spawned listeners read the payload
+    rp.emit('character:spawned')
+    rp.emit('other:event')
+
+    type BankEvents = LibraryEventsOf<ServerLibs, 'bank'>
+    busAs<LibraryBus<BankEvents>>().emit('bank:opened')
+  })
+
   it('types listener payloads', () => {
     const rp = busAs<RpBus>()
     rp.on('character:spawned', (payload) => {
